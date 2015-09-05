@@ -39,6 +39,7 @@ $>OK
 
 ####Next steps?
 ##trim trimmomatic
+'''shell
 ./trimmomatic.sh Replant-1A_S14_L001_R1_001.fastq Replant-1A_S14_L001_R2_001.fastq /home/deakig/projects/metagenomics/data /home/deakig/projects/metagenomics/scripts
 ./trimmomatic.sh Replant-1A_S30_L001_R1_001.fastq Replant-1A_S30_L001_R2_001.fastq /home/deakig/projects/metagenomics/data /home/deakig/projects/metagenomics/scripts
 ./trimmomatic.sh Replant-5A_S15_L001_R1_001.fastq Replant-5A_S15_L001_R2_001.fastq /home/deakig/projects/metagenomics/data /home/deakig/projects/metagenomics/scripts
@@ -49,8 +50,9 @@ $>OK
 ./trimmomatic.sh Replant-1A_S6_L001_R1_001.fastq Replant-1A_S6_L001_R2_001.fastq /home/deakig/projects/metagenomics/data /home/deakig/projects/metagenomics/scripts
 ./trimmomatic.sh Replant-5A_S7_L001_R1_001.fastq Replant-5A_S7_L001_R2_001.fastq /home/deakig/projects/metagenomics/data /home/deakig/projects/metagenomics/scripts
 ./trimmomatic.sh Replant-5A_S31_L001_R1_001.fastq Replant-5A_S31_L001_R2_001.fastq /home/deakig/projects/metagenomics/data /home/deakig/projects/metagenomics/scripts
-
+'''
 ##join paired end reads (pretty ugly as it bungs them into a unique folder but files have same name...
+'''shell
 join_paired_ends.py -f Replant-1A_S14_L001_R1_001.fastq.trimmed.fq -r Replant-1A_S14_L001_R2_001.fastq.trimmed.fq -o Replant-1A_S14
 join_paired_ends.py -f Replant-1A_S30_L001_R1_001.fastq.trimmed.fq -r Replant-1A_S30_L001_R2_001.fastq.trimmed.fq -o Replant-1A_S30
 join_paired_ends.py -f Replant-5A_S15_L001_R1_001.fastq.trimmed.fq -r Replant-5A_S15_L001_R2_001.fastq.trimmed.fq -o Replant-5A_S15
@@ -61,7 +63,7 @@ join_paired_ends.py -f Replant-5A_S23_L001_R1_001.fastq.trimmed.fq -r Replant-5A
 join_paired_ends.py -f Replant-1A_S6_L001_R1_001.fastq.trimmed.fq -r Replant-1A_S6_L001_R2_001.fastq.trimmed.fq -o Replant-1A_S6
 join_paired_ends.py -f Replant-5A_S7_L001_R1_001.fastq.trimmed.fq -r Replant-5A_S7_L001_R2_001.fastq.trimmed.fq -o Replant-5A_S7
 join_paired_ends.py -f Replant-5A_S31_L001_R1_001.fastq.trimmed.fq -r Replant-5A_S31_L001_R2_001.fastq.trimmed.fq -o Replant-5A_S31
-
+'''
 ####cat files (probably best)
 cat  Replant-1A_S14/* > Replant-1A_S14.all.fq
 cat  Replant-1A_S30/* > Replant-1A_S30.all.fq
