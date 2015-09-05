@@ -79,19 +79,19 @@ join_paired_ends.py -f Replant-5A_S31_L001_R1_001.fastq.trimmed.fq -r Replant-5A
 
 
 ####convert to fasta
-../../scripts/fq2fa.pl Replant-1A_S14.all.fq Replant-1A_S14.all.fa Replant-1A_S14
-../../scripts/fq2fa.pl Replant-1A_S30.all.fq Replant-1A_S30.all.fa Replant-1A_S30
-../../scripts/fq2fa.pl Replant-5A_S15.all.fq Replant-5A_S15.all.fa Replant-5A_S15
-../../scripts/fq2fa.pl Replant-1A_S38.all.fq Replant-1A_S38.all.fa Replant-1A_S38
-../../scripts/fq2fa.pl Replant-5A_S39.all.fq Replant-5A_S39.all.fa Replant-5A_S39
-../../scripts/fq2fa.pl Replant-1A_S22.all.fq Replant-1A_S22.all.fa Replant-1A_S22
-../../scripts/fq2fa.pl Replant-5A_S23.all.fq Replant-5A_S23.all.fa Replant-5A_S23
-../../scripts/fq2fa.pl Replant-1A_S6.all.fq Replant-1A_S6.all.fa Replant-1A_S6
-../../scripts/fq2fa.pl Replant-5A_S7.all.fq Replant-5A_S7.all.fa Replant-5A_S7
-../../scripts/fq2fa.pl Replant-5A_S31.all.fq Replant-5A_S31.all.fa Replant-5A_S31
+	../../scripts/fq2fa.pl Replant-1A_S14.all.fq Replant-1A_S14.all.fa Replant-1A_S14
+	../../scripts/fq2fa.pl Replant-1A_S30.all.fq Replant-1A_S30.all.fa Replant-1A_S30
+	../../scripts/fq2fa.pl Replant-5A_S15.all.fq Replant-5A_S15.all.fa Replant-5A_S15
+	../../scripts/fq2fa.pl Replant-1A_S38.all.fq Replant-1A_S38.all.fa Replant-1A_S38
+	../../scripts/fq2fa.pl Replant-5A_S39.all.fq Replant-5A_S39.all.fa Replant-5A_S39
+	../../scripts/fq2fa.pl Replant-1A_S22.all.fq Replant-1A_S22.all.fa Replant-1A_S22
+	../../scripts/fq2fa.pl Replant-5A_S23.all.fq Replant-5A_S23.all.fa Replant-5A_S23
+	../../scripts/fq2fa.pl Replant-1A_S6.all.fq Replant-1A_S6.all.fa Replant-1A_S6
+	../../scripts/fq2fa.pl Replant-5A_S7.all.fq Replant-5A_S7.all.fa Replant-5A_S7
+	../../scripts/fq2fa.pl Replant-5A_S31.all.fq Replant-5A_S31.all.fa Replant-5A_S31
 
 ---- update
-cat * > fasta/all.fa
+	cat * > fasta/all.fa
 
 ###create  qiime mapping file
 (hash must be present before SampleID) 
@@ -123,37 +123,37 @@ Replant.5A.S7.L001.R2			5	type 5
 ###quiime commands
 
 #OTU picker
-pick_open_reference_otus.py -f -o otus -i data/fasta/all.fa -p scripts/parameters.txt 
+	pick_open_reference_otus.py -f -o otus -i data/fasta/all.fa -p scripts/parameters.txt 
 
 #summerise data (note min sequencing depth - or drop samples)
-biom summarize-table -i otus/otu_table_mc2_w_tax_no_pynast_failures.biom
+	biom summarize-table -i otus/otu_table_mc2_w_tax_no_pynast_failures.biom
 
 #diversity analysis
-core_diversity_analyses.py -o cdout/ -i otus/otu_table_mc2_w_tax_no_pynast_failures.biom -m data/map.tsv -t otus/rep_set.tre -e 71941 --suppress_beta_diversity
+	core_diversity_analyses.py -o cdout/ -i otus/otu_table_mc2_w_tax_no_pynast_failures.biom -m data/map.tsv -t otus/rep_set.tre -e 71941 --suppress_beta_diversity
 #-e is sequencing depth from summarise table, --suppress_beta_diversity suppresses the emperor 3d pca plots (useful if less than 4 samples).
 
 ###Parallel qiime
 for single machine throw in -a -O (no. processes) to the workflow script
 
 #using HPC...
-create qimme_config in home root
-cd ~
-touch .qiime_config
+	create qimme_config in home root
+	cd ~
+	touch .qiime_config
 
 added:
-	jobs_to_start 8
-	temp_dir $HOME/tmp
-	cluster_jobs_fp start_parallel_jobs_sc.py	
+jobs_to_start 8
+temp_dir $HOME/tmp
+cluster_jobs_fp start_parallel_jobs_sc.py	
 	
 
 hacked start_parallel_jobs_sc.py for use in our environment
 
-./core_diversity.sh /home/deakig/projects/metagenomics/otus2/otu_table_mc2_w_tax_no_pynast_failures.biom /home/deakig/projects/metagenomics/cdout_cluster/ /home/deakig/projects/metagenomics/data/map2.tsv /home/deakig/projects/metagenomics/otus2/rep_set.tre 3272
+	./core_diversity.sh /home/deakig/projects/metagenomics/otus2/otu_table_mc2_w_tax_no_pynast_failures.biom /home/deakig/projects/metagenomics/cdout_cluster/ /home/deakig/projects/metagenomics/data/map2.tsv /home/deakig/projects/metagenomics/otus2/rep_set.tre 3272
 #to do - write cluster version of OTU picker
 done...
-./pick_OTU.sh DATA OUT_FOLDER PARAM_FILE REF_FILE
+	./pick_OTU.sh DATA OUT_FOLDER PARAM_FILE REF_FILE
 default ref file is something like:
-/home/deakig/usr/local/lib/python2.7/site-packages/qiime_default_reference/gg_13_8_otus/rep_set/97_otus.fasta
+	/home/deakig/usr/local/lib/python2.7/site-packages/qiime_default_reference/gg_13_8_otus/rep_set/97_otus.fasta
 
 
 ###non-default reference database
@@ -161,10 +161,10 @@ default ref file is something like:
 assign_taxonomy:id_to_taxonomy_fp /path_to_taxonomy_txt
 assign_taxonomy:reference_seqs_fp /path_to_fasta
 
-./pick_OTU.sh  /home/deakig/projects/metagenomics/data/fasta/all.fa /home/deakig/projects/metagenomics/debug/otus_16_18_taxa /home/deakig/projects/metagenomics/scripts/params.txt /home/deakig/projects/metagenomics/taxonomies/Silva119/97/Silva_119_rep_set97_aligned.fna
+	./pick_OTU.sh  /home/deakig/projects/metagenomics/data/fasta/all.fa /home/deakig/projects/metagenomics/debug/otus_16_18_taxa /home/deakig/projects/metagenomics/scripts/params.txt /home/deakig/projects/metagenomics/taxonomies/Silva119/97/Silva_119_rep_set97_aligned.fna
 biom summarize-table -i debug/otus_16_18_taxa/otu_table_mc2_w_tax_no_pynast_failures.biom
 
-./core_diversity.sh /home/deakig/projects/metagenomics/debug/otus_16_18_taxa/otu_table_mc2_w_tax_no_pynast_failures.biom /home/deakig/projects/metagenomics/debug/cdout_16_18_taxa /home/deakig/projects/metagenomics/data/map2.tsv /home/deakig/projects/metagenomics/debug/otus_16_18_taxa/rep_set.tre 3357
+	./core_diversity.sh /home/deakig/projects/metagenomics/debug/otus_16_18_taxa/otu_table_mc2_w_tax_no_pynast_failures.biom /home/deakig/projects/metagenomics/debug/cdout_16_18_taxa /home/deakig/projects/metagenomics/data/map2.tsv /home/deakig/projects/metagenomics/debug/otus_16_18_taxa/rep_set.tre 3357
 
 
 /home/deakig/projects/metagenomics/taxonomies/Silva119/97/Silva_119_rep_set97_aligned.fna
@@ -172,45 +172,45 @@ biom summarize-table -i debug/otus_16_18_taxa/otu_table_mc2_w_tax_no_pynast_fail
 
 ########NEW DATA#########
 #changed trimmomatic script to use all files in directory
-./trimmomatic.sh /home/deakig/projects/metagenomics/data/replant2 /home/deakig/projects/metagenomics/scripts
+	./trimmomatic.sh /home/deakig/projects/metagenomics/data/replant2 /home/deakig/projects/metagenomics/scripts
 
-for f in ./*trimmed*; 
-do counter=$((counter+1)); 
-	if (( $counter % 2 == 0 )); 
-		then R2=$f;
-		echo join_paired_ends.py -f $R1 -r $R2 -o $counter;
-		join_paired_ends.py -f $R1 -r $R2 -o $counter; 
-	fi; 
-R1=$f; 
-done
+	for f in ./*trimmed*; 
+	do counter=$((counter+1)); 
+		if (( $counter % 2 == 0 )); 
+			then R2=$f;
+			echo join_paired_ends.py -f $R1 -r $R2 -o $counter;
+			join_paired_ends.py -f $R1 -r $R2 -o $counter; 
+		fi; 
+	R1=$f; 
+	done
 
-cat S85/* > S85.all.fq
-cat S86/* > S86.all.fq
-cat S87/* > S87.all.fq
-cat S88/* > S88.all.fq
-cat S89/* > S89.all.fq
-cat S90/* > S90.all.fq
-cat S91/* > S91.all.fq
-cat S92/* > S92.all.fq
-cat S93/* > S93.all.fq
-cat S94/* > S94.all.fq
-cat S95/* > S95.all.fq
-cat S96/* > S96.all.fq
-
-../../scripts/fq2fa.pl S85.all.fq S85.all.fa S85
-../../scripts/fq2fa.pl S86.all.fq S86.all.fa S86
-../../scripts/fq2fa.pl S87.all.fq S87.all.fa S87
-../../scripts/fq2fa.pl S88.all.fq S88.all.fa S88
-../../scripts/fq2fa.pl S89.all.fq S89.all.fa S89
-../../scripts/fq2fa.pl S90.all.fq S90.all.fa S90
-../../scripts/fq2fa.pl S91.all.fq S91.all.fa S91
-../../scripts/fq2fa.pl S92.all.fq S92.all.fa S92
-../../scripts/fq2fa.pl S93.all.fq S93.all.fa S93
-../../scripts/fq2fa.pl S94.all.fq S94.all.fa S94
-../../scripts/fq2fa.pl S95.all.fq S95.all.fa S95
-../../scripts/fq2fa.pl S96.all.fq S96.all.fa S96
-
-cat S* > all_r2.fa
+	cat S85/* > S85.all.fq
+	cat S86/* > S86.all.fq
+	cat S87/* > S87.all.fq
+	cat S88/* > S88.all.fq
+	cat S89/* > S89.all.fq
+	cat S90/* > S90.all.fq
+	cat S91/* > S91.all.fq
+	cat S92/* > S92.all.fq
+	cat S93/* > S93.all.fq
+	cat S94/* > S94.all.fq
+	cat S95/* > S95.all.fq
+	cat S96/* > S96.all.fq
+	
+	../../scripts/fq2fa.pl S85.all.fq S85.all.fa S85
+	../../scripts/fq2fa.pl S86.all.fq S86.all.fa S86
+	../../scripts/fq2fa.pl S87.all.fq S87.all.fa S87
+	../../scripts/fq2fa.pl S88.all.fq S88.all.fa S88
+	../../scripts/fq2fa.pl S89.all.fq S89.all.fa S89
+	../../scripts/fq2fa.pl S90.all.fq S90.all.fa S90
+	../../scripts/fq2fa.pl S91.all.fq S91.all.fa S91
+	../../scripts/fq2fa.pl S92.all.fq S92.all.fa S92
+	../../scripts/fq2fa.pl S93.all.fq S93.all.fa S93
+	../../scripts/fq2fa.pl S94.all.fq S94.all.fa S94
+	../../scripts/fq2fa.pl S95.all.fq S95.all.fa S95
+	../../scripts/fq2fa.pl S96.all.fq S96.all.fa S96
+	
+	cat S* > all_r2.fa
 ###16S
 ./pick_OTU.sh  /home/deakig/projects/metagenomics/data/fasta/all_r2.fa /home/deakig/projects/metagenomics/analysis/otus /home/deakig/projects/metagenomics/scripts/parameters.txt /home/deakig/usr/local/lib/python2.7/site-packages/qiime_default_reference/gg_13_8_otus/rep_set/97_otus.fasta
 
