@@ -65,16 +65,16 @@ join_paired_ends.py -f Replant-5A_S7_L001_R1_001.fastq.trimmed.fq -r Replant-5A_
 join_paired_ends.py -f Replant-5A_S31_L001_R1_001.fastq.trimmed.fq -r Replant-5A_S31_L001_R2_001.fastq.trimmed.fq -o Replant-5A_S31
 ```
 ####cat files (probably best)
-cat  Replant-1A_S14/* > Replant-1A_S14.all.fq
-cat  Replant-1A_S30/* > Replant-1A_S30.all.fq
-cat  Replant-5A_S15/* > Replant-5A_S15.all.fq
-cat  Replant-1A_S38/* > Replant-1A_S38.all.fq
-cat  Replant-5A_S39/* > Replant-5A_S39.all.fq
-cat  Replant-1A_S22/* > Replant-1A_S22.all.fq
-cat  Replant-5A_S23/* > Replant-5A_S23.all.fq
-cat  Replant-1A_S6/* > Replant-1A_S6.all.fq
-cat  Replant-5A_S7/* > Replant-5A_S7.all.fq
-cat  Replant-5A_S31/* > Replant-5A_S31.all.fq
+	cat  Replant-1A_S14/* > Replant-1A_S14.all.fq
+	cat  Replant-1A_S30/* > Replant-1A_S30.all.fq
+	cat  Replant-5A_S15/* > Replant-5A_S15.all.fq
+	cat  Replant-1A_S38/* > Replant-1A_S38.all.fq
+	cat  Replant-5A_S39/* > Replant-5A_S39.all.fq
+	cat  Replant-1A_S22/* > Replant-1A_S22.all.fq
+	cat  Replant-5A_S23/* > Replant-5A_S23.all.fq
+	cat  Replant-1A_S6/* > Replant-1A_S6.all.fq
+	cat  Replant-5A_S7/* > Replant-5A_S7.all.fq
+	cat  Replant-5A_S31/* > Replant-5A_S31.all.fq
 
 
 
