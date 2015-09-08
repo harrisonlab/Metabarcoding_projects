@@ -306,24 +306,24 @@ May be better to junk reads less than about 150 bp
 
 
 ###Removal of ssu and 5.8 from ITS
-deakig@blacklace03:~/projects/metagenomics/data/joined$ ../../scripts/fq2fa.pl S91/fastqjoin.un1.fastq S91.un.1.fa S91
-deakig@blacklace03:~/projects/metagenomics/data/joined$ ../../scripts/fq2fa.pl S91/fastqjoin.un2.fastq S91.un.2.fa S91
-deakig@blacklace03:~/projects/metagenomics/data/joined$ ../../scripts/fq2fa.pl S91/fastqjoin. S91.un.2.fa S91
+~/projects/metagenomics/data/joined$ ../../scripts/fq2fa.pl S91/fastqjoin.un1.fastq S91.un.1.fa S91
+~/projects/metagenomics/data/joined$ ../../scripts/fq2fa.pl S91/fastqjoin.un2.fastq S91.un.2.fa S91
+~projects/metagenomics/data/joined$ ../../scripts/fq2fa.pl S91/fastqjoin. S91.un.2.fa S91
 fastqjoin.join.fastq  fastqjoin.un1.fastq   fastqjoin.un2.fastq   
-deakig@blacklace03:~/projects/metagenomics/data/joined$ ../../scripts/fq2fa.pl S91/fastqjoin.join.fastq S91.pe.fa S91PE
-deakig@blacklace03:~/projects/metagenomics/data/joined$ ../../scripts/fq2fa.pl S92/fastqjoin.un1.fastq S92.un.1.fa S92
-deakig@blacklace03:~/projects/metagenomics/data/joined$ ../../scripts/fq2fa.pl S93/fastqjoin.un1.fastq S93.un.1.fa S93
-deakig@blacklace03:~/projects/metagenomics/data/joined$ ../../scripts/fq2fa.pl S94/fastqjoin.un1.fastq S94.un.1.fa S94
-deakig@blacklace03:~/projects/metagenomics/data/joined$ ../../scripts/fq2fa.pl S95/fastqjoin.un1.fastq S95.un.1.fa S95
-deakig@blacklace03:~/projects/metagenomics/data/joined$ ../../scripts/fq2fa.pl S96/fastqjoin.un1.fastq S96.un.1.fa S96
-deakig@blacklace03:~/projects/metagenomics/data/joined$ ../../scripts/fq2fa.pl S92/fastqjoin.un2.fastq S92.un.2.fa S92
-deakig@blacklace03:~/projects/metagenomics/data/joined$ ../../scripts/fq2fa.pl S93/fastqjoin.un2.fastq S93.un.2.fa S93
-deakig@blacklace03:~/projects/metagenomics/data/joined$ ../../scripts/fq2fa.pl S94/fastqjoin.un2.fastq S94.un.2.fa S94
-deakig@blacklace03:~/projects/metagenomics/data/joined$ ../../scripts/fq2fa.pl S95/fastqjoin.un2.fastq S95.un.2.fa S95
-deakig@blacklace03:~/projects/metagenomics/data/joined$ ../../scripts/fq2fa.pl S96/fastqjoin.un2.fastq S96.un.2.fa S96
-deakig@blacklace03:~/projects/metagenomics/data/joined$ ../../scripts/fq2fa.pl S91/fastqjoin.join.fastq S91.pe.fa S91
-deakig@blacklace03:~/projects/metagenomics/data/joined$ ../../scripts/fq2fa.pl S92/fastqjoin.join.fastq S92.pe.fa S92
-deakig@blacklace03:~/projects/metagenomics/data/joined$ ../../scripts/fq2fa.pl S93/fastqjoin.join.fastq S93.pe.fa S93
-deakig@blacklace03:~/projects/metagenomics/data/joined$ ../../scripts/fq2fa.pl S94/fastqjoin.join.fastq S94.pe.fa S94
-deakig@blacklace03:~/projects/metagenomics/data/joined$ ../../scripts/fq2fa.pl S95/fastqjoin.join.fastq S95.pe.fa S95
-deakig@blacklace03:~/projects/metagenomics/data/joined$ ../../scripts/fq2fa.pl S96/fastqjoin.join.fastq S96.pe.fa S96
+~/projects/metagenomics/data/joined$ ../../scripts/fq2fa.pl S91/fastqjoin.join.fastq S91.pe.fa S91PE
+~/projects/metagenomics/data/joined$ ../../scripts/fq2fa.pl S92/fastqjoin.un1.fastq S92.un.1.fa S92
+~/projects/metagenomics/data/joined$ ../../scripts/fq2fa.pl S93/fastqjoin.un1.fastq S93.un.1.fa S93
+~/projects/metagenomics/data/joined$ ../../scripts/fq2fa.pl S94/fastqjoin.un1.fastq S94.un.1.fa S94
+~/projects/metagenomics/data/joined$ ../../scripts/fq2fa.pl S95/fastqjoin.un1.fastq S95.un.1.fa S95
+~/projects/metagenomics/data/joined$ ../../scripts/fq2fa.pl S96/fastqjoin.un1.fastq S96.un.1.fa S96
+~/projects/metagenomics/data/joined$ ../../scripts/fq2fa.pl S92/fastqjoin.un2.fastq S92.un.2.fa S92
+~/projects/metagenomics/data/joined$ ../../scripts/fq2fa.pl S93/fastqjoin.un2.fastq S93.un.2.fa S93
+~/projects/metagenomics/data/joined$ ../../scripts/fq2fa.pl S94/fastqjoin.un2.fastq S94.un.2.fa S94
+~/projects/metagenomics/data/joined$ ../../scripts/fq2fa.pl S95/fastqjoin.un2.fastq S95.un.2.fa S95
+~/projects/metagenomics/data/joined$ ../../scripts/fq2fa.pl S96/fastqjoin.un2.fastq S96.un.2.fa S96
+~/projects/metagenomics/data/joined$ ../../scripts/fq2fa.pl S91/fastqjoin.join.fastq S91.pe.fa S91
+~/projects/metagenomics/data/joined$ ../../scripts/fq2fa.pl S92/fastqjoin.join.fastq S92.pe.fa S92
+~/projects/metagenomics/data/joined$ ../../scripts/fq2fa.pl S93/fastqjoin.join.fastq S93.pe.fa S93
+~/projects/metagenomics/data/joined$ ../../scripts/fq2fa.pl S94/fastqjoin.join.fastq S94.pe.fa S94
+~/projects/metagenomics/data/joined$ ../../scripts/fq2fa.pl S95/fastqjoin.join.fastq S95.pe.fa S95
+~/projects/metagenomics/data/joined$ ../../scripts/fq2fa.pl S96/fastqjoin.join.fastq S96.pe.fa S96
