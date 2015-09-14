@@ -36,6 +36,78 @@ should retun something like
 $>Ran 9 test in 0.05s
 $>OK
 
+###Parallel qiime
+for single machine throw in -a -O (no. processes) to the workflow script
+
+#using HPC...
+	create qimme_config in home root
+	cd ~
+	touch .qiime_config
+
+added:
+jobs_to_start 8
+temp_dir $HOME/tmp
+cluster_jobs_fp start_parallel_jobs_sc.py	
+
+hacked start_parallel_jobs_sc.py for use in our environment
+
+#16s workflow
+
+###Join PE reads
+Change to trimmed directory then run below script (this will also do ITS samples)
+
+	for f in ./*trimmed*; 
+		do counter=$((counter+1)); 
+		if (( $counter % 2 == 0 )); 
+			then R2=$f;
+			echo join_paired_ends.py -f $R1 -r $R2 -o $counter;
+			join_paired_ends.py -f $R1 -r $R2 -o $counter; 
+		fi; 
+		R1=$f; 
+	done
+
+
+###rename files 
+
+	counter=84
+	for d in * 
+		do counter=$((counter+1));
+		cd S$counter
+		for f in *
+		do
+			mv -i "${f}" "S${f/fastqjoin/$counter}"
+		done
+		cd ..
+	done
+
+###convert joined fastq to fasta
+
+	counter=84
+	for d in *
+		do counter=$((counter+1));
+		cd S$counter
+		for f in ./*join*
+		do
+			../../../scripts/fq2fa.pl $f $f.fa S$d
+			mv $f.fa ../../fasta/.
+		done
+		cd ..
+	done
+
+####concatenate files
+created 16S and ITS under fasta folder and moved file to appropriate place
+
+	cat S* >16S.joined.fa	
+
+####OTU Picking and descriptive statistics
+
+	./pick_OTU.sh  /home/deakig/projects/metagenomics/data/fasta/16S/16S.joined.fa /home/deakig/projects/metagenomics/analysis/16S_otus /home/deakig/projects/metagenomics/scripts/parameters.txt /home/deakig/usr/local/lib/python2.7/site-packages/qiime_default_reference/gg_13_8_otus/rep_set/97_otus.fasta TRUE
+
+	biom summarize-table -i ../analysis/16S_otus/otu_table_mc2_w_tax_no_pynast_failures.biom
+
+####
+
+
 
 ####Next steps?
 ##trim trimmomatic
@@ -132,21 +204,7 @@ Replant.5A.S7.L001.R2			5	type 5
 	core_diversity_analyses.py -o cdout/ -i otus/otu_table_mc2_w_tax_no_pynast_failures.biom -m data/map.tsv -t otus/rep_set.tre -e 71941 --suppress_beta_diversity
 #-e is sequencing depth from summarise table, --suppress_beta_diversity suppresses the emperor 3d pca plots (useful if less than 4 samples).
 
-###Parallel qiime
-for single machine throw in -a -O (no. processes) to the workflow script
 
-#using HPC...
-	create qimme_config in home root
-	cd ~
-	touch .qiime_config
-
-added:
-jobs_to_start 8
-temp_dir $HOME/tmp
-cluster_jobs_fp start_parallel_jobs_sc.py	
-	
-
-hacked start_parallel_jobs_sc.py for use in our environment
 
 	./core_diversity.sh /home/deakig/projects/metagenomics/otus2/otu_table_mc2_w_tax_no_pynast_failures.biom /home/deakig/projects/metagenomics/cdout_cluster/ /home/deakig/projects/metagenomics/data/map2.tsv /home/deakig/projects/metagenomics/otus2/rep_set.tre 3272
 #to do - write cluster version of OTU picker
