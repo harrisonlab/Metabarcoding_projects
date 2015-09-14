@@ -109,8 +109,8 @@ created 16S and ITS under fasta folder and moved file to appropriate place
 
 
 
-####Next steps?
-##trim trimmomatic
+#OLD Stuff 
+###trim trimmomatic
 ```shell
 ./trimmomatic.sh Replant-1A_S14_L001_R1_001.fastq Replant-1A_S14_L001_R2_001.fastq /home/deakig/projects/metagenomics/data /home/deakig/projects/metagenomics/scripts
 ./trimmomatic.sh Replant-1A_S30_L001_R1_001.fastq Replant-1A_S30_L001_R2_001.fastq /home/deakig/projects/metagenomics/data /home/deakig/projects/metagenomics/scripts
