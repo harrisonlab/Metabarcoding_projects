@@ -39,7 +39,8 @@ $>OK
 ###Parallel qiime
 for single machine throw in -a -O (no. processes) to the workflow script
 
-#using HPC...
+using HPC...
+
 	create qimme_config in home root
 	cd ~
 	touch .qiime_config
@@ -103,10 +104,13 @@ created 16S and ITS under fasta folder and moved file to appropriate place
 
 	./pick_OTU.sh  /home/deakig/projects/metagenomics/data/fasta/16S/16S.joined.fa /home/deakig/projects/metagenomics/analysis/16S_otus /home/deakig/projects/metagenomics/scripts/parameters.txt /home/deakig/usr/local/lib/python2.7/site-packages/qiime_default_reference/gg_13_8_otus/rep_set/97_otus.fasta TRUE
 
-	biom summarize-table -i ../analysis/16S_otus/otu_table_mc2_w_tax_no_pynast_failures.biom
+	 X=`biom summarize-table -i analysis/16S_otus/otu_table_mc2_w_tax_no_pynast_failures.biom|grep  Min|sed -n "/ Min: */s/ Min: *//p"`
 
-####
+	./core_diversity.sh /home/deakig/projects/metagenomics/analysis/16S_otus/otu_table_mc2_w_tax_no_pynast_failures.biom /home/deakig/projects/metagenomics/analysis/16s_cdout/ /home/deakig/projects/metagenomics/data/map.tsv /home/deakig/projects/metagenomics/analysis/16S_otus/rep_set.tre $X
 
+#### Statistical analysis
+	
+	Rscript analysis.R "analysis/16S_otus/otu_table_mc2_w_tax_no_pynast_failures.biom" 6 median res.sig.csv
 
 
 #OLD Stuff 
