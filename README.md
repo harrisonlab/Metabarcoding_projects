@@ -69,6 +69,7 @@ Change to trimmed directory then run below script (this will also do ITS samples
 
 
 ###rename files 
+The counter used in the next couple of commands was set to match the names of the samples, i.e. S85, S86 and etc.
 
 	counter=84
 	for d in * 
