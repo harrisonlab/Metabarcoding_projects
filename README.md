@@ -101,7 +101,8 @@ downloaded usearch 8.0 and RDP gold reference database from http://drive5.com/us
 	counter=84
 	for f in /home/deakig/projects/metagenomics/data/fasta/16S/*
 	do counter=$((counter+1));
-		./chimeras.sh $f /home/deakig/projects/metagenomics/taxonomies/RDP_gold.fasta S${counter}.cfree.fa 				/home/deakig/projects/metagenomics/data/fasta/de_chimeraed/
+		./chimeras.sh $f /home/deakig/projects/metagenomics/taxonomies/RDP_gold.fasta S${counter}.cfree.fa
+		/home/deakig/projects/metagenomics/data/fasta/de_chimeraed/
 	done
 
 ####concatenate files
