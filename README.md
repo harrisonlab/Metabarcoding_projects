@@ -58,7 +58,7 @@ hacked start_parallel_jobs_sc.py for use in our environment
 Change to trimmed directory then run below script (this will also do ITS samples)
 
 	for f in ./*trimmed*; 
-		do counter=$((counter+1)); 
+	do counter=$((counter+1)); 
 		if (( $counter % 2 == 0 )); 
 			then R2=$f;
 			echo join_paired_ends.py -f $R1 -r $R2 -o $counter;
@@ -72,7 +72,7 @@ Change to trimmed directory then run below script (this will also do ITS samples
 
 	counter=84
 	for d in * 
-		do counter=$((counter+1));
+	do counter=$((counter+1));
 		cd S$counter
 		for f in *
 		do
@@ -85,7 +85,7 @@ Change to trimmed directory then run below script (this will also do ITS samples
 
 	counter=84
 	for d in *
-		do counter=$((counter+1));
+	do counter=$((counter+1));
 		cd S$counter
 		for f in ./*join*
 		do
@@ -95,10 +95,19 @@ Change to trimmed directory then run below script (this will also do ITS samples
 		cd ..
 	done
 
+####Remove chimeras
+downloaded usearch 8.0 and RDP gold reference database from http://drive5.com/usearch/manual/cmd_uchime_ref.html
+
+	counter=84
+	for f in /home/deakig/projects/metagenomics/data/fasta/16S/*
+	do counter=$((counter+1));
+		./chimeras.sh $f /home/deakig/projects/metagenomics/taxonomies/RDP_gold.fasta S${counter}.cfree.fa 				/home/deakig/projects/metagenomics/data/fasta/de_chimeraed/
+	done
+
 ####concatenate files
 created 16S and ITS under fasta folder and moved file to appropriate place
 
-	cat S* >16S.joined.fa	
+	cat *cfree* >16S.joined.fa	
 
 ####OTU Picking and descriptive statistics
 
