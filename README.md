@@ -122,7 +122,8 @@ Requires a colData file describing condition (e.g. infected or uninfected) for e
 analysis.R biom_table "no. samples" median/geomean outfile
 	
 	Rscript analysis.R "analysis/16S_otus/otu_table_mc2_w_tax_no_pynast_failures.biom" 6 median res.sig.csv
-
+	
+#ITS workflow
 #
 #
 #Old Stuff 
