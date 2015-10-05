@@ -1,6 +1,6 @@
 # apple_replant
 Metagenomic study of apple replant disease
-####Installing Qiime to a local directory
+###Installing Qiime to a local directory
 Downloaded Python 2.7.9 tar ball and unzipped
 From root of Python 2.7.9 directory ran :
 
@@ -96,7 +96,7 @@ The counter used in the next couple of commands was set to match the names of th
 		cd ..
 	done
 
-####Remove chimeras
+###Remove chimeras
 downloaded usearch 8.0 and RDP gold reference database from http://drive5.com/usearch/manual/cmd_uchime_ref.html
 
 	counter=84
@@ -111,7 +111,7 @@ created 16S and ITS under fasta folder and moved file to appropriate place
 
 	cat *cfree* >16S.joined.fa	
 
-####OTU Picking and descriptive statistics
+###OTU Picking and descriptive statistics
 
 	./pick_OTU.sh  /home/deakig/projects/metagenomics/data/fasta/16S/16S.joined.fa /home/deakig/projects/metagenomics/analysis/16S_otus /home/deakig/projects/metagenomics/scripts/parameters.txt /home/deakig/usr/local/lib/python2.7/site-packages/qiime_default_reference/gg_13_8_otus/rep_set/97_otus.fasta TRUE
 	 X=`biom summarize-table -i analysis/16S_otus/otu_table_mc2_w_tax_no_pynast_failures.biom|grep  Min|sed -n "/ Min: */s/ Min: *//p"|sed -n "/\..*/s/\..*//p"`
@@ -148,7 +148,7 @@ trimming scripts is set to read all fastq files in a single directory
 	  fi
 	done
 
-##rename files 
+###rename files 
 
 	X=91
 	counter=0
@@ -164,8 +164,8 @@ trimming scripts is set to read all fastq files in a single directory
 	  fi
 	done
 
-
-## split file into chunks for SSU/58S/LSu removal
+##SSU/58S/LSU removal
+#### split file into chunks for SSU/58S/LSu removal
 	X=91 
 	counter=0
 	for f in *.fa;
@@ -181,10 +181,10 @@ trimming scripts is set to read all fastq files in a single directory
 	  fi
 	done
 
-##Remove SSU/LSU
-### Using HHMMER v 3.x from ....
-#### download HMM files from ITSx (need website)
-#### Hacked the HMM files to include a MAXL satement (required) and split out SSU,58S and LSU into seperate files (using fungal only)
+####Remove SSU/LSU
+Using HHMMER v 3.x from ....
+ ownload HMM files from ITSx (need website)
+Hacked the HMM files to include a MAXL satement (required) and split out SSU,58S and LSU into seperate files (using fungal only)
 	perl cut_hmm v.3.1 chopped_hmm fungi
 	cd chopped_hmm
 	cat *SSU*> ssu_end.hmm
@@ -217,7 +217,7 @@ trimming scripts is set to read all fastq files in a single directory
 	  cd ..
 	done
 
-##merge output
+####merge output
 	./ITS.sh /home/deakig/projects/metagenomics/rm_SSU_58Ss.R /home/deakig/projects/metagenomics/data/fasta/ITS/S91_R1/ "*.\\.ssu" "*.\\.58" /home/deakig/projects/metagenomics/data/fasta/ITS/S91_R1.fa
 	./ITS.sh /home/deakig/projects/metagenomics/rm_SSU_58Ss.R /home/deakig/projects/metagenomics/data/fasta/ITS/S92_R1/ "*.\\.ssu" "*.\\.58" /home/deakig/projects/metagenomics/data/fasta/ITS/S92_R1.fa
 	./ITS.sh /home/deakig/projects/metagenomics/rm_SSU_58Ss.R /home/deakig/projects/metagenomics/data/fasta/ITS/S93_R1/ "*.\\.ssu" "*.\\.58" /home/deakig/projects/metagenomics/data/fasta/ITS/S93_R1.fa
@@ -232,13 +232,14 @@ trimming scripts is set to read all fastq files in a single directory
 	./ITS.sh /home/deakig/projects/metagenomics/rm_58Se_LSU.R /home/deakig/projects/metagenomics/data/fasta/ITS/S95_R2/ "*.\\.58" "*.\\.lsu" /home/deakig/projects/metagenomics/data/fasta/ITS/S95_R2.fa
 	./ITS.sh /home/deakig/projects/metagenomics/rm_58Se_LSU.R /home/deakig/projects/metagenomics/data/fasta/ITS/S96_R2/ "*.\\.58" "*.\\.lsu" /home/deakig/projects/metagenomics/data/fasta/ITS/S96_R2.fa
 	
-##merge ITS1 and ITS2 (removes empty values)	
+####merge ITS1 and ITS2 (removes empty values)	
 	./catfiles.pl ./S91_R1/ITS1.fa ./S91_R2/ITS2.fa S91.fa
 	./catfiles.pl ./S92_R1/ITS1.fa ./S92_R2/ITS2.fa S92.fa
 	./catfiles.pl ./S93_R1/ITS1.fa ./S93_R2/ITS2.fa S93.fa
 	./catfiles.pl ./S94_R1/ITS1.fa ./S94_R2/ITS2.fa S94.fa
 	./catfiles.pl ./S95_R1/ITS1.fa ./S95_R2/ITS2.fa S95.fa
 	./catfiles.pl ./S96_R1/ITS1.fa ./S96_R2/ITS2.fa S96.fa
+
 
 
 #Old Stuff 
