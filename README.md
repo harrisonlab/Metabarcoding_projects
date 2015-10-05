@@ -124,8 +124,123 @@ analysis.R biom_table "no. samples" median/geomean outfile
 	Rscript analysis.R "analysis/16S_otus/otu_table_mc2_w_tax_no_pynast_failures.biom" 6 median res.sig.csv
 	
 #ITS workflow
-#
-#
+Trimmed using min length 200
+./trimmomatic.sh in/out_folder scriptdir
+trimming scripts is set to read all fastq files in a single directory 
+
+	./trimmomatic.sh /home/deakig/projects/metagenomics/data/fastq /home/deakig/projects/metagenomics/scripts 
+
+###Convert to unpaired fasta files
+
+	X=91
+	counter=0
+	for f in ./*trimmed*;
+	do counter=$((counter+1));
+	  if [ "$counter" -gt 12 ]
+	  then
+	    if (( $counter % 2 == 0 ))
+	    then
+	      ../../scripts/fq2fa.pl $f ../fasta/ITS/${f}.fa S$X ;
+	      X=$((X+1))
+	    else
+	      ../../scripts/fq2fa.pl $f ../fasta/ITS/${f}.fa S$X ;
+	    fi
+	  fi
+	done
+
+##rename files 
+
+	X=91
+	counter=0
+	mkdir -p new
+	for f in *trimmed*;
+	do counter=$((counter+1));
+	  if (( $counter % 2 == 0 ))
+	  then
+	    mv -i "${f}" "S${X}_R2.fa"
+	    X=$((X+1))
+	  else
+	    mv -i "${f}" "S${X}_R1.fa"
+	  fi
+	done
+
+
+## split file into chunks for SSU/58S/LSu removal
+	X=91 
+	counter=0
+	for f in *.fa;
+	do counter=$((counter+1));
+	  if (( $counter % 2 == 0 ))
+	  then
+	    mkdir S${X}_R2
+	    split -l 2000 $f -a 3 -d S${X}_R2/$f.
+	    X=$((X+1))
+	  else
+	    mkdir S${X}_R1
+	    split -l 2000 $f -a 3 -d S${X}_R1/$f.
+	  fi
+	done
+
+##Remove SSU/LSU
+### Using HHMMER v 3.x from ....
+#### download HMM files from ITSx (need website)
+#### Hacked the HMM files to include a MAXL satement (required) and split out SSU,58S and LSU into seperate files (using fungal only)
+	perl cut_hmm v.3.1 chopped_hmm fungi
+	cd chopped_hmm
+	cat *SSU*> ssu_end.hmm
+	cat *58S_start* > 58s_start.hmm
+	cat *58S_end* > 58s_end.hmm
+	cat *LSU* > lsu_start.hmm
+	hmmpress ssu_end.hmm
+	hmmpress 58s_end.hmm
+	hmmpress 58s_start.hmm
+	hmmpress lsu_start.hmm
+
+	counter=0
+	for d in */;
+	do counter=$((counter+1));
+	  cd $d
+	  if (( $counter % 2 == 0 ))
+	  then
+	    for f in *;
+	    do 
+	      nscan.sh /home/deakig/projects/metagenomics/data/fasta/ITS/${d}$f /home/deakig/projects/metagenomics/data/fasta/ITS/${d}${f}.lsu 20 /home/deakig/projects/metagenomics/hmm/lsu_start.hmm
+	      nscan.sh /home/deakig/projects/metagenomics/data/fasta/ITS/${d}$f /home/deakig/projects/metagenomics/data/fasta/ITS/${d}${f}.58se 20 /home/deakig/projects/metagenomics/hmm/58s_end.hmm
+	    done
+	  else
+	    for f in *;
+	    do
+	      nscan.sh /home/deakig/projects/metagenomics/data/fasta/ITS/${d}$f /home/deakig/projects/metagenomics/data/fasta/ITS/${d}${f}.ssu 20 /home/deakig/projects/metagenomics/hmm/ssu_end.hmm
+	      nscan.sh /home/deakig/projects/metagenomics/data/fasta/ITS/${d}$f /home/deakig/projects/metagenomics/data/fasta/ITS/${d}${f}.58ss 20 /home/deakig/projects/metagenomics/hmm/58s_start.hmm
+	    done
+	  fi
+	  cd ..
+	done
+
+##merge output
+	./ITS.sh /home/deakig/projects/metagenomics/rm_SSU_58Ss.R /home/deakig/projects/metagenomics/data/fasta/ITS/S91_R1/ "*.\\.ssu" "*.\\.58" /home/deakig/projects/metagenomics/data/fasta/ITS/S91_R1.fa
+	./ITS.sh /home/deakig/projects/metagenomics/rm_SSU_58Ss.R /home/deakig/projects/metagenomics/data/fasta/ITS/S92_R1/ "*.\\.ssu" "*.\\.58" /home/deakig/projects/metagenomics/data/fasta/ITS/S92_R1.fa
+	./ITS.sh /home/deakig/projects/metagenomics/rm_SSU_58Ss.R /home/deakig/projects/metagenomics/data/fasta/ITS/S93_R1/ "*.\\.ssu" "*.\\.58" /home/deakig/projects/metagenomics/data/fasta/ITS/S93_R1.fa
+	./ITS.sh /home/deakig/projects/metagenomics/rm_SSU_58Ss.R /home/deakig/projects/metagenomics/data/fasta/ITS/S94_R1/ "*.\\.ssu" "*.\\.58" /home/deakig/projects/metagenomics/data/fasta/ITS/S94_R1.fa
+	./ITS.sh /home/deakig/projects/metagenomics/rm_SSU_58Ss.R /home/deakig/projects/metagenomics/data/fasta/ITS/S95_R1/ "*.\\.ssu" "*.\\.58" /home/deakig/projects/metagenomics/data/fasta/ITS/S95_R1.fa
+	./ITS.sh /home/deakig/projects/metagenomics/rm_SSU_58Ss.R /home/deakig/projects/metagenomics/data/fasta/ITS/S96_R1/ "*.\\.ssu" "*.\\.58" /home/deakig/projects/metagenomics/data/fasta/ITS/S96_R1.fa
+	
+	./ITS.sh /home/deakig/projects/metagenomics/rm_58Se_LSU.R /home/deakig/projects/metagenomics/data/fasta/ITS/S91_R2/ "*.\\.58" "*.\\.lsu" /home/deakig/projects/metagenomics/data/fasta/ITS/S91_R2.fa
+	./ITS.sh /home/deakig/projects/metagenomics/rm_58Se_LSU.R /home/deakig/projects/metagenomics/data/fasta/ITS/S92_R2/ "*.\\.58" "*.\\.lsu" /home/deakig/projects/metagenomics/data/fasta/ITS/S92_R2.fa
+	./ITS.sh /home/deakig/projects/metagenomics/rm_58Se_LSU.R /home/deakig/projects/metagenomics/data/fasta/ITS/S93_R2/ "*.\\.58" "*.\\.lsu" /home/deakig/projects/metagenomics/data/fasta/ITS/S93_R2.fa
+	./ITS.sh /home/deakig/projects/metagenomics/rm_58Se_LSU.R /home/deakig/projects/metagenomics/data/fasta/ITS/S94_R2/ "*.\\.58" "*.\\.lsu" /home/deakig/projects/metagenomics/data/fasta/ITS/S94_R2.fa
+	./ITS.sh /home/deakig/projects/metagenomics/rm_58Se_LSU.R /home/deakig/projects/metagenomics/data/fasta/ITS/S95_R2/ "*.\\.58" "*.\\.lsu" /home/deakig/projects/metagenomics/data/fasta/ITS/S95_R2.fa
+	./ITS.sh /home/deakig/projects/metagenomics/rm_58Se_LSU.R /home/deakig/projects/metagenomics/data/fasta/ITS/S96_R2/ "*.\\.58" "*.\\.lsu" /home/deakig/projects/metagenomics/data/fasta/ITS/S96_R2.fa
+	
+##merge ITS1 and ITS2 (removes empty values)	
+	./catfiles.pl ./S91_R1/ITS1.fa ./S91_R2/ITS2.fa S91.fa
+	./catfiles.pl ./S92_R1/ITS1.fa ./S92_R2/ITS2.fa S92.fa
+	./catfiles.pl ./S93_R1/ITS1.fa ./S93_R2/ITS2.fa S93.fa
+	./catfiles.pl ./S94_R1/ITS1.fa ./S94_R2/ITS2.fa S94.fa
+	./catfiles.pl ./S95_R1/ITS1.fa ./S95_R2/ITS2.fa S95.fa
+	./catfiles.pl ./S96_R1/ITS1.fa ./S96_R2/ITS2.fa S96.fa
+
+
 #Old Stuff 
 ###trim trimmomatic
 ```shell
