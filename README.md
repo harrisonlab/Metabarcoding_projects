@@ -249,14 +249,14 @@ do
     counter=$((counter+1));	
   fi
 done
-	
-####merge ITS1 and ITS2 (removes empty values)	
-	./catfiles.pl S91.1.cfree.fa S91.2.cfree.fa
-	./catfiles.pl S92.1.cfree.fa S92.2.cfree.fa
-	./catfiles.pl S93.1.cfree.fa S93.2.cfree.fa
-	./catfiles.pl S94.1.cfree.fa S94.2.cfree.fa
-	./catfiles.pl S95.1.cfree.fa S95.2.cfree.fa
-	./catfiles.pl S96.1.cfree.fa S96.2.cfree.fa
+
+#### return merged common ITS1 and ITS2, unique ITS1 and unique ITS2
+	./catfiles.pl S91.1.cfree.fa S91.2.cfree.fa S91
+	./catfiles.pl S92.1.cfree.fa S92.2.cfree.fa S92
+	./catfiles.pl S93.1.cfree.fa S93.2.cfree.fa S93
+	./catfiles.pl S94.1.cfree.fa S94.2.cfree.fa S94
+	./catfiles.pl S95.1.cfree.fa S95.2.cfree.fa S95
+	./catfiles.pl S96.1.cfree.fa S96.2.cfree.fa S96
 
 #Old Stuff 
 ###trim trimmomatic
