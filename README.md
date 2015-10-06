@@ -231,16 +231,32 @@ Hacked the HMM files to include a MAXL satement (required) and split out SSU,58S
 	./ITS.sh /home/deakig/projects/metagenomics/rm_58Se_LSU.R /home/deakig/projects/metagenomics/data/fasta/ITS/S94_R2/ "*.\\.58" "*.\\.lsu" /home/deakig/projects/metagenomics/data/fasta/ITS/S94_R2.fa
 	./ITS.sh /home/deakig/projects/metagenomics/rm_58Se_LSU.R /home/deakig/projects/metagenomics/data/fasta/ITS/S95_R2/ "*.\\.58" "*.\\.lsu" /home/deakig/projects/metagenomics/data/fasta/ITS/S95_R2.fa
 	./ITS.sh /home/deakig/projects/metagenomics/rm_58Se_LSU.R /home/deakig/projects/metagenomics/data/fasta/ITS/S96_R2/ "*.\\.58" "*.\\.lsu" /home/deakig/projects/metagenomics/data/fasta/ITS/S96_R2.fa
+
+##Remove chimeras
+Using UNITE v 7.0 ITS database for chimeras (UCHIME reference dataset) https://unite.ut.ee/repository.php#uchime
+
+counter=91
+counter2=1
+for f in /home/deakig/projects/metagenomics/data/fasta/ITS/*.fa
+do 
+  if (( $counter2==1 ))
+  then
+    ./chimeras.sh $f /home/deakig/projects/metagenomics/taxonomies/uchime_sh_refs_dynamic_develop_985_11.03.2015.ITS1.fasta S${counter}.${counter2}.cfree.fa /home/deakig/projects/metagenomics/data/fasta/de_chimerad/
+    counter2=2
+  else
+    ./chimeras.sh $f /home/deakig/projects/metagenomics/taxonomies/uchime_sh_refs_dynamic_develop_985_11.03.2015.ITS2.fasta S${counter}.${counter2}.cfree.fa /home/deakig/projects/metagenomics/data/fasta/de_chimerad/
+    counter2=1
+    counter=$((counter+1));	
+  fi
+done
 	
 ####merge ITS1 and ITS2 (removes empty values)	
-	./catfiles.pl ./S91_R1/ITS1.fa ./S91_R2/ITS2.fa S91.fa
-	./catfiles.pl ./S92_R1/ITS1.fa ./S92_R2/ITS2.fa S92.fa
-	./catfiles.pl ./S93_R1/ITS1.fa ./S93_R2/ITS2.fa S93.fa
-	./catfiles.pl ./S94_R1/ITS1.fa ./S94_R2/ITS2.fa S94.fa
-	./catfiles.pl ./S95_R1/ITS1.fa ./S95_R2/ITS2.fa S95.fa
-	./catfiles.pl ./S96_R1/ITS1.fa ./S96_R2/ITS2.fa S96.fa
-
-
+	./catfiles.pl S91.1.cfree.fa S91.2.cfree.fa
+	./catfiles.pl S92.1.cfree.fa S92.2.cfree.fa
+	./catfiles.pl S93.1.cfree.fa S93.2.cfree.fa
+	./catfiles.pl S94.1.cfree.fa S94.2.cfree.fa
+	./catfiles.pl S95.1.cfree.fa S95.2.cfree.fa
+	./catfiles.pl S96.1.cfree.fa S96.2.cfree.fa
 
 #Old Stuff 
 ###trim trimmomatic
