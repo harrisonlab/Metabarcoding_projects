@@ -235,20 +235,20 @@ Hacked the HMM files to include a MAXL satement (required) and split out SSU,58S
 ##Remove chimeras
 Using UNITE v 7.0 ITS database for chimeras (UCHIME reference dataset) https://unite.ut.ee/repository.php#uchime
 
-counter=91
-counter2=1
-for f in /home/deakig/projects/metagenomics/data/fasta/ITS/*.fa
-do 
-  if (( $counter2==1 ))
-  then
-    ./chimeras.sh $f /home/deakig/projects/metagenomics/taxonomies/uchime_sh_refs_dynamic_develop_985_11.03.2015.ITS1.fasta S${counter}.${counter2}.cfree.fa /home/deakig/projects/metagenomics/data/fasta/de_chimerad/
-    counter2=2
-  else
-    ./chimeras.sh $f /home/deakig/projects/metagenomics/taxonomies/uchime_sh_refs_dynamic_develop_985_11.03.2015.ITS2.fasta S${counter}.${counter2}.cfree.fa /home/deakig/projects/metagenomics/data/fasta/de_chimerad/
-    counter2=1
-    counter=$((counter+1));	
-  fi
-done
+	counter=91
+	counter2=1
+	for f in /home/deakig/projects/metagenomics/data/fasta/ITS/*.fa
+	do 
+	  if (( $counter2==1 ))
+	  then
+	    ./chimeras.sh $f /home/deakig/projects/metagenomics/taxonomies/uchime_sh_refs_dynamic_develop_985_11.03.2015.ITS1.fasta S${counter}.${counter2}.cfree.fa /home/deakig/projects/metagenomics/data/fasta/de_chimerad/
+	    counter2=2
+	  else
+	    ./chimeras.sh $f /home/deakig/projects/metagenomics/taxonomies/uchime_sh_refs_dynamic_develop_985_11.03.2015.ITS2.fasta S${counter}.${counter2}.cfree.fa /home/deakig/projects/metagenomics/data/fasta/de_chimerad/
+	    counter2=1
+	    counter=$((counter+1));	
+	  fi
+	done
 
 #### return merged common ITS1 and ITS2, unique ITS1 and unique ITS2
 	./catfiles.pl S91.1.cfree.fa S91.2.cfree.fa S91
