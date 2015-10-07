@@ -1,8 +1,7 @@
 # apple_replant
 Metagenomic study of apple replant disease
 ## Installing Qiime to a local directory
-Downloaded Python 2.7.9 tar ball and unzipped.
-
+Downloaded Python 2.7.9 tar ball and unzipped.  
 From root of Python 2.7.9 directory ran :
 
 	./configure --prefix=/home/deakig/usr/local --exec-prefix=/home/deakig/usr/local --enable-unicode=ucs4
@@ -41,15 +40,15 @@ should retun something like
 ### Parallel qiime
 for single machine throw in -a -O (no. processes) to the workflow script
 
-using HPC...
+using HPC... 
+create qimme_config in home root
 
-	create qimme_config in home root
 	cd ~
 	touch .qiime_config
 
-added:
-jobs_to_start 8
-temp_dir $HOME/tmp
+added to qimme_config:  
+jobs_to_start 8  
+temp_dir $HOME/tmp  
 cluster_jobs_fp start_parallel_jobs_sc.py	
 
 hacked start_parallel_jobs_sc.py for use in our environment.
