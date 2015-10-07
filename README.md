@@ -1,6 +1,6 @@
 # apple_replant
 Metagenomic study of apple replant disease
-##Installing Qiime to a local directory
+## Installing Qiime to a local directory
 Downloaded Python 2.7.9 tar ball and unzipped.
 
 From root of Python 2.7.9 directory ran :
@@ -38,7 +38,7 @@ should retun something like
 	$> Ran 9 test in 0.05s
 	$> OK
 
-###Parallel qiime
+### Parallel qiime
 for single machine throw in -a -O (no. processes) to the workflow script
 
 using HPC...
@@ -54,14 +54,14 @@ cluster_jobs_fp start_parallel_jobs_sc.py
 
 hacked start_parallel_jobs_sc.py for use in our environment
 ## Common workflow
-###QC
+### QC
 Qualtiy checking was performed with fastQC (http://www.bioinformatics.babraham.ac.uk/projects/fastqc/)
 
 From same folder containing fastq files ran:
 
 	fastqc *
 
-###Trimming
+### Trimming
 Paired end trimming was preformed with Trimmomatic (http://www.usadellab.org/cms/?page=trimmomatic).
 
 The following settings were used:
@@ -82,9 +82,9 @@ Second argument specifies location of illumina adapter file
 ```shell	
 ./trim.sh /home/deakig/projects/metagenomics/data/fastq /home/deakig/projects/metagenomics/scripts 
 ```
-##16s workflow
+## 16s workflow
 
-###Join PE reads
+### Join PE reads
 Change to trimmed directory then run below script (this will also do ITS samples)
 
 	for f in ./*trimmed*; 
@@ -98,7 +98,7 @@ Change to trimmed directory then run below script (this will also do ITS samples
 	done
 
 
-###Rename files 
+### Rename files 
 The counter used in the next couple of commands was set to match the names of the samples, i.e. S85, S86 and etc.
 
 	counter=84
@@ -112,7 +112,7 @@ The counter used in the next couple of commands was set to match the names of th
 		cd ..
 	done
 
-###convert joined fastq to fasta
+### Convert joined fastq to fasta
 
 	counter=84
 	for d in *
@@ -126,7 +126,7 @@ The counter used in the next couple of commands was set to match the names of th
 		cd ..
 	done
 
-###Remove chimeras
+### Remove chimeras
 downloaded usearch 8.0 and RDP gold reference database from http://drive5.com/usearch/manual/cmd_uchime_ref.html
 
 	counter=84
@@ -136,31 +136,24 @@ downloaded usearch 8.0 and RDP gold reference database from http://drive5.com/us
 		/home/deakig/projects/metagenomics/data/fasta/de_chimeraed/
 	done
 
-####concatenate files
-created 16S and ITS under fasta folder and moved file to appropriate place
-
+#### Concatenate files
 	cat *cfree* >16S.joined.fa	
 
-###OTU Picking and descriptive statistics
+### OTU Picking and descriptive statistics
 
 	./pick_OTU.sh  /home/deakig/projects/metagenomics/data/fasta/16S/16S.joined.fa /home/deakig/projects/metagenomics/analysis/16S_otus /home/deakig/projects/metagenomics/scripts/parameters.txt /home/deakig/usr/local/lib/python2.7/site-packages/qiime_default_reference/gg_13_8_otus/rep_set/97_otus.fasta TRUE
 	 X=`biom summarize-table -i analysis/16S_otus/otu_table_mc2_w_tax_no_pynast_failures.biom|grep  Min|sed -n "/ Min: */s/ Min: *//p"|sed -n "/\..*/s/\..*//p"`
 	./core_diversity.sh /home/deakig/projects/metagenomics/analysis/16S_otus/otu_table_mc2_w_tax_no_pynast_failures.biom /home/deakig/projects/metagenomics/analysis/16s_cdout/ /home/deakig/projects/metagenomics/data/map.tsv /home/deakig/projects/metagenomics/analysis/16S_otus/rep_set.tre $X
 
-#### Statistical analysis
+### Statistical analysis
 Requires a colData file describing condition (e.g. infected or uninfected) for each sample
 analysis.R biom_table "no. samples" median/geomean outfile
 	
 	Rscript analysis.R "analysis/16S_otus/otu_table_mc2_w_tax_no_pynast_failures.biom" 6 median res.sig.csv
 	
-#ITS workflow
-Trimmed using min length 200
-./trimmomatic.sh in/out_folder scriptdir
-trimming scripts is set to read all fastq files in a single directory 
+## ITS workflow
 
-	./trimmomatic.sh /home/deakig/projects/metagenomics/data/fastq /home/deakig/projects/metagenomics/scripts 
-
-###Convert to unpaired fasta files
+### Convert to unpaired fasta files
 
 	X=91
 	counter=0
@@ -178,7 +171,7 @@ trimming scripts is set to read all fastq files in a single directory
 	  fi
 	done
 
-###rename files 
+### Rename files 
 
 	X=91
 	counter=0
@@ -194,8 +187,25 @@ trimming scripts is set to read all fastq files in a single directory
 	  fi
 	done
 
-##SSU/58S/LSU removal
-#### split file into chunks for SSU/58S/LSu removal
+### SSU/58S/LSU removal
+Using HHMMER v 3.x from ....
+
+Download HMM files from ITSx (need website)
+
+Hacked the HMM files to include a MAXL satement (required) and split out SSU,58S and LSU into seperate files (using fungal only)
+
+	perl cut_hmm v.3.1 chopped_hmm fungi
+	cd chopped_hmm
+	cat *SSU*> ssu_end.hmm
+	cat *58S_start* > 58s_start.hmm
+	cat *58S_end* > 58s_end.hmm
+	cat *LSU* > lsu_start.hmm
+	hmmpress ssu_end.hmm
+	hmmpress 58s_end.hmm
+	hmmpress 58s_start.hmm
+	hmmpress lsu_start.hmm
+	
+#### Split file into chunks for SSU/58S/LSu removal
 	X=91 
 	counter=0
 	for f in *.fa;
@@ -211,20 +221,7 @@ trimming scripts is set to read all fastq files in a single directory
 	  fi
 	done
 
-####Remove SSU/LSU
-Using HHMMER v 3.x from ....
- ownload HMM files from ITSx (need website)
-Hacked the HMM files to include a MAXL satement (required) and split out SSU,58S and LSU into seperate files (using fungal only)
-	perl cut_hmm v.3.1 chopped_hmm fungi
-	cd chopped_hmm
-	cat *SSU*> ssu_end.hmm
-	cat *58S_start* > 58s_start.hmm
-	cat *58S_end* > 58s_end.hmm
-	cat *LSU* > lsu_start.hmm
-	hmmpress ssu_end.hmm
-	hmmpress 58s_end.hmm
-	hmmpress 58s_start.hmm
-	hmmpress lsu_start.hmm
+#### Remove SSU/LSU
 
 	counter=0
 	for d in */;
@@ -247,7 +244,7 @@ Hacked the HMM files to include a MAXL satement (required) and split out SSU,58S
 	  cd ..
 	done
 
-####merge output
+#### Merge output
 	./ITS.sh /home/deakig/projects/metagenomics/rm_SSU_58Ss.R /home/deakig/projects/metagenomics/data/fasta/ITS/S91_R1/ "*.\\.ssu" "*.\\.58" /home/deakig/projects/metagenomics/data/fasta/ITS/S91_R1.fa
 	./ITS.sh /home/deakig/projects/metagenomics/rm_SSU_58Ss.R /home/deakig/projects/metagenomics/data/fasta/ITS/S92_R1/ "*.\\.ssu" "*.\\.58" /home/deakig/projects/metagenomics/data/fasta/ITS/S92_R1.fa
 	./ITS.sh /home/deakig/projects/metagenomics/rm_SSU_58Ss.R /home/deakig/projects/metagenomics/data/fasta/ITS/S93_R1/ "*.\\.ssu" "*.\\.58" /home/deakig/projects/metagenomics/data/fasta/ITS/S93_R1.fa
@@ -262,7 +259,7 @@ Hacked the HMM files to include a MAXL satement (required) and split out SSU,58S
 	./ITS.sh /home/deakig/projects/metagenomics/rm_58Se_LSU.R /home/deakig/projects/metagenomics/data/fasta/ITS/S95_R2/ "*.\\.58" "*.\\.lsu" /home/deakig/projects/metagenomics/data/fasta/ITS/S95_R2.fa
 	./ITS.sh /home/deakig/projects/metagenomics/rm_58Se_LSU.R /home/deakig/projects/metagenomics/data/fasta/ITS/S96_R2/ "*.\\.58" "*.\\.lsu" /home/deakig/projects/metagenomics/data/fasta/ITS/S96_R2.fa
 
-##Remove chimeras
+### Remove chimeras
 Using UNITE v 7.0 ITS database for chimeras (UCHIME reference dataset) https://unite.ut.ee/repository.php#uchime
 
 	counter=91
@@ -280,7 +277,8 @@ Using UNITE v 7.0 ITS database for chimeras (UCHIME reference dataset) https://u
 	  fi
 	done
 
-#### return merged common ITS1 and ITS2, unique ITS1 and unique ITS2
+### Return merged common ITS1 and ITS2, unique ITS1 and unique ITS2
+
 	./catfiles.pl S91.1.cfree.fa S91.2.cfree.fa S91
 	./catfiles.pl S92.1.cfree.fa S92.2.cfree.fa S92
 	./catfiles.pl S93.1.cfree.fa S93.2.cfree.fa S93
