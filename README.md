@@ -52,7 +52,8 @@ jobs_to_start 8
 temp_dir $HOME/tmp
 cluster_jobs_fp start_parallel_jobs_sc.py	
 
-hacked start_parallel_jobs_sc.py for use in our environment
+hacked start_parallel_jobs_sc.py for use in our environment.
+___
 ## Common workflow
 ### QC
 Qualtiy checking was performed with fastQC (http://www.bioinformatics.babraham.ac.uk/projects/fastqc/)
