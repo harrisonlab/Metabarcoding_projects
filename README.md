@@ -1,19 +1,20 @@
 # apple_replant
 Metagenomic study of apple replant disease
-###Installing Qiime to a local directory
-Downloaded Python 2.7.9 tar ball and unzipped
+##Installing Qiime to a local directory
+Downloaded Python 2.7.9 tar ball and unzipped.
+
 From root of Python 2.7.9 directory ran :
 
 	./configure --prefix=/home/deakig/usr/local --exec-prefix=/home/deakig/usr/local --enable-unicode=ucs4
 	make
 	make install
 
-Downloaded pip tarball amd unzipped to pip directory then ran
+Downloaded pip tarball amd unzipped to pip directory then ran:
 
 	~/usr/local/bin/python ~/pip/getpip.py
 
 
-Set qiime path with (not permanent)
+Set Qiime path with (not permanent)
 
 	export PYTHONUSERBASE=/home/deakig/usr/local/
 	
@@ -22,7 +23,7 @@ To install Qiime and dependencies
 	~/usr/local/bin/python -m pip install --user --upgrade --force-reinstall numpy
 	~/usr/local/bin/python -m pip install --user --upgrade --force-reinstall qiime
 	
-(the upgrade and force-reinstall flags are probably not necessary)
+(the upgrade and force-reinstall flags may not be necessary)
 
 To test qiime, ensure ~/usr/local/bin (the qiime script directory) is in path
 
@@ -33,8 +34,8 @@ then
 	 ~/usr/local/bin/python ~/usr/local/bin/print_qiime_config.py -t
 
 should retun something like 
-$>Ran 9 test in 0.05s
-$>OK
+	$> Ran 9 test in 0.05s
+	$> OK
 
 ###Parallel qiime
 for single machine throw in -a -O (no. processes) to the workflow script
@@ -51,9 +52,20 @@ temp_dir $HOME/tmp
 cluster_jobs_fp start_parallel_jobs_sc.py	
 
 hacked start_parallel_jobs_sc.py for use in our environment
+## Common workflow
+###QC
+Qualtiy checking was performed with fastQC (http://www.bioinformatics.babraham.ac.uk/projects/fastqc/)
 
-#16s workflow
+From same folder containing fastq files ran:
+	fastqc *
 
+##16s workflow
+###Trimming
+Paired end trimming was preformed with Trimmomatic (http://www.usadellab.org/cms/?page=trimmomatic).
+
+
+
+./trimmomatic.sh /home/deakig/projects/metagenomics/data/fastq /home/deakig/projects/metagenomics/scripts 
 ###Join PE reads
 Change to trimmed directory then run below script (this will also do ITS samples)
 
@@ -68,7 +80,7 @@ Change to trimmed directory then run below script (this will also do ITS samples
 	done
 
 
-###rename files 
+###Rename files 
 The counter used in the next couple of commands was set to match the names of the samples, i.e. S85, S86 and etc.
 
 	counter=84
