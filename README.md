@@ -1,5 +1,34 @@
 # apple_replant
-Metagenomic study of apple replant disease
+Metagenomic study of apple replant disease  
+ 1. Installing Qiime to a local directory  
+  2. Parellel Qiime  
+ 3. Common workflow
+  4. QC  
+  5. Trimming
+ 6. 16S workflow
+  7. Join PE reads 
+  8. Rename files  
+  9. Convert joined fastq to fasta  
+  10. Remove chimeras  
+  11. Concatenate files
+  12. OTU Picking and descriptive statistics
+  13. Statistical analysis  
+ 14. ITS workflow  
+  15. Convert to unpaired fasta files  
+  16. Rename files  
+  17. SSU/58S/LSU removal  
+    18. Split file into chunks for SSU/58S/LSu removal
+    19. Remove SSU/LSU
+    20. Merge output
+  21. Remove chimeras
+  22. Return merged common ITS1 and ITS2, unique ITS1 and unique ITS2
+  23. OTU Picking and descriptive statistics
+    24. Common and unique (ITS1 and ITS2)  
+    25. Common ITS
+    26. Unique ITS1 only
+    27. Unique ITS2 only
+  28. Statistical analysis  
+
 ## Installing Qiime to a local directory
 Downloaded Python 2.7.9 tar ball and unzipped.  
 From root of Python 2.7.9 directory ran :
