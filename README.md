@@ -358,12 +358,12 @@ Multiple analyses were perfomed on:
 	./core_diversity.sh /home/deakig/projects/metagenomics/analysis/ITS2_only_otus/otu_table_mc2_w_tax.biom /home/deakig/projects/metagenomics/analysis/ITS2_only_cdout/ /home/deakig/projects/metagenomics/data/map.tsv . $X
 
 ### Statistical analysis
-Requires a colData file describing condition (e.g. infected or uninfected) for each sample
+analysis.R biom_table colData median/geomean outfile  
+
+Requires a file (colData) which describes condition (e.g. infected or uninfected) for each sample
 
 As there were multiple OTU picking steps, multiple statistical analyses are necessary.
 
-analysis.R biom_table "no. samples" median/geomean outfile
-	
 	Rscript analysis.R analysis/ITS_all_otus/otu_table_mc2_w_tax.biom colData median ITS.all.median.csv
 	Rscript analysis.R analysis/ITS_common_otus/otu_table_mc2_w_tax.biom colData median ITS.median.csv
 	Rscript analysis.R analysis/ITS1_only_otus/otu_table_mc2_w_tax.biom colData median ITS1.median.csv
