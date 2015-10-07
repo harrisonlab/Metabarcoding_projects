@@ -66,17 +66,22 @@ Paired end trimming was preformed with Trimmomatic (http://www.usadellab.org/cms
 
 The following settings were used:
 - minimum length 200
-- sliding window 
-⋅⋅⋅- 8 bases
-⋅⋅⋅- quality 15 
-- illumina adapter clipping 
-⋅⋅⋅- 2 mismatches 
-⋅⋅⋅- palindrome quality 30
-⋅⋅⋅- clip threshold quality 10
+- sliding window
+ + 8 bases
+ + quality 15
+- illumina adapter clipping
+ + 2 mismatches 
+ + palindrome quality 30
+ + clip threshold quality 10
 
+Shell script trim.sh used to submit trimming jobs to cluster. 
 
-	./trimmomatic.sh /home/deakig/projects/metagenomics/data/fastq /home/deakig/projects/metagenomics/scripts 
+The first argument specifies a directory of paired end fastq files (all file in folder will be processed - paired files must sort adjacently)
 
+Second argument specifies location of illumina adapter file
+```shell	
+./trim.sh /home/deakig/projects/metagenomics/data/fastq /home/deakig/projects/metagenomics/scripts 
+```
 ##16s workflow
 
 ###Join PE reads
