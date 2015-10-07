@@ -33,7 +33,8 @@ then
 
 	 ~/usr/local/bin/python ~/usr/local/bin/print_qiime_config.py -t
 
-should retun something like 
+should retun something like
+
 	$> Ran 9 test in 0.05s
 	$> OK
 
@@ -57,15 +58,27 @@ hacked start_parallel_jobs_sc.py for use in our environment
 Qualtiy checking was performed with fastQC (http://www.bioinformatics.babraham.ac.uk/projects/fastqc/)
 
 From same folder containing fastq files ran:
+
 	fastqc *
 
-##16s workflow
 ###Trimming
 Paired end trimming was preformed with Trimmomatic (http://www.usadellab.org/cms/?page=trimmomatic).
 
+The following settings were used:
+- minimum length 200
+- sliding window 
+- - 8 bases
+- - quality 15 
+- illumina adapter clipping 
+- - 2 mismatches 
+- - palindrome quality 30
+- - clip threshold quality 10
 
 
-./trimmomatic.sh /home/deakig/projects/metagenomics/data/fastq /home/deakig/projects/metagenomics/scripts 
+	./trimmomatic.sh /home/deakig/projects/metagenomics/data/fastq /home/deakig/projects/metagenomics/scripts 
+
+##16s workflow
+
 ###Join PE reads
 Change to trimmed directory then run below script (this will also do ITS samples)
 
