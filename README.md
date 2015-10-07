@@ -51,7 +51,13 @@ jobs_to_start 8
 temp_dir $HOME/tmp  
 cluster_jobs_fp start_parallel_jobs_sc.py	
 
-hacked start_parallel_jobs_sc.py for use in our environment.
+Hacked start_parallel_jobs_sc.py for use in our environment. Changed the qsub template settings as bellow:    
+\# qsub template  
+QSUB_TEXT = """#!/bin/bash  
+\#$ -S %s  
+\#$ -l %s  
+\#$ -cwd  
+
 ___
 ## Common workflow
 ### QC
