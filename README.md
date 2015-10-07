@@ -67,12 +67,12 @@ Paired end trimming was preformed with Trimmomatic (http://www.usadellab.org/cms
 The following settings were used:
 - minimum length 200
 - sliding window 
-- - 8 bases
-- - quality 15 
+⋅⋅⋅ 8 bases
+⋅⋅⋅ quality 15 
 - illumina adapter clipping 
-- - 2 mismatches 
-- - palindrome quality 30
-- - clip threshold quality 10
+⋅⋅⋅ 2 mismatches 
+⋅⋅⋅ palindrome quality 30
+⋅⋅⋅ clip threshold quality 10
 
 
 	./trimmomatic.sh /home/deakig/projects/metagenomics/data/fastq /home/deakig/projects/metagenomics/scripts 
