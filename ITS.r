@@ -1,3 +1,11 @@
+#################################################
+#                                               #  
+# No longer implemeted                          #
+# replaced with rm_SSU_58Ss.R and rm_58Se_LSU.R #
+#                                               #
+#################################################
+
+
 #### Load libraries
 library(Biostrings)
 
