@@ -111,7 +111,7 @@ The following settings were used:
 
 Shell script trim.sh used to submit trimming jobs to cluster. 
 
-The first argument specifies a directory of paired end fastq files (all file in folder will be processed - paired files must sort adjacently)
+The first argument specifies the input/output directory of paired end fastq files (all file in folder will be processed - paired files must sort adjacently)
 
 Second argument specifies location of illumina adapter file
 ```shell	
