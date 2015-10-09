@@ -121,13 +121,15 @@ Second argument specifies location of illumina adapter file
 
 ### Join PE reads
 Change to trimmed directory then run below script (this will also do ITS samples)
-
+	counter=0;
+	X=85;
 	for f in ./*trimmed*; 
 	do counter=$((counter+1)); 
 		if (( $counter % 2 == 0 )); 
 			then R2=$f;
-			echo join_paired_ends.py -f $R1 -r $R2 -o $counter;
-			join_paired_ends.py -f $R1 -r $R2 -o $counter; 
+			echo join_paired_ends.py -f $R1 -r $R2 -o $X;
+			#join_paired_ends.py -f $R1 -r $R2 -o $X; 
+			X=$((x+1));
 		fi; 
 		R1=$f; 
 	done
