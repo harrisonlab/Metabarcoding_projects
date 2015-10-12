@@ -312,6 +312,31 @@ There's a bug in the below shell scripts. They've been set to echo the commands 
 		echo ./ITS.sh /home/deakig/projects/metagenomics/m_58Se_LSU.R $d '"'*.\\.58'"' '"'*.\\.lsu'"' $d.fa
 	done
 
+### Remove empty fastas
+cd S91_R1/
+awk 'BEGIN {RS = ">" ; FS = "\n" ; ORS = ""} $2 {print ">"$0}' ITS1.fa > ITS1.t.fa
+cd ../S92_R1/
+awk 'BEGIN {RS = ">" ; FS = "\n" ; ORS = ""} $2 {print ">"$0}' ITS1.fa > ITS1.t.fa
+cd ../S93_R1/
+awk 'BEGIN {RS = ">" ; FS = "\n" ; ORS = ""} $2 {print ">"$0}' ITS1.fa > ITS1.t.fa
+cd ../S94_R1/
+awk 'BEGIN {RS = ">" ; FS = "\n" ; ORS = ""} $2 {print ">"$0}' ITS1.fa > ITS1.t.fa
+cd ../S95_R1/
+awk 'BEGIN {RS = ">" ; FS = "\n" ; ORS = ""} $2 {print ">"$0}' ITS1.fa > ITS1.t.fa
+cd ../S96_R1/
+awk 'BEGIN {RS = ">" ; FS = "\n" ; ORS = ""} $2 {print ">"$0}' ITS1.fa > ITS1.t.fa
+cd ../S91_R2/
+awk 'BEGIN {RS = ">" ; FS = "\n" ; ORS = ""} $2 {print ">"$0}' ITS2.fa > ITS2.t.fa
+cd ../S92_R2/
+awk 'BEGIN {RS = ">" ; FS = "\n" ; ORS = ""} $2 {print ">"$0}' ITS2.fa > ITS2.t.fa
+cd ../S93_R2/
+awk 'BEGIN {RS = ">" ; FS = "\n" ; ORS = ""} $2 {print ">"$0}' ITS2.fa > ITS2.t.fa
+cd ../S94_R2/
+awk 'BEGIN {RS = ">" ; FS = "\n" ; ORS = ""} $2 {print ">"$0}' ITS2.fa > ITS2.t.fa
+cd ../S95_R2/
+awk 'BEGIN {RS = ">" ; FS = "\n" ; ORS = ""} $2 {print ">"$0}' ITS2.fa > ITS2.t.fa
+cd ../S96_R2/
+awk 'BEGIN {RS = ">" ; FS = "\n" ; ORS = ""} $2 {print ">"$0}' ITS2.fa > ITS2.t.fa
 
 ### Remove chimeras
 Using UNITE v 7.0 ITS database for chimeras (UCHIME reference dataset) https://unite.ut.ee/repository.php#uchime
@@ -323,16 +348,18 @@ Change to ITS directory
 	do 
 	  if (( $counter2==1 ))
 	  then
-	    /home/deakig/projects/metagenomics/scripts/chimeras.sh $d/ITS1.fa /home/deakig/projects/metagenomics/taxonomies/uchime_sh_refs_dynamic_develop_985_11.03.2015.ITS1.fasta S${counter}.${counter2}.cfree.fa /home/deakig/projects/metagenomics/data/fasta/de_chimerad/
+	    /home/deakig/projects/metagenomics/scripts/chimeras.sh $d/ITS1.t.fa /home/deakig/projects/metagenomics/taxonomies/uchime_sh_refs_dynamic_develop_985_11.03.2015.ITS1.fasta S${counter}.${counter2}.cfree.fa /home/deakig/projects/metagenomics/data/fasta/de_chimerad/
 	    counter2=2
 	  else
-	    /home/deakig/projects/metagenomics/scripts/chimeras.sh $d/ITS2.fa /home/deakig/projects/metagenomics/taxonomies/uchime_sh_refs_dynamic_develop_985_11.03.2015.ITS2.fasta S${counter}.${counter2}.cfree.fa /home/deakig/projects/metagenomics/data/fasta/de_chimerad/
+	    /home/deakig/projects/metagenomics/scripts/chimeras.sh $d/ITS2.t.fa /home/deakig/projects/metagenomics/taxonomies/uchime_sh_refs_dynamic_develop_985_11.03.2015.ITS2.fasta S${counter}.${counter2}.cfree.fa /home/deakig/projects/metagenomics/data/fasta/de_chimerad/
 	    counter2=1
 	    counter=$((counter+1));	
 	  fi
 	done
 
 ### Return merged common ITS1 and ITS2, unique ITS1 and unique ITS2
+	
+	cd ../dechimeraed
 
 	./catfiles.pl S91.1.cfree.fa S91.2.cfree.fa S91
 	./catfiles.pl S92.1.cfree.fa S92.2.cfree.fa S92
