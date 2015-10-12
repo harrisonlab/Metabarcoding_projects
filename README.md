@@ -186,6 +186,8 @@ downloaded usearch 8.0 and RDP gold reference database from http://drive5.com/us
 	done
 
 #### Concatenate files
+Changed ti dechimered directory then:
+
 	cat *cfree* >16S.joined.fa	
 
 ### OTU Picking and descriptive statistics
