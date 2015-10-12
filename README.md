@@ -121,6 +121,7 @@ UPDATE - trim now contains parameters to pass trimming phred quality and minumum
 ./trim.sh /home/deakig/projects/metagenomics/data/fastq /home/deakig/projects/metagenomics/scripts quality minlength
 ```
 
+The following 16S and ITS workflows are dependent on specific naming conventions for the samples - most of the bash scripts have been written to work with sequential sample naming  (S86 - S96 for the data presented below). One of the R scripts also uses the same sample name format for fast sorting via a regex. 
 
 ## 16s workflow
 
@@ -176,11 +177,12 @@ Ran from root of joined directory (again ensure no files in joined root)
 ### Remove chimeras
 downloaded usearch 8.0 and RDP gold reference database from http://drive5.com/usearch/manual/cmd_uchime_ref.html
 
-	counter=84
+	counter=85
 	for f in /home/deakig/projects/metagenomics/data/fasta/16S/*
-	do counter=$((counter+1));
+	do 
 		./chimeras.sh $f /home/deakig/projects/metagenomics/taxonomies/RDP_gold.fasta S${counter}.cfree.fa
 		/home/deakig/projects/metagenomics/data/fasta/de_chimeraed/
+		counter=$((counter+1));
 	done
 
 #### Concatenate files
