@@ -323,10 +323,10 @@ Change to ITS directory
 	do 
 	  if (( $counter2==1 ))
 	  then
-	    /home/deakig/projects/metagenomics/scripts/chimeras.sh $f/ITS1.fa /home/deakig/projects/metagenomics/taxonomies/uchime_sh_refs_dynamic_develop_985_11.03.2015.ITS1.fasta S${counter}.${counter2}.cfree.fa /home/deakig/projects/metagenomics/data/fasta/de_chimerad/
+	    /home/deakig/projects/metagenomics/scripts/chimeras.sh $d/ITS1.fa /home/deakig/projects/metagenomics/taxonomies/uchime_sh_refs_dynamic_develop_985_11.03.2015.ITS1.fasta S${counter}.${counter2}.cfree.fa /home/deakig/projects/metagenomics/data/fasta/de_chimerad/
 	    counter2=2
 	  else
-	    /home/deakig/projects/metagenomics/scripts/chimeras.sh $f/ITS2.fa /home/deakig/projects/metagenomics/taxonomies/uchime_sh_refs_dynamic_develop_985_11.03.2015.ITS2.fasta S${counter}.${counter2}.cfree.fa /home/deakig/projects/metagenomics/data/fasta/de_chimerad/
+	    /home/deakig/projects/metagenomics/scripts/chimeras.sh $d/ITS2.fa /home/deakig/projects/metagenomics/taxonomies/uchime_sh_refs_dynamic_develop_985_11.03.2015.ITS2.fasta S${counter}.${counter2}.cfree.fa /home/deakig/projects/metagenomics/data/fasta/de_chimerad/
 	    counter2=1
 	    counter=$((counter+1));	
 	  fi
