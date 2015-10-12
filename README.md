@@ -197,10 +197,11 @@ Changed ti dechimered directory then:
 	./core_diversity.sh /home/deakig/projects/metagenomics/analysis/16S_otus/otu_table_mc2_w_tax_no_pynast_failures.biom /home/deakig/projects/metagenomics/analysis/16s_cdout/ /home/deakig/projects/metagenomics/data/map.tsv /home/deakig/projects/metagenomics/analysis/16S_otus/rep_set.tre $X
 
 ### Statistical analysis
-Requires a colData file describing condition (e.g. infected or uninfected) for each sample
-analysis.R biom_table "no. samples" median/geomean outfile
+analysis.R biom_table colData median/geomean outfile  
+
+Requires a file (colData) which describes condition (e.g. infected or uninfected) for each sample
 	
-	Rscript analysis.R "analysis/16S_otus/otu_table_mc2_w_tax_no_pynast_failures.biom" 6 median res.sig.csv
+	Rscript analysis.R "analysis/16S_otus/otu_table_mc2_w_tax_no_pynast_failures.biom" colData median res.sig.csv
 	
 ## ITS workflow
 
