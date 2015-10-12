@@ -205,6 +205,7 @@ analysis.R biom_table "no. samples" median/geomean outfile
 ## ITS workflow
 
 ### Convert to unpaired fasta files
+make fasta/ITS directory for output (script won't create it).
 
 	X=91
 	counter=0
@@ -223,6 +224,7 @@ analysis.R biom_table "no. samples" median/geomean outfile
 	done
 
 ### Rename files 
+Moved to fasta/ITS directory then ran  
 
 	X=91
 	counter=0
@@ -257,6 +259,7 @@ Hacked the HMM files to include a MAXL satement (required) and split out SSU,58S
 	hmmpress lsu_start.hmm
 	
 ##### Split file into chunks for SSU/58S/LSu removal
+
 	X=91 
 	counter=0
 	for f in *.fa;
