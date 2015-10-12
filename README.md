@@ -125,40 +125,44 @@ UPDATE - trim now contains parameters to pass trimming phred quality and minumum
 ## 16s workflow
 
 ### Join PE reads
-Change to trimmed directory then run below script (this will also do ITS samples)
+Change to trimmed directory then run below script 
+The counter used in the next couple of commands was set to match the names of the samples, i.e. S85, S86 and etc.
+
 	counter=0;
 	X=85;
-	for f in ./*trimmed*; 
+	for f in *trimmed*; 
 	do counter=$((counter+1)); 
 		if (( $counter % 2 == 0 )); 
 			then R2=$f;
 			echo join_paired_ends.py -f $R1 -r $R2 -o $X;
-			#join_paired_ends.py -f $R1 -r $R2 -o $X; 
-			X=$((x+1));
+			join_paired_ends.py -f $R1 -r $R2 -o $SX; 
+			X=$((X+1));
 		fi; 
 		R1=$f; 
 	done
 
 
 ### Rename files 
-The counter used in the next couple of commands was set to match the names of the samples, i.e. S85, S86 and etc.
+Moved joined directories to a new directory "joined" (it is important to ensure there are no files in the root of the joined directory or you risk renaming all files in lower level directories)
 
-	counter=84
+	counter=85
 	for d in * 
-	do counter=$((counter+1));
+	do 
 		cd S$counter
 		for f in *
 		do
-			mv -i "${f}" "S${f/fastqjoin/$counter}"
+			echo mv -i "${f}" "S${f/fastqjoin/$counter}"
 		done
 		cd ..
+		counter=$((counter+1));
 	done
 
 ### Convert joined fastq to fasta
+Ran from root of joined directory (again ensure no files in joined root)
 
-	counter=84
+	counter=85
 	for d in *
-	do counter=$((counter+1));
+	do 
 		cd S$counter
 		for f in ./*join*
 		do
@@ -166,6 +170,7 @@ The counter used in the next couple of commands was set to match the names of th
 			mv $f.fa ../../fasta/.
 		done
 		cd ..
+		counter=$((counter+1));
 	done
 
 ### Remove chimeras
