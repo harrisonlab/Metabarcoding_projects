@@ -300,15 +300,18 @@ Hacked the HMM files to include a MAXL satement (required) and split out SSU,58S
 	done
 
 ##### Merge output
+There's a bug in the below shell scripts. They've been set to echo the commands which when copied and pasted to the console do work - bit odd really.
+
 	for d in /home/deakig/projects/metagenomics/data/trimmed_q20/fasta/ITS/*R1
 	do
-		./ITS.sh /home/deakig/projects/metagenomics/rm_SSU_58Ss.R $d '"'*.\\.ssu'"' '"'*.\\.58'"' $d.fa
+		echo ./ITS.sh /home/deakig/projects/metagenomics/rm_SSU_58Ss.R $d '"'*.\\.ssu'"' '"'*.\\.58'"' $d.fa
 	done
 
 	for d in /home/deakig/projects/metagenomics/data/trimmed_q20/fasta/ITS/*R2
 	do
-		./ITS.sh /home/deakig/projects/metagenomics/m_58Se_LSU.R $d '"'*.\\.58'"' '"'*.\\.lsu'"' $d.fa
+		echo ./ITS.sh /home/deakig/projects/metagenomics/m_58Se_LSU.R $d '"'*.\\.58'"' '"'*.\\.lsu'"' $d.fa
 	done
+
 
 ### Remove chimeras
 Using UNITE v 7.0 ITS database for chimeras (UCHIME reference dataset) https://unite.ut.ee/repository.php#uchime
