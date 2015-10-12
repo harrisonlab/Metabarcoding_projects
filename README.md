@@ -114,9 +114,14 @@ Shell script trim.sh used to submit trimming jobs to cluster.
 The first argument specifies the input/output directory of paired end fastq files (all file in folder will be processed - paired files must sort adjacently)
 
 Second argument specifies location of illumina adapter file
+
+UPDATE - trim now contains parameters to pass trimming phred quality and minumum length
+
 ```shell	
-./trim.sh /home/deakig/projects/metagenomics/data/fastq /home/deakig/projects/metagenomics/scripts 
+./trim.sh /home/deakig/projects/metagenomics/data/fastq /home/deakig/projects/metagenomics/scripts quality minlength
 ```
+
+
 ## 16s workflow
 
 ### Join PE reads
