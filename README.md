@@ -300,19 +300,15 @@ Hacked the HMM files to include a MAXL satement (required) and split out SSU,58S
 	done
 
 ##### Merge output
-	./ITS.sh /home/deakig/projects/metagenomics/rm_SSU_58Ss.R /home/deakig/projects/metagenomics/data/fasta/ITS/S91_R1/ "*.\\.ssu" "*.\\.58" /home/deakig/projects/metagenomics/data/fasta/ITS/S91_R1.fa
-	./ITS.sh /home/deakig/projects/metagenomics/rm_SSU_58Ss.R /home/deakig/projects/metagenomics/data/fasta/ITS/S92_R1/ "*.\\.ssu" "*.\\.58" /home/deakig/projects/metagenomics/data/fasta/ITS/S92_R1.fa
-	./ITS.sh /home/deakig/projects/metagenomics/rm_SSU_58Ss.R /home/deakig/projects/metagenomics/data/fasta/ITS/S93_R1/ "*.\\.ssu" "*.\\.58" /home/deakig/projects/metagenomics/data/fasta/ITS/S93_R1.fa
-	./ITS.sh /home/deakig/projects/metagenomics/rm_SSU_58Ss.R /home/deakig/projects/metagenomics/data/fasta/ITS/S94_R1/ "*.\\.ssu" "*.\\.58" /home/deakig/projects/metagenomics/data/fasta/ITS/S94_R1.fa
-	./ITS.sh /home/deakig/projects/metagenomics/rm_SSU_58Ss.R /home/deakig/projects/metagenomics/data/fasta/ITS/S95_R1/ "*.\\.ssu" "*.\\.58" /home/deakig/projects/metagenomics/data/fasta/ITS/S95_R1.fa
-	./ITS.sh /home/deakig/projects/metagenomics/rm_SSU_58Ss.R /home/deakig/projects/metagenomics/data/fasta/ITS/S96_R1/ "*.\\.ssu" "*.\\.58" /home/deakig/projects/metagenomics/data/fasta/ITS/S96_R1.fa
-	
-	./ITS.sh /home/deakig/projects/metagenomics/rm_58Se_LSU.R /home/deakig/projects/metagenomics/data/fasta/ITS/S91_R2/ "*.\\.58" "*.\\.lsu" /home/deakig/projects/metagenomics/data/fasta/ITS/S91_R2.fa
-	./ITS.sh /home/deakig/projects/metagenomics/rm_58Se_LSU.R /home/deakig/projects/metagenomics/data/fasta/ITS/S92_R2/ "*.\\.58" "*.\\.lsu" /home/deakig/projects/metagenomics/data/fasta/ITS/S92_R2.fa
-	./ITS.sh /home/deakig/projects/metagenomics/rm_58Se_LSU.R /home/deakig/projects/metagenomics/data/fasta/ITS/S93_R2/ "*.\\.58" "*.\\.lsu" /home/deakig/projects/metagenomics/data/fasta/ITS/S93_R2.fa
-	./ITS.sh /home/deakig/projects/metagenomics/rm_58Se_LSU.R /home/deakig/projects/metagenomics/data/fasta/ITS/S94_R2/ "*.\\.58" "*.\\.lsu" /home/deakig/projects/metagenomics/data/fasta/ITS/S94_R2.fa
-	./ITS.sh /home/deakig/projects/metagenomics/rm_58Se_LSU.R /home/deakig/projects/metagenomics/data/fasta/ITS/S95_R2/ "*.\\.58" "*.\\.lsu" /home/deakig/projects/metagenomics/data/fasta/ITS/S95_R2.fa
-	./ITS.sh /home/deakig/projects/metagenomics/rm_58Se_LSU.R /home/deakig/projects/metagenomics/data/fasta/ITS/S96_R2/ "*.\\.58" "*.\\.lsu" /home/deakig/projects/metagenomics/data/fasta/ITS/S96_R2.fa
+	for d in /home/deakig/projects/metagenomics/data/trimmed_q20/fasta/ITS/*R1
+	do
+		./ITS.sh /home/deakig/projects/metagenomics/rm_SSU_58Ss.R $d '"'*.\\.ssu'"' '"'*.\\.58'"' $d.fa
+	done
+
+	for d in /home/deakig/projects/metagenomics/data/trimmed_q20/fasta/ITS/*R2
+	do
+		./ITS.sh /home/deakig/projects/metagenomics/m_58Se_LSU.R $d '"'*.\\.58'"' '"'*.\\.lsu'"' $d.fa
+	done
 
 ### Remove chimeras
 Using UNITE v 7.0 ITS database for chimeras (UCHIME reference dataset) https://unite.ut.ee/repository.php#uchime
