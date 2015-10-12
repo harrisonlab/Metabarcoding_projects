@@ -315,17 +315,18 @@ There's a bug in the below shell scripts. They've been set to echo the commands 
 
 ### Remove chimeras
 Using UNITE v 7.0 ITS database for chimeras (UCHIME reference dataset) https://unite.ut.ee/repository.php#uchime
+Change to ITS directory 
 
 	counter=91
 	counter2=1
-	for f in /home/deakig/projects/metagenomics/data/fasta/ITS/*.fa
+	for d in *R[0-9]
 	do 
 	  if (( $counter2==1 ))
 	  then
-	    ./chimeras.sh $f /home/deakig/projects/metagenomics/taxonomies/uchime_sh_refs_dynamic_develop_985_11.03.2015.ITS1.fasta S${counter}.${counter2}.cfree.fa /home/deakig/projects/metagenomics/data/fasta/de_chimerad/
+	    /home/deakig/projects/metagenomics/scripts/chimeras.sh $f/ITS1.fa /home/deakig/projects/metagenomics/taxonomies/uchime_sh_refs_dynamic_develop_985_11.03.2015.ITS1.fasta S${counter}.${counter2}.cfree.fa /home/deakig/projects/metagenomics/data/fasta/de_chimerad/
 	    counter2=2
 	  else
-	    ./chimeras.sh $f /home/deakig/projects/metagenomics/taxonomies/uchime_sh_refs_dynamic_develop_985_11.03.2015.ITS2.fasta S${counter}.${counter2}.cfree.fa /home/deakig/projects/metagenomics/data/fasta/de_chimerad/
+	    /home/deakig/projects/metagenomics/scripts/chimeras.sh $f/ITS2.fa /home/deakig/projects/metagenomics/taxonomies/uchime_sh_refs_dynamic_develop_985_11.03.2015.ITS2.fasta S${counter}.${counter2}.cfree.fa /home/deakig/projects/metagenomics/data/fasta/de_chimerad/
 	    counter2=1
 	    counter=$((counter+1));	
 	  fi
