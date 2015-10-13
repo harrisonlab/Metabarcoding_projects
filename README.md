@@ -145,6 +145,12 @@ The counter used in the next couple of commands was set to match the names of th
 
 ### Rename files 
 Moved joined directories to a new directory "joined" (it is important to ensure there are no files in the root of the joined directory or you risk renaming all files in lower level directories)
+	
+	mkdir joined 
+	mv S* ./joined/.
+	cd joined
+
+Then ran the below:
 
 	counter=85
 	for d in * 
