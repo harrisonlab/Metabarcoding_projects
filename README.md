@@ -89,6 +89,26 @@ QSUB_TEXT = """#!/bin/bash
 
 ___
 ## Common workflow
+The following directories should be created prior to starting the workflow:
+
+	%METAGENOMICS
+	%METAGENOMICS/scripts
+	%METAGENOMICS/data
+	%METAGENOMICS/data/fastq
+	%METAGENOMICS/data/trimmed
+	%METAGENOMICS/data/joined
+	%METAGENOMICS/data/fasta
+	%METAGENOMICS/data/16S
+	%METAGENOMICS/data/16S/de_chimeraed
+	%METAGENOMICS/data/ITS
+	%METAGENOMICS/data/ITS/de_chimeraed
+	%METAGENOMICS/data/ITS/final
+	%METAGENOMICS/analysis
+	%METAGENOMICS/analysis/16S
+	%METAGENOMICS/analysis/ITS
+	
+The %METAGENOMICS directory should be set to something appropriate (e.g. /home/bob/metagenomics). The realtive path is used in the scripts below - depending on your config you may have to specify full paths.	
+
 ### QC
 Qualtiy checking was performed with fastQC (http://www.bioinformatics.babraham.ac.uk/projects/fastqc/)
 
@@ -118,7 +138,7 @@ Second argument specifies location of illumina adapter file
 UPDATE - trim now contains parameters to pass trimming phred quality and minumum length
 
 ```shell	
-./trim.sh /home/deakig/projects/metagenomics/data/fastq /home/deakig/projects/metagenomics/scripts quality minlength
+%METAGENOMICS/scripts/trim.sh %METAGENOMICS/data/fastq %METAGENOMICS/scripts quality minlength
 ```
 
 The following 16S and ITS workflows are dependent on specific naming conventions for the samples - most of the bash scripts have been written to work with sequential sample naming  (S86 - S96 for the data presented below). One of the R scripts also uses the same sample name format for fast sorting via a regex. 
