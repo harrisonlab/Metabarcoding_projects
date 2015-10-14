@@ -142,67 +142,72 @@ $METAGENOMICS/scripts/trim.sh %METAGENOMICS/data/fastq $METAGENOMICS/scripts qua
 ```
 
 Then
-	mv $METAGENOMICS/data/fastq/*trimmed* $METAGENOMICS/data/trimmed/.
+```shell
+mv $METAGENOMICS/data/fastq/*trimmed* $METAGENOMICS/data/trimmed/.
+```
 
 The following 16S and ITS workflows are dependent on specific naming conventions for the samples - most of the bash scripts have been written to work with sequential sample naming  (S86 - S96 for the data presented below). One of the R scripts also uses the same sample name format for fast sorting via a regex. 
 
 ## 16s workflow
 
 ### Join PE reads
-Change to trimmed directory then run below script 
+The 'join PE script' was run form the trimmed directrory  
 The counter used in the next couple of commands was set to match the names of the samples, i.e. S85, S86 and etc.
+```shell
 
-	counter=0;
-	X=85;
-	for f in *trimmed*; 
-	do counter=$((counter+1)); 
-		if (( $counter % 2 == 0 )); 
-			then R2=$f;
-			echo join_paired_ends.py -f $R1 -r $R2 -o $X;
-			join_paired_ends.py -f $R1 -r $R2 -o $SX; 
-			X=$((X+1));
-		fi; 
-		R1=$f; 
-	done
+cd $METAGENOMICS/data/trimmed
 
+###join PE script
+counter=0;
+X=85;
+for f in *trimmed*; 
+do counter=$((counter+1)); 
+	if (( $counter % 2 == 0 )); 
+		then R2=$f;
+		echo join_paired_ends.py -f $R1 -r $R2 -o $X;
+		join_paired_ends.py -f $R1 -r $R2 -o $SX; 
+		X=$((X+1));
+	fi; 
+	R1=$f; 
+done
+```
 
 ### Rename files 
-Moved joined directories to a new directory "joined" (it is important to ensure there are no files in the root of the joined directory or you risk renaming all files in lower level directories)
-	
-	mkdir joined 
-	mv S* ./joined/.
-	cd joined
-
+Moved joined directories/files to the $METAGENOMICS/data/joined directory (it is important to ensure there are no files in the root of the joined directory or you risk renaming all files in lower level directories)
+```shell	
+mv $METAGENOMICS/data/trimmed/S* $METAGENOMICS/data/joined/.
+```
 Then ran the below:
-
-	counter=85
-	for d in * 
-	do 
-		cd S$counter
-		for f in *
-		do
-			echo mv -i "${f}" "S${f/fastqjoin/$counter}"
-		done
-		cd ..
-		counter=$((counter+1));
+```shell
+cd $METAGENOMICS/data/joined
+counter=85
+for d in * 
+do 
+	cd S$counter
+	for f in *
+	do
+		echo mv -i "${f}" "S${f/fastqjoin/$counter}"
 	done
-
+	cd ..
+	counter=$((counter+1));
+done
+```
 ### Convert joined fastq to fasta
 Ran from root of joined directory (again ensure no files in joined root)
-
-	counter=85
-	for d in *
-	do 
-		cd S$counter
-		for f in ./*join*
-		do
-			../../../scripts/fq2fa.pl $f $f.fa S$d
-			mv $f.fa ../../fasta/.
-		done
-		cd ..
-		counter=$((counter+1));
+```shell
+counter=85
+for d in *
+do 
+	cd S$counter
+	for f in ./*join*
+	do
+		../../../scripts/fq2fa.pl $f $f.fa S$d
+		mv $f.fa ../../fasta/.
 	done
-
+	cd ..
+	counter=$((counter+1));
+done
+```
 ### Remove chimeras
 downloaded usearch 8.0 and RDP gold reference database from http://drive5.com/usearch/manual/cmd_uchime_ref.html
 
