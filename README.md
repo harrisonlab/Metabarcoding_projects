@@ -42,9 +42,11 @@ Downloaded pip tarball amd unzipped to pip directory then ran:
 	~/usr/local/bin/python ~/pip/getpip.py
 
 
-Set Qiime path with (not permanent)
+Set Qiime path with below (not permanent) - probably best to use full path rather than $HOME
 
-	export PYTHONUSERBASE=/home/deakig/usr/local/
+	export PYTHONUSERBASE=$HOME/usr/local/
+	
+	
 	
 To install Qiime and dependencies
 
@@ -106,6 +108,7 @@ The following directories should be created prior to starting the workflow:
 	$METAGENOMICS/analysis
 	$METAGENOMICS/analysis/16S
 	$METAGENOMICS/analysis/ITS
+	$METAGENOMICS/taxonomies
 	
 The $METAGENOMICS directory should be set to something appropriate (e.g. /home/bob/metagenomics). The realtive path is used in the scripts below - depending on your config you may have to specify full paths.	
 
@@ -137,14 +140,14 @@ Second argument specifies location of illumina adapter file
 
 UPDATE - trim now contains parameters to pass trimming phred quality and minumum length
 
-```shell	
-$METAGENOMICS/scripts/trim.sh %METAGENOMICS/data/fastq $METAGENOMICS/scripts quality minlength
-```
+	
+	$METAGENOMICS/scripts/trim.sh %METAGENOMICS/data/fastq $METAGENOMICS/scripts quality minlength
+
 
 Then
-```shell
-mv $METAGENOMICS/data/fastq/*trimmed* $METAGENOMICS/data/trimmed/.
-```
+
+	mv $METAGENOMICS/data/fastq/*trimmed* $METAGENOMICS/data/trimmed/.
+
 
 The following 16S and ITS workflows are dependent on specific naming conventions for the samples - most of the bash scripts have been written to work with sequential sample naming  (S86 - S96 for the data presented below). One of the R scripts also uses the same sample name format for fast sorting via a regex. 
 
@@ -174,9 +177,9 @@ done
 
 ### Rename files 
 Moved joined directories/files to the $METAGENOMICS/data/joined directory (it is important to ensure there are no files in the root of the joined directory or you risk renaming all files in lower level directories)
-```shell	
-mv $METAGENOMICS/data/trimmed/S* $METAGENOMICS/data/joined/.
-```
+	
+	mv $METAGENOMICS/data/trimmed/S* $METAGENOMICS/data/joined/.
+
 Then ran the below:
 ```shell
 cd $METAGENOMICS/data/joined
@@ -194,6 +197,9 @@ done
 ```
 ### Convert joined fastq to fasta
 Ran from root of joined directory (again ensure no files in joined root)
+
+	cd  $METAGENOMICS/data/joined
+	
 ```shell
 counter=85
 for d in *
@@ -201,42 +207,47 @@ do
 	cd S$counter
 	for f in ./*join*
 	do
-		../../../scripts/fq2fa.pl $f $f.fa S$d
-		mv $f.fa ../../fasta/.
+		$METAGENOMICS/scripts/fq2fa.pl $f $f.fa S$d
+		mv $f.fa $METAGENOMICS/data/fasta/16S/.
 	done
 	cd ..
 	counter=$((counter+1));
 done
 ```
 ### Remove chimeras
-downloaded usearch 8.0 and RDP gold reference database from http://drive5.com/usearch/manual/cmd_uchime_ref.html
+Downloaded usearch 8.0 and RDP gold reference database from http://drive5.com/usearch/manual/cmd_uchime_ref.html
 
-	counter=85
-	for f in /home/deakig/projects/metagenomics/data/fasta/16S/*
-	do 
-		./chimeras.sh $f /home/deakig/projects/metagenomics/taxonomies/RDP_gold.fasta S${counter}.cfree.fa
-		/home/deakig/projects/metagenomics/data/fasta/de_chimeraed/
-		counter=$((counter+1));
-	done
+Ran the 'remove chimeras script'
 
+```shell
+#remove chimeras script 	
+counter=85
+for f in $METAGENOMICS/data/fasta/16S/*
+do 
+	$METAGENOMICS/scripts/chimeras.sh $f $METAGENOMICS/taxonomies/RDP_gold.fasta S${counter}.cfree.fa
+	$METAGENOMICS/data/fasta/16S/de_chimeraed/
+	counter=$((counter+1));
+done
+```
 #### Concatenate files
-Changed ti dechimered directory then:
+Concatenated all the de-chimeraed files and copied the output to the $METAGENOMICS/data/fasta/16S directory
 
-	cat *cfree* >16S.joined.fa	
+	cat $METAGENOMICS/data/fasta/16S/de_chimeraed/*cfree* > $METAGENOMICS/data/fasta/16S/16S.joined.fa
 
 ### OTU Picking and descriptive statistics
-
-	./pick_OTU.sh  /home/deakig/projects/metagenomics/data/fasta/16S/16S.joined.fa /home/deakig/projects/metagenomics/analysis/16S_otus /home/deakig/projects/metagenomics/scripts/parameters.txt /home/deakig/usr/local/lib/python2.7/site-packages/qiime_default_reference/gg_13_8_otus/rep_set/97_otus.fasta TRUE
-	 X=`biom summarize-table -i analysis/16S_otus/otu_table_mc2_w_tax_no_pynast_failures.biom|grep  Min|sed -n "/ Min: */s/ Min: *//p"|sed -n "/\..*/s/\..*//p"`
-	./core_diversity.sh /home/deakig/projects/metagenomics/analysis/16S_otus/otu_table_mc2_w_tax_no_pynast_failures.biom /home/deakig/projects/metagenomics/analysis/16s_cdout/ /home/deakig/projects/metagenomics/data/map.tsv /home/deakig/projects/metagenomics/analysis/16S_otus/rep_set.tre $X
-
+```shell
+$METAGENOMICS/scripts/pick_OTU.sh   $METAGENOMICS/data/fasta/16S/16S.joined.fa  $METAGENOMICS/analysis/16S/16S_otus $METAGENOMICS/scripts/parameters.txt $PYTHONUSERBASE/lib/python2.7/site-packages/qiime_default_reference/gg_13_8_otus/rep_set/97_otus.fasta TRUE
+ X=`biom summarize-table -i METAGENOMICS/analysis/16S/16S_otus/otu_table_mc2_w_tax_no_pynast_failures.biom|grep  Min|sed -n "/ Min: */s/ Min: *//p"|sed -n "/\..*/s/\..*//p"`
+$METAGENOMICS/scripts/core_diversity.sh $METAGENOMICS/analysis/16S/16S_otus/otu_table_mc2_w_tax_no_pynast_failures.biom $METAGENOMICS/analysis/16S/16s_cdout/ $METAGENOMICS/data/map.tsv $METAGENOMICS/analysis/16S/16S_otus/rep_set.tre $X
+```
 ### Statistical analysis
 analysis.R biom_table colData median/geomean outfile  
 
-Requires a file (colData) which describes condition (e.g. infected or uninfected) for each sample
-	
-	Rscript analysis.R "analysis/16S_otus/otu_table_mc2_w_tax_no_pynast_failures.biom" colData median res.sig.csv
-	
+Requires a file (colData) which describes condition (e.g. infected or uninfected) for each sample 
+```shell
+cd $METAGENOMICS/analysis/16S
+Rscript $METAGENOMICS/scripts/analysis.R "analysis/16S_otus/otu_table_mc2_w_tax_no_pynast_failures.biom" colData median res.sig.csv
+```	
 ## ITS workflow
 
 ### Convert to unpaired fasta files
