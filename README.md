@@ -17,7 +17,7 @@ Metagenomic study of apple replant disease
   15. Convert to unpaired fasta files  
   16. Rename files  
   17. SSU/58S/LSU removal  
-    18. Split file into chunks for SSU/58S/LSu removal
+    18. Split fasta into chunks for SSU/58S/LSu removal
     19. Remove SSU/LSU
     20. Merge output
   21. Remove chimeras
@@ -42,9 +42,9 @@ Downloaded pip tarball amd unzipped to pip directory then ran:
 	~/usr/local/bin/python ~/pip/getpip.py
 
 
-Set Qiime path with below (not permanent) - probably best to use full path rather than $HOME
+Set Qiime path with below (not permanent)
 
-	export PYTHONUSERBASE=$HOME/usr/local/
+	export PYTHONUSERBASE=/home/deakig/usr/local/
 	
 	
 	
@@ -94,7 +94,9 @@ ___
 The following directories should be created prior to starting the workflow:
 
 	$METAGENOMICS
-	$METAGENOMICS/scripts
+	$METAGENOMICS/analysis
+	$METAGENOMICS/analysis/16S
+	$METAGENOMICS/analysis/ITS	
 	$METAGENOMICS/data
 	$METAGENOMICS/data/fastq
 	$METAGENOMICS/data/trimmed
@@ -105,9 +107,8 @@ The following directories should be created prior to starting the workflow:
 	$METAGENOMICS/data/ITS
 	$METAGENOMICS/data/ITS/de_chimeraed
 	$METAGENOMICS/data/ITS/final
-	$METAGENOMICS/analysis
-	$METAGENOMICS/analysis/16S
-	$METAGENOMICS/analysis/ITS
+	$METAGENOMICS/hmm
+	$METAGENOMICS/scripts
 	$METAGENOMICS/taxonomies
 	
 The $METAGENOMICS directory should be set to something appropriate (e.g. /home/bob/metagenomics). The realtive path is used in the scripts below - depending on your config you may have to specify full paths.	
@@ -252,27 +253,29 @@ Rscript $METAGENOMICS/scripts/analysis.R "analysis/16S_otus/otu_table_mc2_w_tax_
 ## ITS workflow
 
 ### Convert to unpaired fasta files
-make fasta/ITS directory for output (script won't create it).
+
 ```shell
 X=91
 counter=0
-for f in ./*trimmed*;
+for f in $METAGENOMICS/data/trimmed/*trimmed*;
 do counter=$((counter+1));
   if [ "$counter" -gt 12 ]
   then
     if (( $counter % 2 == 0 ))
     then
-      ../../scripts/fq2fa.pl $f ../fasta/ITS/${f}.fa S$X ;
+      $METAGENOMICS/scripts/fq2fa.pl $f $METAGENOMICS/data/fasta/ITS/${f}.fa S$X ;
       X=$((X+1))
     else
-      ../../scripts/fq2fa.pl $f ../fasta/ITS/${f}.fa S$X ;
+      $METAGENOMICS/scripts/fq2fa.pl $f $METAGENOMICS/data/fasta/ITS/${f}.fa S$X ;
     fi
   fi
 done
 ```
 ### Rename files 
-Moved to fasta/ITS directory then ran  
+Moved to fasta/ITS directory then ran: 
 ```shell
+cd $METAGENOMICS/fasta/ITS
+
 X=91
 counter=0
 mkdir -p new
@@ -288,14 +291,13 @@ do counter=$((counter+1));
 done
 ```
 ### SSU/58S/LSU removal
-Using HHMMER v 3.x from ....
+Using HHMMER v 3.1b2 (http://hmmer.janelia.org/)
 
-Download HMM files from ITSx (need website)
+Used HMM files from ITSx (http://microbiology.se/software/itsx/)
 
-Hacked the HMM files to include a MAXL satement (required) and split out SSU,58S and LSU into seperate files (using fungal only)
 ```shell
-perl cut_hmm v.3.1 chopped_hmm fungi
-cd chopped_hmm
+perl $METAGENOMICS/scripts/cut_hmm v.3.1 $METAGENOMICS/hmm/chopped_hmm fungi
+cd $METAGENOMICS/hmm/chopped_hmm
 cat *SSU*> ssu_end.hmm
 cat *58S_start* > 58s_start.hmm
 cat *58S_end* > 58s_end.hmm
@@ -304,9 +306,12 @@ hmmpress ssu_end.hmm
 hmmpress 58s_end.hmm
 hmmpress 58s_start.hmm
 hmmpress lsu_start.hmm
-```	
-##### Split file into chunks for SSU/58S/LSu removal
+```
+Ouptut files were copied to $METAGENOMICS/hmm. Hacked the HMM files to include a MAXL satement (required) and manually split out SSU,58S and LSU into seperate files (using fungal only)
+
+##### Split fasta into chunks for SSU/58S/LSu removal
 ```shell
+cd $METAGENOMICS/fasta/ITS
 X=91 
 counter=0
 for f in *.fa;
@@ -323,7 +328,9 @@ do counter=$((counter+1));
 done
 ```
 ##### Remove SSU/LSU
+note - nscan.sh is in the path
 ```shell
+cd $METAGENOMICS/fasta/ITS
 counter=0
 for d in */;
 do counter=$((counter+1));
@@ -332,14 +339,14 @@ do counter=$((counter+1));
   then
     for f in *;
     do 
-      nscan.sh /home/deakig/projects/metagenomics/data/fasta/ITS/${d}$f /home/deakig/projects/metagenomics/data/fasta/ITS/${d}${f}.lsu 20 /home/deakig/projects/metagenomics/hmm/lsu_start.hmm
-      nscan.sh /home/deakig/projects/metagenomics/data/fasta/ITS/${d}$f /home/deakig/projects/metagenomics/data/fasta/ITS/${d}${f}.58se 20 /home/deakig/projects/metagenomics/hmm/58s_end.hmm
+      nscan.sh $METAGENOMICS/data/fasta/ITS/${d}$f $METAGENOMICS/data/fasta/ITS/${d}${f}.lsu 20 $METAGENOMICS/hmm/lsu_start.hmm
+      nscan.sh $METAGENOMICS/data/fasta/ITS/${d}$f $METAGENOMICS/data/fasta/ITS/${d}${f}.58se 20 $METAGENOMICS/hmm/58s_end.hmm
     done
   else
     for f in *;
     do
-      nscan.sh /home/deakig/projects/metagenomics/data/fasta/ITS/${d}$f /home/deakig/projects/metagenomics/data/fasta/ITS/${d}${f}.ssu 20 /home/deakig/projects/metagenomics/hmm/ssu_end.hmm
-      nscan.sh /home/deakig/projects/metagenomics/data/fasta/ITS/${d}$f /home/deakig/projects/metagenomics/data/fasta/ITS/${d}${f}.58ss 20 /home/deakig/projects/metagenomics/hmm/58s_start.hmm
+      nscan.sh $METAGENOMICS/data/fasta/ITS/${d}$f $METAGENOMICS/data/fasta/ITS/${d}${f}.ssu 20 $METAGENOMICS/hmm/ssu_end.hmm
+      nscan.sh $METAGENOMICS/data/fasta/ITS/${d}$f $METAGENOMICS/data/fasta/ITS/${d}${f}.58ss 20 $METAGENOMICS/hmm/58s_start.hmm
     done
   fi
   cd ..
