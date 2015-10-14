@@ -355,18 +355,19 @@ done
 ##### Merge output
 There's a bug in the below shell scripts. They've been set to echo the commands which when copied and pasted to the console do work - bit odd really.
 ```shell
-for d in /home/deakig/projects/metagenomics/data/trimmed_q20/fasta/ITS/*R1
+for d in $METAGENOMICS/data/fasta/ITS/*R1
 do
-	echo ./ITS.sh /home/deakig/projects/metagenomics/rm_SSU_58Ss.R $d '"'*.\\.ssu'"' '"'*.\\.58'"' $d.fa
+	echo $METAGENOMICS/scripts/ITS.sh $METAGENOMICS/scripts/rm_SSU_58Ss.R $d '"'*.\\.ssu'"' '"'*.\\.58'"' $d.fa
 done
 
-for d in /home/deakig/projects/metagenomics/data/trimmed_q20/fasta/ITS/*R2
+for d in $METAGENOMICS/data/trimmed_q20/fasta/ITS/*R2
 do
-	echo ./ITS.sh /home/deakig/projects/metagenomics/m_58Se_LSU.R $d '"'*.\\.58'"' '"'*.\\.lsu'"' $d.fa
+	echo $METAGENOMICS/scripts/ITS.sh $METAGENOMICS/scripts/m_58Se_LSU.R $d '"'*.\\.58'"' '"'*.\\.lsu'"' $d.fa
 done
 ```
 ### Remove empty fastas
 ```shell
+cd $METAGENOMICS/data/fasta/ITS
 counter=0
 for d in */;
 do counter=$((counter+1));
@@ -382,18 +383,18 @@ done
 ```
 ### Remove chimeras
 Using UNITE v 7.0 ITS database for chimeras (UCHIME reference dataset) https://unite.ut.ee/repository.php#uchime
-Change to ITS directory 
+
 ```shell
 counter=91
 counter2=1
-for d in *R[0-9]
+for d in $METAGENOMICS/data/fasta/ITS/*R[0-9]
 do 
   if (( $counter2==1 ))
   then
-    /home/deakig/projects/metagenomics/scripts/chimeras.sh $d/ITS1.t.fa /home/deakig/projects/metagenomics/taxonomies/uchime_sh_refs_dynamic_develop_985_11.03.2015.ITS1.fasta S${counter}.${counter2}.cfree.fa /home/deakig/projects/metagenomics/data/fasta/de_chimerad/
+    $METAGENOMICS/scripts/chimeras.sh $d/ITS1.t.fa $METAGENOMICS/taxonomies/uchime_sh_refs_dynamic_develop_985_11.03.2015.ITS1.fasta S${counter}.${counter2}.cfree.fa $METAGENOMICS/data/fasta/ITS/de_chimerad/
     counter2=2
   else
-    /home/deakig/projects/metagenomics/scripts/chimeras.sh $d/ITS2.t.fa /home/deakig/projects/metagenomics/taxonomies/uchime_sh_refs_dynamic_develop_985_11.03.2015.ITS2.fasta S${counter}.${counter2}.cfree.fa /home/deakig/projects/metagenomics/data/fasta/de_chimerad/
+    $METAGENOMICS/scripts/chimeras.sh $d/ITS2.t.fa $METAGENOMICS/taxonomies/uchime_sh_refs_dynamic_develop_985_11.03.2015.ITS2.fasta S${counter}.${counter2}.cfree.fa $METAGENOMICS/data/ITS/fasta/de_chimerad/
     counter2=1
     counter=$((counter+1));	
   fi
@@ -401,14 +402,20 @@ done
 ```
 ### Return merged common ITS1 and ITS2, unique ITS1 and unique ITS2
 ```shell	
-cd ../dechimeraed
+cd $METAGENOMICS/data/fasta/ITS/final
 
-./catfiles.pl S91.1.cfree.fa S91.2.cfree.fa S91
-./catfiles.pl S92.1.cfree.fa S92.2.cfree.fa S92
-./catfiles.pl S93.1.cfree.fa S93.2.cfree.fa S93
-./catfiles.pl S94.1.cfree.fa S94.2.cfree.fa S94
-./catfiles.pl S95.1.cfree.fa S95.2.cfree.fa S95
-./catfiles.pl S96.1.cfree.fa S96.2.cfree.fa S96
+counter=0;
+X=91
+for f in $METAGENOMICS/data/fasta/ITS/de_chimeraed/*
+do counter=$((counter+1)); 
+	if (( $counter % 2 == 0 ))
+	then
+		R2=$f;
+		$METAGENOMICS/scripts/catfiles.pl $R1 $R2 S$X;
+		X=$((X+1));
+	fi
+	R1=$f
+done
 ```
 ### OTU Picking and descriptive statistics
 Multiple analyses were perfomed on:
@@ -420,35 +427,36 @@ Multiple analyses were perfomed on:
 
 ##### Common and unique (ITS1 and ITS2)
 ```shell
+cd $METAGENOMICS/data/fasta/ITS/final
 cat *.fa > ITS.all.fa
-./pick_OTU.sh  /home/deakig/projects/metagenomics/data/fasta/ITS/ITS.all.fa /home/deakig/projects/metagenomics/analysis/ITS_all_otus /home/deakig/projects/metagenomics/scripts/params.txt /home/deakig/projects/metagenomics/taxonomies/its/sh_refs_qiime_ver7_dynamic_01.08.2015.fasta FALSE
-biom summarize-table -i ../analysis/ITS_all_otus/otu_table_mc2_w_tax.biom
-X=`biom summarize-table -i ../analysis/ITS_all_otus/otu_table_mc2_w_tax.biom|grep  Min|sed -n "/ Min: */s/ Min: *//p"|sed -n "/\..*/s/\..*//p"` 
-./core_diversity.sh /home/deakig/projects/metagenomics/analysis/ITS_all_otus/otu_table_mc2_w_tax.biom /home/deakig/projects/metagenomics/analysis/ITS_all_cdout/ /home/deakig/projects/metagenomics/data/map.tsv . $X
+$METAGENOMICS/scripts/pick_OTU.sh  $METAGENOMICS/data/fasta/ITS/final/ITS.all.fa $METAGENOMICS/analysis/ITS/ITS_all_otus $METAGENOMICS/scripts/params.txt $METAGENOMICS/taxonomies/its/sh_refs_qiime_ver7_dynamic_01.08.2015.fasta FALSE
+biom summarize-table -i $METAGENOMICS/analysis/ITS/ITS_all_otus/otu_table_mc2_w_tax.biom
+X=`biom summarize-table -i $METAGENOMICS/analysis/ITS/ITS_all_otus/otu_table_mc2_w_tax.biom|grep  Min|sed -n "/ Min: */s/ Min: *//p"|sed -n "/\..*/s/\..*//p"` 
+$METAGENOMICS/scripts/core_diversity.sh $METAGENOMICS/analysis/ITS/ITS_all_otus/otu_table_mc2_w_tax.biom $METAGENOMICS/analysis/ITS/ITS_all_cdout/ $METAGENOMICS/data/map.tsv . $X
 ```
 ##### Common ITS
 ```shell
 cat S91.fa S92.fa S93.fa S94.fa S95.fa S96.fa > ITS.common.fa
-./pick_OTU.sh  /home/deakig/projects/metagenomics/data/fasta/ITS/ITS.common.fa /home/deakig/projects/metagenomics/analysis/ITS_common_otus /home/deakig/projects/metagenomics/scripts/params.txt /home/deakig/projects/metagenomics/taxonomies/its/sh_refs_qiime_ver7_dynamic_01.08.2015.fasta FALSE
-biom summarize-table -i ../analysis/ITS_common_otus/otu_table_mc2_w_tax.biom
-X=`biom summarize-table -i ../analysis/ITS_common_otus/otu_table_mc2_w_tax.biom|grep  Min|sed -n "/ Min: */s/ Min: *//p"|sed -n "/\..*/s/\..*//p"` 
-./core_diversity.sh /home/deakig/projects/metagenomics/analysis/ITS_common_otus/otu_table_mc2_w_tax.biom /home/deakig/projects/metagenomics/analysis/ITS_common_cdout/ /home/deakig/projects/metagenomics/data/map.tsv . $X
+$METAGENOMICS/scripts/pick_OTU.sh  $METAGENOMICS/data/fasta/ITS/final/ITS.common.fa $METAGENOMICSs/analysis/ITS/ITS_common_otus $METAGENOMICS/scripts/params.txt $METAGENOMICS/taxonomies/its/sh_refs_qiime_ver7_dynamic_01.08.2015.fasta FALSE
+biom summarize-table -i $METAGENOMICS/analysis/ITS/ITS_common_otus/otu_table_mc2_w_tax.biom
+X=`biom summarize-table -i $METAGENOMICS/analysis/ITS/ITS_common_otus/otu_table_mc2_w_tax.biom|grep  Min|sed -n "/ Min: */s/ Min: *//p"|sed -n "/\..*/s/\..*//p"` 
+$METAGENOMICS/scripts/core_diversity.sh $METAGENOMICS/analysis/ITS/ITS_common_otus/otu_table_mc2_w_tax.biom $METAGENOMICS/analysis/ITS/ITS_common_cdout/ $METAGENOMICS/data/map.tsv . $X
 ```
 ##### Unique ITS1 only
 ```shell
-	cat *r1* >ITS1.only.fa
-	./pick_OTU.sh  /home/deakig/projects/metagenomics/data/fasta/ITS/ITS1.only.fa /home/deakig/projects/metagenomics/analysis/ITS1_only_otus /home/deakig/projects/metagenomics/scripts/params.txt /home/deakig/projects/metagenomics/taxonomies/its/sh_refs_qiime_ver7_dynamic_01.08.2015.fasta FALSE
-	biom summarize-table -i ../analysis/ITS1_only_otus/otu_table_mc2_w_tax.biom
-	X=`biom summarize-table -i ../analysis/ITS1_only_otus/otu_table_mc2_w_tax.biom|grep  Min|sed -n "/ Min: */s/ Min: *//p"|sed -n "/\..*/s/\..*//p"` 
-	./core_diversity.sh /home/deakig/projects/metagenomics/analysis/ITS1_only_otus/otu_table_mc2_w_tax.biom /home/deakig/projects/metagenomics/analysis/ITS1_only_cdout/ /home/deakig/projects/metagenomics/data/map.tsv . $X
+cat *r1* >ITS1.only.fa
+$METAGENOMICS/scripts/pick_OTU.sh  $METAGENOMICS/data/fasta/ITS/final/ITS1.only.fa $METAGENOMICS/analysis/ITS/ITS1_only_otus $METAGENOMICS/scripts/params.txt $METAGENOMICS/taxonomies/its/sh_refs_qiime_ver7_dynamic_01.08.2015.fasta FALSE
+biom summarize-table -i $METAGENOMICS/analysis/ITS/ITS1_only_otus/otu_table_mc2_w_tax.biom
+X=`biom summarize-table -i $METAGENOMICS/analysis/ITS/ITS1_only_otus/otu_table_mc2_w_tax.biom|grep  Min|sed -n "/ Min: */s/ Min: *//p"|sed -n "/\..*/s/\..*//p"` 
+$METAGENOMICS/scripts/core_diversity.sh $METAGENOMICS/analysis/ITS/ITS1_only_otus/otu_table_mc2_w_tax.biom $METAGENOMICS/analysis/ITS/ITS1_only_cdout/ $METAGENOMICS/data/map.tsv . $X
 ```
 ##### Unique ITS2 only
 ```shell
 cat *r2* >ITS2.only.fa
-./pick_OTU.sh  /home/deakig/projects/metagenomics/data/fasta/ITS/ITS2.only.fa /home/deakig/projects/metagenomics/analysis/ITS2_only_otus /home/deakig/projects/metagenomics/scripts/params.txt /home/deakig/projects/metagenomics/taxonomies/its/sh_refs_qiime_ver7_dynamic_01.08.2015.fasta FALSE
-biom summarize-table -i ../analysis/ITS2_only_otus/otu_table_mc2_w_tax.biom
-X=`biom summarize-table -i ../analysis/ITS2_only_otus/otu_table_mc2_w_tax.biom|grep  Min|sed -n "/ Min: */s/ Min: *//p"|sed -n "/\..*/s/\..*//p"` 
-./core_diversity.sh /home/deakig/projects/metagenomics/analysis/ITS2_only_otus/otu_table_mc2_w_tax.biom /home/deakig/projects/metagenomics/analysis/ITS2_only_cdout/ /home/deakig/projects/metagenomics/data/map.tsv . $X
+$METAGENOMICS/scripts/pick_OTU.sh  $METAGENOMICS/data/fasta/ITS/final/ITS2.only.fa /$METAGENOMICS/analysis/ITS/ITS2_only_otus $METAGENOMICSs/scripts/params.txt $METAGENOMICS/taxonomies/its/sh_refs_qiime_ver7_dynamic_01.08.2015.fasta FALSE
+biom summarize-table -i $METAGENOMICS/analysis/ITS/ITS2_only_otus/otu_table_mc2_w_tax.biom
+X=`biom summarize-table -i $METAGENOMICS/analysis/ITS/ITS2_only_otus/otu_table_mc2_w_tax.biom|grep  Min|sed -n "/ Min: */s/ Min: *//p"|sed -n "/\..*/s/\..*//p"` 
+$METAGENOMICS/scripts/core_diversity.sh $METAGENOMICS/analysis/ITS/ITS2_only_otus/otu_table_mc2_w_tax.biom $METAGENOMICS/analysis/ITS/ITS2_only_cdout/ $METAGENOMICS/data/map.tsv . $X
 ```
 ### Statistical analysis
 analysis.R biom_table colData median/geomean outfile  
@@ -457,8 +465,8 @@ Requires a file (colData) which describes condition (e.g. infected or uninfected
 
 As there were multiple OTU picking steps, multiple statistical analyses are necessary.
 ```shell
-Rscript analysis.R analysis/ITS_all_otus/otu_table_mc2_w_tax.biom colData median ITS.all.median.csv
-Rscript analysis.R analysis/ITS_common_otus/otu_table_mc2_w_tax.biom colData median ITS.median.csv
-Rscript analysis.R analysis/ITS1_only_otus/otu_table_mc2_w_tax.biom colData median ITS1.median.csv
-Rscript analysis.R analysis/ITS2_only_otus/otu_table_mc2_w_tax.biom colData median ITS2.median.csv
+Rscript $METAGENOMICS/scripts/analysis.R $METAGENOMICS/analysis/ITS/ITS_all_otus/otu_table_mc2_w_tax.biom colData median ITS.all.median.csv
+Rscript $METAGENOMICS/scripts/analysis.R $METAGENOMICS/analysis/ITS/ITS_common_otus/otu_table_mc2_w_tax.biom colData median ITS.median.csv
+Rscript $METAGENOMICS/scripts/analysis.R $METAGENOMICS/analysis/ITS/ITS1_only_otus/otu_table_mc2_w_tax.biom colData median ITS1.median.csv
+Rscript $METAGENOMICS/scripts/analysis.R $METAGENOMICS/analysis/ITS/ITS2_only_otus/otu_table_mc2_w_tax.biom colData median ITS2.median.csv
 ```
