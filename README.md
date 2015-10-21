@@ -309,7 +309,7 @@ hmmpress lsu_start.hmm
 ```
 Ouptut files were copied to $METAGENOMICS/hmm. Hacked the HMM files to include a MAXL satement (required) and manually split out SSU,58S and LSU into seperate files (using fungal only)
 
-##### Split fasta into chunks for SSU/58S/LSu removal
+##### Split fasta into chunks for SSU/58S/LSU removal
 ```shell
 cd $METAGENOMICS/fasta/ITS
 X=91 
@@ -328,28 +328,32 @@ do counter=$((counter+1));
 done
 ```
 ##### Remove SSU/LSU
-note - nscan.sh is in the path
+Note - creates a file with the paths to all of the split files in each sample directory then submits cluster array job
+
 ```shell
 cd $METAGENOMICS/fasta/ITS
+
+for d in */
+do
+cd $d
+find $PWD -name '*.fa.*' >split_files.txt
+cd ..
+done
+
 counter=0
-for d in */;
-do counter=$((counter+1));
-  cd $d
-  if (( $counter % 2 == 0 ))
-  then
-    for f in *;
-    do 
-      nscan.sh $METAGENOMICS/data/fasta/ITS/${d}$f $METAGENOMICS/data/fasta/ITS/${d}${f}.lsu 20 $METAGENOMICS/hmm/lsu_start.hmm
-      nscan.sh $METAGENOMICS/data/fasta/ITS/${d}$f $METAGENOMICS/data/fasta/ITS/${d}${f}.58se 20 $METAGENOMICS/hmm/58s_end.hmm
-    done
-  else
-    for f in *;
-    do
-      nscan.sh $METAGENOMICS/data/fasta/ITS/${d}$f $METAGENOMICS/data/fasta/ITS/${d}${f}.ssu 20 $METAGENOMICS/hmm/ssu_end.hmm
-      nscan.sh $METAGENOMICS/data/fasta/ITS/${d}$f $METAGENOMICS/data/fasta/ITS/${d}${f}.58ss 20 $METAGENOMICS/hmm/58s_start.hmm
-    done
-  fi
-  cd ..
+for d in */
+do counter=$((counter+1))
+	cd $d
+	TASKS=$(wc -l split_files.txt|awk -F" " '{print $1}')
+	if (( $counter % 2 == 0 ))
+	then
+		qsub -t 1-$TASKS:1 $METAGENOMICS/scripts/submit_nscan_test.sh lsu 20 $METAGENOMICS/hmm/lsu_start.hmm
+		qsub -t 1-$TASKS:1 $METAGENOMICS/scripts/submit_nscan_test.sh 58se 20 $METAGENOMICS/hmm/58s_end.hmm
+	else
+		qsub -t 1-$TASKS:1 $METAGENOMICS/scripts/submit_nscan_test.sh ssu 20 $METAGENOMICS/hmm/ssu_end.hmm
+	qsub -t 1-$TASKS:1 $METAGENOMICS/scripts/submit_nscan_test.sh 58ss 20 $METAGENOMICS/hmm/58s_start.hmm
+	fi
+	cd ..
 done
 ```
 ##### Merge output
