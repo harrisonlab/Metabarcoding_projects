@@ -329,7 +329,7 @@ done
 ```
 ##### Remove SSU/LSU
 Note - creates a file with the paths to all of the split files in each sample directory then submits cluster array job
-
+(nscan.sh is no longer used)
 ```shell
 cd $METAGENOMICS/fasta/ITS
 
@@ -347,8 +347,8 @@ do counter=$((counter+1))
 	TASKS=$(wc -l split_files.txt|awk -F" " '{print $1}')
 	if (( $counter % 2 == 0 ))
 	then
-		qsub -t 1-$TASKS:1 $METAGENOMICS/scripts/submit_nscan_test.sh lsu 20 $METAGENOMICS/hmm/lsu_start.hmm
-		qsub -t 1-$TASKS:1 $METAGENOMICS/scripts/submit_nscan_test.sh 58se 20 $METAGENOMICS/hmm/58s_end.hmm
+		qsub -t 1-$TASKS:1 $METAGENOMICS/scripts/submit_nscan.sh lsu 20 $METAGENOMICS/hmm/lsu_start.hmm
+		qsub -t 1-$TASKS:1 $METAGENOMICS/scripts/submit_nscan.sh 58se 20 $METAGENOMICS/hmm/58s_end.hmm
 	else
 		qsub -t 1-$TASKS:1 $METAGENOMICS/scripts/submit_nscan_test.sh ssu 20 $METAGENOMICS/hmm/ssu_end.hmm
 	qsub -t 1-$TASKS:1 $METAGENOMICS/scripts/submit_nscan_test.sh 58ss 20 $METAGENOMICS/hmm/58s_start.hmm
