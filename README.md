@@ -366,7 +366,7 @@ done
 
 for d in $METAGENOMICS/data/trimmed_q20/fasta/ITS/*R2
 do
-	echo $METAGENOMICS/scripts/ITS.sh $METAGENOMICS/scripts/m_58Se_LSU.R $d '"'*.\\.58'"' '"'*.\\.lsu'"' $d.fa
+	echo $METAGENOMICS/scripts/ITS.sh $METAGENOMICS/scripts/rm_58Se_LSU.R $d '"'*.\\.58'"' '"'*.\\.lsu'"' $d.fa
 done
 ```
 ### Remove empty fastas
