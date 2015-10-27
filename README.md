@@ -350,8 +350,8 @@ do counter=$((counter+1))
 		qsub -t 1-$TASKS:1 $METAGENOMICS/scripts/submit_nscan.sh lsu 20 $METAGENOMICS/hmm/lsu_start.hmm
 		qsub -t 1-$TASKS:1 $METAGENOMICS/scripts/submit_nscan.sh 58se 20 $METAGENOMICS/hmm/58s_end.hmm
 	else
-		qsub -t 1-$TASKS:1 $METAGENOMICS/scripts/submit_nscan_test.sh ssu 20 $METAGENOMICS/hmm/ssu_end.hmm
-	qsub -t 1-$TASKS:1 $METAGENOMICS/scripts/submit_nscan_test.sh 58ss 20 $METAGENOMICS/hmm/58s_start.hmm
+		qsub -t 1-$TASKS:1 $METAGENOMICS/scripts/submit_nscan.sh ssu 20 $METAGENOMICS/hmm/ssu_end.hmm
+	qsub -t 1-$TASKS:1 $METAGENOMICS/scripts/submit_nscan.sh 58ss 20 $METAGENOMICS/hmm/58s_start.hmm
 	fi
 	cd ..
 done
