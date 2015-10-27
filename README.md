@@ -276,19 +276,18 @@ Moved to fasta/ITS directory then ran:
 ```shell
 cd $METAGENOMICS/fasta/ITS
 
-X=91
 counter=0
-mkdir -p new
 for f in *trimmed*;
 do counter=$((counter+1));
-  if (( $counter % 2 == 0 ))
-  then
-    mv -i "${f}" "S${X}_R2.fa"
-    X=$((X+1))
-  else
-    mv -i "${f}" "S${X}_R1.fa"
-  fi
+	S=$(echo $f|awk -F"." '{print $1}')
+	if (( $counter % 2 == 0 ))
+	then
+		mv -i "${f}" "${S}_R2.fa"
+	else
+		mv -i "${f}" "${S}_R1.fa"
+	fi
 done
+
 ```
 ### SSU/58S/LSU removal
 Using HHMMER v 3.1b2 (http://hmmer.janelia.org/)
