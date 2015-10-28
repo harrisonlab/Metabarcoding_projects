@@ -301,6 +301,16 @@ cat *SSU*> ssu_end.hmm
 cat *58S_start* > 58s_start.hmm
 cat *58S_end* > 58s_end.hmm
 cat *LSU* > lsu_start.hmm
+hmmconvert ssu_end.hmm > ssu_end.hmm
+hmmconvert 58s_end.hmm > 58s_end.hmm
+hmmconvert 58s_start.hmm > 58s_start.hmm
+hmmconvert lsu_start.hmm > lsu_start.hmm
+
+for f in *.hmm
+do
+	sed -e'/^LENG/a MAXL  90' $f >> $f.temp
+done
+
 hmmpress ssu_end.hmm
 hmmpress 58s_end.hmm
 hmmpress 58s_start.hmm
