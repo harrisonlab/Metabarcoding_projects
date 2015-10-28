@@ -175,7 +175,7 @@ do counter=$((counter+1));
 	R1=$f; 
 done
 ```
-####Alternative method using usearch (for untrimmed data)
+##### Alternative method using usearch (for untrimmed data)
 usearch trims based on the expected error for the entire joined sequence.
 Expected error set to 1 in below and min length set to 200
 ```shell
@@ -267,6 +267,22 @@ cd $METAGENOMICS/analysis/16S
 Rscript $METAGENOMICS/scripts/analysis.R "analysis/16S_otus/otu_table_mc2_w_tax_no_pynast_failures.biom" colData median res.sig.csv
 ```	
 ## ITS workflow
+
+### Alternative trimming method with usearch
+utrim is using the expected error per base. The settings below (which also set minimum length to 200) will discard sequences of 200 bases if expected error is > 1 - this is for the forward read only, the reverse read is not as stringent due to fairly poor quality of data in this example.
+```shell
+counter=0;
+for f in $METAGENOMICS/data/1910/fastq/ITS/*
+do counter=$((counter+1))
+	S=$(echo $f|awk -F"." '{print $1}')
+	if (( $counter % 2 == 0 ))
+	then
+		$METAGENOMICS/scripts/utrim.sh $f ${S}.trimmed.2.fq $METAGENOMICS/data/1910/trimmed 0.02 200
+	else
+		echo $METAGENOMICS/scripts/utrim.sh $f ${S}.trimmed.1.fq $METAGENOMICS/data/1910/trimmed 0.005 200
+	fi
+done
+```
 
 ### Convert to unpaired fasta files
 
