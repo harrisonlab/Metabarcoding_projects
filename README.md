@@ -175,6 +175,22 @@ do counter=$((counter+1));
 	R1=$f; 
 done
 ```
+####Alternative method using usearch (for untrimmed data)
+usearch trims based on the expected error for the entire joined sequence.
+Expected error set to 1 in below and min length set to 200
+```shell
+counter=0
+for f in $METAGENOMICS/data/1910/fastq/16S/*
+do counter=$((counter+1))
+	if (( $counter % 2 == 0 ))
+	then
+		R2=$f
+		S=$(echo $f|awk -F"_" '{print $2}')
+		$METAGENOMICS/scripts/ujoin.sh $R1 $R2 ${S}.joined.fq $METAGENOMICS/data/1910/joined 1 200
+	fi
+	R1=$f
+done
+```
 
 ### Rename files 
 Moved joined directories/files to the $METAGENOMICS/data/joined directory (it is important to ensure there are no files in the root of the joined directory or you risk renaming all files in lower level directories)
