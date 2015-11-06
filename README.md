@@ -274,7 +274,7 @@ utrim is using the expected error per base. The settings below (which also set m
 counter=0;
 for f in $METAGENOMICS/data/1910/fastq/ITS/*
 do counter=$((counter+1))
-	S=$(echo $f|awk -F"." '{print $1}')
+	S=$(echo $f|awk -F"_" '{print $2}')
 	if (( $counter % 2 == 0 ))
 	then
 		$METAGENOMICS/scripts/utrim.sh $f ${S}.trimmed.2.fq $METAGENOMICS/data/1910/trimmed 0.02 200
