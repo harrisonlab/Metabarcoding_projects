@@ -398,16 +398,16 @@ do counter=$((counter+1))
 done
 ```
 ##### Merge output
-There's a bug in the below shell scripts. They've been set to echo the commands which when copied and pasted to the console do work - bit odd really.
+(bug fixed)
 ```shell
 for d in $METAGENOMICS/data/fasta/ITS/*R1
 do
-	echo $METAGENOMICS/scripts/ITS.sh $METAGENOMICS/scripts/rm_SSU_58Ss.R $d '"'*.\\.ssu'"' '"'*.\\.58'"' $d.fa
+	 $METAGENOMICS/scripts/ITS.sh $METAGENOMICS/scripts/rm_SSU_58Ss.R $d "*.\\.ssu" "*.\\.58" $d.fa
 done
 
 for d in $METAGENOMICS/data/trimmed_q20/fasta/ITS/*R2
 do
-	echo $METAGENOMICS/scripts/ITS.sh $METAGENOMICS/scripts/rm_58Se_LSU.R $d '"'*.\\.58'"' '"'*.\\.lsu'"' $d.fa
+	 $METAGENOMICS/scripts/ITS.sh $METAGENOMICS/scripts/rm_58Se_LSU.R $d "*.\\.58" "*.\\.lsu" $d.fa
 done
 ```
 ### Remove empty fastas
