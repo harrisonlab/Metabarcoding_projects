@@ -120,6 +120,26 @@ From same folder containing fastq files ran:
 
 	fastqc *
 
+#### Demulitplexing
+We have multiplexed 16S and ITS PCR reactions in same sequencing run which can be seperated by the index
+Run demulti.pl to demultiplex these into fungal and bacterial fastq files. Takes as input paired data and will output two files for each. Sequence which doesn't match either index is written to both fungal and bacterial fastq files.
+
+```shell
+counter=0
+for f in $METAGENOMICS/data/fastq/*
+do counter=$((counter+1))
+    if (( $counter % 2 == 0 ))
+    then
+  	R2=$f
+	echo $f
+	# replace index_1 and 2 with a regular expression for each index
+	$METAGENOMICS/scripts/demulti.pl $R1 $R2 "^index_1" "^index_2"	
+    fi
+    R1=$f
+done
+```
+
+
 ### Trimming
 Paired end trimming was preformed with Trimmomatic (http://www.usadellab.org/cms/?page=trimmomatic).
 
