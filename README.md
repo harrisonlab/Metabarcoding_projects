@@ -141,6 +141,7 @@ done
 
 
 ### Trimming
+####THIS NEEDS TO BE CHANGED - I've scrapped Trimmomatic
 Paired end trimming was preformed with Trimmomatic (http://www.usadellab.org/cms/?page=trimmomatic).
 
 The following settings were used:
@@ -175,6 +176,7 @@ The following 16S and ITS workflows are dependent on specific naming conventions
 ## 16s workflow
 
 ### Join PE reads
+####USE ALTERNATE METHOD ONLY
 The 'join PE script' was run form the trimmed directrory  
 The counter used in the next couple of commands was set to match the names of the samples, i.e. S85, S86 and etc.
 ```shell
@@ -212,7 +214,7 @@ do counter=$((counter+1))
 done
 ```
 
-### Rename files 
+### Rename files - THIS IS NO LONGER NECESSARY 
 Moved joined directories/files to the $METAGENOMICS/data/joined directory (it is important to ensure there are no files in the root of the joined directory or you risk renaming all files in lower level directories)
 	
 	mv $METAGENOMICS/data/trimmed/S* $METAGENOMICS/data/joined/.
@@ -233,23 +235,18 @@ do
 done
 ```
 ### Convert joined fastq to fasta
-Ran from root of joined directory (again ensure no files in joined root)
+must be run from root of joined directory 
 
-	cd  $METAGENOMICS/data/joined
+cd  $METAGENOMICS/data/$RUN/16S/joined/	
 	
 ```shell
-counter=85
-for d in *
-do 
-	cd S$counter
-	for f in ./*join*
-	do
-		$METAGENOMICS/scripts/fq2fa.pl $f $f.fa S$d
-		mv $f.fa $METAGENOMICS/data/fasta/16S/.
-	done
-	cd ..
-	counter=$((counter+1));
+for f in  *join*
+do
+	S=$(echo $f|awk -F"." '{print $1}')
+	$METAGENOMICS/scripts/fq2fa.pl $f $f.fa $S
+	mv $f.fa $METAGENOMICS/data/$RUN/16S/fasta/.
 done
+
 ```
 ### Remove chimeras
 Downloaded usearch 8.0 and RDP gold reference database from http://drive5.com/usearch/manual/cmd_uchime_ref.html
