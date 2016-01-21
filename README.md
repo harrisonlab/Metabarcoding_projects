@@ -288,14 +288,14 @@ Rscript $METAGENOMICS/scripts/analysis.R "analysis/$RUN/16S_otus/otu_table_mc2_w
 utrim is using the expected error per base. The settings below (which also set minimum length to 200) will discard sequences of 200 bases if expected error is > 1 - this is for the forward read only, the reverse read is not as stringent due to fairly poor quality of data in this example.
 ```shell
 counter=0;
-for f in $METAGENOMICS/data/1910/fastq/ITS/*
+for f in $METAGENOMICS/data/$RUN/ITS/fastq/*
 do counter=$((counter+1))
 	S=$(echo $f|awk -F"_" '{print $2}')
 	if (( $counter % 2 == 0 ))
 	then
-		$METAGENOMICS/scripts/utrim.sh $f ${S}.trimmed.2.fq $METAGENOMICS/data/1910/trimmed 0.02 200
+		$METAGENOMICS/scripts/utrim.sh $f ${S}.trimmed.2.fq $METAGENOMICS/data/$RUN/ITS/trimmed 0.02 200
 	else
-		echo $METAGENOMICS/scripts/utrim.sh $f ${S}.trimmed.1.fq $METAGENOMICS/data/1910/trimmed 0.005 200
+		echo $METAGENOMICS/scripts/utrim.sh $f ${S}.trimmed.1.fq $METAGENOMICS/data/$RUN/ITS/trimmed 0.005 200
 	fi
 done
 ```
@@ -305,16 +305,16 @@ done
 ```shell
 X=91
 counter=0
-for f in $METAGENOMICS/data/trimmed/*trimmed*;
+for f in $METAGENOMICS/data/$RUN/ITS/trimmed/*trimmed*;
 do counter=$((counter+1));
   if [ "$counter" -gt 12 ]
   then
     if (( $counter % 2 == 0 ))
     then
-      $METAGENOMICS/scripts/fq2fa.pl $f $METAGENOMICS/data/fasta/ITS/${f}.fa S$X ;
+      $METAGENOMICS/scripts/fq2fa.pl $f $METAGENOMICS/data/$RUN/ITS/fasta/${f}.fa S$X ;
       X=$((X+1))
     else
-      $METAGENOMICS/scripts/fq2fa.pl $f $METAGENOMICS/data/fasta/ITS/${f}.fa S$X ;
+      $METAGENOMICS/scripts/fq2fa.pl $f $METAGENOMICS/data/$RUN/ITS/fasta/${f}.fa S$X ;
     fi
   fi
 done
@@ -322,7 +322,7 @@ done
 ### Rename files 
 Moved to fasta/ITS directory then ran: 
 ```shell
-cd $METAGENOMICS/fasta/ITS
+cd $METAGENOMICS/data/$RUN/ITS/
 
 counter=0
 for f in *trimmed*;
