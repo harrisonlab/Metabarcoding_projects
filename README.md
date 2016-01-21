@@ -301,7 +301,7 @@ done
 ```
 
 ### Convert to unpaired fasta files
-
+####don't know why this so complex
 ```shell
 X=91
 counter=0
@@ -319,6 +319,17 @@ do counter=$((counter+1));
   fi
 done
 ```
+Alternative method
+```shell
+cd $METAGENOMICS/data/$RUN/ITS/trimmed
+
+for f in *trimmed*;
+do
+	S=$(echo $f|awk -F"." '{print $1}');
+	$METAGENOMICS/scripts/fq2fa.pl $f $METAGENOMICS/data/$RUN/ITS/fasta/${f}.fa $S;
+done
+```
+
 ### Rename files 
 Moved to fasta/ITS directory then ran: 
 ```shell
