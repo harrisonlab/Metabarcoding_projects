@@ -301,7 +301,7 @@ done
 ```
 
 ### Convert to unpaired fasta files
-####don't know why this so complex
+This might have some use, but can't remeber what - alternative simpler method should work...
 ```shell
 X=91
 counter=0
@@ -330,7 +330,8 @@ do
 done
 ```
 
-### Rename files 
+### Rename files
+what's the point of this...
 Moved to fasta/ITS directory then ran: 
 ```shell
 cd $METAGENOMICS/data/$RUN/ITS/
@@ -348,7 +349,7 @@ do counter=$((counter+1));
 done
 
 ```
-### SSU/58S/LSU removal
+### SSU/58S/LSU removal - this is run once only
 Using HHMMER v 3.1b2 (http://hmmer.janelia.org/)
 
 Used HMM files from ITSx (http://microbiology.se/software/itsx/)
@@ -379,27 +380,29 @@ Ouptut files were copied to $METAGENOMICS/hmm. Hacked the HMM files to include a
 
 ##### Split fasta into chunks for SSU/58S/LSU removal
 ```shell
-cd $METAGENOMICS/fasta/ITS
-X=91 
+cd $METAGENOMICS/data/$RUN/ITS/fasta
+
 counter=0
 for f in *.fa;
 do counter=$((counter+1));
+  S=$(echo $f|awk -F"." '{print $1}')
   if (( $counter % 2 == 0 ))
   then
-    mkdir S${X}_R2
-    split -l 2000 $f -a 3 -d S${X}_R2/$f.
-    X=$((X+1))
+    mkdir ${S}_R2
+    split -l 2000 $f -a 3 -d ${S}_R2/$f.
   else
-    mkdir S${X}_R1
-    split -l 2000 $f -a 3 -d S${X}_R1/$f.
+    mkdir ${S}_R1
+    split -l 2000 $f -a 3 -d ${S}_R1/$f.
   fi
 done
 ```
 ##### Remove SSU/LSU
 Note - creates a file with the paths to all of the split files in each sample directory then submits cluster array job
-(nscan.sh is no longer used)
+
+This will create a large number of array jobs on the cluster
+
 ```shell
-cd $METAGENOMICS/fasta/ITS
+cd $METAGENOMICS/data/$RUN/ITS/fasta
 
 for d in */
 do
@@ -427,19 +430,19 @@ done
 ##### Merge output
 (bug fixed)
 ```shell
-for d in $METAGENOMICS/data/fasta/ITS/*R1
+for d in $METAGENOMICS/data/$RUN/ITS/fasta/*R1
 do
 	 $METAGENOMICS/scripts/ITS.sh $METAGENOMICS/scripts/rm_SSU_58Ss.R $d "*.\\.ssu" "*.\\.58" $d.fa
 done
 
-for d in $METAGENOMICS/data/trimmed_q20/fasta/ITS/*R2
+for d in $METAGENOMICS/data/$RUN/ITS/fasta/*R2
 do
 	 $METAGENOMICS/scripts/ITS.sh $METAGENOMICS/scripts/rm_58Se_LSU.R $d "*.\\.58" "*.\\.lsu" $d.fa
 done
 ```
 ### Remove empty fastas
 ```shell
-cd $METAGENOMICS/data/fasta/ITS
+cd $METAGENOMICS/data/$RUN/ITS/fasta
 counter=0
 for d in */;
 do counter=$((counter+1));
@@ -459,7 +462,7 @@ Using UNITE v 7.0 ITS database for chimeras (UCHIME reference dataset) https://u
 ```shell
 counter=91
 counter2=1
-for d in $METAGENOMICS/data/fasta/ITS/*R[0-9]
+for d in $METAGENOMICS/data/$RUN/ITS/fasta/*R[0-9]
 do 
   if (( $counter2==1 ))
   then
