@@ -33,7 +33,7 @@ Metagenomic study of apple replant disease
 Downloaded Python 2.7.9 tar ball and unzipped.  
 From root of Python 2.7.9 directory ran :
 
-	./configure --prefix=/home/deakig/usr/local --exec-prefix=/home/deakig/usr/local --enable-unicode=ucs4
+	./configure --prefix=$HOME/usr/local --exec-prefix=$HOME/usr/local --enable-unicode=ucs4
 	make
 	make install
 
@@ -44,7 +44,7 @@ Downloaded pip tarball amd unzipped to pip directory then ran:
 
 Set Qiime path with below (not permanent)
 
-	export PYTHONUSERBASE=/home/deakig/usr/local/
+	export PYTHONUSERBASE=$HOME/usr/local/
 	
 	
 	
