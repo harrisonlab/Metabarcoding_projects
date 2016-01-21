@@ -98,20 +98,21 @@ The following directories should be created prior to starting the workflow:
 	$METAGENOMICS/analysis/16S
 	$METAGENOMICS/analysis/ITS	
 	$METAGENOMICS/data
-	$METAGENOMICS/data/fastq
-	$METAGENOMICS/data/trimmed
-	$METAGENOMICS/data/joined
-	$METAGENOMICS/data/fasta
-	$METAGENOMICS/data/16S
-	$METAGENOMICS/data/16S/de_chimeraed
-	$METAGENOMICS/data/ITS
-	$METAGENOMICS/data/ITS/de_chimeraed
-	$METAGENOMICS/data/ITS/final
+	$METAGENOMICS/data/$RUN
+	$METAGENOMICS/data/$RUN/fastq
+	$METAGENOMICS/data/$RUN/trimmed
+	$METAGENOMICS/data/$RUN/joined
+	$METAGENOMICS/data/$RUN/fasta
+	$METAGENOMICS/data/$RUN/16S
+	$METAGENOMICS/data/$RUN/16S/de_chimeraed
+	$METAGENOMICS/data/$RUN/ITS
+	$METAGENOMICS/data/$RUN/ITS/de_chimeraed
+	$METAGENOMICS/data/$RUN/ITS/final
 	$METAGENOMICS/hmm
 	$METAGENOMICS/scripts
 	$METAGENOMICS/taxonomies
 	
-The $METAGENOMICS directory should be set to something appropriate (e.g. /home/bob/metagenomics). The realtive path is used in the scripts below - depending on your config you may have to specify full paths.	
+The $METAGENOMICS directory should be set to something appropriate (e.g. /home/bob/metagenomics) amd $RUN to the name of the NGS run. The realtive path is used in the scripts below - depending on your config you may have to specify full paths.	
 
 ### QC
 Qualtiy checking was performed with fastQC (http://www.bioinformatics.babraham.ac.uk/projects/fastqc/)
@@ -126,7 +127,7 @@ Run demulti.pl to demultiplex these into fungal and bacterial fastq files. Takes
 
 ```shell
 counter=0
-for f in $METAGENOMICS/data/fastq/*
+for f in $METAGENOMICS/data/$RUN/fastq/*
 do counter=$((counter+1))
     if (( $counter % 2 == 0 ))
     then
@@ -181,7 +182,7 @@ The 'join PE script' was run form the trimmed directrory
 The counter used in the next couple of commands was set to match the names of the samples, i.e. S85, S86 and etc.
 ```shell
 
-cd $METAGENOMICS/data/trimmed
+cd $METAGENOMICS/data/$RUN/trimmed
 
 ###join PE script
 counter=0;
@@ -202,13 +203,13 @@ usearch trims based on the expected error for the entire joined sequence.
 Expected error set to 1 in below and min length set to 200
 ```shell
 counter=0
-for f in $METAGENOMICS/data/1910/fastq/16S/*
+for f in $METAGENOMICS/data/$RUN/fastq/16S/*
 do counter=$((counter+1))
 	if (( $counter % 2 == 0 ))
 	then
 		R2=$f
 		S=$(echo $f|awk -F"_" '{print $2}')
-		$METAGENOMICS/scripts/ujoin.sh $R1 $R2 ${S}.joined.fq $METAGENOMICS/data/1910/joined 1 200
+		$METAGENOMICS/scripts/ujoin.sh $R1 $R2 ${S}.joined.fq $METAGENOMICS/data/$RUN/joined 1 200
 	fi
 	R1=$f
 done
@@ -262,24 +263,24 @@ do
 done
 ```
 #### Concatenate files
-Concatenated all the de-chimeraed files and copied the output to the $METAGENOMICS/data/fasta/16S directory
+Concatenated all the de-chimeraed files and copied the output to the $METAGENOMICS/data/$RUN/16S directory
 
-	cat $METAGENOMICS/data/fasta/16S/de_chimeraed/*cfree* > $METAGENOMICS/data/fasta/16S/16S.joined.fa
+	cat $METAGENOMICS/data/fasta/16S/de_chimeraed/*cfree* > $METAGENOMICS/data/$RUN/16S/16S.cat.fa
 
 ### OTU Picking and descriptive statistics
 Run the 2nd and 3rd commands below only after the cluster jobs created by the 1st command have finished
 ```shell
-$METAGENOMICS/scripts/pick_OTU.sh   $METAGENOMICS/data/fasta/16S/16S.joined.fa  $METAGENOMICS/analysis/16S/16S_otus $METAGENOMICS/scripts/parameters.txt $PYTHONUSERBASE/lib/python2.7/site-packages/qiime_default_reference/gg_13_8_otus/rep_set/97_otus.fasta TRUE
- X=`biom summarize-table -i METAGENOMICS/analysis/16S/16S_otus/otu_table_mc2_w_tax_no_pynast_failures.biom|grep  Min|sed -n "/ Min: */s/ Min: *//p"|sed -n "/\..*/s/\..*//p"`
-$METAGENOMICS/scripts/core_diversity.sh $METAGENOMICS/analysis/16S/16S_otus/otu_table_mc2_w_tax_no_pynast_failures.biom $METAGENOMICS/analysis/16S/16s_cdout/ $METAGENOMICS/data/map.tsv $METAGENOMICS/analysis/16S/16S_otus/rep_set.tre $X
+$METAGENOMICS/scripts/pick_OTU.sh   $METAGENOMICS/data/$RUN/16S/16S.cat.fa  $METAGENOMICS/analysis/$RUN/16S/16S_otus $METAGENOMICS/scripts/parameters.txt $PYTHONUSERBASE/lib/python2.7/site-packages/qiime_default_reference/gg_13_8_otus/rep_set/97_otus.fasta TRUE
+ X=`biom summarize-table -i METAGENOMICS/analysis/$RUN/16S/16S_otus/otu_table_mc2_w_tax_no_pynast_failures.biom|grep  Min|sed -n "/ Min: */s/ Min: *//p"|sed -n "/\..*/s/\..*//p"`
+$METAGENOMICS/scripts/core_diversity.sh $METAGENOMICS/analysis/$RUN/16S/16S_otus/otu_table_mc2_w_tax_no_pynast_failures.biom $METAGENOMICS/analysis/$RUN/16S/16s_cdout/ $METAGENOMICS/data/map.tsv $METAGENOMICS/analysis/$RUN/16S/16S_otus/rep_set.tre $X
 ```
 ### Statistical analysis
 analysis.R biom_table colData median/geomean outfile  
 
 Requires a file (colData) which describes condition (e.g. infected or uninfected) for each sample 
 ```shell
-cd $METAGENOMICS/analysis/16S
-Rscript $METAGENOMICS/scripts/analysis.R "analysis/16S_otus/otu_table_mc2_w_tax_no_pynast_failures.biom" colData median res.sig.csv
+cd $METAGENOMICS/analysis/$RUN/16S
+Rscript $METAGENOMICS/scripts/analysis.R "analysis/$RUN/16S_otus/otu_table_mc2_w_tax_no_pynast_failures.biom" colData median res.sig.csv
 ```	
 ## ITS workflow
 
