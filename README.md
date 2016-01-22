@@ -331,7 +331,7 @@ done
 ```
 
 ### Rename files
-what's the point of this...
+what's the point of this - ah merge output needs these file names...
 Moved to fasta/ITS directory then ran: 
 ```shell
 cd $METAGENOMICS/data/$RUN/ITS/
@@ -460,18 +460,18 @@ done
 Using UNITE v 7.0 ITS database for chimeras (UCHIME reference dataset) https://unite.ut.ee/repository.php#uchime
 
 ```shell
-counter=91
-counter2=1
-for d in $METAGENOMICS/data/$RUN/ITS/fasta/*R[0-9]
+cd $METAGENOMICS/data/$RUN/ITS/fasta
+counter=1
+for d in */
 do 
-  if (( $counter2==1 ))
+S=$(echo $d|awk -F"_" '{print $1}')
+  if (( $counter==1 ))
   then
-    $METAGENOMICS/scripts/chimeras.sh $d/ITS1.t.fa $METAGENOMICS/taxonomies/uchime_sh_refs_dynamic_develop_985_11.03.2015.ITS1.fasta S${counter}.${counter2}.cfree.fa $METAGENOMICS/data/fasta/ITS/de_chimerad/
-    counter2=2
+    $METAGENOMICS/scripts/chimeras.sh $d/ITS1.t.fa $METAGENOMICS/taxonomies/uchime_sh_refs_dynamic_develop_985_11.03.2015.ITS1.fasta ${S}.${counter}.cfree.fa $METAGENOMICS/data/fasta/ITS/de_chimerad/
+    counter=2
   else
-    $METAGENOMICS/scripts/chimeras.sh $d/ITS2.t.fa $METAGENOMICS/taxonomies/uchime_sh_refs_dynamic_develop_985_11.03.2015.ITS2.fasta S${counter}.${counter2}.cfree.fa $METAGENOMICS/data/ITS/fasta/de_chimerad/
-    counter2=1
-    counter=$((counter+1));	
+    $METAGENOMICS/scripts/chimeras.sh $d/ITS2.t.fa $METAGENOMICS/taxonomies/uchime_sh_refs_dynamic_develop_985_11.03.2015.ITS2.fasta ${S}.${counter}.cfree.fa $METAGENOMICS/data/ITS/fasta/de_chimerad/
+    counter=1
   fi
 done
 ```
