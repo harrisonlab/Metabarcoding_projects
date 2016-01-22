@@ -141,13 +141,10 @@ done
 ```
 Running
 ```shell
-egrep "^([ATCG]){100,}" AM10_S10_L001_R1_001.fastq| cut -c-22|sort|uniq
+grep -x "[ATCG]\+" a_fastq_file.fastq| cut -c-22|sort|uniq > expressions.txt
+grep -x "[ATCG]\+" a_fastq_file.fastq| cut -c-8|sort|uniq|xargs -I r grep -c ^r a_fastq_file.fastq >counts.txt
 ```
-and
-```shell
-egrep "^([ATCG]){100,}" AM10_S10_L001_R1_001.fastq| cut -c-8|sort|uniq|xargs -I r grep -c ^r AM10_S10_L001_R1_001.fastq
-```
-should give a good indication of what index_1 and index_2 should be (accepts regex as index)
+should give a good indication of what index_1 and index_2 should be 
 
 ### Trimming
 ####THIS NEEDS TO BE CHANGED - I've scrapped Trimmomatic
