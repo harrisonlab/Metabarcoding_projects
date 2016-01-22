@@ -139,7 +139,15 @@ do counter=$((counter+1))
     R1=$f
 done
 ```
-
+Running
+```shell
+egrep "^([ATCG]){100,}" AM10_S10_L001_R1_001.fastq| cut -c-22|sort|uniq
+```
+and
+```shell
+egrep "^([ATCG]){100,}" AM10_S10_L001_R1_001.fastq| cut -c-8|sort|uniq|xargs -I r grep -c ^r AM10_S10_L001_R1_001.fastq
+```
+should give a good indication of what index_1 and index_2 should be (accepts regex as index)
 
 ### Trimming
 ####THIS NEEDS TO BE CHANGED - I've scrapped Trimmomatic
