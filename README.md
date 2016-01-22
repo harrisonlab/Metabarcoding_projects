@@ -460,11 +460,10 @@ done
 Using UNITE v 7.0 ITS database for chimeras (UCHIME reference dataset) https://unite.ut.ee/repository.php#uchime
 
 ```shell
-cd $METAGENOMICS/data/$RUN/ITS/fasta
 counter=1
-for d in */
+for d in $METAGENOMICS/data/$RUN/ITS/fasta/*R[0-9]
 do 
-S=$(echo $d|awk -F"_" '{print $1}')
+S=$(echo $d|awk -F"_" '{print $1}'|awk -F"/" '{print $NF}')
   if (( $counter==1 ))
   then
     $METAGENOMICS/scripts/chimeras.sh $d/ITS1.t.fa $METAGENOMICS/taxonomies/uchime_sh_refs_dynamic_develop_985_11.03.2015.ITS1.fasta ${S}.${counter}.cfree.fa $METAGENOMICS/data/fasta/ITS/de_chimerad/
@@ -477,17 +476,17 @@ done
 ```
 ### Return merged common ITS1 and ITS2, unique ITS1 and unique ITS2
 ```shell	
-cd $METAGENOMICS/data/fasta/ITS/final
+mkdir $METAGENOMICS/data/$RUN/ITS/final
+cd $METAGENOMICS/data/$RUN/ITS/final
 
 counter=0;
-X=91
-for f in $METAGENOMICS/data/fasta/ITS/de_chimeraed/*
+for f in $METAGENOMICS/data/$RUN/ITS/de_chimeraed/*cfree*
 do counter=$((counter+1)); 
+S=$(echo $f|awk -F"." '{print $1}'|awk -F"/" '{print $NF}')
 	if (( $counter % 2 == 0 ))
 	then
 		R2=$f;
-		$METAGENOMICS/scripts/catfiles.pl $R1 $R2 S$X;
-		X=$((X+1));
+		$METAGENOMICS/scripts/catfiles.pl $R1 $R2 $S;
 	fi
 	R1=$f
 done
@@ -502,12 +501,12 @@ Multiple analyses were perfomed on:
 
 ##### Common and unique (ITS1 and ITS2)
 ```shell
-cd $METAGENOMICS/data/fasta/ITS/final
+cd $METAGENOMICS/data/$RUN/ITS/final
 cat *.fa > ITS.all.fa
-$METAGENOMICS/scripts/pick_OTU.sh  $METAGENOMICS/data/fasta/ITS/final/ITS.all.fa $METAGENOMICS/analysis/ITS/ITS_all_otus $METAGENOMICS/scripts/params.txt $METAGENOMICS/taxonomies/its/sh_refs_qiime_ver7_dynamic_01.08.2015.fasta FALSE
-biom summarize-table -i $METAGENOMICS/analysis/ITS/ITS_all_otus/otu_table_mc2_w_tax.biom
-X=`biom summarize-table -i $METAGENOMICS/analysis/ITS/ITS_all_otus/otu_table_mc2_w_tax.biom|grep  Min|sed -n "/ Min: */s/ Min: *//p"|sed -n "/\..*/s/\..*//p"` 
-$METAGENOMICS/scripts/core_diversity.sh $METAGENOMICS/analysis/ITS/ITS_all_otus/otu_table_mc2_w_tax.biom $METAGENOMICS/analysis/ITS/ITS_all_cdout/ $METAGENOMICS/data/map.tsv . $X
+$METAGENOMICS/scripts/pick_OTU.sh  $METAGENOMICS/data/$RUN/ITS/final/ITS.all.fa $METAGENOMICS/analysis/$RUN/ITS/ITS_all_otus $METAGENOMICS/scripts/params.txt $METAGENOMICS/taxonomies/its/sh_refs_qiime_ver7_dynamic_01.08.2015.fasta FALSE
+biom summarize-table -i $METAGENOMICS/analysis/$RUN/ITS/ITS_all_otus/otu_table_mc2_w_tax.biom
+X=`biom summarize-table -i $METAGENOMICS/analysis/$RUN/ITS/ITS_all_otus/otu_table_mc2_w_tax.biom|grep  Min|sed -n "/ Min: */s/ Min: *//p"|sed -n "/\..*/s/\..*//p"` 
+$METAGENOMICS/scripts/core_diversity.sh $METAGENOMICS/analysis/$RUN/ITS/ITS_all_otus/otu_table_mc2_w_tax.biom $METAGENOMICS/analysis/$RUN/ITS/ITS_all_cdout/ $METAGENOMICS/data/$RUN/map.tsv . $X
 ```
 ##### Common ITS
 ```shell
