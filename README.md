@@ -337,22 +337,11 @@ done
 
 ### Rename files
 what's the point of this - ah merge output needs these file names...
-Moved to fasta/ITS directory then ran: 
+(should edit fq2fa.pl to name the files correctly...)
 ```shell
-cd $METAGENOMICS/data/$RUN/ITS/
-
-counter=0
-for f in *trimmed*;
-do counter=$((counter+1));
-	S=$(echo $f|awk -F"." '{print $1}')
-	if (( $counter % 2 == 0 ))
-	then
-		mv -i "${f}" "${S}_R2.fa"
-	else
-		mv -i "${f}" "${S}_R1.fa"
-	fi
-done
-
+cd $METAGENOMICS/data/$RUN/ITS/fasta
+rename 's/\.trimmed\.1\.fq.fa/_R1.fa/' *1.fq.fa
+rename 's/\.trimmed\.2\.fq.fa/_R2.fa/' *2.fq.fa
 ```
 ### SSU/58S/LSU removal - this is run once only
 Using HHMMER v 3.1b2 (http://hmmer.janelia.org/)
