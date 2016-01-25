@@ -300,7 +300,7 @@ do counter=$((counter+1))
 	then
 		$METAGENOMICS/scripts/utrim.sh $f ${S}.trimmed.2.fq $METAGENOMICS/data/$RUN/ITS/trimmed 0.02 200
 	else
-		echo $METAGENOMICS/scripts/utrim.sh $f ${S}.trimmed.1.fq $METAGENOMICS/data/$RUN/ITS/trimmed 0.005 200
+		$METAGENOMICS/scripts/utrim.sh $f ${S}.trimmed.1.fq $METAGENOMICS/data/$RUN/ITS/trimmed 0.005 200
 	fi
 done
 ```
@@ -336,7 +336,6 @@ done
 ```
 
 ### Rename files
-what's the point of this - ah merge output needs these file names...
 (should edit fq2fa.pl to name the files correctly...)
 ```shell
 cd $METAGENOMICS/data/$RUN/ITS/fasta
@@ -375,19 +374,11 @@ Ouptut files were copied to $METAGENOMICS/hmm. Hacked the HMM files to include a
 ##### Split fasta into chunks for SSU/58S/LSU removal
 ```shell
 cd $METAGENOMICS/data/$RUN/ITS/fasta
-
-counter=0
 for f in *.fa;
-do counter=$((counter+1));
+do
   S=$(echo $f|awk -F"." '{print $1}')
-  if (( $counter % 2 == 0 ))
-  then
-    mkdir ${S}_R2
-    split -l 2000 $f -a 3 -d ${S}_R2/$f.
-  else
-    mkdir ${S}_R1
-    split -l 2000 $f -a 3 -d ${S}_R1/$f.
-  fi
+    mkdir $S
+    split -l 2000 $f -a 3 -d ${S}/$f.
 done
 ```
 ##### Remove SSU/LSU
@@ -400,9 +391,9 @@ cd $METAGENOMICS/data/$RUN/ITS/fasta
 
 for d in */
 do
-cd $d
-find $PWD -name '*.fa.*' >split_files.txt
-cd ..
+	cd $d
+	find $PWD -name '*.fa.*' >split_files.txt
+	cd ..
 done
 
 counter=0
