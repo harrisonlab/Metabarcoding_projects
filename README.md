@@ -152,6 +152,9 @@ do counter=$((counter+1))
     fi
     R1=$f
 done
+
+mv *bacterial* ../16S/fastq/.
+mv *fungal* ../ITS/fastq/.
 ```
 
 
@@ -162,13 +165,13 @@ usearch trims based on the expected error for the entire joined sequence.
 Expected error set to 1 in below and min length set to 200
 ```shell
 counter=0
-for f in $METAGENOMICS/data/$RUN/fastq/16S/*
+for f in $METAGENOMICS/data/$RUN/16S/fastq/*
 do counter=$((counter+1))
 	if (( $counter % 2 == 0 ))
 	then
 		R2=$f
 		S=$(echo $f|awk -F"_" '{print $2}')
-		$METAGENOMICS/scripts/ujoin.sh $R1 $R2 ${S}.joined.fq $METAGENOMICS/data/$RUN/joined 1 200
+		$METAGENOMICS/scripts/ujoin.sh $R1 $R2 ${S}.joined.fq $METAGENOMICS/data/$RUN/16S/joined 1 200
 	fi
 	R1=$f
 done
