@@ -200,7 +200,7 @@ Ran the 'remove chimeras script'
 for f in $METAGENOMICS/data/$RUN/16S/fasta/*
 do
 	S=$(echo $f|awk -F"." '{print $1}')
-	$METAGENOMICS/scripts/chimeras.sh $f $METAGENOMICS/taxonomies/RDP_gold.fasta ${S}.cfree.fa $METAGENOMICS/data/$RUN/16S/fasta/de_chimeraed/
+	$METAGENOMICS/scripts/chimeras.sh $f $METAGENOMICS/taxonomies/RDP_gold.fasta ${S}.cfree.fa $METAGENOMICS/data/$RUN/16S/de_chimeraed/
 done
 ```
 #### Concatenate files
