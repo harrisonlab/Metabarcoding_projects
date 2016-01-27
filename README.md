@@ -146,64 +146,9 @@ grep -x "[ATCG]\+" a_fastq_file.fastq| cut -c-8|sort|uniq|xargs -I r grep -c ^r 
 ```
 should give a good indication of what index_1 and index_2 should be 
 
-### Trimming
-####THIS NEEDS TO BE CHANGED - I've scrapped Trimmomatic
-Paired end trimming was preformed with Trimmomatic (http://www.usadellab.org/cms/?page=trimmomatic).
-
-The following settings were used:
-- minimum length 200
-- sliding window
- + 8 bases
- + quality 15
-- illumina adapter clipping
- + 2 mismatches 
- + palindrome quality 30
- + clip threshold quality 10
-
-Shell script trim.sh used to submit trimming jobs to cluster. 
-
-The first argument specifies the input/output directory of paired end fastq files (all file in folder will be processed - paired files must sort adjacently)
-
-Second argument specifies location of illumina adapter file
-
-UPDATE - trim now contains parameters to pass trimming phred quality and minumum length
-
-	
-	$METAGENOMICS/scripts/trim.sh %METAGENOMICS/data/fastq $METAGENOMICS/scripts quality minlength
-
-
-Then
-
-	mv $METAGENOMICS/data/fastq/*trimmed* $METAGENOMICS/data/trimmed/.
-
-
-The following 16S and ITS workflows are dependent on specific naming conventions for the samples - most of the bash scripts have been written to work with sequential sample naming  (S86 - S96 for the data presented below). One of the R scripts also uses the same sample name format for fast sorting via a regex. 
-
 ## 16s workflow
 
 ### Join PE reads
-####USE ALTERNATE METHOD ONLY
-The 'join PE script' was run form the trimmed directrory  
-The counter used in the next couple of commands was set to match the names of the samples, i.e. S85, S86 and etc.
-```shell
-
-cd $METAGENOMICS/data/$RUN/trimmed
-
-###join PE script
-counter=0;
-X=85;
-for f in *trimmed*; 
-do counter=$((counter+1)); 
-	if (( $counter % 2 == 0 )); 
-		then R2=$f;
-		echo join_paired_ends.py -f $R1 -r $R2 -o S$X;
-		join_paired_ends.py -f $R1 -r $R2 -o S$X; 
-		X=$((X+1));
-	fi; 
-	R1=$f; 
-done
-```
-##### Alternative method using usearch (for untrimmed data)
 usearch trims based on the expected error for the entire joined sequence.
 Expected error set to 1 in below and min length set to 200
 ```shell
