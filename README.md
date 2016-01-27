@@ -133,6 +133,12 @@ From same folder containing fastq files ran:
 We have multiplexed 16S and ITS PCR reactions in same sequencing run which can be seperated by the index
 Run demulti.pl to demultiplex these into fungal and bacterial fastq files. Takes as input paired data and will output two files for each. Sequence which doesn't match either index is written to both fungal and bacterial fastq files.
 
+Running something like the below should give a good indication of what index_1 and index_2 should be. 
+```shell
+grep -x "[ATCG]\+" $(ls|head -n1)| cut -c-8|sort|uniq > expressions.txt
+grep -x "[ATCG]\+" $(ls|head -n1)| cut -c-8|sort|uniq|xargs -I r grep -c ^r $(ls|head -n1) >counts.txt
+```
+
 ```shell
 counter=0
 for f in $METAGENOMICS/data/$RUN/fastq/*
@@ -147,12 +153,7 @@ do counter=$((counter+1))
     R1=$f
 done
 ```
-Running
-```shell
-grep -x "[ATCG]\+" a_fastq_file.fastq| cut -c-22|sort|uniq > expressions.txt
-grep -x "[ATCG]\+" a_fastq_file.fastq| cut -c-8|sort|uniq|xargs -I r grep -c ^r a_fastq_file.fastq >counts.txt
-```
-should give a good indication of what index_1 and index_2 should be 
+
 
 ## 16s workflow
 
