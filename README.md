@@ -92,27 +92,35 @@ QSUB_TEXT = """#!/bin/bash
 ___
 ## Common workflow
 The following directories should be created prior to starting the workflow:
+```shell
+#run once
+mkdir $METAGENOMICS
+mkdir $METAGENOMICS/analysis
+mkdir $METAGENOMICS/data
+mkdir $METAGENOMICS/hmm
+mkdir $METAGENOMICS/scripts
+mkdir $METAGENOMICS/taxonomies
+```
+```shell
+#run for each analysis
+mkdir $METAGENOMICS/analysis/$RUN/16S
+mkdir $METAGENOMICS/analysis/$RUN/ITS	
+mkdir $METAGENOMICS/data/$RUN
+mkdir $METAGENOMICS/data/$RUN/fastq
+mkdir $METAGENOMICS/data/$RUN/16S
+mkdir $METAGENOMICS/data/$RUN/16S/fastq
+mkdir $METAGENOMICS/data/$RUN/16S/fasta
+mkdir $METAGENOMICS/data/$RUN/16S/joined
+mkdir $METAGENOMICS/data/$RUN/16S/de_chimeraed
+mkdir $METAGENOMICS/data/$RUN/ITS
+mkdir $METAGENOMICS/data/$RUN/ITS/fastq
+mkdir $METAGENOMICS/data/$RUN/ITS/fasta
+mkdir $METAGENOMICS/data/$RUN/ITS/trimmed
+mkdir $METAGENOMICS/data/$RUN/ITS/de_chimeraed
+mkdir $METAGENOMICS/data/$RUN/ITS/final
 
-	$METAGENOMICS
-	$METAGENOMICS/analysis
-	$METAGENOMICS/analysis/16S
-	$METAGENOMICS/analysis/ITS	
-	$METAGENOMICS/data
-	$METAGENOMICS/data/$RUN
-	$METAGENOMICS/data/$RUN/fastq
-	$METAGENOMICS/data/$RUN/trimmed
-	$METAGENOMICS/data/$RUN/joined
-	$METAGENOMICS/data/$RUN/fasta
-	$METAGENOMICS/data/$RUN/16S
-	$METAGENOMICS/data/$RUN/16S/de_chimeraed
-	$METAGENOMICS/data/$RUN/ITS
-	$METAGENOMICS/data/$RUN/ITS/de_chimeraed
-	$METAGENOMICS/data/$RUN/ITS/final
-	$METAGENOMICS/hmm
-	$METAGENOMICS/scripts
-	$METAGENOMICS/taxonomies
-	
-The $METAGENOMICS directory should be set to something appropriate (e.g. /home/bob/metagenomics) amd $RUN to the name of the NGS run. The realtive path is used in the scripts below - depending on your config you may have to specify full paths.	
+```	
+The $METAGENOMICS directory should be set to something appropriate (e.g. /home/bob/metagenomics) and $RUN to the name of the NGS run. The realtive path is used in the scripts below - depending on your config you may have to specify full paths.	
 
 ### QC
 Qualtiy checking was performed with fastQC (http://www.bioinformatics.babraham.ac.uk/projects/fastqc/)
