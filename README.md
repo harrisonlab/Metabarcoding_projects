@@ -176,38 +176,17 @@ do counter=$((counter+1))
 	R1=$f
 done
 ```
-
-### Rename files - THIS IS NO LONGER NECESSARY 
-Moved joined directories/files to the $METAGENOMICS/data/joined directory (it is important to ensure there are no files in the root of the joined directory or you risk renaming all files in lower level directories)
-	
-	mv $METAGENOMICS/data/trimmed/S* $METAGENOMICS/data/joined/.
-
-Then ran the below:
-```shell
-cd $METAGENOMICS/data/joined
-counter=85
-for d in * 
-do 
-	cd S$counter
-	for f in *
-	do
-		echo mv -i "${f}" "S${f/fastqjoin/$counter}"
-	done
-	cd ..
-	counter=$((counter+1));
-done
-```
 ### Convert joined fastq to fasta
 must be run from root of joined directory 
 
-cd  $METAGENOMICS/data/$RUN/16S/joined/	
-	
 ```shell
+cd  $METAGENOMICS/data/$RUN/16S/joined/	
+
 for f in  *join*
 do
-	S=$(echo $f|awk -F"." '{print $1}')
-	$METAGENOMICS/scripts/fq2fa.pl $f $f.fa $S
-	mv $f.fa $METAGENOMICS/data/$RUN/16S/fasta/.
+ S=$(echo $f|awk -F"." '{print $1}')
+ $METAGENOMICS/scripts/fq2fa.pl $f $f.fa $S
+ mv $f.fa $METAGENOMICS/data/$RUN/16S/fasta/.
 done
 
 ```
