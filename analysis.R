@@ -32,6 +32,62 @@ countData<- df.biom[(rowSums(df.biom[,8:ncol(df.biom)])>=3),8:ncol(df.biom)]
 colData <- read.table(args[2])
 dds <- DESeqDataSetFromMatrix(countData = countData[,order(names(countData))],colData = colData,design = ~ condition)
 
+###plotPCAWithLabels
+library(genefilter)
+library(ggplot2)
+
+plotPCAWithLabels <- function (object, intgroup = "condition", ntop = 500, returnData = FALSE)
+{
+    rv <- rowVars(assay(object))
+    select <- order(rv, decreasing = TRUE)[seq_len(min(ntop,
+        length(rv)))]
+    pca <- prcomp(t(assay(object)[select, ]))
+    percentVar <- pca$sdev^2/sum(pca$sdev^2)
+    if (!all(intgroup %in% names(colData(object)))) {
+        stop("the argument 'intgroup' should specify columns of colData(dds)")
+    }
+    intgroup.df <- as.data.frame(colData(object)[, intgroup,
+        drop = FALSE])
+    group <- if (length(intgroup) > 1) {
+        factor(apply(intgroup.df, 1, paste, collapse = " : "))
+    }
+    else {
+        colData(object)[[intgroup]]
+    }
+    d <- data.frame(PC1 = pca$x[, 1], PC2 = pca$x[, 2], group = group,
+        intgroup.df, name = colnames(object))
+    if (returnData) {
+        attr(d, "percentVar") <- percentVar[1:2]
+        return(d)
+    }
+
+    ggplot() +
+    geom_point(data=d, mapping=aes(x=PC1, y=PC2, colour=group),size=3) +
+    geom_text(data=d, mapping=aes(x=PC1, y=PC2, label=name,colour=group), size=3, vjust=2, hjust=0.5) +
+    xlab(paste0("PC1: ", round(percentVar[1] * 100), "% variance")) +
+    ylab(paste0("PC2: ", round(percentVar[2] * 100), "% variance"))
+    
+}
+#####
+
+## PCA plots
+#rld <- rlog(dds)
+
+rld <- tryCatch( {
+	varianceStabilizingTransformation(dds)
+}, error = function(e) {
+	print("Unable to calculte VST")
+#	dds2 <- estimateSizeFactors(dds)
+#	se <- SummarizedExperiment(log2(counts(dds2, normalized=TRUE) + 1),colData=colData(dds2))
+#	se <- DESeqTransform(se)
+	return(dds)
+})
+
+print("plotting PCA")
+pdf(paste(args[4],".pca.pdf",sep=""),height=8,width=8)
+plotPCAWithLabels(rld)
+dev.off()
+
 if (args[3]=="median") {
 	dds <- DESeq(dds, fitType="local")
 	res = results(dds)
