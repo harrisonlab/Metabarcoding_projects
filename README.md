@@ -458,10 +458,7 @@ analysis.R biom_table colData median/geomean outfile
 
 Requires a file (colData) which describes condition (e.g. infected or uninfected) for each sample
 
-As there were multiple OTU picking steps, multiple statistical analyses are necessary.
 ```shell
-Rscript $METAGENOMICS/scripts/analysis.R $METAGENOMICS/analysis/ITS/ITS_all_otus/otu_table_mc2_w_tax.biom colData median ITS.all.median.csv
-Rscript $METAGENOMICS/scripts/analysis.R $METAGENOMICS/analysis/ITS/ITS_common_otus/otu_table_mc2_w_tax.biom colData median ITS.median.csv
-Rscript $METAGENOMICS/scripts/analysis.R $METAGENOMICS/analysis/ITS/ITS1_only_otus/otu_table_mc2_w_tax.biom colData median ITS1.median.csv
-Rscript $METAGENOMICS/scripts/analysis.R $METAGENOMICS/analysis/ITS/ITS2_only_otus/otu_table_mc2_w_tax.biom colData median ITS2.median.csv
+cd $METAGENOMICS/analysis/$RUN/ITS/ITS_all_otus
+Rscript $METAGENOMICS/scripts/analysis.R otu_table_mc2_w_tax.biom colData median ITS.median.csv
 ```
