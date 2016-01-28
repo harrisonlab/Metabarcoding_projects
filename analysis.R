@@ -30,7 +30,7 @@ df.biom<- df.biom[-1]
 ###DESSeq
 countData<- df.biom[(rowSums(df.biom[,8:ncol(df.biom)])>=3),8:ncol(df.biom)]
 colData <- read.table(args[2])
-dds <- DESeqDataSetFromMatrix(countData = countData,colData = colData,design = ~ condition)
+dds <- DESeqDataSetFromMatrix(countData = countData[,order(names(countData))],colData = colData,design = ~ condition)
 
 if (args[3]=="median") {
 	dds <- DESeq(dds, fitType="local")
