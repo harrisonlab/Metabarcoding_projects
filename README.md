@@ -220,8 +220,8 @@ analysis.R biom_table colData median/geomean outfile
 
 Requires a file (colData) which describes condition (e.g. infected or uninfected) for each sample 
 ```shell
-cd $METAGENOMICS/analysis/$RUN/16S
-Rscript $METAGENOMICS/scripts/analysis.R "analysis/$RUN/16S_otus/otu_table_mc2_w_tax_no_pynast_failures.biom" colData median res.sig.csv
+cd $METAGENOMICS/analysis/$RUN/16S/16S_otus
+Rscript $METAGENOMICS/scripts/analysis.R "otu_table_mc2_w_tax_no_pynast_failures.biom" colData median res.sig.csv
 ```	
 ## ITS workflow
 
