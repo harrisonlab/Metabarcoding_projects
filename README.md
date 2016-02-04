@@ -140,7 +140,7 @@ For the particular sequencing protocal we don't get much (or any) PhiX contamina
      then
          R2=$f
          S=$(echo $f|awk -F"_" '{print $2}')
-         ~/projects/apple_rootstock/scripts/bowtie.sh $R1 $R2 $HOME/Data/PhiX/Illumina/RTA/Sequence/Bowtie2Index/genome $METAGENOMICS/data/$RUN/PhiX ${S}.phix.fq 250 500
+         $METAGENOMICS/scripts/bowtie.sh $R1 $R2 $HOME/Data/PhiX/Illumina/RTA/Sequence/Bowtie2Index/genome $METAGENOMICS/data/$RUN/PhiX ${S}.phix.fq 250 500
      fi
      R1=$f
 done
