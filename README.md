@@ -297,7 +297,7 @@ rename 's/\.trimmed\.2\.fq.fa/_R2.fa/' *2.fq.fa
 ```
 ### SSU/58S/LSU removal 
 
-### Preperation - this is run once only
+#### Preperation - this is run once only
 Using HHMMER v 3.1b2 (http://hmmer.janelia.org/)
 
 Used HMM files from ITSx (http://microbiology.se/software/itsx/)
@@ -316,7 +316,7 @@ hmmconvert lsu_start.hmm > lsu_start.hmm
 
 for f in *.hmm
 do
-	sed -e'/^LENG/a MAXL  90' $f >> $f.temp
+	sed -i -e'/^LENG/a MAXL  90' $f
 done
 
 hmmpress ssu_end.hmm
@@ -324,7 +324,7 @@ hmmpress 58s_end.hmm
 hmmpress 58s_start.hmm
 hmmpress lsu_start.hmm
 ```
-Ouptut files were copied to $METAGENOMICS/hmm. Hacked the HMM files to include a MAXL satement (required) and manually split out SSU,58S and LSU into seperate files (using fungal only) - NOTE looks like the sed statement should be changed, maybe add -i flag and edit files in place and get rid of the pipe to $f.temp (which isn't being used?).
+Ouptut files were copied to $METAGENOMICS/hmm. Hacked the HMM files to include a MAXL satement (required) and manually split out SSU,58S and LSU into seperate files (only fungal hmms are implemented in this pipeline)
 
 ##### Split fasta into chunks for SSU/58S/LSU removal
 ```shell
