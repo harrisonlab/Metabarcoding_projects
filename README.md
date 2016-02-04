@@ -107,6 +107,7 @@ mkdir $METAGENOMICS/analysis/$RUN/16S
 mkdir $METAGENOMICS/analysis/$RUN/ITS	
 mkdir $METAGENOMICS/data/$RUN
 mkdir $METAGENOMICS/data/$RUN/fastq
+mkdir $METAGENOMICS/data/$RUN/PhiX
 mkdir $METAGENOMICS/data/$RUN/16S
 mkdir $METAGENOMICS/data/$RUN/16S/fastq
 mkdir $METAGENOMICS/data/$RUN/16S/fasta
@@ -129,6 +130,22 @@ From same folder containing fastq files ran:
 
 	fastqc *
 
+### PhiX filtering
+For the particular sequencing protocal we don't get much (or any) PhiX contamination. Removal of any contaminants is simple via aligning to the Illumina PhiX genome <ln>http://support.illumina.com/sequencing/sequencing_software/igenome.html </ln> Bowtie2 method implemented here
+```shell
+ counter=0
+ for f in $METAGENOMICS/data/$RUN/fastq/*.fastq
+ do counter=$((counter+1))
+ if (( $counter % 2 == 0 ))
+     then
+         R2=$f
+         S=$(echo $f|awk -F"_" '{print $2}')
+         ~/projects/apple_rootstock/scripts/bowtie.sh $R1 $R2 $HOME/Data/PhiX/Illumina/RTA/Sequence/Bowtie2Index/genome $METAGENOMICS/data/$RUN/PhiX ${S}.phix.fq 250 500
+     fi
+     R1=$f
+done
+```
+
 #### Demulitplexing
 We have multiplexed 16S and ITS PCR reactions in same sequencing run which can be seperated by the index
 Run demulti.pl to demultiplex these into fungal and bacterial fastq files. Takes as input paired data and will output two files for each. Sequence which doesn't match either index is written to both fungal and bacterial fastq files.
@@ -141,7 +158,7 @@ grep -x "[ATCG]\+" $(ls|head -n1)| cut -c-8|sort|uniq|xargs -I r grep -c ^r $(ls
 
 ```shell
 counter=0
-for f in $METAGENOMICS/data/$RUN/fastq/*
+for f in $METAGENOMICS/data/$RUN/PhiX/*
 do counter=$((counter+1))
     if (( $counter % 2 == 0 ))
     then
