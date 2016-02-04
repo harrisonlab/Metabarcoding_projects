@@ -1,6 +1,6 @@
 ##############
 #
-# R script to analyses Quiim Biom data	
+# R script to analyses Qiime Biom data	
 # Outputs: number of OTUS per sample, number of sequences per OTU 
 # the number of unique taxa the OTUs are assigned to  per sample
 # and number of statistically significant differences in OTU between sample groups
