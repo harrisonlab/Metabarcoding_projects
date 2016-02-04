@@ -223,12 +223,12 @@ done
 #### Concatenate files
 Concatenated all the de-chimeraed files and copied the output to the $METAGENOMICS/data/$RUN/16S directory
 
-	cat $METAGENOMICS/data/fasta/16S/de_chimeraed/*cfree* > $METAGENOMICS/data/$RUN/16S/16S.cat.fa
+	cat $METAGENOMICS/data/$RUN/16S/de_chimeraed/*cfree* > $METAGENOMICS/data/$RUN/16S/16S.fa
 
 ### OTU Picking and descriptive statistics
 Run the 2nd and 3rd commands below only after the cluster jobs created by the 1st command have finished
 ```shell
-$METAGENOMICS/scripts/pick_OTU.sh   $METAGENOMICS/data/$RUN/16S/16S.cat.fa  $METAGENOMICS/analysis/$RUN/16S/16S_otus $METAGENOMICS/scripts/parameters.txt $PYTHONUSERBASE/lib/python2.7/site-packages/qiime_default_reference/gg_13_8_otus/rep_set/97_otus.fasta TRUE
+$METAGENOMICS/scripts/pick_OTU.sh   $METAGENOMICS/data/$RUN/16S/16S.fa  $METAGENOMICS/analysis/$RUN/16S/16S_otus $METAGENOMICS/scripts/parameters.txt $PYTHONUSERBASE/lib/python2.7/site-packages/qiime_default_reference/gg_13_8_otus/rep_set/97_otus.fasta TRUE
  X=`biom summarize-table -i METAGENOMICS/analysis/$RUN/16S/16S_otus/otu_table_mc2_w_tax_no_pynast_failures.biom|grep  Min|sed -n "/ Min: */s/ Min: *//p"|sed -n "/\..*/s/\..*//p"`
 $METAGENOMICS/scripts/core_diversity.sh $METAGENOMICS/analysis/$RUN/16S/16S_otus/otu_table_mc2_w_tax_no_pynast_failures.biom $METAGENOMICS/analysis/$RUN/16S/16s_cdout/ $METAGENOMICS/data/map.tsv $METAGENOMICS/analysis/$RUN/16S/16S_otus/rep_set.tre $X
 ```
