@@ -305,14 +305,16 @@ Used HMM files from ITSx (http://microbiology.se/software/itsx/)
 ```shell
 perl $METAGENOMICS/scripts/cut_hmm v.3.1 $METAGENOMICS/hmm/chopped_hmm fungi
 cd $METAGENOMICS/hmm/chopped_hmm
-cat *SSU*> ssu_end.hmm
-cat *58S_start* > 58s_start.hmm
-cat *58S_end* > 58s_end.hmm
-cat *LSU* > lsu_start.hmm
-hmmconvert ssu_end.hmm > ssu_end.hmm
-hmmconvert 58s_end.hmm > 58s_end.hmm
-hmmconvert 58s_start.hmm > 58s_start.hmm
-hmmconvert lsu_start.hmm > lsu_start.hmm
+cat *SSU*> t1
+cat *58S_start* > t2
+cat *58S_end* > t3
+cat *LSU* > t4
+hmmconvert t1 > ssu_end.hmm
+hmmconvert t2 > 58s_end.hmm
+hmmconvert t3 > 58s_start.hmm
+hmmconvert t4 > lsu_start.hmm
+
+rm t1 t2 t3 t4
 
 for f in *.hmm
 do
@@ -325,17 +327,6 @@ hmmpress 58s_start.hmm
 hmmpress lsu_start.hmm
 ```
 Ouptut files were copied to $METAGENOMICS/hmm. Hacked the HMM files to include a MAXL satement (required) and manually split out SSU,58S and LSU into seperate files (only fungal hmms are implemented in this pipeline)
-
-... HHMMER is pretty pernickety about the HMM format. Depending on the installed verion the first line of the HMM may need to be edited to reflect the installed version.
-The below sort of works - but there's lots of esacaping of regex specials... 
-
-```shell
-for f in *.hmm
-do
-	sed -i -e 's/HMMER3\/b \[3\.0 \| March 2010\]/HMMER3\/f \[3\.12 \| February 2015\]/g' $f
-done
-```
-
 
 
 ##### Split fasta into chunks for SSU/58S/LSU removal
@@ -374,7 +365,7 @@ do counter=$((counter+1))
 		qsub -t 1-$TASKS:1 $METAGENOMICS/scripts/submit_nscan.sh 58se 20 $METAGENOMICS/hmm/58s_end.hmm
 	else
 		qsub -t 1-$TASKS:1 $METAGENOMICS/scripts/submit_nscan.sh ssu 20 $METAGENOMICS/hmm/ssu_end.hmm
-	qsub -t 1-$TASKS:1 $METAGENOMICS/scripts/submit_nscan.sh 58ss 20 $METAGENOMICS/hmm/58s_start.hmm
+		qsub -t 1-$TASKS:1 $METAGENOMICS/scripts/submit_nscan.sh 58ss 20 $METAGENOMICS/hmm/58s_start.hmm
 	fi
 	cd ..
 done
