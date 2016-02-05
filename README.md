@@ -326,6 +326,18 @@ hmmpress lsu_start.hmm
 ```
 Ouptut files were copied to $METAGENOMICS/hmm. Hacked the HMM files to include a MAXL satement (required) and manually split out SSU,58S and LSU into seperate files (only fungal hmms are implemented in this pipeline)
 
+... HHMMER is pretty pernickety about the HMM format. Depending on the installed verion the first line of the HMM may need to be edited to reflect the installed version.
+The below sort of works - but there's lots of esacaping of regex specials... 
+
+```shell
+for f in *.hmm
+do
+	sed -i -e 's/HMMER3\/b \[3\.0 \| March 2010\]/HMMER3\/f \[3\.12 \| February 2015\]/g' $f
+done
+```
+
+
+
 ##### Split fasta into chunks for SSU/58S/LSU removal
 ```shell
 cd $METAGENOMICS/data/$RUN/ITS/fasta
