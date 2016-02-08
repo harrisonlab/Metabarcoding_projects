@@ -419,7 +419,6 @@ done
 ```
 ### Return merged common ITS1 and ITS2, unique ITS1 and unique ITS2
 ```shell	
-mkdir $METAGENOMICS/data/$RUN/ITS/final
 cd $METAGENOMICS/data/$RUN/ITS/final
 
 counter=0;
@@ -429,7 +428,7 @@ S=$(echo $f|awk -F"." '{print $1}'|awk -F"/" '{print $NF}')
 	if (( $counter % 2 == 0 ))
 	then
 		R2=$f;
-		$METAGENOMICS/scripts/catfiles.pl $R1 $R2 $S;
+		$METAGENOMICS/scripts/catfiles.pl $R1 $R2 $S "nojoin";
 	fi
 	R1=$f
 done
