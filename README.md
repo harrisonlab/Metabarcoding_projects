@@ -483,3 +483,8 @@ Requires a file (colData) which describes condition (e.g. infected or uninfected
 cd $METAGENOMICS/analysis/$RUN/ITS/ITS_all_otus
 Rscript $METAGENOMICS/scripts/analysis.R otu_table_mc2_w_tax.biom colData median ITS.median.csv
 ```
+
+##oomycetes
+```shell
+$METAGENOMICS/scripts/pick_OTU.sh  $METAGENOMICS/data/$RUN/ITS/final/ITS.all.fa $METAGENOMICS/analysis/$RUN/ITS/ITS_all_otus $METAGENOMICS/scripts/params.txt $METAGENOMICS/taxonomies/Silva119/97_18S_only/Silva_119_rep_set97_aligned_18S_only.fna FALSE
+```
