@@ -417,7 +417,7 @@ S=$(echo $d|awk -F"_" '{print $1}'|awk -F"/" '{print $NF}')
   fi
 done
 ```
-### Return merged common ITS1 and ITS2, unique ITS1 and unique ITS2
+### Returns ITS1 where fasta header matches ITS2, unique ITS1 and unique ITS2
 ```shell	
 cd $METAGENOMICS/data/$RUN/ITS/final
 
@@ -428,7 +428,7 @@ S=$(echo $f|awk -F"." '{print $1}'|awk -F"/" '{print $NF}')
 	if (( $counter % 2 == 0 ))
 	then
 		R2=$f;
-		$METAGENOMICS/scripts/catfiles.pl $R1 $R2 $S "nojoin";
+		$METAGENOMICS/scripts/catfiles.pl $R1 $R2 $S;
 	fi
 	R1=$f
 done
