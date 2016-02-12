@@ -131,7 +131,11 @@ From same folder containing fastq files ran:
 	fastqc *
 
 ### PhiX filtering
-For the particular sequencing protocal we don't get much (or any) PhiX contamination. Removal of any contaminants is simple via aligning to the Illumina PhiX genome <ln>http://support.illumina.com/sequencing/sequencing_software/igenome.html </ln> Bowtie2 method implemented here
+For the particular sequencing protocal we don't get much (or any) PhiX contamination. Removal of any contaminants is simple via aligning to the Illumina PhiX genome <ln>http://support.illumina.com/sequencing/sequencing_software/igenome.html </ln> Bowtie2 method implemented here.
+
+NOTE - the below scipts that implement something like 'for f in *' are dependent on the naming convention of the samples. For instance something like s1.1.fq - s20.2.fq will loop through the files in the order  s1.1.fq, s12.1.fq, s12.2.fq, s1.2.fq, which is clearly not what is wanted.
+'for f in 'ls *| sort -V' may fix this type of error - or use a different sample naming convention (s001. - sxxx.)
+
 ```shell
  counter=0
  for f in $METAGENOMICS/data/$RUN/fastq/*.fastq
@@ -422,7 +426,7 @@ done
 cd $METAGENOMICS/data/$RUN/ITS/final
 
 counter=0;
-for f in $METAGENOMICS/data/$RUN/ITS/de_chimeraed/*cfree*
+for f in `ls $METAGENOMICS/data/$RUN/ITS/de_chimeraed/*cfree*| sort -V`
 do counter=$((counter+1)); 
 S=$(echo $f|awk -F"." '{print $1}'|awk -F"/" '{print $NF}')
 	if (( $counter % 2 == 0 ))
