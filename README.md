@@ -412,12 +412,12 @@ X=`grep ">" -v S13_R1.fa|awk '{ print length($0); }'|awk '$0>x{x=$0};END{print x
 cat S13_R1.fa| sed -e :a -e "s/^[^>].\{1,`expr $X - 1`\}$/&N/;ta"
 ```
 
-This can be done in R as well (in the merge bit) - this will also remove the empty fasta files...
+This could also be done in R as well (in the merge bit) - this would also remove the empty fasta files...
 ```Rscript
-dna <- dna[dna@ranges@width>0]
-dna <- stackStrings(dna,0,max(dna@ranges@width),Lpadding.letter="N",Rpadding.letter="N")
-dna <- subseq(dna,start=2,width = (max(dna@ranges@width)-1))
-writeXStringSet(dns,"ITS.t.fa")
+ITS <- ITS[ITS@ranges@width>0]
+ITS <- stackStrings(ITS,0,max(ITS@ranges@width),Lpadding.letter="N",Rpadding.letter="N")
+ITS <- subseq(ITS,start=2,width = (max(ITS@ranges@width)-1))
+writeXStringSet(ITS,"ITS.t.fa")
 ```
 
 
