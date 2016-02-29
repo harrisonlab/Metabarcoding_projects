@@ -416,7 +416,7 @@ This can be done in R as well (in the merge bit) - this will also remove the emp
 ```Rscript
 dna <- dna[dna@ranges@width>0]
 dna <- stackStrings(dna,0,max(dna@ranges@width),Lpadding.letter="N",Rpadding.letter="N")
-dna <- subseq(dna,start=2,width = (max(dna@ranges@width)-1)
+dna <- subseq(dna,start=2,width = (max(dna@ranges@width)-1))
 writeXStringSet(dns,"ITS.t.fa")
 ```
 
