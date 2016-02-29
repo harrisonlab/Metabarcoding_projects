@@ -343,7 +343,7 @@ do
     split -l 2000 $f -a 3 -d ${S}/$f.
 done
 ```
-##### Remove SSU/LSU
+##### Identify SSU, 5.8S  and LSU regions
 Note - creates a file with the paths to all of the split files in each sample directory then submits cluster array job
 
 This will create a large number of array jobs on the cluster
@@ -374,7 +374,7 @@ do counter=$((counter+1))
 	cd ..
 done
 ```
-##### Merge output
+##### Remove SSU, 5.8S  and LSU regions and merge output
 (bug fixed)
 ```shell
 for d in $METAGENOMICS/data/$RUN/ITS/fasta/*R1
@@ -404,8 +404,9 @@ do counter=$((counter+1));
 done
 ```
 ### Pad files 
-uclust performs better if FASTAs are same length
-example:
+uclust performs better if FASTAs are same length.
+
+Example (of padding):
 ```shell
 X=`grep ">" -v S13_R1.fa|awk '{ print length($0); }'|awk '$0>x{x=$0};END{print x}'`
 cat S13_R1.fa| sed -e :a -e "s/^[^>].\{1,`expr $X - 1`\}$/&N/;ta"
