@@ -379,12 +379,12 @@ done
 ```shell
 for d in $METAGENOMICS/data/$RUN/ITS/fasta/*R1
 do
-	 $METAGENOMICS/scripts/ITS.sh $METAGENOMICS/scripts/rm_SSU_58Ss.R $d "*.\\.ssu" "*.\\.58" $d.fa
+	 $METAGENOMICS/scripts/ITS.sh $METAGENOMICS/scripts/rm_SSU_58Ss.R $d "*.\\.ssu" "*.\\.58ss" $d.fa
 done
 
 for d in $METAGENOMICS/data/$RUN/ITS/fasta/*R2
 do
-	 $METAGENOMICS/scripts/ITS.sh $METAGENOMICS/scripts/rm_58Se_LSU.R $d "*.\\.58" "*.\\.lsu" $d.fa
+	 $METAGENOMICS/scripts/ITS.sh $METAGENOMICS/scripts/rm_58Se_LSU.R $d "*.\\.58se" "*.\\.lsu" $d.fa
 done
 ```
 ### Remove empty fastas
