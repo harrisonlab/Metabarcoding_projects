@@ -163,7 +163,7 @@ grep -x "[ATCG]\+" $(ls|head -n1)| cut -c-8|sort|uniq|xargs -I r grep -c ^r $(ls
 
 ```shell
 counter=0
-for f in $METAGENOMICS/data/$RUN/PhiX/*
+for f in $METAGENOMICS/data/$RUN/fastq/*
 do counter=$((counter+1))
     if (( $counter % 2 == 0 ))
     then
