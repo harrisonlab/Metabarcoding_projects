@@ -103,6 +103,7 @@ mkdir $METAGENOMICS/taxonomies
 ```
 ```shell
 #run for each analysis
+mkdir $METAGENOMICS/analysis/$RUN
 mkdir $METAGENOMICS/analysis/$RUN/16S
 mkdir $METAGENOMICS/analysis/$RUN/ITS	
 mkdir $METAGENOMICS/data/$RUN
@@ -131,7 +132,7 @@ From same folder containing fastq files ran:
 	fastqc *
 
 ### PhiX filtering
-Not implemented... For the particular sequencing protocal we don't get much (or any) PhiX contamination. Removal of any contaminants is simple via aligning to the Illumina PhiX genome <ln>http://support.illumina.com/sequencing/sequencing_software/igenome.html </ln> Bowtie2 method implemented here.
+Not implemented... For the particular sequencing protocol we don't get much (or any) PhiX contamination. Removal of any contaminants is simple via aligning to the Illumina PhiX genome <ln>http://support.illumina.com/sequencing/sequencing_software/igenome.html </ln> Bowtie2 method implemented here.
 
 NOTE - the below scipts that implement something like 'for f in *' are dependent on the naming convention of the samples. For instance something like s1.1.fq - s20.2.fq will loop through the files in the order  s1.1.fq, s12.1.fq, s12.2.fq, s1.2.fq, which is clearly not what is wanted.
 'for f in `ls *| sort -V`' will do a natural sort of the files which should fix any problems - or use a different sample naming convention (e.g. s001. - sxxx.)
