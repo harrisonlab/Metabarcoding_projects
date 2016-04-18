@@ -157,8 +157,8 @@ Run demulti.pl to demultiplex these into fungal and bacterial fastq files. Takes
 
 Running something like the below should give a good indication of what index_1 and index_2 should be. 
 ```shell
-grep -x "[ATCG]\+" $(ls|head -n1)| cut -c-8|sort|uniq > expressions.txt
-grep -x "[ATCG]\+" $(ls|head -n1)| cut -c-8|sort|uniq|xargs -I r grep -c ^r $(ls|head -n1) >counts.txt
+grep -x "[ATCG]\+" $(ls|head -n1)| cut -c-8|sort|uniq > zzexpressions.txt
+grep -x "[ATCG]\+" $(ls|head -n1)| cut -c-8|sort|uniq|xargs -I r grep -c ^r $(ls|head -n1) >zzcounts.txt
 ```
 
 ```shell
