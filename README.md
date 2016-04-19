@@ -435,7 +435,7 @@ S=$(echo $d|awk -F"_" '{print $1}'|awk -F"/" '{print $NF}')
     $METAGENOMICS/scripts/chimeras.sh $d/ITS1.t.fa $METAGENOMICS/taxonomies/uchime_sh_refs_dynamic_develop_985_11.03.2015.ITS1.fasta ${S}.${counter}.cfree.fa $METAGENOMICS/data/$RUN/ITS/de_chimerad/
     counter=2
   else
-    $METAGENOMICS/scripts/chimeras.sh $d/ITS2.t.fa $METAGENOMICS/taxonomies/uchime_sh_refs_dynamic_develop_985_11.03.2015.ITS2.fasta ${S}.${counter}.cfree.fa $METAGENOMICS/data/$RUN/ITS/de_chimerad/
+    $METAGENOMICS/scripts/chimeras.sh $d/ITS2.fa $METAGENOMICS/taxonomies/uchime_sh_refs_dynamic_develop_985_11.03.2015.ITS2.fasta ${S}.${counter}.cfree.fa $METAGENOMICS/data/$RUN/ITS/de_chimerad/
     counter=1
   fi
 done
