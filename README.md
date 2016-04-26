@@ -264,7 +264,19 @@ done
 ```
 
 ### Convert to unpaired fasta files
-This might have some use, but can't remeber what - alternative simpler method should work...
+
+Alternative method
+```shell
+cd $METAGENOMICS/data/$RUN/ITS/trimmed
+
+for f in *trimmed*;
+do
+	S=$(echo $f|awk -F"." '{print $1}');
+	$METAGENOMICS/scripts/fq2fa.pl $f $METAGENOMICS/data/$RUN/ITS/fasta/${f}.fa $S;
+done
+```
+
+This might have some use, but can't remeber what - alternative simpler method works...
 ```shell
 X=91
 counter=0
@@ -280,16 +292,6 @@ do counter=$((counter+1));
       $METAGENOMICS/scripts/fq2fa.pl $f $METAGENOMICS/data/$RUN/ITS/fasta/${f}.fa S$X ;
     fi
   fi
-done
-```
-Alternative method
-```shell
-cd $METAGENOMICS/data/$RUN/ITS/trimmed
-
-for f in *trimmed*;
-do
-	S=$(echo $f|awk -F"." '{print $1}');
-	$METAGENOMICS/scripts/fq2fa.pl $f $METAGENOMICS/data/$RUN/ITS/fasta/${f}.fa $S;
 done
 ```
 
