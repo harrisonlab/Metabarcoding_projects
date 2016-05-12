@@ -224,8 +224,9 @@ for f in $METAGENOMICS/data/$RUN/16S/fastq/*
 ## 16s workflow
 
 ### Join PE reads
-usearch trims based on the expected error for the entire joined sequence.
-Expected error set to 1 in below and min length set to 200
+(usearch trims based on the expected error for the entire joined sequence.
+Expected error set to 1 in below and min length set to 200)
+Updated to do filtering after chimera detaction
 ```shell
 counter=0
 for f in $METAGENOMICS/data/$RUN/16S/fastq/*
@@ -234,11 +235,33 @@ do counter=$((counter+1))
 	then
 		R2=$f
 		S=$(echo $f|awk -F"_" '{print $2}')
-		$METAGENOMICS/scripts/ujoin.sh $R1 $R2 ${S}.joined.fq $METAGENOMICS/data/$RUN/16S/joined 1 200
+		$METAGENOMICS/scripts/ujoin.sh $R1 $R2 ${S}.joined.fq $METAGENOMICS/data/$RUN/16S/joined
 	fi
 	R1=$f
 done
 ```
+
+### Remove chimeras
+Downloaded usearch 8.0 and RDP gold reference database from http://drive5.com/usearch/manual/cmd_uchime_ref.html
+
+Ran the 'remove chimeras script'
+
+```shell
+#remove chimeras script 	
+for f in $METAGENOMICS/data/$RUN/16S/fasta/*
+do
+	S=$(echo $f|awk -F"." '{print $1}')
+	$METAGENOMICS/scripts/chimeras.sh $f $METAGENOMICS/taxonomies/RDP_gold.fasta ${S}.cfree.fa $METAGENOMICS/data/$RUN/16S/de_chimeraed/
+done
+```
+###Filter fastq files
+```shell
+for f in $METAGENOMICS/data/$RUN/ITS/fastq/*
+	S=$(echo $f|awk -F"_" '{print $2}')
+	$METAGENOMICS/scripts/utrim.sh $f ${S}.trimmed.2.fq $METAGENOMICS/data/$RUN/ITS/trimmed 0.02 200
+done
+```
+
 ### Convert joined fastq to fasta
 must be run from root of joined directory 
 
@@ -252,19 +275,6 @@ do
  mv $f.fa $METAGENOMICS/data/$RUN/16S/fasta/.
 done
 
-```
-### Remove chimeras
-Downloaded usearch 8.0 and RDP gold reference database from http://drive5.com/usearch/manual/cmd_uchime_ref.html
-
-Ran the 'remove chimeras script'
-
-```shell
-#remove chimeras script 	
-for f in $METAGENOMICS/data/$RUN/16S/fasta/*
-do
-	S=$(echo $f|awk -F"." '{print $1}')
-	$METAGENOMICS/scripts/chimeras.sh $f $METAGENOMICS/taxonomies/RDP_gold.fasta ${S}.cfree.fa $METAGENOMICS/data/$RUN/16S/de_chimeraed/
-done
 ```
 #### Concatenate files
 Concatenated all the de-chimeraed files and copied the output to the $METAGENOMICS/data/$RUN/16S directory
