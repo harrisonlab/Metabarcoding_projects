@@ -248,17 +248,17 @@ Ran the 'remove chimeras script'
 
 ```shell
 #remove chimeras script 	
-for f in $METAGENOMICS/data/$RUN/16S/fasta/*
+for f in $METAGENOMICS/data/$RUN/16S/truncated/*
 do
 	S=$(echo $f|awk -F"." '{print $1}')
-	$METAGENOMICS/scripts/chimeras.sh $f $METAGENOMICS/taxonomies/RDP_gold.fasta ${S}.cfree.fa $METAGENOMICS/data/$RUN/16S/de_chimeraed/
+	$METAGENOMICS/scripts/chimeras.sh $f $METAGENOMICS/taxonomies/RDP_gold.fasta ${S}.cfree.fastq $METAGENOMICS/data/$RUN/16S/de_chimeraed/
 done
 ```
 ###Filter fastq files
 ```shell
-for f in $METAGENOMICS/data/$RUN/ITS/fastq/*
-	S=$(echo $f|awk -F"_" '{print $2}')
-	$METAGENOMICS/scripts/utrim.sh $f ${S}.trimmed.2.fq $METAGENOMICS/data/$RUN/ITS/trimmed 0.02 200
+for f in $METAGENOMICS/data/$RUN/16S/de_chimeraed/*
+	S=$(echo $f|awk -F"." '{print $1}')
+	$METAGENOMICS/scripts/utrim.sh $f ${S}.trimmed.fastq $METAGENOMICS/data/$RUN/ITS/trimmed 0.005 300
 done
 ```
 
