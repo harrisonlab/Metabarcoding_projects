@@ -52,10 +52,11 @@ do {
 			$R1_l="";
 			$R2_l="";
 		} else {
-			print $R1_bac "$R1_l";
-			print $R2_bac "$R2_l";
-			print $R1_fun "$R1_l";
-			print $R2_fun "$R2_l";
+			#do nothing - will lose a few hundred reads, but should give more accurate OTU picking
+			#print $R1_bac "$R1_l";
+			#print $R2_bac "$R2_l";
+			#print $R1_fun "$R1_l";
+			#print $R2_fun "$R2_l";
 			$R1_l="";
 			$R2_l="";
 		}
