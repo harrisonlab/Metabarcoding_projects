@@ -164,6 +164,7 @@ done
 ```
 
 The bit below is a bit rubbish - working on a speed improvement
+The first bit may be useful for looking for adapter sequence contamination.
 ```shell
 #this is slow as a slow thing (about 2 minutes per sample! - the old method was roughly 100 times faster)
 counter=0
@@ -193,6 +194,8 @@ Running something like the below should give a good indication of what index_1 a
 grep -x "[ATCG]\+" $(ls|head -n1)| cut -c-8|sort|uniq > zzexpressions.txt
 grep -x "[ATCG]\+" $(ls|head -n1)| cut -c-8|sort|uniq|xargs -I r grep -c ^r $(ls|head -n1) >zzcounts.txt
 ```
+
+I've updated demulti.pl to drop ambiguous reads.
 
 ```shell
 counter=0
