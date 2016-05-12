@@ -513,3 +513,9 @@ Rscript $METAGENOMICS/scripts/analysis.R otu_table_mc2_w_tax.biom colData median
 ```shell
 $METAGENOMICS/scripts/pick_OTU.sh  $METAGENOMICS/data/$RUN/ITS/final/ITS.all.fa $METAGENOMICS/analysis/$RUN/ITS/ITS_all_otus $METAGENOMICS/scripts/params.txt $METAGENOMICS/taxonomies/Silva119/97_18S_only/Silva_119_rep_set97_aligned_18S_only.fna FALSE
 ```
+
+##Combine samples
+Biom table for samples from multiple NGS runs are required.
+
+This will mean the names of each fasta will need to be made unique and the sequence lengths will need to be set to the same.
+
