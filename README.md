@@ -151,7 +151,38 @@ NOTE - the below scipts that implement something like 'for f in *' are dependent
 done
 ```
 
-#### Demulitplexing
+#### Demultiplexing
+This is going to be edited to use usearch8.1 search_oligodb - the algorithm used accepts mismatches at multiple positions.
+
+```
+for f in G01N-098*.fastq; 
+do 
+	usearch8.1 -search_oligodb $f -db ../../../scripts/primers.db -strand both -userout ${f}.txt -userfields query+target+qstrand+diffs+tlo+thi+trowdots 
+done
+
+counter=0
+for f in *.txt
+ do counter=$((counter+1))
+ if (( $counter % 2 == 0 ))
+      then
+        R2=$f
+	grep -F -f <(awk -F"\t" '{print $1}'<$R1) $R2 > output.txt
+	grep -A 3 -F -f <(awk -F"\t" '{if ($2=="p13") print $1}' <output.txt)  $R1 > ${R1}.bacterial.fq
+	grep -A 3 -F -f <(awk -F"\t" '{if ($2=="p13") print $1}' <output.txt)  $R2 > ${R1}.bacterial.fq
+	grep -A 3 -F -f <(awk -F"\t" '{if ($2=="p11") print $1}' <output.txt)  $R1 > ${R1}.fungal.fq
+	grep -A 3 -F -f <(awk -F"\t" '{if ($2=="p11") print $1}' <output.txt)  $R2 > ${R1}.fungal.fq
+ fi
+ R1=$f
+done
+
+
+
+```
+
+
+
+
+#### OLD use usearch
 We have multiplexed 16S and ITS PCR reactions in same sequencing run which can be seperated by the index
 Run demulti.pl to demultiplex these into fungal and bacterial fastq files. Takes as input paired data and will output two files for each. Sequence which doesn't match either index is written to both fungal and bacterial fastq files.
 
@@ -180,10 +211,11 @@ mv *fungal* ../ITS/fastq/.
 ```
 ### Truncate and pad
 Remove multiplex primers and optionally pad reads to same length.
-
-usearch8.1 -fastx_truncate reads.fastq -stripright 8  -fastqout reads_200.fa
+```shell
+for f in $METAGENOMICS/data/$RUN/16S/fastq/*
+	usearch8.1 -fastx_truncate $f -stripleft 8 -fastqout $f.trunc.fq 
 -stripleft 8
-
+```
 ## 16s workflow
 
 ### Join PE reads
