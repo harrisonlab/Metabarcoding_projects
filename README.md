@@ -520,5 +520,6 @@ Biom table for samples from multiple NGS runs are required.
 This will mean the names of each fasta will need to be made unique and the sequence lengths will need to be set to the same.
 
 Concatanate required samples per run. All fastas have common naming format so should be able to change with sed:
+```shell
 sed -e -i 's/_/_runID_/g' < input file
-
+```
