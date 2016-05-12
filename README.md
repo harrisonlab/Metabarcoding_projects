@@ -178,7 +178,11 @@ done
 mv *bacterial* ../16S/fastq/.
 mv *fungal* ../ITS/fastq/.
 ```
+### Truncate and pad
+Remove multiplex primers and optionally pad reads to same length.
 
+usearch8.1 -fastx_truncate reads.fastq -stripright 8  -fastqout reads_200.fa
+-stripleft 8
 
 ## 16s workflow
 
