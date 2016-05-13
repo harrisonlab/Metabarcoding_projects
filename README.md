@@ -288,9 +288,12 @@ done
 
 #### Concatenate files
 Concatenate both the filtered and unfiltered fa files (seperately)and copy the output to the $METAGENOMICS/data/$RUN/16S directory
+
+(the labelling I've used isn't compatible whith usearch. The _ needs to be replaced with a . or something.
 ```shell
 	cat $METAGENOMICS/data/$RUN/16S/filtered/*trimmed* > $METAGENOMICS/data/$RUN/16S/16S.t.fa
 	cat $METAGENOMICS/data/$RUN/16S/unfiltered/*cfree* > $METAGENOMICS/data/$RUN/16S/16S.unfiltered.fa
+	sed -i -e 's/_/\./g' 16S.unfiltered.fa
 ```	
 	
 ### Truncate and pad
