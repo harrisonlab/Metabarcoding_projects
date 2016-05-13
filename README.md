@@ -311,6 +311,28 @@ Rscript $METAGENOMICS/scripts/analysis.R "otu_table_mc2_w_tax_no_pynast_failures
 ```	
 ## ITS workflow
 
+### Remove (and save) reads contain both f & r primers
+```shell
+counter=0
+for  f in *.fastq.txt
+do counter=$((counter+1))
+    if (( $counter % 2 == 0 ))
+    then
+    	R2=$f
+    	S1=$(echo $R1|sed 's/.txt//')
+    	S2=$(echo $R2|sed 's/.txt//')
+	#grep -A 3 -F -f <(grep p13 $R1|awk -F"\t" '{print $1}') $S1|grep "\-\-" -v > ${S1}.short.fastq
+	sed 's|^|/|;s|$|/,+3 d|' <(grep p13 $R1|awk -F"\t" '{print $1}') > temp.sed
+	sed -f temp.sed $S1 > ${S1}.cleaned.fastq
+	sed 's|^|/|;s|$|/,+3 d|' <(grep p14 $R2|awk -F"\t" '{print $1}') > temp.sed
+	sed -f temp.sed $S2 > ${S2}.cleaned.fastq	
+	#grep -A 3 -F -f <(grep p14 $R2|awk -F"\t" '{print $1}') $S2|grep "\-\-" -v > ${S2}.short.fastq 
+    fi
+    R1=$f
+done
+```
+
+
 ### Alternative trimming method with usearch
 utrim is using the expected error per base. The settings below (which also set minimum length to 200) will discard sequences of 200 bases if expected error is > 1 - this is for the forward read only, the reverse read is not as stringent due to fairly poor quality of data in this example.
 ```shell
