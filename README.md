@@ -124,6 +124,15 @@ mkdir $METAGENOMICS/data/$RUN/ITS/final
 ```	
 The $METAGENOMICS directory should be set to something appropriate (e.g. /home/bob/metagenomics) and $RUN to the name of the NGS run. The realtive path is used in the scripts below - depending on your config you may have to specify full paths.	
 
+### Utax reference databases
+Reference databases were downloaded from:
+http://drive5.com/usearch/manual/utax_downloads.html
+(Unite V7 and RDP trainset 15)
+```shell
+usearch8.1 -makeudb_utax refdb.fa -output 16s_ref.udb -report 16s_report.txt
+usearch8.1 -makeudb_utax refdb.fa -utax_trainlevels kpcofgs ‑utax_splitlevels NVpcofgs -output ITS_ref.udb -report ITS_report.txt
+```
+
 ### QC
 Qualtiy checking was performed with fastQC (http://www.bioinformatics.babraham.ac.uk/projects/fastqc/)
 
@@ -255,24 +264,33 @@ mv *.trimmed* ../trimmed/.
 ```
 
 ### Convert filtered fastq to fasta
-must be run from root of trimmed directory 
-
+Both filtered and unfiltered reads are required for usearch8.1 (otu sequence and otu table construction respectively)
 ```shell
 cd  $METAGENOMICS/data/$RUN/16S/trimmed/	
 
-for f in  *free*
+for f in  *trimmed*
 do
  S=$(echo $f|awk -F"." '{print $1}')
  $METAGENOMICS/scripts/fq2fa.pl $f $f.fa $S
- mv $f.fa $METAGENOMICS/data/$RUN/16S/fasta/.
+ mv $f.fa $METAGENOMICS/data/$RUN/16S/filtered/.
+done
+
+cd  $METAGENOMICS/data/$RUN/16S/de_chimeread/	
+
+for f in  *cfree*
+do
+ S=$(echo $f|awk -F"." '{print $1}')
+ $METAGENOMICS/scripts/fq2fa.pl $f $f.fa $S
+ mv $f.fa $METAGENOMICS/data/$RUN/16S/unfiltered/.
 done
 
 ```
 
 #### Concatenate files
-Concatenated all the de-chimeraed files and copied the output to the $METAGENOMICS/data/$RUN/16S directory
+Concatenate both the filtered and unfiltered fa files (seperately)and copy the output to the $METAGENOMICS/data/$RUN/16S directory
 ```shell
-	cat $METAGENOMICS/data/$RUN/16S/fasta/*cfree* > $METAGENOMICS/data/$RUN/16S/16S.t.fa
+	cat $METAGENOMICS/data/$RUN/16S/filtered/*trimmed* > $METAGENOMICS/data/$RUN/16S/16S.t.fa
+	cat $METAGENOMICS/data/$RUN/16S/unfiltered/*cfree* > $METAGENOMICS/data/$RUN/16S/16S.unfiltered.fa
 ```	
 	
 ### Truncate and pad
@@ -292,15 +310,32 @@ rm 16S.t.fa
 #remove primer region
 usearch8.1 -fastx_truncate 16S.fa -stripleft 17 -fastqout 16S.primerfree.fa
 ```
-	
+### Dereplication 
+Required for usearch 8.x otu clustering
+
+```shell
+usearch8.1 -derep_fulllength 16S.fa -fastaout 16S.uniques.fasta -sizeout 
+usearch8.1 -sortbysize 16S.uniques.fasta -fastaout 16S.sorted.fasta -minsize 2
+```
+
 
 ### OTU Picking and descriptive statistics
 Run the 2nd and 3rd commands below only after the cluster jobs created by the 1st command have finished
+
+Quiime method (usearch 6.x)
 ```shell
 $METAGENOMICS/scripts/pick_OTU.sh   $METAGENOMICS/data/$RUN/16S/16S.fa  $METAGENOMICS/analysis/$RUN/16S/16S_otus $METAGENOMICS/scripts/parameters.txt $PYTHONUSERBASE/lib/python2.7/site-packages/qiime_default_reference/gg_13_8_otus/rep_set/97_otus.fasta TRUE
  X=`biom summarize-table -i METAGENOMICS/analysis/$RUN/16S/16S_otus/otu_table_mc2_w_tax_no_pynast_failures.biom|grep  Min|sed -n "/ Min: */s/ Min: *//p"|sed -n "/\..*/s/\..*//p"`
 $METAGENOMICS/scripts/core_diversity.sh $METAGENOMICS/analysis/$RUN/16S/16S_otus/otu_table_mc2_w_tax_no_pynast_failures.biom $METAGENOMICS/analysis/$RUN/16S/16s_cdout/ $METAGENOMICS/data/map.tsv $METAGENOMICS/analysis/$RUN/16S/16S_otus/rep_set.tre $X
 ```
+usearch 8.x method
+```shell
+usearch8.1 -cluster_otus 16S.sorted.fasta -otus 16S.otus.fa -uparseout 16S.out.up -relabel OTU -minsize 2
+usearch8.1 -usearch_global 16S.unfiltred.fa -db 16S.otus.fa -strand plus -id 0.97 -biomout 16S.otu_table.biom -otutabout 16S.otu_table.txt
+usearch8.1 -utax 16S.otus.fa -db $METAGENOMICS/taxonomies/utax/16s_ref.udb -strand both -utaxout 16S.reads.utax -alnout 16S.aln.txt
+```
+
+
 ### Statistical analysis
 analysis.R biom_table colData median/geomean outfile  
 
