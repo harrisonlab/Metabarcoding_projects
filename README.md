@@ -157,14 +157,13 @@ done
 This is going to be edited to use usearch8.1 search_oligodb - the algorithm used accepts mismatches at multiple positions.
 
 ```
-for f in G01N-098*.fastq; 
+for f in *.fastq; 
 do 
 	usearch8.1 -search_oligodb $f -db ../../../scripts/primers.db -strand both -userout ${f}.txt -userfields query+target+qstrand+diffs+tlo+thi+trowdots 
 done
 ```
-
 The bit below is a bit rubbish - working on a speed improvement
-The first bit may be useful for looking for adapter sequence contamination.
+The search_oligodb part will also identify adapter contamination .
 ```shell
 #this is slow as a slow thing (about 2 minutes per sample! - the old method was roughly 100 times faster)
 counter=0
@@ -214,18 +213,11 @@ done
 mv *bacterial* ../16S/fastq/.
 mv *fungal* ../ITS/fastq/.
 ```
-### Truncate and pad
-Remove multiplex primers and optionally pad reads to same length.
-```shell
-for f in $METAGENOMICS/data/$RUN/16S/fastq/*
-	usearch8.1 -fastx_truncate $f -stripleft 8 -fastqout $f.trunc.fq 
--stripleft 8
-```
+
 ## 16s workflow
 
 ### Join PE reads
-(usearch trims based on the expected error for the entire joined sequence.
-Expected error set to 1 in below and min length set to 200)
+Filtering is best left to a later stage rather than integrated into this step. 
 Updated to do filtering after chimera detaction
 ```shell
 counter=0
@@ -240,7 +232,6 @@ do counter=$((counter+1))
 	R1=$f
 done
 ```
-
 ### Remove chimeras
 Downloaded usearch 8.0 and RDP gold reference database from http://drive5.com/usearch/manual/cmd_uchime_ref.html
 
@@ -248,7 +239,7 @@ Ran the 'remove chimeras script'
 
 ```shell
 #remove chimeras script 	
-for f in $METAGENOMICS/data/$RUN/16S/truncated/*
+for f in $METAGENOMICS/data/$RUN/16S/joined/*
 do
 	S=$(echo $f|awk -F"." '{print $1}')
 	$METAGENOMICS/scripts/chimeras.sh $f $METAGENOMICS/taxonomies/RDP_gold.fasta ${S}.cfree.fastq $METAGENOMICS/data/$RUN/16S/de_chimeraed/
@@ -262,13 +253,13 @@ for f in $METAGENOMICS/data/$RUN/16S/de_chimeraed/*
 done
 ```
 
-### Convert joined fastq to fasta
-must be run from root of joined directory 
+### Convert de-chimearad fastq to fasta
+must be run from root of de_chimeraed directory 
 
 ```shell
-cd  $METAGENOMICS/data/$RUN/16S/joined/	
+cd  $METAGENOMICS/data/$RUN/16S/de_chimeraed/	
 
-for f in  *join*
+for f in  *free*
 do
  S=$(echo $f|awk -F"." '{print $1}')
  $METAGENOMICS/scripts/fq2fa.pl $f $f.fa $S
@@ -276,10 +267,30 @@ do
 done
 
 ```
+
 #### Concatenate files
 Concatenated all the de-chimeraed files and copied the output to the $METAGENOMICS/data/$RUN/16S directory
+```shell
+	cat $METAGENOMICS/data/$RUN/16S/fasta/*cfree* > $METAGENOMICS/data/$RUN/16S/16S.t.fa
+```	
+	
+### Truncate and pad
+Remove multiplex primers and optionally pad reads to same length.
+The forward primer region is degenerate, therefore could include taxanomic imformation. 
+I'm going to skip the truncation step
 
-	cat $METAGENOMICS/data/$RUN/16S/de_chimeraed/*cfree* > $METAGENOMICS/data/$RUN/16S/16S.fa
+##### Padding
+```shell
+X=`grep ">" -v 16S.t.fa|awk '{ print length($0); }'|awk '$0>x{x=$0};END{print x}'`
+cat 16S.t.fa| sed -e :a -e "s/^[^>].\{1,`expr $X - 1`\}$/&N/;ta" >16S.fa
+rm 16S.t.fa
+```
+##### Truncate
+```shell
+#remove primer region
+usearch8.1 -fastx_truncate 16S.fa -stripleft 17 -fastqout 16S.primerfree.fa
+```
+	
 
 ### OTU Picking and descriptive statistics
 Run the 2nd and 3rd commands below only after the cluster jobs created by the 1st command have finished
