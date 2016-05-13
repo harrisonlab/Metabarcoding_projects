@@ -251,13 +251,14 @@ for f in $METAGENOMICS/data/$RUN/16S/de_chimeraed/*
 	S=$(echo $f|awk -F"." '{print $1}')
 	$METAGENOMICS/scripts/utrim.sh $f ${S}.trimmed.fastq $METAGENOMICS/data/$RUN/ITS/trimmed 0.005 300
 done
+mv *.trimmed* ../trimmed/.
 ```
 
-### Convert de-chimearad fastq to fasta
-must be run from root of de_chimeraed directory 
+### Convert filtered fastq to fasta
+must be run from root of trimmed directory 
 
 ```shell
-cd  $METAGENOMICS/data/$RUN/16S/de_chimeraed/	
+cd  $METAGENOMICS/data/$RUN/16S/trimmed/	
 
 for f in  *free*
 do
@@ -282,9 +283,10 @@ I'm going to skip the truncation step
 ##### Padding
 ```shell
 X=`grep ">" -v 16S.t.fa|awk '{ print length($0); }'|awk '$0>x{x=$0};END{print x}'`
-cat 16S.t.fa| sed -e :a -e "s/^[^>].\{1,`expr $X - 1`\}$/&N/;ta" >16S.fa
+usearch8.1 -fastx_truncate 16S.t.fa -trunclen $X -padlen $X -fastaout 16S.fa
 rm 16S.t.fa
 ```
+
 ##### Truncate
 ```shell
 #remove primer region
