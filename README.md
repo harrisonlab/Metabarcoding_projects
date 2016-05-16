@@ -308,6 +308,8 @@ usearch8.1 -fastx_truncate 16S.t.fa -trunclen $X -padlen $X -fastaout 16S.fa
 rm 16S.t.fa
 ```
 
+Problem with (free version) usearch running out of memory for this and subsequent steps. Cutting and recombining data during dereplication phase gives a fairly unsatisfactory, but working method 
+
 ##### Truncate
 ```shell
 #remove primer region
@@ -320,6 +322,8 @@ Required for usearch 8.x otu clustering
 usearch8.1 -derep_fulllength 16S.fa -fastaout 16S.uniques.fasta -sizeout 
 usearch8.1 -sortbysize 16S.uniques.fasta -fastaout 16S.sorted.fasta -minsize 2
 ```
+get_uniq.pl will give output comparable to derep_fulllength for larger sequence collections
+combine_uniq.pl will combine several sets of dereplicated sequences, maintaining the counts.
 
 
 ### OTU Picking and descriptive statistics
