@@ -284,14 +284,21 @@ get_uniq.pl will give output comparable to derep_fulllength for larger sequence 
 combine_uniq.pl will combine several sets of dereplicated sequences, maintaining the counts.
 The sorting algorithm may run out of memory as well - it shouldn't be too difficult to adjust combine_uniq.pl to sort and filter on size (though the cluster algorithm will also filter on min size)
 
-### OTU Picking and descriptive statistics
+### OTU Picking
 
-UPARSE method
-cluster_otus will also filter out chimeras
+##### Clustering
+Cluster dereplicated seqeunces and produce OTU fasta (also filters for chimeras)
 ```shell
 usearch8.1 -cluster_otus 16S.sorted.fasta -otus 16S.otus.fa -uparseout 16S.out.up -relabel OTU -minsize 2
-usearch8.1 -usearch_global 16S.unfiltred.fa -db 16S.otus.fa -strand plus -id 0.97 -biomout 16S.otu_table.biom -otutabout 16S.otu_table.txt
+```
+##### Assign Taxonomy
+```shell
 usearch8.1 -utax 16S.otus.fa -db $METAGENOMICS/taxonomies/utax/16s_ref.udb -strand both -utaxout 16S.reads.utax -rdpout 16S.rdp -alnout 16S.aln.txt
+```
+##### OTU table creation
+Creates an OTU table of read counts per OTU per sample
+```shell
+usearch8.1 -usearch_global 16S.unfiltred.fa -db 16S.otus.fa -strand plus -id 0.97 -biomout 16S.otu_table.biom -otutabout 16S.otu_table.txt
 ```
 
 ### Statistical analysis
@@ -301,16 +308,9 @@ The taxa file output by utax is difficult to manipulate in R. Therefore the scri
 ```shell
 cat 16S.rdp|$METAGENOMICS/scripts/mod_taxa.pl > 16S.taxa
 ```
-
-Currently run manualy 
-ubiom makes a S3 biom object from 
-
-analysis.R biom_table colData median/geomean outfile  
-Requires a file (colData) which describes condition (e.g. infected or uninfected) for each sample 
-```shell
-cd $METAGENOMICS/analysis/$RUN/16S/16S_otus
-Rscript $METAGENOMICS/scripts/analysis.R "otu_table_mc2_w_tax_no_pynast_failures.biom" colData median res.sig.csv
-```	
+ubiom makes a S3 biom object from the OTU table (16S.otu_table.txt), OTU taxonomy (16S.taxa) and sample description file (colData)
+analysis2.R/deseq.r contain scripts to produce deseq objects and run differential analysis + a few graphing options.
+	
 ## ITS workflow
 
 ### Remove (and save) reads contain both f & r primers
@@ -511,7 +511,6 @@ ITS <- subseq(ITS,start=2,width = (max(ITS@ranges@width)-1))
 writeXStringSet(ITS,"ITS.t.fa")
 ```
 
-
 ### Remove chimeras
 Using UNITE v 7.0 ITS database for chimeras (UCHIME reference dataset) https://unite.ut.ee/repository.php#uchime
 
@@ -657,4 +656,12 @@ Quiime method (usearch 6.x)
 $METAGENOMICS/scripts/pick_OTU.sh   $METAGENOMICS/data/$RUN/16S/16S.fa  $METAGENOMICS/analysis/$RUN/16S/16S_otus $METAGENOMICS/scripts/parameters.txt $PYTHONUSERBASE/lib/python2.7/site-packages/qiime_default_reference/gg_13_8_otus/rep_set/97_otus.fasta TRUE
  X=`biom summarize-table -i METAGENOMICS/analysis/$RUN/16S/16S_otus/otu_table_mc2_w_tax_no_pynast_failures.biom|grep  Min|sed -n "/ Min: */s/ Min: *//p"|sed -n "/\..*/s/\..*//p"`
 $METAGENOMICS/scripts/core_diversity.sh $METAGENOMICS/analysis/$RUN/16S/16S_otus/otu_table_mc2_w_tax_no_pynast_failures.biom $METAGENOMICS/analysis/$RUN/16S/16s_cdout/ $METAGENOMICS/data/map.tsv $METAGENOMICS/analysis/$RUN/16S/16S_otus/rep_set.tre $X
+```
+
+##### OLD statistical analysis
+analysis.R biom_table colData median/geomean outfile  
+Requires a file (colData) which describes condition (e.g. infected or uninfected) for each sample 
+```shell
+cd $METAGENOMICS/analysis/$RUN/16S/16S_otus
+Rscript $METAGENOMICS/scripts/analysis.R "otu_table_mc2_w_tax_no_pynast_failures.biom" colData median res.sig.csv
 ```
