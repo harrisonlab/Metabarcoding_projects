@@ -255,12 +255,23 @@ done
 
 ### Filter fastq files
 updated to convert to fasta
+Then modified it, as it doesn't name the sequences correctly
 ```shell
-for f in $METAGENOMICS/data/$RUN/16S/joined/*
-	S=$(echo $f|awk -F"." '{print $1}')
-	$METAGENOMICS/scripts/utrim.sh $f ${S}.filtered.fastq $METAGENOMICS/data/$RUN/ITS/filtered 0.005 300 $S
+for f in $METAGENOMICS/data/$RUN/16S/joined/*.fq
+do
+	S=$(echo $f|awk -F"." '{print $1}'|awk -F"/" '{print $NF}')
+	$METAGENOMICS/scripts/utrim.sh $f ${S}.filtered $METAGENOMICS/data/$RUN/16S/filtered 0.005 300 ${S}.
 done
-mv *.filtered* ../filtered/.
+```
+
+Rename the sequences to unique values
+```shell
+for f in $METAGENOMICS/data/$RUN/16S/filtered/*.filtered
+do	
+	S=$(echo $f|awk -F"/" '{print $NF}')
+	cat $f|awk '{if ($0~/>/){y+=1;gsub(/_.*/,"."y,$0)};print $0}' > ${S}.fa
+	rm $f
+done
 ```
 
 #### Concatenate files
