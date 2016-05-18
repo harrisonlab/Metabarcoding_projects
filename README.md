@@ -291,7 +291,7 @@ done
 Remove multiplex primers and pad reads to same length.
 
 ```shell
-X=`grep ">" -v 16S.t.fa|awk '{if ($1~/>/) {print $0} else {print length($0)};}'|awk '{if ($1~/>/) {y=0} else{y+=$0}};y>x{x=y};END{print x}'`
+X=`cat 16S.t.fa|awk '{if ($1~/>/) {print $0} else {print length($0)};}'|awk '{if ($1~/>/) {y=0} else{y+=$0}};y>x{x=y};END{print x}'`
 usearch8.1 -fastx_truncate 16S.t.fa -stripleft 17 -stipright 21 -trunclen $X -padlen $X -fastaout 16S.fa
 rm 16S.t.fa
 ```
