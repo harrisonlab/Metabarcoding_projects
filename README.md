@@ -160,6 +160,20 @@ NOTE - the below scipts that implement something like 'for f in *' are dependent
 done
 ```
 
+```shell
+ counter=0
+ for f in $METAGENOMICS/data/$RUN/fastq/*R1*.fastq
+ do counter=$((counter+1))
+ if (( $counter % 2 == 0 ))
+     then
+         R2=$f
+         S=$(echo $f|awk -F"_" '{print $2}')
+         $METAGENOMICS/scripts/bowtie.sh $R1 $R2 $HOME/Data/PhiX/Illumina/RTA/Sequence/Bowtie2Index/genome $METAGENOMICS/data/$RUN/PhiX ${S}.phix.fq 250 500
+     fi
+     R1=$f
+done
+```
+
 #### Demultiplexing
 
 ##### New (slow) method
@@ -227,19 +241,18 @@ mv *fungal* ../ITS/fastq/.
 
 ### Join PE reads
 (do not filter at this stage - unfiltered joined reads are required for later stage)
+
 ```shell
-counter=0
-for f in $METAGENOMICS/data/$RUN/16S/fastq/*
-do counter=$((counter+1))
-	if (( $counter % 2 == 0 ))
-	then
-		R2=$f
-		S=$(echo $f|awk -F"_" '{print $2}')
-		$METAGENOMICS/scripts/ujoin.sh $R1 $R2 ${S}.joined.fq $METAGENOMICS/data/$RUN/16S/joined
-	fi
+for f in $METAGENOMICS/data/$RUN/16S/fastq/*R1*
+do
 	R1=$f
+	R2=$(echo $R1|sed 's/_R1_/_R2_/')
+	S=$(echo $f|awk -F"_" '{print $2}')
+	$METAGENOMICS/scripts/ujoin.sh $R1 $R2 ${S}.joined.fq $METAGENOMICS/data/$RUN/16S/joined
 done
 ```
+
+
 ### Filter fastq files
 updated to convert to fasta
 ```shell
