@@ -276,15 +276,15 @@ done
 
 #### Concatenate files
 Concatenate both the filtered and unfiltered files (seperately) and copy the output to the $METAGENOMICS/data/$RUN/16S directory
-
-(The labelling I've used isn't compatible whith usearch.
-This is no longer correct, but need to test)
- 
-
+Unfiltered will need to be converted to fasta first 
 ```shell
-	cat $METAGENOMICS/data/$RUN/16S/filtered/*filtered* > $METAGENOMICS/data/$RUN/16S/16S.t.fa
-	cat $METAGENOMICS/data/$RUN/16S/joined/*.fastq > $METAGENOMICS/data/$RUN/16S/16S.unfiltered.fastq
-	sed -i -e 's/_/\./g' 16S.unfiltered.fa
+cat $METAGENOMICS/data/$RUN/16S/filtered/*filtered* > $METAGENOMICS/data/$RUN/16S/16S.t.fa
+
+for f in $METAGENOMICS/data/$RUN/16S/joined/*.fastq
+do
+	S=$(echo $f|awk -F"." '{print $1}'|awk -F"/" '{print $NF}')
+	$METAGENOMICS/scripts/fq2fa.pl $f $METAGENOMICS/data/$RUN/16S/16S.unfiltered.fa $S
+done
 ```	
 	
 ### Truncate and pad
