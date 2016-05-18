@@ -12,7 +12,7 @@ my $outfile2 = $ARGV[1] || die "Please provide outfile2 name" ;
 open (FILE, "<$sequence_file") || die "File $sequence_file doesn't exist!!";
 
 
-open (OUTFILE2, ">$outfile2") or die "Failed to open file '$outfile2' for writing\n";
+open (OUTFILE2, ">>$outfile2") or die "Failed to open file '$outfile2' for writing\n";
 
 my $count = 2;
 while (my $id_line = <FILE>) {
