@@ -282,28 +282,30 @@ usearch8.1 -sortbysize 16S.uniques.fasta -fastaout 16S.sorted.fasta -minsize 2
 ```
 get_uniq.pl will give output comparable to derep_fulllength for larger sequence collections
 combine_uniq.pl will combine several sets of dereplicated sequences, maintaining the counts.
-The sorting algorithm may run out of memory as well - it shouldn't be too difficult to adjust combine_uniq.pl to sort and filter on size (though it does just take stdout data, so may be difficult to dynamically set minsize)
+The sorting algorithm may run out of memory as well - it shouldn't be too difficult to adjust combine_uniq.pl to sort and filter on size (though the cluster algorithm will also filter on min size)
 
 ### OTU Picking and descriptive statistics
-Run the 2nd and 3rd commands below only after the cluster jobs created by the 1st command have finished
 
-Quiime method (usearch 6.x)
-```shell
-$METAGENOMICS/scripts/pick_OTU.sh   $METAGENOMICS/data/$RUN/16S/16S.fa  $METAGENOMICS/analysis/$RUN/16S/16S_otus $METAGENOMICS/scripts/parameters.txt $PYTHONUSERBASE/lib/python2.7/site-packages/qiime_default_reference/gg_13_8_otus/rep_set/97_otus.fasta TRUE
- X=`biom summarize-table -i METAGENOMICS/analysis/$RUN/16S/16S_otus/otu_table_mc2_w_tax_no_pynast_failures.biom|grep  Min|sed -n "/ Min: */s/ Min: *//p"|sed -n "/\..*/s/\..*//p"`
-$METAGENOMICS/scripts/core_diversity.sh $METAGENOMICS/analysis/$RUN/16S/16S_otus/otu_table_mc2_w_tax_no_pynast_failures.biom $METAGENOMICS/analysis/$RUN/16S/16s_cdout/ $METAGENOMICS/data/map.tsv $METAGENOMICS/analysis/$RUN/16S/16S_otus/rep_set.tre $X
-```
-usearch 8.x method
+UPARSE method
+cluster_otus will also filter out chimeras
 ```shell
 usearch8.1 -cluster_otus 16S.sorted.fasta -otus 16S.otus.fa -uparseout 16S.out.up -relabel OTU -minsize 2
 usearch8.1 -usearch_global 16S.unfiltred.fa -db 16S.otus.fa -strand plus -id 0.97 -biomout 16S.otu_table.biom -otutabout 16S.otu_table.txt
 usearch8.1 -utax 16S.otus.fa -db $METAGENOMICS/taxonomies/utax/16s_ref.udb -strand both -utaxout 16S.reads.utax -rdpout 16S.rdp -alnout 16S.aln.txt
 ```
 
-
 ### Statistical analysis
-analysis.R biom_table colData median/geomean outfile  
+Requires analysis2.R and deseq.r
 
+The taxa file output by utax is difficult to manipulate in R. Therefore the script mod_taxa.pl should be used to produce an R friendly taxa file.
+```shell
+cat 16S.rdp|$METAGENOMICS/scripts/mod_taxa.pl > 16S.taxa
+```
+
+Currently run manualy 
+ubiom makes a S3 biom object from 
+
+analysis.R biom_table colData median/geomean outfile  
 Requires a file (colData) which describes condition (e.g. infected or uninfected) for each sample 
 ```shell
 cd $METAGENOMICS/analysis/$RUN/16S/16S_otus
@@ -649,4 +651,10 @@ do
  mv $f.fa $METAGENOMICS/data/$RUN/16S/unfiltered/.
 done
 
+```
+Quiime method (usearch 6.x)
+```shell
+$METAGENOMICS/scripts/pick_OTU.sh   $METAGENOMICS/data/$RUN/16S/16S.fa  $METAGENOMICS/analysis/$RUN/16S/16S_otus $METAGENOMICS/scripts/parameters.txt $PYTHONUSERBASE/lib/python2.7/site-packages/qiime_default_reference/gg_13_8_otus/rep_set/97_otus.fasta TRUE
+ X=`biom summarize-table -i METAGENOMICS/analysis/$RUN/16S/16S_otus/otu_table_mc2_w_tax_no_pynast_failures.biom|grep  Min|sed -n "/ Min: */s/ Min: *//p"|sed -n "/\..*/s/\..*//p"`
+$METAGENOMICS/scripts/core_diversity.sh $METAGENOMICS/analysis/$RUN/16S/16S_otus/otu_table_mc2_w_tax_no_pynast_failures.biom $METAGENOMICS/analysis/$RUN/16S/16s_cdout/ $METAGENOMICS/data/map.tsv $METAGENOMICS/analysis/$RUN/16S/16S_otus/rep_set.tre $X
 ```
