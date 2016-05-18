@@ -260,7 +260,7 @@ Then modified it, as it doesn't name the sequences correctly
 for f in $METAGENOMICS/data/$RUN/16S/joined/*.fq
 do
 	S=$(echo $f|awk -F"." '{print $1}'|awk -F"/" '{print $NF}')
-	$METAGENOMICS/scripts/utrim.sh $f ${S}.filtered $METAGENOMICS/data/$RUN/16S/filtered 0.005 300 ${S}.
+	$METAGENOMICS/scripts/utrim.sh $f ${S}.filtered $METAGENOMICS/data/$RUN/16S/filtered 0.005 300 ${S}_
 done
 ```
 
