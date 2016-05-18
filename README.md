@@ -254,7 +254,7 @@ done
 updated to convert to fasta
 Then modified it, as it doesn't name the sequences correctly
 ```shell
-for f in $METAGENOMICS/data/$RUN/16S/joined/*.fq
+for f in $METAGENOMICS/data/$RUN/16S/joined/*.fastq
 do
 	S=$(echo $f|awk -F"." '{print $1}'|awk -F"/" '{print $NF}')
 	$METAGENOMICS/scripts/utrim.sh $f ${S}.filtered $METAGENOMICS/data/$RUN/16S/filtered 0.005 300 ${S}_
