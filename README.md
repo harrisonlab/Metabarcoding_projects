@@ -324,7 +324,7 @@ usearch8.1 -utax 16S.otus.fa -db $METAGENOMICS/taxonomies/utax/16s_ref.udb -stra
 ##### OTU table creation
 Creates an OTU table of read counts per OTU per sample
 ```shell
-usearch8.1 -usearch_global 16S.unfiltred.fa -db 16S.otus.fa -strand plus -id 0.97 -biomout 16S.otu_table.biom -otutabout 16S.otu_table.txt
+usearch8.1 -usearch_global 16S.unfiltered.fa -db 16S.otus.fa -strand plus -id 0.97 -biomout 16S.otu_table.biom -otutabout 16S.otu_table.txt
 ```
 
 ### Statistical analysis
