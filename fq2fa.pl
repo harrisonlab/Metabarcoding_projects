@@ -19,7 +19,7 @@ while (my $id_line = <FILE>) {
     $count++;
     next if ($count%4!=0);
     my $fas = $count/4;
-    print OUTFILE2 ">$ARGV[2]_$fas\n";
+    print OUTFILE2 ">$ARGV[2].$fas\n";
     print OUTFILE2 "$id_line";
 }
 
