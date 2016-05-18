@@ -228,8 +228,7 @@ do counter=$((counter+1))
   	R2=$f
 	echo $f
 	# replace index_1 and 2 with a regular expression for each index
-	$METAGENOMICS/scripts/demulti.pl $R1 $R2 "[ACGT]CTACGG[ACGT]" "[ACGT]CTTGGT[ACGT]"  
-	#"^index_1" "^index_2"	
+	$METAGENOMICS/scripts/demulti.pl $R1 $R2 "^index_1" "^index_2"	
     fi
     R1=$f
 done
