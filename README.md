@@ -303,6 +303,7 @@ Required for usearch 8.x otu clustering
 ```shell
 usearch8.1 -derep_fulllength 16S.fa -fastaout 16S.uniques.fasta -sizeout 
 usearch8.1 -sortbysize 16S.uniques.fasta -fastaout 16S.sorted.fasta -minsize 2
+rm 16S.fa 16S.uniques.fasta
 ```
 get_uniq.pl will give output comparable to derep_fulllength for larger sequence collections
 combine_uniq.pl will combine several sets of dereplicated sequences, maintaining the counts.
@@ -315,6 +316,7 @@ Cluster dereplicated seqeunces and produce OTU fasta (also filters for chimeras)
 ```shell
 usearch8.1 -cluster_otus 16S.sorted.fasta -otus 16S.otus.fa -uparseout 16S.out.up -relabel OTU -minsize 2
 ```
+ 
 ##### Assign Taxonomy
 ```shell
 usearch8.1 -utax 16S.otus.fa -db $METAGENOMICS/taxonomies/utax/16s_ref.udb -strand both -utaxout 16S.reads.utax -rdpout 16S.rdp -alnout 16S.aln.txt
