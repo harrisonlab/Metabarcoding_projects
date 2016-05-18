@@ -220,17 +220,14 @@ grep -x "[ATCG]\+" $(ls|head -n1)| cut -c-8|sort|uniq|xargs -I r grep -c ^r $(ls
 I've updated demulti.pl to drop ambiguous reads.
 
 ```shell
-counter=0
-for f in $METAGENOMICS/data/$RUN/fastq/*
-do counter=$((counter+1))
-    if (( $counter % 2 == 0 ))
-    then
-  	R2=$f
+for f in $METAGENOMICS/data/$RUN/fastq/*_R1_*
+do
+	R1=$f
+	R2=$(echo $R1|sed 's/_R1_/_R2_/')
+	S=$(echo $f|awk -F"_" '{print $2}')
 	echo $f
 	# replace index_1 and 2 with a regular expression for each index
 	$METAGENOMICS/scripts/demulti.pl $R1 $R2 "^index_1" "^index_2"	
-    fi
-    R1=$f
 done
 
 mv *bacterial* ../16S/fastq/.
