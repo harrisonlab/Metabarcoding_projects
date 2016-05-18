@@ -223,11 +223,10 @@ mv *bacterial* ../16S/fastq/.
 mv *fungal* ../ITS/fastq/.
 ```
 
-## 16s workflow
+## UPARSE 16s workflow
 
 ### Join PE reads
-Filtering is best left to a later stage rather than integrated into this step. 
-Updated to do filtering after chimera detaction
+(do not filter at this stage - unfiltered joined reads are required for later stage)
 ```shell
 counter=0
 for f in $METAGENOMICS/data/$RUN/16S/fastq/*
@@ -241,26 +240,14 @@ do counter=$((counter+1))
 	R1=$f
 done
 ```
-### Remove chimeras
-Downloaded usearch 8.0 and RDP gold reference database from http://drive5.com/usearch/manual/cmd_uchime_ref.html
-
-Ran the 'remove chimeras script'
-
-```shell
-#remove chimeras script 	
-for f in $METAGENOMICS/data/$RUN/16S/joined/*
-do
-	S=$(echo $f|awk -F"." '{print $1}')
-	$METAGENOMICS/scripts/chimeras.sh $f $METAGENOMICS/taxonomies/RDP_gold.fasta ${S}.cfree.fastq $METAGENOMICS/data/$RUN/16S/de_chimeraed/
-done
-```
-###Filter fastq files
+### Filter fastq files
+updated to convert to fasta
 ```shell
 for f in $METAGENOMICS/data/$RUN/16S/de_chimeraed/*
 	S=$(echo $f|awk -F"." '{print $1}')
-	$METAGENOMICS/scripts/utrim.sh $f ${S}.trimmed.fastq $METAGENOMICS/data/$RUN/ITS/trimmed 0.005 300
+	$METAGENOMICS/scripts/utrim.sh $f ${S}.filtered.fastq $METAGENOMICS/data/$RUN/ITS/trimmed 0.005 300
 done
-mv *.trimmed* ../trimmed/.
+mv *.filtered* ../filtered/.
 ```
 
 ### Convert filtered fastq to fasta
@@ -650,4 +637,20 @@ This will mean the names of each fasta will need to be made unique and the seque
 Concatanate required samples per run. All fastas have common naming format so should be able to change with sed:
 ```shell
 sed -e -i 's/_/_runID_/g' < input file
+```
+
+##OLD
+
+### Quiime pipeline 16S Remove chimeras
+Downloaded usearch 8.0 and RDP gold reference database from http://drive5.com/usearch/manual/cmd_uchime_ref.html
+
+Ran the 'remove chimeras script'
+
+```shell
+#remove chimeras script 	
+for f in $METAGENOMICS/data/$RUN/16S/joined/*
+do
+	S=$(echo $f|awk -F"." '{print $1}')
+	$METAGENOMICS/scripts/chimeras.sh $f $METAGENOMICS/taxonomies/RDP_gold.fasta ${S}.cfree.fastq $METAGENOMICS/data/$RUN/16S/de_chimeraed/
+done
 ```
