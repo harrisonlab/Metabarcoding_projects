@@ -248,7 +248,7 @@ do
 	R1=$f
 	R2=$(echo $R1|sed 's/_R1_/_R2_/')
 	S=$(echo $f|awk -F"_" '{print $2}')
-	$METAGENOMICS/scripts/ujoin.sh $R1 $R2 ${S}.joined.fq $METAGENOMICS/data/$RUN/16S/joined
+	$METAGENOMICS/scripts/ujoin.sh $R1 $R2 ${S}.joined.fastq $METAGENOMICS/data/$RUN/16S/joined
 done
 ```
 
