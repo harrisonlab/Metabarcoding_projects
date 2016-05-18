@@ -243,64 +243,42 @@ done
 ### Filter fastq files
 updated to convert to fasta
 ```shell
-for f in $METAGENOMICS/data/$RUN/16S/de_chimeraed/*
+for f in $METAGENOMICS/data/$RUN/16S/joined/*
 	S=$(echo $f|awk -F"." '{print $1}')
-	$METAGENOMICS/scripts/utrim.sh $f ${S}.filtered.fastq $METAGENOMICS/data/$RUN/ITS/trimmed 0.005 300
+	$METAGENOMICS/scripts/utrim.sh $f ${S}.filtered.fastq $METAGENOMICS/data/$RUN/ITS/filtered 0.005 300 $S
 done
 mv *.filtered* ../filtered/.
 ```
 
-### Convert filtered fastq to fasta
-Both filtered and unfiltered reads are required for usearch8.1 (otu sequence and otu table construction respectively)
-```shell
-cd  $METAGENOMICS/data/$RUN/16S/trimmed/	
-
-for f in  *trimmed*
-do
- S=$(echo $f|awk -F"." '{print $1}')
- $METAGENOMICS/scripts/fq2fa.pl $f $f.fa $S
- mv $f.fa $METAGENOMICS/data/$RUN/16S/filtered/.
-done
-
-cd  $METAGENOMICS/data/$RUN/16S/de_chimeread/	
-
-for f in  *cfree*
-do
- S=$(echo $f|awk -F"." '{print $1}')
- $METAGENOMICS/scripts/fq2fa.pl $f $f.fa $S
- mv $f.fa $METAGENOMICS/data/$RUN/16S/unfiltered/.
-done
-
-```
-
 #### Concatenate files
-Concatenate both the filtered and unfiltered fa files (seperately)and copy the output to the $METAGENOMICS/data/$RUN/16S directory
+Concatenate both the filtered and unfiltered files (seperately) and copy the output to the $METAGENOMICS/data/$RUN/16S directory
 
-(the labelling I've used isn't compatible whith usearch. The _ needs to be replaced with a . or something.
+(The labelling I've used isn't compatible whith usearch.
+This is no longer correct, but need to test)
+ 
+
 ```shell
-	cat $METAGENOMICS/data/$RUN/16S/filtered/*trimmed* > $METAGENOMICS/data/$RUN/16S/16S.t.fa
-	cat $METAGENOMICS/data/$RUN/16S/unfiltered/*cfree* > $METAGENOMICS/data/$RUN/16S/16S.unfiltered.fa
+	cat $METAGENOMICS/data/$RUN/16S/filtered/*filtered* > $METAGENOMICS/data/$RUN/16S/16S.t.fa
+	cat $METAGENOMICS/data/$RUN/16S/joined/*.fastq > $METAGENOMICS/data/$RUN/16S/16S.unfiltered.fastq
 	sed -i -e 's/_/\./g' 16S.unfiltered.fa
 ```	
 	
 ### Truncate and pad
-Remove multiplex primers and optionally pad reads to same length.
-The forward primer region is degenerate, therefore could include taxanomic imformation. 
-I'm going to skip the truncation step
+Remove multiplex primers and pad reads to same length.
 
-##### Padding
 ```shell
 X=`grep ">" -v 16S.t.fa|awk '{ print length($0); }'|awk '$0>x{x=$0};END{print x}'`
-usearch8.1 -fastx_truncate 16S.t.fa -trunclen $X -padlen $X -fastaout 16S.fa
+usearch8.1 -fastx_truncate 16S.t.fa -trunclen -stripleft 17 -stipright 21 $X -padlen $X -fastaout 16S.fa
 rm 16S.t.fa
 ```
+
 
 Problem with (free version) usearch running out of memory for this and subsequent steps. Cutting and recombining data during dereplication phase gives a fairly unsatisfactory, but working method. 
 
 ##### Truncate
 ```shell
 #remove primer region
-usearch8.1 -fastx_truncate 16S.fa -stripleft 17 -fastqout 16S.primerfree.fa
+usearch8.1 -fastx_truncate 16S.fa  -fastqout 16S.primerfree.fa
 ```
 ### Dereplication 
 Required for usearch 8.x otu clustering
@@ -653,4 +631,29 @@ do
 	S=$(echo $f|awk -F"." '{print $1}')
 	$METAGENOMICS/scripts/chimeras.sh $f $METAGENOMICS/taxonomies/RDP_gold.fasta ${S}.cfree.fastq $METAGENOMICS/data/$RUN/16S/de_chimeraed/
 done
+```
+
+### 16S Convert filtered fastq to fasta
+
+configured utrim.sh to do this
+
+```shell
+cd  $METAGENOMICS/data/$RUN/16S/trimmed/	
+
+for f in  *trimmed*
+do
+ S=$(echo $f|awk -F"." '{print $1}')
+ $METAGENOMICS/scripts/fq2fa.pl $f $f.fa $S
+ mv $f.fa $METAGENOMICS/data/$RUN/16S/filtered/.
+done
+
+cd  $METAGENOMICS/data/$RUN/16S/de_chimeread/	
+
+for f in  *cfree*
+do
+ S=$(echo $f|awk -F"." '{print $1}')
+ $METAGENOMICS/scripts/fq2fa.pl $f $f.fa $S
+ mv $f.fa $METAGENOMICS/data/$RUN/16S/unfiltered/.
+done
+
 ```
