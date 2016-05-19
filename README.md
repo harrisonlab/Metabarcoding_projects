@@ -251,7 +251,7 @@ done
 
 ### Pre-process OTU fasta
 
-#### Filter fastq files
+##### Filter fastq files
 ```shell
 for f in $METAGENOMICS/data/$RUN/16S/joined/*.fastq
 do
@@ -259,7 +259,7 @@ do
 	$METAGENOMICS/scripts/utrim.sh $f ${S}.filtered $METAGENOMICS/data/$RUN/16S/filtered 0.005 300 ${S}_
 done
 ```
-#### Rename sequences
+##### Rename sequences
 The sequence renaming of utrim is not working correctly (not unique). The below will produce unique sequence names per sample
 ```shell
 for f in $METAGENOMICS/data/$RUN/16S/filtered/*.filtered
@@ -270,20 +270,16 @@ do
 done
 ```
 
-#### Concatenate files
-Concatenate both the filtered and unfiltered files (seperately) and copy the output to the $METAGENOMICS/data/$RUN/16S directory
-Unfiltered will need to be converted to fasta first 
+
+### OTU fasta creation
+
+##### Concatenate files
+
 ```shell
 cat $METAGENOMICS/data/$RUN/16S/filtered/*filtered* > $METAGENOMICS/data/$RUN/16S/16S.t.fa
+```
 
-for f in $METAGENOMICS/data/$RUN/16S/joined/*.fastq
-do
-	S=$(echo $f|awk -F"." '{print $1}'|awk -F"/" '{print $NF}')
-	$METAGENOMICS/scripts/fq2fa.pl $f $METAGENOMICS/data/$RUN/16S/16S.unfiltered.fa $S
-done
-```	
-	
-### Truncate and pad
+##### Truncate and pad
 Remove multiplex primers and pad reads to same length.
 
 ```shell
@@ -293,7 +289,7 @@ rm 16S.t.fa
 ```
 Problem with (free version) usearch running out of memory for this and subsequent steps. Cutting and recombining data during dereplication phase gives a fairly unsatisfactory, but working method. 
 
-### Dereplication 
+##### Dereplication 
 Required for usearch 8.x otu clustering
 
 ```shell
@@ -305,8 +301,6 @@ get_uniq.pl will give output comparable to derep_fulllength for larger sequence 
 combine_uniq.pl will combine several sets of dereplicated sequences, maintaining the counts.
 The sorting algorithm may run out of memory as well - it shouldn't be too difficult to adjust combine_uniq.pl to sort and filter on size (though the cluster algorithm will also filter on min size)
 
-### OTU Picking
-
 ##### Clustering
 Cluster dereplicated seqeunces and produce OTU fasta (also filters for chimeras)
 ```shell
@@ -317,7 +311,19 @@ usearch8.1 -cluster_otus 16S.sorted.fasta -otus 16S.otus.fa -uparseout 16S.out.u
 ```shell
 usearch8.1 -utax 16S.otus.fa -db $METAGENOMICS/taxonomies/utax/16s_ref.udb -strand both -utaxout 16S.reads.utax -rdpout 16S.rdp -alnout 16S.aln.txt
 ```
-##### OTU table creation
+
+### OTU table 
+
+##### Concatenate unfiltered reads
+Unfiltered fastq will need to be converted to fasta first 
+```shell
+for f in $METAGENOMICS/data/$RUN/16S/joined/*.fastq
+do
+	S=$(echo $f|awk -F"." '{print $1}'|awk -F"/" '{print $NF}')
+	$METAGENOMICS/scripts/fq2fa.pl $f $METAGENOMICS/data/$RUN/16S/16S.unfiltered.fa $S
+done
+```	
+##### Make table
 Creates an OTU table of read counts per OTU per sample
 ```shell
 usearch8.1 -usearch_global 16S.unfiltered.fa -db 16S.otus.fa -strand plus -id 0.97 -biomout 16S.otu_table.biom -otutabout 16S.otu_table.txt
