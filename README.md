@@ -209,16 +209,15 @@ done
 
 ##### OLD (fast) method
 We have multiplexed 16S and ITS PCR reactions in same sequencing run which can be seperated by the index
-Run demulti.pl to demultiplex these into fungal and bacterial fastq files. Takes as input paired data and will output two files for each. Sequence which doesn't match either index is written to both fungal and bacterial fastq files.
+Run demulti.pl to demultiplex these into fungal and bacterial fastq files. Ambiguous reads are written to two (f & r) seperate files.
 
-Running something like the below should give a good indication of what index_1 and index_2 should be. 
+Running something like the below should give a good indication of what index_1 and index_2 should be - this is useful if you don't knwo what the primer sequences are and to get a feel of how many mismatches to use. 
 ```shell
-grep -x "[ATCG]\+" $(ls|head -n1)| cut -c-8|sort|uniq > zzexpressions.txt
-grep -x "[ATCG]\+" $(ls|head -n1)| cut -c-8|sort|uniq|xargs -I r grep -c ^r $(ls|head -n1) >zzcounts.txt
+grep -x "[ATCG]\+" $(ls|head -n1)| cut -c-16|sort|uniq > zzexpressions.txt
+grep -x "[ATCG]\+" $(ls|head -n1)| cut -c-16|sort|uniq|xargs -I r grep -c ^r $(ls|head -n1) >zzcounts.txt
 ```
 
-I've updated demulti.pl to drop ambiguous reads.
-
+I typically use the first 8 nucleotides of the primer and allow 1 mismatch (the final parameter)
 ```shell
 for f in $METAGENOMICS/data/$RUN/fastq/*_R1_*
 do
@@ -226,8 +225,8 @@ do
 	R2=$(echo $R1|sed 's/_R1_/_R2_/')
 	S=$(echo $f|awk -F"_" '{print $2}')
 	echo $f
-	# replace index_1 and 2 with a regular expression for each index
-	$METAGENOMICS/scripts/demulti.pl $R1 $R2 "^index_1" "^index_2"	
+	# replace the indices with a the first n letters of the primer sequences
+	$METAGENOMICS/scripts/demulti.pl $R1 $R2 "CCTACGGG" "GACTACHV" "CTTGGTCA" "ATATGCTT" 1	
 done
 
 mv *bacterial* ../16S/fastq/.
