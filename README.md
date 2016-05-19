@@ -249,10 +249,9 @@ do
 done
 ```
 
+### Pre-process OTU fasta
 
-### Filter fastq files
-updated to convert to fasta
-Then modified it, as it doesn't name the sequences correctly
+#### Filter fastq files
 ```shell
 for f in $METAGENOMICS/data/$RUN/16S/joined/*.fastq
 do
@@ -260,8 +259,8 @@ do
 	$METAGENOMICS/scripts/utrim.sh $f ${S}.filtered $METAGENOMICS/data/$RUN/16S/filtered 0.005 300 ${S}_
 done
 ```
-
-Rename the sequences to unique values
+#### Rename sequences
+The sequence renaming of utrim is not working correctly (not unique). The below will produce unique sequence names per sample
 ```shell
 for f in $METAGENOMICS/data/$RUN/16S/filtered/*.filtered
 do	
