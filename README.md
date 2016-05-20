@@ -171,14 +171,14 @@ mv *fungal* ../ITS/fastq/.
 ## UPARSE 16s workflow
 
 ### Pre-processing
-Script will join PE reads (and save joined files to unfiltered folder), remove adapter contamination and filter on quality thresholds and minimum size.
+Script will join PE reads (and save joined files to unfiltered folder), remove adapter contamination and filter on minimum size and quality threshold.
 ```shell
 for f in $METAGENOMICS/data/$RUN/16S/fastq/*R1*
 do
     R1=$f
     R2=$(echo $R1|sed 's/_R1_/_R2_/')
     S=$(echo $f|awk -F"_" '{print $2}')
-    $METAGENOMICS/scripts/16Spre.sh $R1 $R2 ${S}.filtered.fa  $METAGENOMICS/data/$RUN/16S/filtered $METAGENOMICS/primers/adapters.db 0.005 300 ${S}.
+    $METAGENOMICS/scripts/16Spre.sh $R1 $R2 ${S}.filtered.fa  $METAGENOMICS/data/$RUN/16S/filtered $METAGENOMICS/primers/adapters.db 300 0.005 ${S}.
 done   
 
 ```
