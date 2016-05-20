@@ -250,7 +250,28 @@ done
 
 ### Pre-process OTU fasta
 
-##### Filter fastq files
+#### Filter fastq files
+
+##### Remove adapters
+```shell
+for f in $METAGENOMICS/data/$RUN/16S/fastq/*.fastq; 
+do 
+	usearch8.1 -search_oligodb $f -db $METAGENOMICS/primers/adapters.db -strand both -userout ${f}.txt -userfields query+target+qstrand+diffs+tlo+thi+trowdots 
+done
+
+for f in $METAGENOMICS/data/$RUN/16S/fastq/*R1*
+do
+	R1=$f
+	R2=$(echo $R1|sed 's/_R1_/_R2_/')
+	S=$(echo $f|awk -F"_" '{print $2}')
+	cat ${R1}.txt ${R2}.txt|awk -F"\t" '{print $1}|xargs -I l sed -i -ne:t -e"/*\@l.*/D" -e'$!N;//D;/'"@l/{" -e"s/\n/&/$A;t" -e'$q;bt' -e\} -e's/\n/&/'"$B;tP" -e'$!bt' -e:P  -e'P;D' $R1
+	cat ${R1}.txt ${R2}.txt|awk -F"\t" '{print $1}|xargs -I l sed -i -ne:t -e"/*\@l.*/D" -e'$!N;//D;/'"@l/{" -e"s/\n/&/$A;t" -e'$q;bt' -e\} -e's/\n/&/'"$B;tP" -e'$!bt' -e:P  -e'P;D' $R2
+done
+    
+    
+```
+
+##### Quality trimming
 ```shell
 for f in $METAGENOMICS/data/$RUN/16S/joined/*.fastq
 do
@@ -258,7 +279,7 @@ do
 	$METAGENOMICS/scripts/utrim.sh $f ${S}.filtered $METAGENOMICS/data/$RUN/16S/filtered 0.005 300 ${S}_
 done
 ```
-##### Rename sequences
+#### Rename sequences
 The sequence renaming of utrim is not working correctly (not unique). The below will produce unique sequence names per sample
 ```shell
 for f in $METAGENOMICS/data/$RUN/16S/filtered/*.filtered
