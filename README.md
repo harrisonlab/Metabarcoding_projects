@@ -200,18 +200,7 @@ done
 for f in $METAGENOMICS/data/$RUN/16S/joined/*.fastq
 do
 	S=$(echo $f|awk -F"." '{print $1}'|awk -F"/" '{print $NF}')
-	$METAGENOMICS/scripts/utrim.sh $f ${S}.filtered $METAGENOMICS/data/$RUN/16S/filtered 0.005 300 ${S}_
-done
-```
-
-#### Rename sequences
-The sequence renaming of utrim is not working correctly (not unique). The below will produce unique sequence names per sample
-```shell
-for f in $METAGENOMICS/data/$RUN/16S/filtered/*.filtered
-do	
-	S=$(echo $f|awk -F"/" '{print $NF}')
-	cat $f|awk '{if ($0~/>/){y+=1;gsub(/_.*/,"."y,$0)};print $0}' > ${S}.fa
-	rm $f
+	$METAGENOMICS/scripts/utrim.sh $f ${S}.filtered.fa $METAGENOMICS/data/$RUN/16S/filtered 0.005 300 ${S}.
 done
 ```
 ### OTU fasta creation
@@ -719,5 +708,17 @@ for f in *.txt
 	grep -A 3 -F -f <(awk -F"\t" '{if ($2=="p11") print $1}' <output.txt)  $S2 > ${S2}.fungal.fq
  fi
  R1=$f
+done
+```
+
+
+#### Rename sequences
+The sequence renaming of utrim is not working correctly (not unique). The below will produce unique sequence names per sample
+```shell
+for f in $METAGENOMICS/data/$RUN/16S/filtered/*.filtered
+do	
+	S=$(echo $f|awk -F"/" '{print $NF}')
+	cat $f|awk '{if ($0~/>/){y+=1;gsub(/_.*/,"."y,$0)};print $0}' > ${S}.fa
+	rm $f
 done
 ```
