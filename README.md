@@ -264,8 +264,9 @@ do
 	R1=$f
 	R2=$(echo $R1|sed 's/_R1_/_R2_/')
 	S=$(echo $f|awk -F"_" '{print $2}')
-	cat ${R1}.txt ${R2}.txt|awk -F"\t" '{print $1}'|xargs -I l sed -i -ne:t -e"/*\@l.*/D" -e'$!N;//D;/'"@l/{" -e"s/\n/&/$A;t" -e'$q;bt' -e\} -e's/\n/&/'"$B;tP" -e'$!bt' -e:P  -e'P;D' $R1
-	cat ${R1}.txt ${R2}.txt|awk -F"\t" '{print $1}'|xargs -I l sed -i -ne:t -e"/*\@l.*/D" -e'$!N;//D;/'"@l/{" -e"s/\n/&/$A;t" -e'$q;bt' -e\} -e's/\n/&/'"$B;tP" -e'$!bt' -e:P  -e'P;D' $R2
+    	cat ${R1}.txt ${R2}.txt|awk -F"\t" '{print $1}'|sort|uniq|xargs -I ¬ sed -i -ne:t -e"/*\@¬.*/D" -e'$!N;//D;/'"\@¬/{" -e"s/\n/&/3;t" -e'$q;bt' -e\} -e's/\n/&/'"1;tP" -e'$!bt' -e:P  -e'P;D' $R1
+    	cat ${R1}.txt ${R2}.txt|awk -F"\t" '{print $1}'|sort|uniq|xargs -I ¬ sed -i -ne:t -e"/*\@¬.*/D" -e'$!N;//D;/'"\@¬/{" -e"s/\n/&/3;t" -e'$q;bt' -e\} -e's/\n/&/'"1;tP" -e'$!bt' -e:P  -e'P;D' $R2
+
 done
     
     
