@@ -142,38 +142,7 @@ From same folder containing fastq files ran:
 
 ### Demultiplexing
 
-##### New (slow) method
-This is going to be edited to use usearch8.1 search_oligodb - the algorithm used accepts mismatches at multiple positions.
-
-```
-for f in *.fastq; 
-do 
-	usearch8.1 -search_oligodb $f -db ../../../scripts/primers.db -strand both -userout ${f}.txt -userfields query+target+qstrand+diffs+tlo+thi+trowdots 
-done
-```
-The bit below is a bit rubbish - working on a speed improvement
-The search_oligodb part will also identify adapter contamination .
-```shell
-#this is slow as a slow thing (about 2 minutes per sample! - the old method was roughly 100 times faster)
-counter=0
-for f in *.txt
- do counter=$((counter+1))
- if (( $counter % 2 == 0 ))
-      then
-        R2=$f
-        S1=$(echo $R1|sed 's/\.txt//')
-        S2=$(echo $R2|sed 's/\.txt//')
-	grep -F -f <(awk -F"\t" '{print $1}'<$R1) $R2 > output.txt
-	grep -A 3 -F -f <(awk -F"\t" '{if ($2=="p13") print $1}' <output.txt)  $S1 > ${S1}.bacterial.fq
-	grep -A 3 -F -f <(awk -F"\t" '{if ($2=="p13") print $1}' <output.txt)  $S2 > ${S2}.bacterial.fq
-	grep -A 3 -F -f <(awk -F"\t" '{if ($2=="p11") print $1}' <output.txt)  $S1 > ${S1}.fungal.fq
-	grep -A 3 -F -f <(awk -F"\t" '{if ($2=="p11") print $1}' <output.txt)  $S2 > ${S2}.fungal.fq
- fi
- R1=$f
-done
-```
-
-##### OLD (fast) method
+#### OLD (fast) method
 We have multiplexed 16S and ITS PCR reactions in same sequencing run which can be seperated by the index
 Run demulti.pl to demultiplex these into fungal and bacterial fastq files. Ambiguous reads are written to two (f & r) seperate files.
 
@@ -228,7 +197,7 @@ done
 ```
 ##### Remove adapters
 ```shell
- for f in $METAGENOMICS/data/$RUN/16S/filtered/*.fastq; 
+ for f in $METAGENOMICS/data/$RUN/16S/filtered/*.filtered; 
  do 
  	$METAGENOMICS/scripts/filtadapt.sh $f /home/deakig/projects/metagenomics/primers/adapters.db
  done
@@ -717,4 +686,36 @@ do
 done
     
     
+```
+### Demultiplexing
+
+##### New (slow) method
+This is going to be edited to use usearch8.1 search_oligodb - the algorithm used accepts mismatches at multiple positions.
+
+```
+for f in *.fastq; 
+do 
+	usearch8.1 -search_oligodb $f -db ../../../scripts/primers.db -strand both -userout ${f}.txt -userfields query+target+qstrand+diffs+tlo+thi+trowdots 
+done
+```
+The bit below is a bit rubbish - working on a speed improvement
+The search_oligodb part will also identify adapter contamination .
+```shell
+#this is slow as a slow thing (about 2 minutes per sample! - the old method was roughly 100 times faster)
+counter=0
+for f in *.txt
+ do counter=$((counter+1))
+ if (( $counter % 2 == 0 ))
+      then
+        R2=$f
+        S1=$(echo $R1|sed 's/\.txt//')
+        S2=$(echo $R2|sed 's/\.txt//')
+	grep -F -f <(awk -F"\t" '{print $1}'<$R1) $R2 > output.txt
+	grep -A 3 -F -f <(awk -F"\t" '{if ($2=="p13") print $1}' <output.txt)  $S1 > ${S1}.bacterial.fq
+	grep -A 3 -F -f <(awk -F"\t" '{if ($2=="p13") print $1}' <output.txt)  $S2 > ${S2}.bacterial.fq
+	grep -A 3 -F -f <(awk -F"\t" '{if ($2=="p11") print $1}' <output.txt)  $S1 > ${S1}.fungal.fq
+	grep -A 3 -F -f <(awk -F"\t" '{if ($2=="p11") print $1}' <output.txt)  $S2 > ${S2}.fungal.fq
+ fi
+ R1=$f
+done
 ```
