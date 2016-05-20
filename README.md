@@ -187,6 +187,14 @@ done
 
 #### Filter fastq files
 
+##### Remove adapters
+```shell
+ for f in $METAGENOMICS/data/$RUN/16S/filtered/*.filtered; 
+ do 
+ 	$METAGENOMICS/scripts/filtadapt.sh $f /home/deakig/projects/metagenomics/primers/adapters.db
+ done
+```
+
 ##### Quality trimming
 ```shell
 for f in $METAGENOMICS/data/$RUN/16S/joined/*.fastq
@@ -195,13 +203,7 @@ do
 	$METAGENOMICS/scripts/utrim.sh $f ${S}.filtered $METAGENOMICS/data/$RUN/16S/filtered 0.005 300 ${S}_
 done
 ```
-##### Remove adapters
-```shell
- for f in $METAGENOMICS/data/$RUN/16S/filtered/*.filtered; 
- do 
- 	$METAGENOMICS/scripts/filtadapt.sh $f /home/deakig/projects/metagenomics/primers/adapters.db
- done
-```
+
 #### Rename sequences
 The sequence renaming of utrim is not working correctly (not unique). The below will produce unique sequence names per sample
 ```shell
