@@ -170,39 +170,19 @@ mv *fungal* ../ITS/fastq/.
 
 ## UPARSE 16s workflow
 
-### Join PE reads
-(do not filter at this stage - unfiltered joined reads are required for later stage)
-
+### Pre-processing
+Script will join PE reads (and save joined files to unfiltered folder), remove adapter contamination and filter on quality thresholds and minimum size.
 ```shell
 for f in $METAGENOMICS/data/$RUN/16S/fastq/*R1*
 do
-	R1=$f
-	R2=$(echo $R1|sed 's/_R1_/_R2_/')
-	S=$(echo $f|awk -F"_" '{print $2}')
-	$METAGENOMICS/scripts/ujoin.sh $R1 $R2 ${S}.joined.fastq $METAGENOMICS/data/$RUN/16S/joined
-done
+    R1=$f
+    R2=$(echo $R1|sed 's/_R1_/_R2_/')
+    S=$(echo $f|awk -F"_" '{print $2}')
+    $METAGENOMICS/scripts/16Spre.sh $R1 $R2 ${S}.filtered.fa  $METAGENOMICS/data/$RUN/16S/filtered $METAGENOMICS/primers/adapters.db 0.005 300 ${S}.
+done   
+
 ```
 
-### Pre-process OTU fasta
-
-#### Filter fastq files
-
-##### Remove adapters
-```shell
- for f in $METAGENOMICS/data/$RUN/16S/filtered/*.filtered; 
- do 
- 	$METAGENOMICS/scripts/filtadapt.sh $f /home/deakig/projects/metagenomics/primers/adapters.db
- done
-```
-
-##### Quality trimming
-```shell
-for f in $METAGENOMICS/data/$RUN/16S/joined/*.fastq
-do
-	S=$(echo $f|awk -F"." '{print $1}'|awk -F"/" '{print $NF}')
-	$METAGENOMICS/scripts/utrim.sh $f ${S}.filtered.fa $METAGENOMICS/data/$RUN/16S/filtered 0.005 300 ${S}.
-done
-```
 ### OTU fasta creation
 
 ##### Concatenate files
@@ -710,7 +690,37 @@ for f in *.txt
  R1=$f
 done
 ```
+### Join PE reads
+(do not filter at this stage - unfiltered joined reads are required for later stage)
 
+```shell
+for f in $METAGENOMICS/data/$RUN/16S/fastq/*R1*
+do
+	R1=$f
+	R2=$(echo $R1|sed 's/_R1_/_R2_/')
+	S=$(echo $f|awk -F"_" '{print $2}')
+	$METAGENOMICS/scripts/ujoin.sh $R1 $R2 ${S}.joined.fastq $METAGENOMICS/data/$RUN/16S/joined
+done
+```
+
+#### Filter fastq files
+
+##### Remove adapters
+```shell
+ for f in $METAGENOMICS/data/$RUN/16S/filtered/*.filtered; 
+ do 
+ 	$METAGENOMICS/scripts/filtadapt.sh $f $METAGENOMICS/primers/adapters.db
+ done
+```
+
+##### Quality trimming
+```shell
+for f in $METAGENOMICS/data/$RUN/16S/joined/*.fastq
+do
+	S=$(echo $f|awk -F"." '{print $1}'|awk -F"/" '{print $NF}')
+	$METAGENOMICS/scripts/utrim.sh $f ${S}.filtered.fa $METAGENOMICS/data/$RUN/16S/filtered 0.005 300 ${S}.
+done
+```
 
 #### Rename sequences
 The sequence renaming of utrim is not working correctly (not unique). The below will produce unique sequence names per sample
