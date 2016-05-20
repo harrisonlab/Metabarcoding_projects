@@ -228,7 +228,7 @@ done
 ```
 ##### Remove adapters
 ```shell
- for f in $METAGENOMICS/data/$RUN/16S/joined/*.fastq; 
+ for f in $METAGENOMICS/data/$RUN/16S/filtered/*.fastq; 
  do 
  	$METAGENOMICS/scripts/filtadapt.sh $f /home/deakig/projects/metagenomics/primers/adapters.db
  done
