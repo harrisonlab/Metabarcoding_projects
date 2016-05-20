@@ -140,41 +140,7 @@ From same folder containing fastq files ran:
 
 	fastqc *
 
-### PhiX filtering
-Not implemented... For the particular sequencing protocol we don't get much (or any) PhiX contamination. Removal of any contaminants is simple via aligning to the Illumina PhiX genome <ln>http://support.illumina.com/sequencing/sequencing_software/igenome.html </ln> Bowtie2 method implemented here.
-
-NOTE - the below scipts that implement something like 'for f in *' are dependent on the naming convention of the samples. For instance something like s1.1.fq - s20.2.fq will loop through the files in the order  s1.1.fq, s12.1.fq, s12.2.fq, s1.2.fq, which is clearly not what is wanted.
-'for f in `ls *| sort -V`' will do a natural sort of the files which should fix any problems - or use a different sample naming convention (e.g. s001. - sxxx.)
-
-```shell
- counter=0
- for f in $METAGENOMICS/data/$RUN/fastq/*.fastq
- do counter=$((counter+1))
- if (( $counter % 2 == 0 ))
-     then
-         R2=$f
-         S=$(echo $f|awk -F"_" '{print $2}')
-         $METAGENOMICS/scripts/bowtie.sh $R1 $R2 $HOME/Data/PhiX/Illumina/RTA/Sequence/Bowtie2Index/genome $METAGENOMICS/data/$RUN/PhiX ${S}.phix.fq 250 500
-     fi
-     R1=$f
-done
-```
-
-```shell
- counter=0
- for f in $METAGENOMICS/data/$RUN/fastq/*R1*.fastq
- do counter=$((counter+1))
- if (( $counter % 2 == 0 ))
-     then
-         R2=$f
-         S=$(echo $f|awk -F"_" '{print $2}')
-         $METAGENOMICS/scripts/bowtie.sh $R1 $R2 $HOME/Data/PhiX/Illumina/RTA/Sequence/Bowtie2Index/genome $METAGENOMICS/data/$RUN/PhiX ${S}.phix.fq 250 500
-     fi
-     R1=$f
-done
-```
-
-#### Demultiplexing
+### Demultiplexing
 
 ##### New (slow) method
 This is going to be edited to use usearch8.1 search_oligodb - the algorithm used accepts mismatches at multiple positions.
@@ -252,25 +218,6 @@ done
 
 #### Filter fastq files
 
-##### Remove adapters
-```shell
-for f in $METAGENOMICS/data/$RUN/16S/fastq/*.fastq; 
-do 
-	usearch8.1 -search_oligodb $f -db $METAGENOMICS/primers/adapters.db -strand both -userout ${f}.txt -userfields query+target+qstrand+diffs+tlo+thi+trowdots 
-done
-
-for f in $METAGENOMICS/data/$RUN/16S/fastq/*R1*.fastq
-do
-	R1=$f
-	R2=$(echo $R1|sed 's/_R1_/_R2_/')
-	S=$(echo $f|awk -F"_" '{print $2}')
-    	cat ${R1}.txt ${R2}.txt|awk -F"\t" '{print $1}'|sort|uniq|xargs -I ¬ sed -i -ne:t -e"/*\@¬.*/D" -e'$!N;//D;/'"\@¬/{" -e"s/\n/&/3;t" -e'$q;bt' -e\} -e's/\n/&/'"1;tP" -e'$!bt' -e:P  -e'P;D' $R1
-    	cat ${R1}.txt ${R2}.txt|awk -F"\t" '{print $1}'|sort|uniq|xargs -I ¬ sed -i -ne:t -e"/*\@¬.*/D" -e'$!N;//D;/'"\@¬/{" -e"s/\n/&/3;t" -e'$q;bt' -e\} -e's/\n/&/'"1;tP" -e'$!bt' -e:P  -e'P;D' $R2
-done
-    
-    
-```
-
 ##### Quality trimming
 ```shell
 for f in $METAGENOMICS/data/$RUN/16S/joined/*.fastq
@@ -278,6 +225,13 @@ do
 	S=$(echo $f|awk -F"." '{print $1}'|awk -F"/" '{print $NF}')
 	$METAGENOMICS/scripts/utrim.sh $f ${S}.filtered $METAGENOMICS/data/$RUN/16S/filtered 0.005 300 ${S}_
 done
+```
+##### Remove adapters
+```shell
+ for f in $METAGENOMICS/data/$RUN/16S/joined/*.fastq; 
+ do 
+ 	$METAGENOMICS/scripts/filtadapt.sh $f /home/deakig/projects/metagenomics/primers/adapters.db
+ done
 ```
 #### Rename sequences
 The sequence renaming of utrim is not working correctly (not unique). The below will produce unique sequence names per sample
@@ -289,8 +243,6 @@ do
 	rm $f
 done
 ```
-
-
 ### OTU fasta creation
 
 ##### Concatenate files
@@ -712,4 +664,57 @@ Requires a file (colData) which describes condition (e.g. infected or uninfected
 ```shell
 cd $METAGENOMICS/analysis/$RUN/16S/16S_otus
 Rscript $METAGENOMICS/scripts/analysis.R "otu_table_mc2_w_tax_no_pynast_failures.biom" colData median res.sig.csv
+```
+
+### PhiX filtering
+Not implemented... For the particular sequencing protocol we don't get much (or any) PhiX contamination. Removal of any contaminants is simple via aligning to the Illumina PhiX genome <ln>http://support.illumina.com/sequencing/sequencing_software/igenome.html </ln> Bowtie2 method implemented here.
+
+NOTE - the below scipts that implement something like 'for f in *' are dependent on the naming convention of the samples. For instance something like s1.1.fq - s20.2.fq will loop through the files in the order  s1.1.fq, s12.1.fq, s12.2.fq, s1.2.fq, which is clearly not what is wanted.
+'for f in `ls *| sort -V`' will do a natural sort of the files which should fix any problems - or use a different sample naming convention (e.g. s001. - sxxx.)
+
+```shell
+ counter=0
+ for f in $METAGENOMICS/data/$RUN/fastq/*.fastq
+ do counter=$((counter+1))
+ if (( $counter % 2 == 0 ))
+     then
+         R2=$f
+         S=$(echo $f|awk -F"_" '{print $2}')
+         $METAGENOMICS/scripts/bowtie.sh $R1 $R2 $HOME/Data/PhiX/Illumina/RTA/Sequence/Bowtie2Index/genome $METAGENOMICS/data/$RUN/PhiX ${S}.phix.fq 250 500
+     fi
+     R1=$f
+done
+```
+
+```shell
+ counter=0
+ for f in $METAGENOMICS/data/$RUN/fastq/*R1*.fastq
+ do counter=$((counter+1))
+ if (( $counter % 2 == 0 ))
+     then
+         R2=$f
+         S=$(echo $f|awk -F"_" '{print $2}')
+         $METAGENOMICS/scripts/bowtie.sh $R1 $R2 $HOME/Data/PhiX/Illumina/RTA/Sequence/Bowtie2Index/genome $METAGENOMICS/data/$RUN/PhiX ${S}.phix.fq 250 500
+     fi
+     R1=$f
+done
+```
+
+####adapter remove
+```shell
+for f in $METAGENOMICS/data/$RUN/16S/fastq/*.fastq; 
+do 
+	usearch8.1 -search_oligodb $f -db $METAGENOMICS/primers/adapters.db -strand both -userout ${f}.txt -userfields query+target+qstrand+diffs+tlo+thi+trowdots 
+done
+
+for f in $METAGENOMICS/data/$RUN/16S/fastq/*R1*.fastq
+do
+	R1=$f
+	R2=$(echo $R1|sed 's/_R1_/_R2_/')
+	S=$(echo $f|awk -F"_" '{print $2}')
+    	cat ${R1}.txt ${R2}.txt|awk -F"\t" '{print $1}'|sort|uniq|xargs -I ¬ sed -i -ne:t -e"/*\@¬.*/D" -e'$!N;//D;/'"\@¬/{" -e"s/\n/&/3;t" -e'$q;bt' -e\} -e's/\n/&/'"1;tP" -e'$!bt' -e:P  -e'P;D' $R1
+    	cat ${R1}.txt ${R2}.txt|awk -F"\t" '{print $1}'|sort|uniq|xargs -I ¬ sed -i -ne:t -e"/*\@¬.*/D" -e'$!N;//D;/'"\@¬/{" -e"s/\n/&/3;t" -e'$q;bt' -e\} -e's/\n/&/'"1;tP" -e'$!bt' -e:P  -e'P;D' $R2
+done
+    
+    
 ```
