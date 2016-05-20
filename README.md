@@ -152,7 +152,7 @@ grep -x "[ATCG]\+" $(ls|head -n1)| cut -c-16|sort|uniq > zzexpressions.txt
 grep -x "[ATCG]\+" $(ls|head -n1)| cut -c-16|sort|uniq|xargs -I r grep -c ^r $(ls|head -n1) >zzcounts.txt
 ```
 
-I typically use the first 8 nucleotides of the primer and allow 1 mismatch (the final parameter)
+I typically use the first 8 nucleotides of the primer and allow 2 mismatches (the final parameter)
 ```shell
 for f in $METAGENOMICS/data/$RUN/fastq/*_R1_*
 do
@@ -161,7 +161,7 @@ do
 	S=$(echo $f|awk -F"_" '{print $2}')
 	echo $f
 	# replace the indices with a the first n letters of the primer sequences
-	$METAGENOMICS/scripts/demulti.pl $R1 $R2 "CCTACGGG" "GACTACHV" "CTTGGTCA" "ATATGCTT" 1	
+	$METAGENOMICS/scripts/demulti.pl $R1 $R2 "CCTACGGG" "GACTACHV" "CTTGGTCA" "ATATGCTT" 2	
 done
 
 mv *bacterial* ../16S/fastq/.
