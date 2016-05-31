@@ -284,9 +284,9 @@ do counter=$((counter+1))
 	S=$(echo $f|awk -F"_" '{print $2}')
 	if (( $counter % 2 == 0 ))
 	then
-		$METAGENOMICS/scripts/utrim.sh $f ${S}.trimmed.2.fq $METAGENOMICS/data/$RUN/ITS/trimmed 0.02 200
+		$METAGENOMICS/scripts/utrim.sh $f ${S}.trimmed.2.fq $METAGENOMICS/data/$RUN/ITS/trimmed 0.02 200 $S
 	else
-		$METAGENOMICS/scripts/utrim.sh $f ${S}.trimmed.1.fq $METAGENOMICS/data/$RUN/ITS/trimmed 0.005 200
+		$METAGENOMICS/scripts/utrim.sh $f ${S}.trimmed.1.fq $METAGENOMICS/data/$RUN/ITS/trimmed 0.005 200 $S
 	fi
 done
 ```
