@@ -291,15 +291,17 @@ do counter=$((counter+1))
 	fi
 done
 ```
-
-
-### Rename files
-(should edit fq2fa.pl to name the files correctly...)
-```shell
-cd $METAGENOMICS/data/$RUN/ITS/fasta
-rename 's/\.trimmed\.1\.fq.fa/_R1.fa/' *1.fq.fa
-rename 's/\.trimmed\.2\.fq.fa/_R2.fa/' *2.fq.fa
+but the fasta is multilined - needs to be single lined...
 ```
+for f in *.fa
+do
+	S=$(echo $f|awk -F"." '{print $2}')
+	awk '/^>/ {printf("\n%s\n",$0);next; } { printf("%s",$0);}  END {printf("\n");}'  <$f > ${S}.1.fa
+	sed -i -e '1d' ${S}.1.fa
+done
+```
+
+
 ### SSU/58S/LSU removal 
 
 #### Preperation - this is run once only
@@ -732,4 +734,11 @@ do counter=$((counter+1));
     fi
   fi
 done
+```
+### Rename files
+(should edit fq2fa.pl to name the files correctly...)
+```shell
+cd $METAGENOMICS/data/$RUN/ITS/fasta
+rename 's/\.trimmed\.1\.fq.fa/_R1.fa/' *1.fq.fa
+rename 's/\.trimmed\.2\.fq.fa/_R2.fa/' *2.fq.fa
 ```
