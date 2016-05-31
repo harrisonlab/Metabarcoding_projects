@@ -295,12 +295,11 @@ but the fasta is multilined - needs to be single lined...
 ```
 for f in *.fa
 do
-	S=$(echo $f|awk -F"." '{print $2}')
+	S=$(echo $f|awk -F"." '{print $1}')
 	awk '/^>/ {printf("\n%s\n",$0);next; } { printf("%s",$0);}  END {printf("\n");}'  <$f > ${S}.1.fa
 	sed -i -e '1d' ${S}.1.fa
 done
 ```
-
 
 ### SSU/58S/LSU removal 
 
