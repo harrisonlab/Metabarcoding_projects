@@ -220,8 +220,11 @@ usearch8.1 -cluster_otus 16S.sorted.fasta -otus 16S.otus.fa -uparseout 16S.out.u
 ```
  
 ##### Assign Taxonomy
+The taxa file output by utax is difficult to manipulate in R. Therefore the script mod_taxa.pl should be used to produce an R friendly taxa file.
+
 ```shell
 usearch8.1 -utax 16S.otus.fa -db $METAGENOMICS/taxonomies/utax/16s_ref.udb -strand both -utaxout 16S.reads.utax -rdpout 16S.rdp -alnout 16S.aln.txt
+cat 16S.rdp|$METAGENOMICS/scripts/mod_taxa.pl > 16S.taxa
 ```
 
 ### OTU table 
@@ -244,10 +247,6 @@ usearch8.1 -usearch_global 16S.unfiltered.fa -db 16S.otus.fa -strand plus -id 0.
 ### Statistical analysis
 Requires analysis2.R and deseq.r
 
-The taxa file output by utax is difficult to manipulate in R. Therefore the script mod_taxa.pl should be used to produce an R friendly taxa file.
-```shell
-cat 16S.rdp|$METAGENOMICS/scripts/mod_taxa.pl > 16S.taxa
-```
 ubiom makes a S3 biom object from the OTU table (16S.otu_table.txt), OTU taxonomy (16S.taxa) and sample description file (colData)
 analysis2.R/deseq.r contain scripts to produce deseq objects and run differential analysis + a few graphing options.
 	
@@ -422,7 +421,40 @@ ITS <- subseq(ITS,start=2,width = (max(ITS@ranges@width)-1))
 writeXStringSet(ITS,"ITS.t.fa")
 ```
 
+cat ITS.x.fa
+
+###USEARCH 
+```shell
+X=`cat ITS1.fa|awk '{if ($1~/>/) {print $0} else {print length($0)};}'|awk '{if ($1~/>/) {y=0} else{y+=$0}};y>x{x=y};END{print x}'`
+usearch8.1 -fastx_truncate ITS1.fa -trunclen $X -padlen $X -fastaout ITS1.t.fa
+usearch8.1 -derep_fulllength ITS1.t.fa -fastaout ITS.uniques.fasta -sizeout
+usearch8.1 -sortbysize ITS.uniques.fasta -fastaout ITS.sorted.fasta -minsize 2
+usearch8.1 -cluster_otus ITS.sorted.fasta -otus ITS.otus.fa -uparseout ITS.out.up -relabel OTU -minsize 2 
+usearch8.1 -utax ITS.otus.fa -db $METAGENOMICS/taxonomies/utax/ITS_ref.udb -strand both -utaxout ITS.reads.utax -rdpout ITS.rdp -alnout ITS.aln.txt
+cat ITS.rdp|$METAGENOMICS/scripts/mod_taxa.pl > ITS.taxa
+
+
+```
+
+##### Concatenate unfiltered reads
+Unfiltered fastq will need to be converted to fasta first 
+```shell
+for f in $METAGENOMICS/data/$RUN/16S/joined/*.fastq
+do
+	S=$(echo $f|awk -F"." '{print $1}'|awk -F"/" '{print $NF}')
+	$METAGENOMICS/scripts/fq2fa.pl $f $METAGENOMICS/data/$RUN/16S/16S.unfiltered.fa $S
+done
+```	
+##### Make table
+Creates an OTU table of read counts per OTU per sample
+```shell
+usearch8.1 -usearch_global 16S.unfiltered.fa -db 16S.otus.fa -strand plus -id 0.97 -biomout 16S.otu_table.biom -otutabout 16S.otu_table.txt
+```
+
+
+
 ### Remove chimeras
+NOT NECESSARY
 Using UNITE v 7.0 ITS database for chimeras (UCHIME reference dataset) https://unite.ut.ee/repository.php#uchime
 
 ```shell
