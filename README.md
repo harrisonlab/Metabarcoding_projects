@@ -275,8 +275,9 @@ done
 ```
 
 
-### Alternative trimming method with usearch
-utrim is using the expected error per base. The settings below (which also set minimum length to 200) will discard sequences of 200 bases if expected error is > 1 - this is for the forward read only, the reverse read is not as stringent due to fairly poor quality of data in this example.
+### Trimming method with usearch
+utrim is using the expected error per base. The settings below (which also set minimum length to 200) will discard sequences of 200 bases if expected error is > 1 - this is for the forward read only, the reverse read is not as stringent due to fairly poor quality of data in this example. 
+Will also save as renamed fasta.
 ```shell
 counter=0;
 for f in $METAGENOMICS/data/$RUN/ITS/fastq/*
@@ -284,44 +285,13 @@ do counter=$((counter+1))
 	S=$(echo $f|awk -F"_" '{print $2}')
 	if (( $counter % 2 == 0 ))
 	then
-		$METAGENOMICS/scripts/utrim.sh $f ${S}.trimmed.2.fq $METAGENOMICS/data/$RUN/ITS/trimmed 0.02 200 $S
+		$METAGENOMICS/scripts/utrim.sh $f ${S}.trimmed.2.fq $METAGENOMICS/data/$RUN/ITS/trimmed 0.02 200 ${S}.
 	else
-		$METAGENOMICS/scripts/utrim.sh $f ${S}.trimmed.1.fq $METAGENOMICS/data/$RUN/ITS/trimmed 0.005 200 $S
+		$METAGENOMICS/scripts/utrim.sh $f ${S}.trimmed.1.fq $METAGENOMICS/data/$RUN/ITS/trimmed 0.005 200 ${S}
 	fi
 done
 ```
 
-### Convert to unpaired fasta files
-
-Alternative method
-```shell
-cd $METAGENOMICS/data/$RUN/ITS/trimmed
-
-for f in *trimmed*;
-do
-	S=$(echo $f|awk -F"." '{print $1}');
-	$METAGENOMICS/scripts/fq2fa.pl $f $METAGENOMICS/data/$RUN/ITS/fasta/${f}.fa $S;
-done
-```
-
-This might have some use, but can't remeber what - alternative simpler method works...
-```shell
-X=91
-counter=0
-for f in $METAGENOMICS/data/$RUN/ITS/trimmed/*trimmed*;
-do counter=$((counter+1));
-  if [ "$counter" -gt 12 ]
-  then
-    if (( $counter % 2 == 0 ))
-    then
-      $METAGENOMICS/scripts/fq2fa.pl $f $METAGENOMICS/data/$RUN/ITS/fasta/${f}.fa S$X ;
-      X=$((X+1))
-    else
-      $METAGENOMICS/scripts/fq2fa.pl $f $METAGENOMICS/data/$RUN/ITS/fasta/${f}.fa S$X ;
-    fi
-  fi
-done
-```
 
 ### Rename files
 (should edit fq2fa.pl to name the files correctly...)
@@ -730,5 +700,36 @@ do
 	S=$(echo $f|awk -F"/" '{print $NF}')
 	cat $f|awk '{if ($0~/>/){y+=1;gsub(/_.*/,"."y,$0)};print $0}' > ${S}.fa
 	rm $f
+done
+```
+### Convert to unpaired fasta files
+
+Alternative method
+```shell
+cd $METAGENOMICS/data/$RUN/ITS/trimmed
+
+for f in *trimmed*;
+do
+	S=$(echo $f|awk -F"." '{print $1}');
+	$METAGENOMICS/scripts/fq2fa.pl $f $METAGENOMICS/data/$RUN/ITS/fasta/${f}.fa $S;
+done
+```
+
+This might have some use, but can't remeber what - alternative simpler method works...
+```shell
+X=91
+counter=0
+for f in $METAGENOMICS/data/$RUN/ITS/trimmed/*trimmed*;
+do counter=$((counter+1));
+  if [ "$counter" -gt 12 ]
+  then
+    if (( $counter % 2 == 0 ))
+    then
+      $METAGENOMICS/scripts/fq2fa.pl $f $METAGENOMICS/data/$RUN/ITS/fasta/${f}.fa S$X ;
+      X=$((X+1))
+    else
+      $METAGENOMICS/scripts/fq2fa.pl $f $METAGENOMICS/data/$RUN/ITS/fasta/${f}.fa S$X ;
+    fi
+  fi
 done
 ```
