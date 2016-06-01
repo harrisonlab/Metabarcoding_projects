@@ -6,6 +6,9 @@ m27_trio <- snps[,c(1:6,13:14,7:8)]
 m27_trio <- remove_impossible(m27_trio)
 m27_trio <- remove_hom_child(m27_trio)
 m27_trio <- remove_all_het(m27_trio)
+
+phased_m27 <- t(as.data.frame(phaser(m27_trio[,5:10])))
+colnames(phased_m27) <- c("m9.m27","m13.m27")
  
 remove_impossible <- function(X) {
 	X <- X[
@@ -61,5 +64,3 @@ phaser <- function(X) {
 	})
 }
 
-phased_m27 <- t(as.data.frame(phaser(m27_trio[,5:10])))
-colnames(phased_m27) <- c("m9.m27","m13.m27")
