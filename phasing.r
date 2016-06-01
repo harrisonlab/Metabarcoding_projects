@@ -7,8 +7,21 @@ m27_trio <- remove_impossible(m27_trio)
 m27_trio <- remove_hom_child(m27_trio)
 m27_trio <- remove_all_het(m27_trio)
 
-phased_m27 <- t(as.data.frame(phaser(m27_trio[,5:10])))
-colnames(phased_m27) <- c("m9.m27","m13.m27")
+phased_m27 <- cbind(m27_trio[,1:4],t(as.data.frame(phaser(m27_trio[,5:10]))))
+colnames(phased_m27) <- c("chr","pos","ref","alt","m9.m27","m13.m27")
+
+m116_trio <- snps[,c(1:4,11:12,9:10)]
+m116_trio <- merge(phased_m27,m116_trio,all.x=T)
+#dim(m116_trio)
+m116_trio <- remove_impossible(m116_trio)
+m116_trio <- remove_hom_child(m116_trio)
+m116_trio <- remove_all_het(m116_trio)
+#dim(m116_trio)
+
+phased_m116 <- t(as.data.frame(phaser(m116_trio[,5:10])))
+
+fullphase<- cbind(m116_trio[,1:6],phased_m116[,1])
+colnames(fullphase)[7] <- "m116"
  
 remove_impossible <- function(X) {
 	X <- X[
