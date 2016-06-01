@@ -447,7 +447,7 @@ done
 ##### Make table
 Creates an OTU table of read counts per OTU per sample
 ```shell
-usearch8.1 -usearch_global ITS.unfiltered.fa -db ITS.otus.fa -strand plus -id 0.97 -biomout ITS.otu_table.biom -otutabout 16S.otu_table.txt
+usearch8.1 -usearch_global ITS.unfiltered.fa -db ITS.otus.fa -strand plus -id 0.97 -biomout ITS.otu_table.biom -otutabout ITS.otu_table.txt
 ```
 
 ### Statistical analysis
