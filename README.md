@@ -285,7 +285,7 @@ analysis2.R/deseq.r contain scripts to produce deseq objects and run differentia
 
 ### Pre-processing
 
-#### Remove (and save) reads contain both f & r primers
+#### Remove reads contain both f & r primers
 ```shell
 for f in $METAGENOMICS/data/$RUN/ITS/fastq/*.fastq; 
 do 
@@ -306,6 +306,7 @@ do
 	sed 's|^|/|;s|$|/,+3 d|' <(grep primer4 $R2|awk -F"\t" '{print $1}') > temp.sed
 	sed -f temp.sed $S2 > ${S2}.cleaned.fastq	
 done
+mv *.cleaned* ../cleaned/.
 #grep -A 3 -F -f <(grep p13 $R1|awk -F"\t" '{print $1}') $S1|grep "\-\-" -v > ${S1}.short.fastq
 #grep -A 3 -F -f <(grep p14 $R2|awk -F"\t" '{print $1}') $S2|grep "\-\-" -v > ${S2}.short.fastq 
 ```
@@ -315,7 +316,7 @@ utrim is using the expected error per base. The settings below (which also set m
 Will also save as renamed fasta.
 ```shell
 counter=0;
-for f in $METAGENOMICS/data/$RUN/ITS/fastq/*
+for f in $METAGENOMICS/data/$RUN/ITS/cleaned/*
 do counter=$((counter+1))
 	S=$(echo $f|awk -F"_" '{print $2}')
 	if (( $counter % 2 == 0 ))
