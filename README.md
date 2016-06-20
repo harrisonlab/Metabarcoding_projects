@@ -291,7 +291,7 @@ Script will:
 
 
 ```shell
-for f in $METAGENOMICS/data/$RUN/ITS/fastq/*S70_L001_R1*; 
+for f in $METAGENOMICS/data/$RUN/ITS/fastq/*R1*; 
 do     
 	R1=$f;     
 	R2=$(echo $R1|sed 's/_R1_/_R2_/');     
@@ -299,7 +299,6 @@ do
 	$METAGENOMICS/scripts/ITSpre.sh $R1 $R2 $S  $METAGENOMICS/data/$RUN/ITS/filtered $METAGENOMICS/primers/primers.db 200 0.005 0.02 ${S}.; 
 done
 ```
-
 
 #### SSU/58S/LSU removal 
 
