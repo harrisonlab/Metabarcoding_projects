@@ -331,10 +331,11 @@ but the fasta is multilined - needs to be single lined...
 ```
 for  f in *.fq
 do
-	S=$(echo $f|awk -F"." '{print $1}')
-	awk '/^>/ {printf("\n%s\n",$0);next; } { printf("%s",$0);}  END {printf("\n");}'  <$f > ${f}.fa
-	sed -i -e '1d' ${f}.fa
+	S=$(echo $f|awk -F"." '{print $1"_"$3".fa"}')
+	awk '/^>/ {printf("\n%s\n",$0);next; } { printf("%s",$0);}  END {printf("\n");}'  <$f > $S
+	sed -i -e '1d' $S
 done
+mv *.fa ../fasta/.
 ```
 
 #### SSU/58S/LSU removal 
