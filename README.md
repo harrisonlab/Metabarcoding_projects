@@ -354,7 +354,6 @@ done
 
 ```shell
 cd $METAGENOMICS/data/$RUN/ITS/fasta
-
 for d in */
 do
 	cd $d
@@ -366,6 +365,7 @@ done
 
 This will create a large number of array jobs on the cluster
 ```shell
+cd $METAGENOMICS/data/$RUN/ITS/fasta
 counter=0
 for d in */
 do counter=$((counter+1))
