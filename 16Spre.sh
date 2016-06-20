@@ -1,0 +1,14 @@
+#!/bin/bash
+
+F=$1
+R=$2
+OUTFILE=$3
+OUTDIR=$4
+ADAPTERS=$5
+MINL=$6
+QUAL=$7
+LABEL=$8
+
+SCRIPT_DIR=$(readlink -f ${0%/*})
+
+qsub $SCRIPT_DIR/submit_16Spre.sh $F $R $OUTFILE $OUTDIR $ADAPTERS $MINL $QUAL $LABEL
