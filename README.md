@@ -400,7 +400,7 @@ done
 (script needs editing...)
 
 ```shell	
-cd $METAGENOMICS/data/$RUN/ITS/....
+cd $METAGENOMICS/data/$RUN/ITS/fasta
 
 counter=0;
 for f in `ls $METAGENOMICS/data/$RUN/ITS/de_chimeraed/*cfree*| sort -V`
@@ -409,7 +409,7 @@ S=$(echo $f|awk -F"." '{print $1}'|awk -F"/" '{print $NF}')
 	if (( $counter % 2 == 0 ))
 	then
 		R2=$f;
-		$METAGENOMICS/scripts/catfiles.pl $R1 $R2 $S;
+		$METAGENOMICS/scripts/catfiles_v2.pl $R1 $R2 $S;
 	fi
 	R1=$f
 done
