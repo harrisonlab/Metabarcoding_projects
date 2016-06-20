@@ -257,7 +257,6 @@ The taxa file output by utax is difficult to manipulate in R. Therefore the scri
 usearch8.1 -utax 16S.otus.fa -db $METAGENOMICS/taxonomies/utax/16s_ref.udb -strand both -utaxout 16S.reads.utax -rdpout 16S.rdp -alnout 16S.aln.txt
 cat 16S.rdp|$METAGENOMICS/scripts/mod_taxa.pl > 16S.taxa
 ```
-
 ### OTU table 
 
 ##### Concatenate unfiltered reads
@@ -284,59 +283,23 @@ analysis2.R/deseq.r contain scripts to produce deseq objects and run differentia
 ## ITS workflow
 
 ### Pre-processing
+Script will:
+1. Remove reads with both forward and reverse primers
+2. Remove reads with adapter contamination
+3. Filter for quality and minimum length (with UTRIM)
+4. Convert FASTQ to single line FASTA
 
-#### Remove reads contain both f & r primers
-```shell
-for f in $METAGENOMICS/data/$RUN/ITS/fastq/*.fastq; 
-do 
-    usearch8.1 -search_oligodb $f -db $METAGENOMICS/primers/primers.db -strand both -userout ${f}.txt -userfields query+target+qstrand+diffs+tlo+thi+trowdots 
-done
-```
 
 ```shell
-cd $METAGENOMICS/data/$RUN/ITS/fastq
-for  f in *_R1_*.fastq.txt
-do 
-	R1=$f
-	R2=$(echo $R1|sed 's/_R1_/_R2_/') 
-	S1=$(echo $R1|sed 's/.txt//')
-	S2=$(echo $R2|sed 's/.txt//')
-	sed 's|^|/|;s|$|/,+3 d|' <(grep primer1 $R1|awk -F"\t" '{print $1}') > temp.sed
-	sed -f temp.sed $S1 > ${S1}.cleaned.fastq
-	sed 's|^|/|;s|$|/,+3 d|' <(grep primer2 $R2|awk -F"\t" '{print $1}') > temp.sed
-	sed -f temp.sed $S2 > ${S2}.cleaned.fastq	
+for f in $METAGENOMICS/data/$RUN/ITS/fastq/*S70_L001_R1*; 
+do     
+	R1=$f;     
+	R2=$(echo $R1|sed 's/_R1_/_R2_/');     
+	S=$(echo $f|awk -F"_" '{print $2}'); 
+	$METAGENOMICS/scripts/ITSpre.sh $R1 $R2 $S  $METAGENOMICS/data/$RUN/ITS/filtered $METAGENOMICS/primers/primers.db 200 0.005 0.02 ${S}.; 
 done
-mv *.cleaned* ../cleaned/.
-#grep -A 3 -F -f <(grep p13 $R1|awk -F"\t" '{print $1}') $S1|grep "\-\-" -v > ${S1}.short.fastq
-#grep -A 3 -F -f <(grep p14 $R2|awk -F"\t" '{print $1}') $S2|grep "\-\-" -v > ${S2}.short.fastq 
 ```
 
-#### Trimming with usearch
-utrim is using the expected error per base. The settings below (which also set minimum length to 200) will discard sequences of 200 bases if expected error is > 1 - this is for the forward read only, the reverse read is not as stringent due to (current) fairly poor quality of data. 
-Will also save as renamed fasta.
-```shell
-counter=0;
-for f in $METAGENOMICS/data/$RUN/ITS/cleaned/*
-do counter=$((counter+1))
-	S=$(echo $f|awk -F"_" '{print $2}')
-	if (( $counter % 2 == 0 ))
-	then
-		$METAGENOMICS/scripts/utrim.sh $f ${S}.trimmed.2.fq $METAGENOMICS/data/$RUN/ITS/trimmed 0.02 200 ${S}.
-	else
-		$METAGENOMICS/scripts/utrim.sh $f ${S}.trimmed.1.fq $METAGENOMICS/data/$RUN/ITS/trimmed 0.005 200 ${S}
-	fi
-done
-```
-but the fasta is multilined - needs to be single lined...
-```
-for  f in *.fq
-do
-	S=$(echo $f|awk -F"." '{print $1"_R"$3".fa"}')
-	awk '/^>/ {printf("\n%s\n",$0);next; } { printf("%s",$0);}  END {printf("\n");}'  <$f > $S
-	sed -i -e '1d' $S
-done
-mv *.fa ../fasta/.
-```
 
 #### SSU/58S/LSU removal 
 
@@ -804,3 +767,56 @@ writeXStringSet(ITS,"ITS.t.fa")
 ```
 
 cat ITS.x.fa
+
+#### Remove reads contain both f & r primers
+```shell
+for f in $METAGENOMICS/data/$RUN/ITS/fastq/*.fastq; 
+do 
+    usearch8.1 -search_oligodb $f -db $METAGENOMICS/primers/primers.db -strand both -userout ${f}.txt -userfields query+target+qstrand+diffs+tlo+thi+trowdots 
+done
+```
+
+```shell
+cd $METAGENOMICS/data/$RUN/ITS/fastq
+for  f in *_R1_*.fastq.txt
+do 
+	R1=$f
+	R2=$(echo $R1|sed 's/_R1_/_R2_/') 
+	S1=$(echo $R1|sed 's/.txt//')
+	S2=$(echo $R2|sed 's/.txt//')
+	sed 's|^|/|;s|$|/,+3 d|' <(grep primer1 $R1|awk -F"\t" '{print $1}') > temp.sed
+	sed -f temp.sed $S1 > ${S1}.cleaned.fastq
+	sed 's|^|/|;s|$|/,+3 d|' <(grep primer2 $R2|awk -F"\t" '{print $1}') > temp.sed
+	sed -f temp.sed $S2 > ${S2}.cleaned.fastq	
+done
+mv *.cleaned* ../cleaned/.
+#grep -A 3 -F -f <(grep p13 $R1|awk -F"\t" '{print $1}') $S1|grep "\-\-" -v > ${S1}.short.fastq
+#grep -A 3 -F -f <(grep p14 $R2|awk -F"\t" '{print $1}') $S2|grep "\-\-" -v > ${S2}.short.fastq 
+```
+
+#### Trimming with usearch
+utrim is using the expected error per base. The settings below (which also set minimum length to 200) will discard sequences of 200 bases if expected error is > 1 - this is for the forward read only, the reverse read is not as stringent due to (current) fairly poor quality of data. 
+Will also save as renamed fasta.
+```shell
+counter=0;
+for f in $METAGENOMICS/data/$RUN/ITS/cleaned/*
+do counter=$((counter+1))
+	S=$(echo $f|awk -F"_" '{print $2}')
+	if (( $counter % 2 == 0 ))
+	then
+		$METAGENOMICS/scripts/utrim.sh $f ${S}.trimmed.2.fq $METAGENOMICS/data/$RUN/ITS/trimmed 0.02 200 ${S}.
+	else
+		$METAGENOMICS/scripts/utrim.sh $f ${S}.trimmed.1.fq $METAGENOMICS/data/$RUN/ITS/trimmed 0.005 200 ${S}
+	fi
+done
+```
+but the fasta is multilined - needs to be single lined...
+```
+for  f in *.fq
+do
+	S=$(echo $f|awk -F"." '{print $1"_R"$3".fa"}')
+	awk '/^>/ {printf("\n%s\n",$0);next; } { printf("%s",$0);}  END {printf("\n");}'  <$f > $S
+	sed -i -e '1d' $S
+done
+mv *.fa ../fasta/.
+```
