@@ -89,6 +89,37 @@ QSUB_TEXT = """#!/bin/bash
 \#$ -l %s  
 \#$ -cwd  
 
+## HMM Preperation for ITS analysis
+Using HHMMER v 3.1b2 (http://hmmer.janelia.org/)
+
+Used HMM files from ITSx (http://microbiology.se/software/itsx/)
+
+```shell
+perl $METAGENOMICS/scripts/cut_hmm v.3.1 $METAGENOMICS/hmm/chopped_hmm fungi
+cd $METAGENOMICS/hmm/chopped_hmm
+cat *SSU*> t1
+cat *58S_start* > t2
+cat *58S_end* > t3
+cat *LSU* > t4
+hmmconvert t1 > ssu_end.hmm
+hmmconvert t2 > 58s_end.hmm
+hmmconvert t3 > 58s_start.hmm
+hmmconvert t4 > lsu_start.hmm
+
+rm t1 t2 t3 t4
+
+for f in *.hmm
+do
+	sed -i -e'/^LENG/a MAXL  90' $f
+done
+
+hmmpress ssu_end.hmm
+hmmpress 58s_end.hmm
+hmmpress 58s_start.hmm
+hmmpress lsu_start.hmm
+```
+Ouptut files were copied to $METAGENOMICS/hmm. Hacked the HMM files to include a MAXL satement (required) and manually split out SSU,58S and LSU into seperate files (only fungal hmms are implemented in this pipeline)
+
 ___
 ## Common workflow
 The following directories should be created prior to starting the workflow:
@@ -302,36 +333,6 @@ done
 
 ### SSU/58S/LSU removal 
 
-#### Preperation - this is run once only
-Using HHMMER v 3.1b2 (http://hmmer.janelia.org/)
-
-Used HMM files from ITSx (http://microbiology.se/software/itsx/)
-
-```shell
-perl $METAGENOMICS/scripts/cut_hmm v.3.1 $METAGENOMICS/hmm/chopped_hmm fungi
-cd $METAGENOMICS/hmm/chopped_hmm
-cat *SSU*> t1
-cat *58S_start* > t2
-cat *58S_end* > t3
-cat *LSU* > t4
-hmmconvert t1 > ssu_end.hmm
-hmmconvert t2 > 58s_end.hmm
-hmmconvert t3 > 58s_start.hmm
-hmmconvert t4 > lsu_start.hmm
-
-rm t1 t2 t3 t4
-
-for f in *.hmm
-do
-	sed -i -e'/^LENG/a MAXL  90' $f
-done
-
-hmmpress ssu_end.hmm
-hmmpress 58s_end.hmm
-hmmpress 58s_start.hmm
-hmmpress lsu_start.hmm
-```
-Ouptut files were copied to $METAGENOMICS/hmm. Hacked the HMM files to include a MAXL satement (required) and manually split out SSU,58S and LSU into seperate files (only fungal hmms are implemented in this pipeline)
 
 
 ##### Split fasta into chunks for SSU/58S/LSU removal
