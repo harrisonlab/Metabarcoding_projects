@@ -303,9 +303,9 @@ do counter=$((counter+1))
     	R2=$f
     	S1=$(echo $R1|sed 's/.txt//')
     	S2=$(echo $R2|sed 's/.txt//')
-	sed 's|^|/|;s|$|/,+3 d|' <(grep p3 $R1|awk -F"\t" '{print $1}') > temp.sed
+	sed 's|^|/|;s|$|/,+3 d|' <(grep primer3 $R1|awk -F"\t" '{print $1}') > temp.sed
 	sed -f temp.sed $S1 > ${S1}.cleaned.fastq
-	sed 's|^|/|;s|$|/,+3 d|' <(grep p4 $R2|awk -F"\t" '{print $1}') > temp.sed
+	sed 's|^|/|;s|$|/,+3 d|' <(grep primer4 $R2|awk -F"\t" '{print $1}') > temp.sed
 	sed -f temp.sed $S2 > ${S2}.cleaned.fastq	
     fi
     R1=$f
