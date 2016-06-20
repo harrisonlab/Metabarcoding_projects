@@ -340,7 +340,7 @@ mv *.fa ../fasta/.
 
 #### SSU/58S/LSU removal 
 
-##### Split fasta into chunks for SSU/58S/LSU removal
+##### Split fasta into chunks 
 ```shell
 cd $METAGENOMICS/data/$RUN/ITS/fasta
 for f in *.fa;
@@ -350,10 +350,7 @@ do
     split -l 2000 $f -a 3 -d ${S}/$f.
 done
 ```
-##### Identify SSU, 5.8S  and LSU regions
-Note - creates a file with the paths to all of the split files in each sample directory then submits cluster array job
-
-This will create a large number of array jobs on the cluster
+##### Create lists of file paths to chunks
 
 ```shell
 cd $METAGENOMICS/data/$RUN/ITS/fasta
@@ -364,7 +361,11 @@ do
 	find $PWD -name '*.fa.*' >split_files.txt
 	cd ..
 done
+```
+##### Identify SSU, 5.8S  and LSU regions
 
+This will create a large number of array jobs on the cluster
+```shell
 counter=0
 for d in */
 do counter=$((counter+1))
