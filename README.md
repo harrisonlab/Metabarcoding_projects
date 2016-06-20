@@ -287,14 +287,9 @@ analysis2.R/deseq.r contain scripts to produce deseq objects and run differentia
 
 #### Remove (and save) reads contain both f & r primers
 ```shell
-for f in $METAGENOMICS/data/$RUN/ITS/fastq/*R1*.fastq; 
+for f in $METAGENOMICS/data/$RUN/ITS/fastq/*.fastq; 
 do 
-    usearch8.1 -search_oligodb $f -db $METAGENOMICS/primers/f_primers.db -strand both -userout ${f}.txt -userfields query+target+qstrand+diffs+tlo+thi+trowdots 
-done
-
-for f in $METAGENOMICS/data/$RUN/ITS/fastq/*R2*.fastq; 
-do 
-    usearch8.1 -search_oligodb $f -db $METAGENOMICS/primers/r_primers.db -strand both -userout ${f}.txt -userfields query+target+qstrand+diffs+tlo+thi+trowdots 
+    usearch8.1 -search_oligodb $f -db $METAGENOMICS/primers/primers.db -strand both -userout ${f}.txt -userfields query+target+qstrand+diffs+tlo+thi+trowdots 
 done
 ```
 
@@ -308,9 +303,9 @@ do counter=$((counter+1))
     	R2=$f
     	S1=$(echo $R1|sed 's/.txt//')
     	S2=$(echo $R2|sed 's/.txt//')
-	sed 's|^|/|;s|$|/,+3 d|' <(grep p13 $R1|awk -F"\t" '{print $1}') > temp.sed
+	sed 's|^|/|;s|$|/,+3 d|' <(grep p3 $R1|awk -F"\t" '{print $1}') > temp.sed
 	sed -f temp.sed $S1 > ${S1}.cleaned.fastq
-	sed 's|^|/|;s|$|/,+3 d|' <(grep p14 $R2|awk -F"\t" '{print $1}') > temp.sed
+	sed 's|^|/|;s|$|/,+3 d|' <(grep p4 $R2|awk -F"\t" '{print $1}') > temp.sed
 	sed -f temp.sed $S2 > ${S2}.cleaned.fastq	
     fi
     R1=$f
