@@ -287,9 +287,14 @@ analysis2.R/deseq.r contain scripts to produce deseq objects and run differentia
 
 #### Remove (and save) reads contain both f & r primers
 ```shell
-for f in $METAGENOMICS/data/$RUN/ITS/fastq/*.fastq; 
+for f in $METAGENOMICS/data/$RUN/ITS/fastq/*R1*.fastq; 
 do 
-    usearch8.1 -search_oligodb $f -db $METAGENOMICS/primers/adapters.db -strand both -userout ${f}.txt -userfields query+target+qstrand+diffs+tlo+thi+trowdots 
+    usearch8.1 -search_oligodb $f -db $METAGENOMICS/primers/f_primers.db -strand both -userout ${f}.txt -userfields query+target+qstrand+diffs+tlo+thi+trowdots 
+done
+
+for f in $METAGENOMICS/data/$RUN/ITS/fastq/*R2*.fastq; 
+do 
+    usearch8.1 -search_oligodb $f -db $METAGENOMICS/primers/r_primers.db -strand both -userout ${f}.txt -userfields query+target+qstrand+diffs+tlo+thi+trowdots 
 done
 ```
 
