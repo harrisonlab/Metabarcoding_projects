@@ -281,10 +281,20 @@ Requires analysis2.R and deseq.r
 ubiom makes a S3 biom object from the OTU table (16S.otu_table.txt), OTU taxonomy (16S.taxa) and sample description file (colData)
 analysis2.R/deseq.r contain scripts to produce deseq objects and run differential analysis + a few graphing options.
 	
-## ITS workflow
+## UPASRSE ITS workflow
 
-### Remove (and save) reads contain both f & r primers
+### Pre-processing
+
+#### Remove (and save) reads contain both f & r primers
 ```shell
+for f in $METAGENOMICS/data/$RUN/ITS/fastq/*.fastq; 
+do 
+    usearch8.1 -search_oligodb $f -db $METAGENOMICS/primers/adapters.db -strand both -userout ${f}.txt -userfields query+target+qstrand+diffs+tlo+thi+trowdots 
+done
+```
+
+```shell
+cd $METAGENOMICS/data/$RUN/ITS/fastq
 counter=0
 for  f in *.fastq.txt
 do counter=$((counter+1))
@@ -304,9 +314,8 @@ do counter=$((counter+1))
 done
 ```
 
-
-### Trimming method with usearch
-utrim is using the expected error per base. The settings below (which also set minimum length to 200) will discard sequences of 200 bases if expected error is > 1 - this is for the forward read only, the reverse read is not as stringent due to fairly poor quality of data in this example. 
+#### Trimming with usearch
+utrim is using the expected error per base. The settings below (which also set minimum length to 200) will discard sequences of 200 bases if expected error is > 1 - this is for the forward read only, the reverse read is not as stringent due to (current) fairly poor quality of data. 
 Will also save as renamed fasta.
 ```shell
 counter=0;
@@ -331,7 +340,7 @@ do
 done
 ```
 
-### SSU/58S/LSU removal 
+#### SSU/58S/LSU removal 
 
 ##### Split fasta into chunks for SSU/58S/LSU removal
 ```shell
@@ -387,52 +396,53 @@ do
 	 $METAGENOMICS/scripts/ITS.sh $METAGENOMICS/scripts/rm_58Se_LSU.R $d "*.\\.58" "*.\\.lsu" $d.fa
 done
 ```
-###### Remove empty fastas - now incorporated into above step
-```shell
-cd $METAGENOMICS/data/$RUN/ITS/fasta
-counter=0
-for d in */;
-do counter=$((counter+1));
-	cd $d
+
+##### Return ITS1 where fasta header matches ITS2, unique ITS1 and unique ITS2
+(script needs editing...)
+
+```shell	
+cd $METAGENOMICS/data/$RUN/ITS/....
+
+counter=0;
+for f in `ls $METAGENOMICS/data/$RUN/ITS/de_chimeraed/*cfree*| sort -V`
+do counter=$((counter+1)); 
+S=$(echo $f|awk -F"." '{print $1}'|awk -F"/" '{print $NF}')
 	if (( $counter % 2 == 0 ))
 	then
-		awk 'BEGIN {RS = ">" ; FS = "\n" ; ORS = ""} $2 {print ">"$0}' ITS2.fa > ITS2.t.fa
-	else
-		awk 'BEGIN {RS = ">" ; FS = "\n" ; ORS = ""} $2 {print ">"$0}' ITS1.fa > ITS1.t.fa
+		R2=$f;
+		$METAGENOMICS/scripts/catfiles.pl $R1 $R2 $S;
 	fi
-	cd ..
+	R1=$f
 done
 ```
-###### Pad files - in above step (though ITS1 and ITS2 have different pad lengths...)
-uclust performs better if FASTAs are same length.
 
-Example (of padding):
-```shell
-X=`grep ">" -v S13_R1.fa|awk '{ print length($0); }'|awk '$0>x{x=$0};END{print x}'`
-cat S13_R1.fa| sed -e :a -e "s/^[^>].\{1,`expr $X - 1`\}$/&N/;ta"
-```
 
-This could also be done in R as well (in the merge bit) - this would also remove the empty fasta files...
-```Rscript
-ITS <- ITS[ITS@ranges@width>0]
-ITS <- stackStrings(ITS,0,max(ITS@ranges@width),Lpadding.letter="N",Rpadding.letter="N")
-ITS <- subseq(ITS,start=2,width = (max(ITS@ranges@width)-1))
-writeXStringSet(ITS,"ITS.t.fa")
-```
+### UPARSE workflow
 
-cat ITS.x.fa
-
-###USEARCH 
+##### Pad file (probably not necessary as done in previous step...
 ```shell
 X=`cat ITS1.fa|awk '{if ($1~/>/) {print $0} else {print length($0)};}'|awk '{if ($1~/>/) {y=0} else{y+=$0}};y>x{x=y};END{print x}'`
 usearch8.1 -fastx_truncate ITS1.fa -trunclen $X -padlen $X -fastaout ITS1.t.fa
+```
+##### Dereplication
+
+```shell
 usearch8.1 -derep_fulllength ITS1.t.fa -fastaout ITS.uniques.fasta -sizeout
 usearch8.1 -sortbysize ITS.uniques.fasta -fastaout ITS.sorted.fasta -minsize 2
+rm ITS.uniques.fasta
+```
+##### Clustering
+```shell
 usearch8.1 -cluster_otus ITS.sorted.fasta -otus ITS.otus.fa -uparseout ITS.out.up -relabel OTU -minsize 2 
+```
+##### Assign taxonomy
+```shell
 usearch8.1 -utax ITS.otus.fa -db $METAGENOMICS/taxonomies/utax/ITS_ref.udb -strand both -utaxout ITS.reads.utax -rdpout ITS.rdp -alnout ITS.aln.txt
 cat ITS.rdp|$METAGENOMICS/scripts/mod_taxa.pl > ITS.taxa
 
 ```
+
+#### OTU table creation
 
 ##### Concatenate unfiltered reads
 Unfiltered fastq will need to be converted to fasta first 
@@ -456,24 +466,6 @@ ubiom makes a S3 biom object from the OTU table (ITS.otu_table.txt), OTU taxonom
 analysis2.R/deseq.r contain scripts to produce deseq objects and run differential analysis + a few graphing options.
 
 The OTU table header is contains a #. To import into R the set comment.char="" in the read.table parameters
-
-### Returns ITS1 where fasta header matches ITS2, unique ITS1 and unique ITS2
-```shell	
-cd $METAGENOMICS/data/$RUN/ITS/final
-
-counter=0;
-for f in `ls $METAGENOMICS/data/$RUN/ITS/de_chimeraed/*cfree*| sort -V`
-do counter=$((counter+1)); 
-S=$(echo $f|awk -F"." '{print $1}'|awk -F"/" '{print $NF}')
-	if (( $counter % 2 == 0 ))
-	then
-		R2=$f;
-		$METAGENOMICS/scripts/catfiles.pl $R1 $R2 $S;
-	fi
-	R1=$f
-done
-```
-
 
 
 ##oomycetes
@@ -780,3 +772,37 @@ Requires a file (colData) which describes condition (e.g. infected or uninfected
 cd $METAGENOMICS/analysis/$RUN/ITS/ITS_all_otus
 Rscript $METAGENOMICS/scripts/analysis.R otu_table_mc2_w_tax.biom colData median ITS.median.csv
 ```
+###### Remove empty fastas - now incorporated into above step
+```shell
+cd $METAGENOMICS/data/$RUN/ITS/fasta
+counter=0
+for d in */;
+do counter=$((counter+1));
+	cd $d
+	if (( $counter % 2 == 0 ))
+	then
+		awk 'BEGIN {RS = ">" ; FS = "\n" ; ORS = ""} $2 {print ">"$0}' ITS2.fa > ITS2.t.fa
+	else
+		awk 'BEGIN {RS = ">" ; FS = "\n" ; ORS = ""} $2 {print ">"$0}' ITS1.fa > ITS1.t.fa
+	fi
+	cd ..
+done
+```
+###### Pad files - in above step (though ITS1 and ITS2 have different pad lengths...)
+uclust performs better if FASTAs are same length.
+
+Example (of padding):
+```shell
+X=`grep ">" -v S13_R1.fa|awk '{ print length($0); }'|awk '$0>x{x=$0};END{print x}'`
+cat S13_R1.fa| sed -e :a -e "s/^[^>].\{1,`expr $X - 1`\}$/&N/;ta"
+```
+
+This could also be done in R as well (in the merge bit) - this would also remove the empty fasta files...
+```Rscript
+ITS <- ITS[ITS@ranges@width>0]
+ITS <- stackStrings(ITS,0,max(ITS@ranges@width),Lpadding.letter="N",Rpadding.letter="N")
+ITS <- subseq(ITS,start=2,width = (max(ITS@ranges@width)-1))
+writeXStringSet(ITS,"ITS.t.fa")
+```
+
+cat ITS.x.fa
