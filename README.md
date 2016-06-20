@@ -331,7 +331,7 @@ but the fasta is multilined - needs to be single lined...
 ```
 for  f in *.fq
 do
-	S=$(echo $f|awk -F"." '{print $1"_"$3".fa"}')
+	S=$(echo $f|awk -F"." '{print $1"_R"$3".fa"}')
 	awk '/^>/ {printf("\n%s\n",$0);next; } { printf("%s",$0);}  END {printf("\n");}'  <$f > $S
 	sed -i -e '1d' $S
 done
