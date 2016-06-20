@@ -333,8 +333,6 @@ done
 
 ### SSU/58S/LSU removal 
 
-
-
 ##### Split fasta into chunks for SSU/58S/LSU removal
 ```shell
 cd $METAGENOMICS/data/$RUN/ITS/fasta
@@ -389,7 +387,7 @@ do
 	 $METAGENOMICS/scripts/ITS.sh $METAGENOMICS/scripts/rm_58Se_LSU.R $d "*.\\.58" "*.\\.lsu" $d.fa
 done
 ```
-### Remove empty fastas - now incorporated into above step
+###### Remove empty fastas - now incorporated into above step
 ```shell
 cd $METAGENOMICS/data/$RUN/ITS/fasta
 counter=0
@@ -405,7 +403,7 @@ do counter=$((counter+1));
 	cd ..
 done
 ```
-### Pad files - in above step (though ITS1 and ITS2 have different pad lengths...)
+###### Pad files - in above step (though ITS1 and ITS2 have different pad lengths...)
 uclust performs better if FASTAs are same length.
 
 Example (of padding):
