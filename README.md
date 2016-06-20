@@ -281,7 +281,7 @@ Requires analysis2.R and deseq.r
 ubiom makes a S3 biom object from the OTU table (16S.otu_table.txt), OTU taxonomy (16S.taxa) and sample description file (colData)
 analysis2.R/deseq.r contain scripts to produce deseq objects and run differential analysis + a few graphing options.
 	
-## UPASRSE ITS workflow
+## ITS workflow
 
 ### Pre-processing
 
@@ -415,7 +415,6 @@ S=$(echo $f|awk -F"." '{print $1}'|awk -F"/" '{print $NF}')
 	R1=$f
 done
 ```
-
 
 ### UPARSE workflow
 
