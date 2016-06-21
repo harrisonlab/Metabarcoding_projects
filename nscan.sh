@@ -13,4 +13,4 @@ SCRIPT_DIR=$(readlink -f ${0%/*})
 #echo "Eval:" $EVAL
 #echo "Hmm:" $HMM
 
-qsub /home/deakig/projects/metagenomics/scripts/submit_nscan.sh $DATA $OUT $EVAL $HMM
+qsub $SCRIPT_DIR/submit_nscan.sh $DATA $OUT $EVAL $HMM
