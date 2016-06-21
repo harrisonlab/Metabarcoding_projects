@@ -1,8 +1,13 @@
 #!/usr/bin/perl -w -s
 
+##########################################################################################################
+# Input is stdin for list of FASTQ read headers containing adapters and command line arg for FASTQ file  #
+# Output is FASTQ excluding reads from stdin								 #
+##########################################################################################################
+
+# slurp stdin
 my $headers = do { local $/; <STDIN> };
 
-#$headers =~ s/\R//g;
 my ($inpFile) = $ARGV[0] || die "Please provide fastq file" ;
 unless(open(INFILE, $inpFile) ) {
 	print("Cannot open input file \"$inpFile\"\n\n");
