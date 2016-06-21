@@ -209,7 +209,7 @@ do
     R1=$f
     R2=$(echo $R1|sed 's/_R1_/_R2_/')
     S=$(echo $f|awk -F"_" '{print $2}')
-    $METAGENOMICS/scripts/16Spre.sh $R1 $R2 ${S}.filtered.fa  $METAGENOMICS/data/$RUN/16S/filtered $METAGENOMICS/primers/adapters.db 300 0.005 ${S}.
+    $METAGENOMICS/scripts/16Spre.sh $R1 $R2 ${S}  $METAGENOMICS/data/$RUN/16S/filtered $METAGENOMICS/primers/adapters.db 300 0.005 
 done   
 
 ```
@@ -296,7 +296,7 @@ do
 	R1=$f;     
 	R2=$(echo $R1|sed 's/_R1_/_R2_/');     
 	S=$(echo $f|awk -F"_" '{print $2}'); 
-	$METAGENOMICS/scripts/ITSpre.sh $R1 $R2 $S  $METAGENOMICS/data/$RUN/ITS/filtered $METAGENOMICS/primers/primers.db 200 0.005 0.02 ${S}.; 
+	$METAGENOMICS/scripts/ITSpre.sh $R1 $R2 $S  $METAGENOMICS/data/$RUN/ITS/filtered $METAGENOMICS/primers/primers.db 200 0.005 0.02; 
 done
 ```
 
