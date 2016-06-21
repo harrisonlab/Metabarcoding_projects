@@ -199,7 +199,7 @@ mv *bacterial* ../16S/fastq/.
 mv *fungal* ../ITS/fastq/.
 ```
 
-## UPARSE 16s workflow
+## 16s workflow
 
 ### Pre-processing
 Script will join PE reads (and save joined files to unfiltered folder), remove adapter contamination and filter on minimum size and quality threshold.
@@ -214,7 +214,7 @@ done
 
 ```
 
-### OTU fasta creation
+### UPARSE
 
 ##### Concatenate files
 
@@ -257,7 +257,7 @@ The taxa file output by utax is difficult to manipulate in R. Therefore the scri
 usearch8.1 -utax 16S.otus.fa -db $METAGENOMICS/taxonomies/utax/16s_ref.udb -strand both -utaxout 16S.reads.utax -rdpout 16S.rdp -alnout 16S.aln.txt
 cat 16S.rdp|$METAGENOMICS/scripts/mod_taxa.pl > 16S.taxa
 ```
-### OTU table 
+#### OTU table 
 
 ##### Concatenate unfiltered reads
 Unfiltered fastq will need to be converted to fasta first 
@@ -377,7 +377,7 @@ S=$(echo $f|awk -F"." '{print $1}'|awk -F"/" '{print $NF}')
 done
 ```
 
-### UPARSE workflow
+### UPARSE
 
 ##### Pad file (probably not necessary as done in previous step...
 ```shell
