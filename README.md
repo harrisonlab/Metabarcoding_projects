@@ -29,65 +29,7 @@ Metagenomic study of apple replant disease
     27. Unique ITS2 only
   28. Statistical analysis  
 
-## Installing Qiime to a local directory
-Downloaded Python 2.7.9 tar ball and unzipped.  
-From root of Python 2.7.9 directory ran :
 
-	./configure --prefix=$HOME/usr/local --exec-prefix=$HOME/usr/local --enable-unicode=ucs4
-	make
-	make install
-
-Downloaded pip tarball amd unzipped to pip directory then ran:
-
-	~/usr/local/bin/python ~/pip/getpip.py
-
-
-Set Qiime path with below (not permanent)
-
-	export PYTHONUSERBASE=$HOME/usr/local/
-	
-	
-	
-To install Qiime and dependencies
-
-	~/usr/local/bin/python -m pip install --user --upgrade --force-reinstall numpy
-	~/usr/local/bin/python -m pip install --user --upgrade --force-reinstall qiime
-	
-(the upgrade and force-reinstall flags may not be necessary)
-
-To test qiime, ensure ~/usr/local/bin (the qiime script directory) is in path
-
-	export PATH=$PATH:/home/deakig/usr/local/bin
-
-then
-
-	 ~/usr/local/bin/python ~/usr/local/bin/print_qiime_config.py -t
-
-should retun something like
-
-	$> Ran 9 test in 0.05s
-	$> OK
-
-### Parallel qiime
-for single machine throw in -a -O (no. processes) to the workflow script
-
-using HPC... 
-create qimme_config in home root
-
-	cd ~
-	touch .qiime_config
-
-added to qimme_config:  
-jobs_to_start 8  
-temp_dir $HOME/tmp  
-cluster_jobs_fp start_parallel_jobs_sc.py	
-
-Hacked start_parallel_jobs_sc.py for use in our environment. Changed the qsub template settings as bellow:    
-\# qsub template  
-QSUB_TEXT = """#!/bin/bash  
-\#$ -S %s  
-\#$ -l %s  
-\#$ -cwd  
 
 ## HMM Preperation for ITS analysis
 Using HHMMER v 3.1b2 (http://hmmer.janelia.org/)
@@ -443,7 +385,69 @@ Concatanate required samples per run. All fastas have common naming format so sh
 sed -e -i 's/_/_runID_/g' < input file
 ```
 
-##OLD
+# OLD (QIIME method)
+
+
+## Installing Qiime to a local directory
+Downloaded Python 2.7.9 tar ball and unzipped.  
+From root of Python 2.7.9 directory ran :
+
+	./configure --prefix=$HOME/usr/local --exec-prefix=$HOME/usr/local --enable-unicode=ucs4
+	make
+	make install
+
+Downloaded pip tarball amd unzipped to pip directory then ran:
+
+	~/usr/local/bin/python ~/pip/getpip.py
+
+
+Set Qiime path with below (not permanent)
+
+	export PYTHONUSERBASE=$HOME/usr/local/
+	
+	
+	
+To install Qiime and dependencies
+
+	~/usr/local/bin/python -m pip install --user --upgrade --force-reinstall numpy
+	~/usr/local/bin/python -m pip install --user --upgrade --force-reinstall qiime
+	
+(the upgrade and force-reinstall flags may not be necessary)
+
+To test qiime, ensure ~/usr/local/bin (the qiime script directory) is in path
+
+	export PATH=$PATH:/home/deakig/usr/local/bin
+
+then
+
+	 ~/usr/local/bin/python ~/usr/local/bin/print_qiime_config.py -t
+
+should retun something like
+
+	$> Ran 9 test in 0.05s
+	$> OK
+
+### Parallel qiime
+for single machine throw in -a -O (no. processes) to the workflow script
+
+using HPC... 
+create qimme_config in home root
+
+	cd ~
+	touch .qiime_config
+
+added to qimme_config:  
+jobs_to_start 8  
+temp_dir $HOME/tmp  
+cluster_jobs_fp start_parallel_jobs_sc.py	
+
+Hacked start_parallel_jobs_sc.py for use in our environment. Changed the qsub template settings as bellow:    
+\# qsub template  
+QSUB_TEXT = """#!/bin/bash  
+\#$ -S %s  
+\#$ -l %s  
+\#$ -cwd  
+
 
 ### Quiime pipeline 16S Remove chimeras
 Downloaded usearch 8.0 and RDP gold reference database from http://drive5.com/usearch/manual/cmd_uchime_ref.html
