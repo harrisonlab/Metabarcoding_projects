@@ -304,24 +304,20 @@ do
 	S=$(echo $d|awk -F"/" '{print $NF}'|awk -F"_" '{print $1}');
 	$METAGENOMICS/scripts/ITS.sh $METAGENOMICS/scripts/rm_58Se_LSU.R $d "*.\\.58" "*.\\.lsu" $d.fa $S
 done
+
 ```
 
 ##### Return ITS1 where fasta header matches ITS2, unique ITS1 and unique ITS2
-(script needs editing...)
 
-```shell	
-cd $METAGENOMICS/data/$RUN/ITS/fasta
+```shell
+find $METAGENOMICS/data/$RUN/ITS/fasta -type f -name *.r*|xargs -I myfile mv myfile ../filtered/.
 
-counter=0;
-for f in `ls $METAGENOMICS/data/$RUN/ITS/de_chimeraed/*cfree*| sort -V`
-do counter=$((counter+1)); 
-S=$(echo $f|awk -F"." '{print $1}'|awk -F"/" '{print $NF}')
-	if (( $counter % 2 == 0 ))
-	then
-		R2=$f;
-		$METAGENOMICS/scripts/catfiles_v2.pl $R1 $R2 $S;
-	fi
-	R1=$f
+for f in $METAGENOMICS/data/$RUN/ITS/filtered/*.fa
+do
+    R1=$f
+    R2=$(echo $R1|sed 's/\.r1\.fa/\.r2\.fa/')
+    S=$(echo $f|awk -F"." '{print $1}'|awk -F"/" '{print $NF}')
+    $METAGENOMICS/scripts/catfiles_v2.pl $R1 $R2 $S;
 done
 ```
 
