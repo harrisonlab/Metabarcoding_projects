@@ -308,49 +308,35 @@ done
 
 ### UPARSE
 
-##### Concatenate files
-
+#### Cluster and assign taxonomy
 ```shell
+##### Concatenate
 cat S[1-9].fa S[1-9][0-9].fa > ITS.fa
-```
-
-##### Pad file (probably not necessary as done in previous step...
-```shell
+##### Pad
 X=`cat ITS.fa|awk '{if ($1!~/>/) {print length($0)};}'|awk '$0>x{x=$0};END{print x}'`
 usearch8.1 -fastx_truncate ITS.fa -trunclen $X -padlen $X -fastaout ITS.t.fa
-```
-##### Dereplication
-
-```shell
+##### Dereplicate
 usearch8.1 -derep_fulllength ITS.t.fa -fastaout ITS.uniques.fasta -sizeout
 usearch8.1 -sortbysize ITS.uniques.fasta -fastaout ITS.sorted.fasta -minsize 2
 rm ITS.uniques.fasta
-```
-##### Clustering
-```shell
+##### Cluster
 usearch8.1 -cluster_otus ITS.sorted.fasta -otus ITS.otus.fa -uparseout ITS.out.up -relabel OTU -minsize 2 
-```
-##### Assign taxonomy
-```shell
+##### Taxonomy
 usearch8.1 -utax ITS.otus.fa -db $METAGENOMICS/taxonomies/utax/ITS_ref.udb -strand both -utaxout ITS.reads.utax -rdpout ITS.rdp -alnout ITS.aln.txt
 cat ITS.rdp|$METAGENOMICS/scripts/mod_taxa.pl > ITS.taxa
-
 ```
 
 #### OTU table creation
 
-##### Concatenate unfiltered reads
-Unfiltered fastq will need to be converted to fasta first 
 ```shell
+##### Concatenate unfiltered reads (Unfiltered fastq will need to be converted to fasta first)
 for f in $METAGENOMICS/data/$RUN/ITS/unfiltered/*.fastq
 do
 	S=$(echo $f|awk -F"." '{print $1}'|awk -F"/" '{print $NF}')
 	$METAGENOMICS/scripts/fq2fa.pl $f $METAGENOMICS/data/$RUN/ITS/ITS.unfiltered.fa $S
 done
-```	
-##### Make table
-Creates an OTU table of read counts per OTU per sample
-```shell
+	
+##### Make table (creates an OTU table of read counts per OTU per sample)
 usearch8.1 -usearch_global ITS.unfiltered.fa -db ITS.otus.fa -strand plus -id 0.97 -biomout ITS.otu_table.biom -otutabout ITS.otu_table.txt
 ```
 
