@@ -295,12 +295,14 @@ done
 ```shell
 for d in $METAGENOMICS/data/$RUN/ITS/fasta/*R1
 do
-	 $METAGENOMICS/scripts/ITS.sh $METAGENOMICS/scripts/rm_SSU_58Ss.R $d "*.\\.ssu" "*.\\.58" $d.fa
+	S=$(echo $d|awk -F"/" '{print $NF}'|awk -F"_" '{print $1}');
+	$METAGENOMICS/scripts/ITS.sh $METAGENOMICS/scripts/rm_SSU_58Ss.R $d "*.\\.ssu" "*.\\.58" $d.fa $S
 done
 
 for d in $METAGENOMICS/data/$RUN/ITS/fasta/*R2
 do
-	 $METAGENOMICS/scripts/ITS.sh $METAGENOMICS/scripts/rm_58Se_LSU.R $d "*.\\.58" "*.\\.lsu" $d.fa
+	S=$(echo $d|awk -F"/" '{print $NF}'|awk -F"_" '{print $1}');
+	$METAGENOMICS/scripts/ITS.sh $METAGENOMICS/scripts/rm_58Se_LSU.R $d "*.\\.58" "*.\\.lsu" $d.fa $S
 done
 ```
 
