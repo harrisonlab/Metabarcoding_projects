@@ -1,34 +1,42 @@
 # apple_replant
 Metagenomic study of apple replant disease  
- 1. Installing Qiime to a local directory  
-  2. Parellel Qiime  
- 3. Common workflow
-  4. QC  
-  5. Trimming
+ 1. HMM Preperation for ITS analysis  
+ 2. Common workflow
+  3. Utax reference databases  
+  4. QC
+  5. Demultiplexing
  6. 16S workflow
-  7. Join PE reads 
-  8. Rename files  
-  9. Convert joined fastq to fasta  
-  10. Remove chimeras  
-  11. Concatenate files
-  12. OTU Picking and descriptive statistics
-  13. Statistical analysis  
- 14. ITS workflow  
-  15. Convert to unpaired fasta files  
-  16. Rename files  
-  17. SSU/58S/LSU removal  
-    18. Split fasta into chunks for SSU/58S/LSu removal
-    19. Remove SSU/LSU
-    20. Merge output
-  21. Remove chimeras
-  22. Return merged common ITS1 and ITS2, unique ITS1 and unique ITS2
-  23. OTU Picking and descriptive statistics
-    24. Common and unique (ITS1 and ITS2)  
-    25. Common ITS
-    26. Unique ITS1 only
-    27. Unique ITS2 only
-  28. Statistical analysis  
-
+  7. Pre-processing 
+  8. UPARSE
+    9. Concatenate files  
+    10. Truncate and pad  
+    11. Dereplication
+    12. Clustering
+    13. Assign Taxonomy
+   14. OTU table
+    15. Concatenate unfiltered reads
+    16. Make table
+  17. Statistical analysis
+ 18. ITS workflow
+  19. Pre-processing
+   20. SSU/58S/LSU removal
+    21. Split fasta into chunks
+    22. Create lists of file paths to chunks
+    23. Identify SSU, 5.8S and LSU regions
+    24. Remove SSU, 5.8S and LSU regions and merge output
+    25. Return ITS1 where fasta header matches ITS2, unique ITS1 and unique ITS2
+  26. UPARSE
+    27. Pad files
+    28. Dereplication
+    29. Clustering
+    30. Assign taxonomy
+   31. OTU table creation
+    32. Concatenate unfiltered reads
+    33. Make table
+  34. Statistical analysis
+ 35. Oomycetes workflow
+ 36. Combine samples
+ 37. Old (Qiime method)
 
 
 ## HMM Preperation for ITS analysis
