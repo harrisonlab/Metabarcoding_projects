@@ -158,7 +158,7 @@ for f in $METAGENOMICS/data/$RUN/16S/fastq/*R1*
 do
     R1=$f
     R2=$(echo $R1|sed 's/_R1_/_R2_/')
-    S=$(echo $f|awk -F"_" '{print $2}')
+    S=$(echo $f|awk -F"_" -v D=$RUN '{print $2"D"D}')
     $METAGENOMICS/scripts/16Spre.sh $R1 $R2 $S  $METAGENOMICS/data/$RUN/16S/filtered $METAGENOMICS/primers/adapters.db 300 0.005 
 done   
 
@@ -228,7 +228,7 @@ for f in $METAGENOMICS/data/$RUN/ITS/fastq/*R1*;
 do     
 	R1=$f;     
 	R2=$(echo $R1|sed 's/_R1_/_R2_/');     
-	S=$(echo $f|awk -F"_" '{print $2}'); 
+	S=$(echo $f|awk -F"_" -v D=$RUN '{print $2"D"D}');
 	$METAGENOMICS/scripts/ITSpre.sh $R1 $R2 $S  $METAGENOMICS/data/$RUN/ITS/filtered $METAGENOMICS/primers/primers.db 200 0.005 0.02; 
 done
 ```
