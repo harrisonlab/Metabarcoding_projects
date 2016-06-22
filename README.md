@@ -316,7 +316,7 @@ cat S[1-9].fa S[1-9][0-9].fa > ITS.fa
 
 ##### Pad file (probably not necessary as done in previous step...
 ```shell
-X=`cat ITS.fa|awk '{if ($1~/>/) {print $0} else {print length($0)};}'|awk '{if ($1~/>/) {y=0} else{y+=$0}};y>x{x=y};END{print x}'`
+X=`cat ITS.fa|awk '{if ($1!~/>/) {print length($0)};}'|awk '$0>x{x=$0};END{print x}'`
 usearch8.1 -fastx_truncate ITS.fa -trunclen $X -padlen $X -fastaout ITS.t.fa
 ```
 ##### Dereplication
