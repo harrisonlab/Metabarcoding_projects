@@ -172,7 +172,7 @@ cat $METAGENOMICS/data/$RUN/16S/filtered/*filtered* > $METAGENOMICS/data/$RUN/16
 Remove multiplex primers and pad reads to same length.
 
 ```shell
-X=`cat 16S.t.fa|awk '{if ($1~/>/) {print $0} else {print length($0)};}'|awk '{if ($1~/>/) {y=0} else{y+=$0}};y>x{x=y};END{print x}'`
+X=`cat 16S.t.fa|awk '{if ($1!~/>/) {print length($0)};}'|awk '$0>x{x=$0};END{print x}'`
 usearch8.1 -fastx_truncate 16S.t.fa -stripleft 17 -stripright 21 -trunclen $X -padlen $X -fastaout 16S.fa
 rm 16S.t.fa
 ```
@@ -208,7 +208,7 @@ cat 16S.rdp|$METAGENOMICS/scripts/mod_taxa.pl > 16S.taxa
 ##### Concatenate unfiltered reads
 Unfiltered fastq will need to be converted to fasta first 
 ```shell
-for f in $METAGENOMICS/data/$RUN/16S/joined/*.fastq
+for f in $METAGENOMICS/data/$RUN/16S/unfilteres/*.fastq
 do
 	S=$(echo $f|awk -F"." '{print $1}'|awk -F"/" '{print $NF}')
 	$METAGENOMICS/scripts/fq2fa.pl $f $METAGENOMICS/data/$RUN/16S/16S.unfiltered.fa $S
@@ -342,7 +342,7 @@ cat ITS.rdp|$METAGENOMICS/scripts/mod_taxa.pl > ITS.taxa
 ##### Concatenate unfiltered reads
 Unfiltered fastq will need to be converted to fasta first 
 ```shell
-for f in $METAGENOMICS/data/$RUN/ITS/joined/*.fastq
+for f in $METAGENOMICS/data/$RUN/ITS/unfiltered/*.fastq
 do
 	S=$(echo $f|awk -F"." '{print $1}'|awk -F"/" '{print $NF}')
 	$METAGENOMICS/scripts/fq2fa.pl $f $METAGENOMICS/data/$RUN/ITS/ITS.unfiltered.fa $S
