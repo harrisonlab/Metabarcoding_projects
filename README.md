@@ -308,15 +308,21 @@ done
 
 ### UPARSE
 
+##### Concatenate files
+
+```shell
+cat S[1-9].fa S[1-9][0-9].fa > ITS.fa
+```
+
 ##### Pad file (probably not necessary as done in previous step...
 ```shell
-X=`cat ITS1.fa|awk '{if ($1~/>/) {print $0} else {print length($0)};}'|awk '{if ($1~/>/) {y=0} else{y+=$0}};y>x{x=y};END{print x}'`
-usearch8.1 -fastx_truncate ITS1.fa -trunclen $X -padlen $X -fastaout ITS1.t.fa
+X=`cat ITS.fa|awk '{if ($1~/>/) {print $0} else {print length($0)};}'|awk '{if ($1~/>/) {y=0} else{y+=$0}};y>x{x=y};END{print x}'`
+usearch8.1 -fastx_truncate ITS.fa -trunclen $X -padlen $X -fastaout ITS.t.fa
 ```
 ##### Dereplication
 
 ```shell
-usearch8.1 -derep_fulllength ITS1.t.fa -fastaout ITS.uniques.fasta -sizeout
+usearch8.1 -derep_fulllength ITS.t.fa -fastaout ITS.uniques.fasta -sizeout
 usearch8.1 -sortbysize ITS.uniques.fasta -fastaout ITS.sorted.fasta -minsize 2
 rm ITS.uniques.fasta
 ```
