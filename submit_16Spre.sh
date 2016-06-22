@@ -17,13 +17,13 @@ LABEL=${OUTFILE}.
 mkdir -p $OUTDIR 
 cd $OUTDIR 
 
-usearch8.1 -fastq_mergepairs $F -reverse $R -fastqout ${OUTFILE}.t1 
+usearch8.1 -fastq_mergepairs $F -reverse $R -fastqout ${OUTFILE}.t1  -fastq_maxdiffpct 15 -fastq_maxdiffs $(($MINL*15/100))
 usearch8.1 -search_oligodb ${OUTFILE}.t1 -db $ADAPTERS -strand both -userout ${OUTFILE}.t1.txt -userfields query+target+qstrand+diffs+tlo+thi+trowdots 
 
 
 cat ${OUTFILE}.t1.txt|awk -F"\t" '{print $1}'|sort|uniq|$SCRIPT_DIR/adapt_delete.pl ${OUTFILE}.t1 > ${OUTFILE}.t2
 
-#xargs -I ¬ sed -i -ne:t -e"/*\@¬.*/D" -e'$!N;//D;/'"\@¬/{" -e"s/\n/&/3;t" -e'$q;bt' -e\} -e's/\n/&/'"1;tP" -e'$!bt' -e:P  -e'P;D' ${OUTFILE}.t1
+#xargs -I Â¬ sed -i -ne:t -e"/*\@Â¬.*/D" -e'$!N;//D;/'"\@Â¬/{" -e"s/\n/&/3;t" -e'$q;bt' -e\} -e's/\n/&/'"1;tP" -e'$!bt' -e:P  -e'P;D' ${OUTFILE}.t1
 
 usearch8.1 -fastq_filter ${OUTFILE}.t2 -fastq_minlen $MINL -fastq_maxee_rate $QUAL -relabel $LABEL -fastaout ${OUTFILE}.filtered.fa
 
