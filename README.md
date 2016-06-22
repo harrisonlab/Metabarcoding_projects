@@ -166,61 +166,44 @@ done
 
 ### UPARSE
 
-##### Concatenate files
+Problem with (free version) usearch running out of memory for dereplication and subsequent steps. Cutting and recombining data during dereplication phase gives a fairly unsatisfactory, but working method. 
 
-```shell
-cat $METAGENOMICS/data/$RUN/16S/filtered/*filtered* > $METAGENOMICS/data/$RUN/16S/16S.t.fa
-```
-
-##### Truncate and pad
-Remove multiplex primers and pad reads to same length.
-
-```shell
-X=`cat 16S.t.fa|awk '{if ($1!~/>/) {print length($0)};}'|awk '$0>x{x=$0};END{print x}'`
-usearch8.1 -fastx_truncate 16S.t.fa -stripleft 17 -stripright 21 -trunclen $X -padlen $X -fastaout 16S.fa
-rm 16S.t.fa
-```
-Problem with (free version) usearch running out of memory for this and subsequent steps. Cutting and recombining data during dereplication phase gives a fairly unsatisfactory, but working method. 
-
-##### Dereplication 
-Required for usearch 8.x otu clustering
-
-```shell
-usearch8.1 -derep_fulllength 16S.fa -fastaout 16S.uniques.fasta -sizeout 
-usearch8.1 -sortbysize 16S.uniques.fasta -fastaout 16S.sorted.fasta -minsize 2
-rm 16S.fa 16S.uniques.fasta
-```
 get_uniq.pl will give output comparable to derep_fulllength for larger sequence collections
 combine_uniq.pl will combine several sets of dereplicated sequences, maintaining the counts.
 The sorting algorithm may run out of memory as well - it shouldn't be too difficult to adjust combine_uniq.pl to sort and filter on size (though the cluster algorithm will also filter on min size)
 
-##### Clustering
-Cluster dereplicated seqeunces and produce OTU fasta (also filters for chimeras)
-```shell
-usearch8.1 -cluster_otus 16S.sorted.fasta -otus 16S.otus.fa -uparseout 16S.out.up -relabel OTU -minsize 2
-```
- 
-##### Assign Taxonomy
 The taxa file output by utax is difficult to manipulate in R. Therefore the script mod_taxa.pl should be used to produce an R friendly taxa file.
 
+
 ```shell
+##### Concatenate files
+cat $METAGENOMICS/data/$RUN/16S/filtered/*filtered* > $METAGENOMICS/data/$RUN/16S/16S.t.fa
+##### Truncate and pad (Remove multiplex primers and pad reads to same length.)
+X=`cat 16S.t.fa|awk '{if ($1!~/>/) {print length($0)};}'|awk '$0>x{x=$0};END{print x}'`
+usearch8.1 -fastx_truncate 16S.t.fa -stripleft 17 -stripright 21 -trunclen $X -padlen $X -fastaout 16S.fa
+rm 16S.t.fa
+##### Dereplication
+usearch8.1 -derep_fulllength 16S.fa -fastaout 16S.uniques.fasta -sizeout 
+usearch8.1 -sortbysize 16S.uniques.fasta -fastaout 16S.sorted.fasta -minsize 2
+rm 16S.fa 16S.uniques.fasta
+##### Clustering (Cluster dereplicated seqeunces and produce OTU fasta (also filters for chimeras))
+usearch8.1 -cluster_otus 16S.sorted.fasta -otus 16S.otus.fa -uparseout 16S.out.up -relabel OTU -minsize 2
+##### Assign Taxonomy
 usearch8.1 -utax 16S.otus.fa -db $METAGENOMICS/taxonomies/utax/16s_ref.udb -strand both -utaxout 16S.reads.utax -rdpout 16S.rdp -alnout 16S.aln.txt
 cat 16S.rdp|$METAGENOMICS/scripts/mod_taxa.pl > 16S.taxa
 ```
 #### OTU table 
 
-##### Concatenate unfiltered reads
-Unfiltered fastq will need to be converted to fasta first 
+fq2fa_v2.pl will convert fastq to fasta and trim left and right ends of reads
+
 ```shell
+##### Concatenate unfiltered reads (Unfiltered fastq will need to be converted to fasta first )
 for f in $METAGENOMICS/data/$RUN/16S/unfilteres/*.fastq
 do
 	S=$(echo $f|awk -F"." '{print $1}'|awk -F"/" '{print $NF}')
 	$METAGENOMICS/scripts/fq2fa_v2.pl $f $METAGENOMICS/data/$RUN/16S/16S.unfiltered.fa $S 17 21
 done
-```	
-##### Make table
-Creates an OTU table of read counts per OTU per sample
-```shell
+##### Make table (Creates an OTU table of read counts per OTU per sample)
 usearch8.1 -usearch_global 16S.unfiltered.fa -db 16S.otus.fa -strand plus -id 0.97 -biomout 16S.otu_table.biom -otutabout 16S.otu_table.txt
 ```
 
