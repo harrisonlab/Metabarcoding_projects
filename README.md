@@ -211,7 +211,7 @@ Unfiltered fastq will need to be converted to fasta first
 for f in $METAGENOMICS/data/$RUN/16S/unfilteres/*.fastq
 do
 	S=$(echo $f|awk -F"." '{print $1}'|awk -F"/" '{print $NF}')
-	$METAGENOMICS/scripts/fq2fa.pl $f $METAGENOMICS/data/$RUN/16S/16S.unfiltered.fa $S
+	$METAGENOMICS/scripts/fq2fa_v2.pl $f $METAGENOMICS/data/$RUN/16S/16S.unfiltered.fa $S 17 21
 done
 ```	
 ##### Make table
