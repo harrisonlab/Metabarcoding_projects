@@ -248,48 +248,33 @@ done
 
 #### SSU/58S/LSU removal 
 
-##### Split fasta into chunks 
-```shell
-cd $METAGENOMICS/data/$RUN/ITS/fasta
-for f in *.fa;
-do
-  S=$(echo $f|awk -F"." '{print $1}')
-    mkdir $S
-    split -l 2000 $f -a 3 -d ${S}/$f.
-done
-```
-##### Create lists of file paths to chunks
-
-```shell
-cd $METAGENOMICS/data/$RUN/ITS/fasta
-for d in */
-do
-	cd $d
-	find $PWD -name '*.fa.*' >split_files.txt
-	cd ..
-done
-```
 ##### Identify SSU, 5.8S  and LSU regions
 
 This will create a large number of array jobs on the cluster
 ```shell
 cd $METAGENOMICS/data/$RUN/ITS/fasta
 counter=0
-for d in */
+for f in *.fa;
 do counter=$((counter+1))
-	cd $d
-	TASKS=$(wc -l split_files.txt|awk -F" " '{print $1}')
-	if (( $counter % 2 == 0 ))
-	then
-		qsub -t 1-$TASKS:1 $METAGENOMICS/scripts/submit_nscan.sh lsu 20 $METAGENOMICS/hmm/lsu_start.hmm
-		qsub -t 1-$TASKS:1 $METAGENOMICS/scripts/submit_nscan.sh 58se 20 $METAGENOMICS/hmm/58s_end.hmm
-	else
-		qsub -t 1-$TASKS:1 $METAGENOMICS/scripts/submit_nscan.sh ssu 20 $METAGENOMICS/hmm/ssu_end.hmm
-		qsub -t 1-$TASKS:1 $METAGENOMICS/scripts/submit_nscan.sh 58ss 20 $METAGENOMICS/hmm/58s_start.hmm
-	fi
-	cd ..
+    d=$(echo $f|awk -F"." '{print $1}')
+    mkdir $d
+    split -l 2000 $f -a 3 -d ${d}/$f.
+    cd $d
+    find $PWD -name '*.fa.*' >split_files.txt
+    TASKS=$(wc -l split_files.txt|awk -F" " '{print $1}')
+    if (( $counter % 2 == 0 ))
+    then
+        qsub -t 1-$TASKS:1 $METAGENOMICS/scripts/submit_nscan.sh lsu 20 $METAGENOMICS/hmm/lsu_start.hmm
+        qsub -t 1-$TASKS:1 $METAGENOMICS/scripts/submit_nscan.sh 58se 20 $METAGENOMICS/hmm/58s_end.hmm
+    else
+        qsub -t 1-$TASKS:1 $METAGENOMICS/scripts/submit_nscan.sh ssu 20 $METAGENOMICS/hmm/ssu_end.hmm
+        qsub -t 1-$TASKS:1 $METAGENOMICS/scripts/submit_nscan.sh 58ss 20 $METAGENOMICS/hmm/58s_start.hmm
+    fi
+    cd ..    
 done
 ```
+
+
 ##### Remove SSU, 5.8S  and LSU regions and merge output
 (bug fixed)
 ```shell
@@ -386,3 +371,47 @@ Concatanate required samples per run. All fastas have common naming format so sh
 sed -e -i 's/_/_runID_/g' < input file
 ```
 
+## old stuff
+
+##### Split fasta into chunks 
+```shell
+cd $METAGENOMICS/data/$RUN/ITS/fasta
+for f in *.fa;
+do
+  S=$(echo $f|awk -F"." '{print $1}')
+    mkdir $S
+    split -l 2000 $f -a 3 -d ${S}/$f.
+done
+```
+##### Create lists of file paths to chunks
+
+```shell
+cd $METAGENOMICS/data/$RUN/ITS/fasta
+for d in */
+do
+	cd $d
+	find $PWD -name '*.fa.*' >split_files.txt
+	cd ..
+done
+```
+##### Identify SSU, 5.8S  and LSU regions
+
+This will create a large number of array jobs on the cluster
+```shell
+cd $METAGENOMICS/data/$RUN/ITS/fasta
+counter=0
+for d in */
+do counter=$((counter+1))
+	cd $d
+	TASKS=$(wc -l split_files.txt|awk -F" " '{print $1}')
+	if (( $counter % 2 == 0 ))
+	then
+		qsub -t 1-$TASKS:1 $METAGENOMICS/scripts/submit_nscan.sh lsu 20 $METAGENOMICS/hmm/lsu_start.hmm
+		qsub -t 1-$TASKS:1 $METAGENOMICS/scripts/submit_nscan.sh 58se 20 $METAGENOMICS/hmm/58s_end.hmm
+	else
+		qsub -t 1-$TASKS:1 $METAGENOMICS/scripts/submit_nscan.sh ssu 20 $METAGENOMICS/hmm/ssu_end.hmm
+		qsub -t 1-$TASKS:1 $METAGENOMICS/scripts/submit_nscan.sh 58ss 20 $METAGENOMICS/hmm/58s_start.hmm
+	fi
+	cd ..
+done
+```
