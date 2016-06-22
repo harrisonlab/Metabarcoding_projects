@@ -89,18 +89,14 @@ mkdir $METAGENOMICS/analysis/$RUN/16S
 mkdir $METAGENOMICS/analysis/$RUN/ITS	
 mkdir $METAGENOMICS/data/$RUN
 mkdir $METAGENOMICS/data/$RUN/fastq
-mkdir $METAGENOMICS/data/$RUN/PhiX
 mkdir $METAGENOMICS/data/$RUN/16S
 mkdir $METAGENOMICS/data/$RUN/16S/fastq
-mkdir $METAGENOMICS/data/$RUN/16S/fasta
-mkdir $METAGENOMICS/data/$RUN/16S/joined
-mkdir $METAGENOMICS/data/$RUN/16S/de_chimeraed
+mkdir $METAGENOMICS/data/$RUN/16S/filtered
+mkdir $METAGENOMICS/data/$RUN/16S/unfiltered
 mkdir $METAGENOMICS/data/$RUN/ITS
 mkdir $METAGENOMICS/data/$RUN/ITS/fastq
-mkdir $METAGENOMICS/data/$RUN/ITS/fasta
-mkdir $METAGENOMICS/data/$RUN/ITS/trimmed
-mkdir $METAGENOMICS/data/$RUN/ITS/de_chimeraed
-mkdir $METAGENOMICS/data/$RUN/ITS/final
+mkdir $METAGENOMICS/data/$RUN/ITS/filtered
+mkdir $METAGENOMICS/data/$RUN/ITS/unfilterd
 
 ```	
 The $METAGENOMICS directory should be set to something appropriate (e.g. /home/bob/metagenomics) and $RUN to the name of the NGS run. The realtive path is used in the scripts below - depending on your config you may have to specify full paths.	
