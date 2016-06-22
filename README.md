@@ -330,10 +330,16 @@ cat ITS.rdp|$METAGENOMICS/scripts/mod_taxa.pl > ITS.taxa
 
 ```shell
 ##### Concatenate unfiltered reads (Unfiltered fastq will need to be converted to fasta first)
-for f in $METAGENOMICS/data/$RUN/ITS/unfiltered/*.fastq
+for f in $METAGENOMICS/data/$RUN/ITS/unfiltered/*_R1_*
 do
 	S=$(echo $f|awk -F"." '{print $1}'|awk -F"/" '{print $NF}')
-	$METAGENOMICS/scripts/fq2fa.pl $f $METAGENOMICS/data/$RUN/ITS/ITS.unfiltered.fa $S
+	$METAGENOMICS/scripts/fq2fa_v2.pl $f $METAGENOMICS/data/$RUN/ITS/ITS.unfiltered.fa $S 22 0
+done
+
+for f in $METAGENOMICS/data/$RUN/ITS/unfiltered/*_R2_*
+do
+	S=$(echo $f|awk -F"." '{print $1}'|awk -F"/" '{print $NF}')
+	$METAGENOMICS/scripts/fq2fa_v2.pl $f $METAGENOMICS/data/$RUN/ITS/ITS.unfiltered.fa $S 20 0
 done
 	
 ##### Make table (creates an OTU table of read counts per OTU per sample)
