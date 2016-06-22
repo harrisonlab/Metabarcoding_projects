@@ -312,7 +312,7 @@ done
 ```shell
 find $METAGENOMICS/data/$RUN/ITS/fasta -type f -name *.r*|xargs -I myfile mv myfile ../filtered/.
 
-for f in $METAGENOMICS/data/$RUN/ITS/filtered/*.fa
+for f in $METAGENOMICS/data/$RUN/ITS/filtered/*r1.fa
 do
     R1=$f
     R2=$(echo $R1|sed 's/\.r1\.fa/\.r2\.fa/')
@@ -371,7 +371,6 @@ analysis2.R/deseq.r contain scripts to produce deseq objects and run differentia
 
 The OTU table header is contains a #. To import into R the set comment.char="" in the read.table parameters
 
-
 ##oomycetes
 ```shell
 $METAGENOMICS/scripts/pick_OTU.sh  $METAGENOMICS/data/$RUN/ITS/final/ITS.all.fa $METAGENOMICS/analysis/$RUN/ITS/ITS_all_otus $METAGENOMICS/scripts/params.txt $METAGENOMICS/taxonomies/Silva119/97_18S_only/Silva_119_rep_set97_aligned_18S_only.fna FALSE
@@ -386,6 +385,12 @@ Concatanate required samples per run. All fastas have common naming format so sh
 ```shell
 sed -e -i 's/_/_runID_/g' < input file
 ```
+
+
+
+
+
+
 
 # OLD (QIIME method)
 
