@@ -2,7 +2,7 @@
 library(Biostrings)
 
 args <- commandArgs(TRUE) #get command line variables
-#args <- c(".","*.\\.ssu","*.\\.58","../S91_R1.fa", "ITS1")
+#args <- c(".","*.\\.ssu","*.\\.58ss","../S77_R1.fa", "ITS1")
 # 1: folder
 # 2: regex start file names
 # 3: regex end file names
@@ -36,39 +36,59 @@ load_table <- function(file,func,End) {
   } )
 } 
 
+print("loading ssu tables")
 r_start <- load_tables(list.files(args[1],args[2],full.names=T),max,T)
+print("loading 58S tables")
 r_end <- load_tables(list.files(args[1],args[3],full.names=T),min)
 
 #SSU_test <- load_tables(head(list.files(".","*.\\.ssu"),2),max,T)
 #ss58_test <- load_tables(head(list.files(".","*.\\.58"),2),min)
-
+print("merging tables")
 mytable <- merge(r_start,r_end,by.all=T)
+print("removing NAs")
 mytable <- na.omit(mytable)
 mytable <- mytable[((mytable$start-mytable$end)>40),]
 
+print("reading DNA table")
 myfasta <- readDNAStringSet(args[4])
 #myfasta <- readDNAStringSet("../S91_R1.fa")
-mytable2 <- as.data.frame(myfasta@ranges@NAMES)
-colnames(mytable2) <- "seq"
-mytable <- merge(mytable2,mytable,all=T)
+#mytable2 <- as.data.frame(myfasta@ranges@NAMES)
+#colnames(mytable2) <- "seq"
+#print("merging ITS and DNA tables")
+#mytable <- merge(mytable2,mytable,all=T)
 
-mytable[c("start")][is.na(mytable[c("start")])] <- 1
-mytable[c("end")][is.na(mytable[c("end")])] <- 0
+myfasta<- myfasta[mytable$seq]
 
+#print("convert NAs to 1 or 0")
+#mytable[c("start")][is.na(mytable[c("start")])] <- 1
+#mytable[c("end")][is.na(mytable[c("end")])] <- 0
 
+#print("Reorder table")
 #------# Reorder : specific to fasta labels in this experiment, regex matches will need to be changed for any other labeling system
-f1 <- gsub('^[A-Za-z=]','',mytable$seq)
-m <- regexpr("[0-9]+$",f1)
-f2 <- as.numeric(regmatches(f1,m))
-mytable <- mytable[order(f2),]
-f1 <- gsub('^S','',mytable$seq)
-m <- regexpr("^[0-9]+",f1)
-f2 <- as.numeric(regmatches(f1,m))
-mytable <- mytable[order(f2),]
+#f1 <- gsub('^[A-Za-z=]','',mytable$seq)
+#m <- regexpr("[0-9]+$",f1)
+#f2 <- as.numeric(regmatches(f1,m))
+#mytable <- mytable[order(f2),]
+#f1 <- gsub('^S','',mytable$seq)
+#m <- regexpr("^[0-9]+",f1)
+#f2 <- as.numeric(regmatches(f1,m))
+#mytable <- mytable[order(f2),]
 #------#
 
+print("set ITS_IR")
 ITS_IR <- IRanges(start=mytable$end+1,end=mytable$start-1,names=mytable$seq)
 
+print("set ITS")
 ITS <- DNAStringSet(myfasta,start=ITS_IR@start,width=ITS_IR@width)
 
-writeXStringSet(ITS,"ITS1.fa")
+#ITS <- ITS[ITS@ranges@width>0]
+#ITS <- stackStrings(ITS,0,max(ITS@ranges@width),Lpadding.letter="N",Rpadding.letter="N")
+ITS <- subseq(ITS ,start=2,width = (max(ITS@ranges@width)-1))
+
+print("write ITS")
+writeXStringSet(ITS,"ITS1.t.fa")
+#ITS <- sapply(ITS_IR@NAMES,function(x) DNAStringSet(myfasta[(myfasta@ranges@NAMES==x)],start=ITS_IR@start[(ITS_IR@NAMES==x)],width=ITS_IR@width[(ITS_IR@NAMES==x)],use.names=T))
+
+#lapply(ITS,function(x) writeXStringSet(x,paste(args[5],".fa",sep=""),append=T))
+
+
