@@ -7,10 +7,12 @@ args <- commandArgs(TRUE) #get command line variables
 # 2: regex start file names
 # 3: regex end file names
 # 4: sample fasta
+# 5: sample ID
 print(args[1])
 print(args[2])
 print(args[3])
 print(args[4])
+print(args[5])
 
 load_tables <- function (files,func,End=F) {
   tables <- lapply(files, load_table,func=func,End=End)
@@ -51,9 +53,9 @@ ITS_IR <- IRanges(start=mytable$start+1,end=mytable$end-1,names=mytable$seq)
 ITS <- DNAStringSet(myfasta,start=ITS_IR@start,width=ITS_IR@width)
 ITS <- complement(reverse(ITS))
 
+ITS <- stackStrings(ITS,0,max(ITS@ranges@width),Lpadding.letter="N",Rpadding.letter="N")
 ITS <- subseq(ITS ,start=2,width = (max(ITS@ranges@width)-1))
 
-writeXStringSet(ITS,"ITS2.fa")
-
+writeXStringSet(ITS,paste(args[5],".r2.fa",sep=""))
 
  
