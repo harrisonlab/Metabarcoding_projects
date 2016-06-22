@@ -145,8 +145,13 @@ do
 done   
 ```
 ```shell
-mv *bacterial* ../16S/fastq/.
-mv *fungal* ../ITS/fastq/.
+mkdir -p $METAGENOMICS/data/$RUN/16S/fastq
+mkdir -p $METAGENOMICS/data/$RUN/ITS/fastq
+mkdir -p $METAGENOMICS/data/$RUN/ambiguous
+
+mv $METAGENOMICS/data/$RUN/fastq/*bacterial* $METAGENOMICS/data/$RUN/16S/fastq/.
+mv $METAGENOMICS/data/$RUN/fastq/*fungal* $METAGENOMICS/data/$RUN/ITS/fastq/.
+mv $METAGENOMICS/data/$RUN/fastq/*ambig* $METAGENOMICS/data/$RUN/ambiguous/.
 ```
 
 ## 16s workflow
