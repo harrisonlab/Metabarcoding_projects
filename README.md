@@ -70,8 +70,16 @@ hmmpress lsu_start.hmm
 ```
 Ouptut files were copied to $METAGENOMICS/hmm. Hacked the HMM files to include a MAXL satement (required) and manually split out SSU,58S and LSU into seperate files (only fungal hmms are implemented in this pipeline)
 
-___
-## Common workflow
+## Utax reference databases
+Reference databases were downloaded from:
+http://drive5.com/usearch/manual/utax_downloads.html
+(Unite V7 and RDP trainset 15)
+```shell
+usearch8.1 -makeudb_utax refdb.fa -output 16s_ref.udb -report 16s_report.txt
+usearch8.1 -makeudb_utax refdb.fa -utax_trainlevels kpcofgs ‑utax_splitlevels NVpcofgs -output ITS_ref.udb -report ITS_report.txt
+```
+
+## Set directories
 The following directories should be created prior to starting the workflow:
 ```shell
 #run once
@@ -82,6 +90,10 @@ mkdir $METAGENOMICS/hmm
 mkdir $METAGENOMICS/scripts
 mkdir $METAGENOMICS/taxonomies
 ```
+
+___
+## Common workflow
+
 ```shell
 #run for each analysis
 mkdir $METAGENOMICS/analysis/$RUN
@@ -101,14 +113,6 @@ mkdir $METAGENOMICS/data/$RUN/ITS/unfilterd
 ```	
 The $METAGENOMICS directory should be set to something appropriate (e.g. /home/bob/metagenomics) and $RUN to the name of the NGS run. The realtive path is used in the scripts below - depending on your config you may have to specify full paths.	
 
-### Utax reference databases
-Reference databases were downloaded from:
-http://drive5.com/usearch/manual/utax_downloads.html
-(Unite V7 and RDP trainset 15)
-```shell
-usearch8.1 -makeudb_utax refdb.fa -output 16s_ref.udb -report 16s_report.txt
-usearch8.1 -makeudb_utax refdb.fa -utax_trainlevels kpcofgs ‑utax_splitlevels NVpcofgs -output ITS_ref.udb -report ITS_report.txt
-```
 
 ### QC
 Qualtiy checking was performed with fastQC (http://www.bioinformatics.babraham.ac.uk/projects/fastqc/)
@@ -330,13 +334,13 @@ cat ITS.rdp|$METAGENOMICS/scripts/mod_taxa.pl > ITS.taxa
 
 ```shell
 ##### Concatenate unfiltered reads (Unfiltered fastq will need to be converted to fasta first)
-for f in $METAGENOMICS/data/$RUN/ITS/unfiltered/*_R1_*
+for f in $METAGENOMICS/data/$RUN/ITS/unfiltered/*.r1.*
 do
 	S=$(echo $f|awk -F"." '{print $1}'|awk -F"/" '{print $NF}')
 	$METAGENOMICS/scripts/fq2fa_v2.pl $f $METAGENOMICS/data/$RUN/ITS/ITS.unfiltered.fa $S 22 0
 done
 
-for f in $METAGENOMICS/data/$RUN/ITS/unfiltered/*_R2_*
+for f in $METAGENOMICS/data/$RUN/ITS/unfiltered/*.r2.*
 do
 	S=$(echo $f|awk -F"." '{print $1}'|awk -F"/" '{print $NF}')
 	$METAGENOMICS/scripts/fq2fa_v2.pl $f $METAGENOMICS/data/$RUN/ITS/ITS.unfiltered.fa $S 20 0
