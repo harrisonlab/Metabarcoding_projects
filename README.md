@@ -166,6 +166,7 @@ done
 
 ### UPARSE
 
+#### Cluster and assign taxonomy
 Problem with (free version) usearch running out of memory for dereplication and subsequent steps. Cutting and recombining data during dereplication phase gives a fairly unsatisfactory, but working method. 
 
 get_uniq.pl will give output comparable to derep_fulllength for larger sequence collections
@@ -173,7 +174,6 @@ combine_uniq.pl will combine several sets of dereplicated sequences, maintaining
 The sorting algorithm may run out of memory as well - it shouldn't be too difficult to adjust combine_uniq.pl to sort and filter on size (though the cluster algorithm will also filter on min size)
 
 The taxa file output by utax is difficult to manipulate in R. Therefore the script mod_taxa.pl should be used to produce an R friendly taxa file.
-
 
 ```shell
 ##### Concatenate files
@@ -261,9 +261,8 @@ do counter=$((counter+1))
 done
 ```
 
-
 ##### Remove SSU, 5.8S  and LSU regions and merge output
-(bug fixed)
+
 ```shell
 for d in $METAGENOMICS/data/$RUN/ITS/fasta/*R1
 do
