@@ -283,7 +283,7 @@ LOWQUAL=TRUE
 for d in $METAGENOMICS/data/$RUN/ITS/fasta/*R2
 do
 	S=$(echo $d|awk -F"/" '{print $NF}'|awk -F"_" '{print $1}');
-	$METAGENOMICS/scripts/ITS.sh $METAGENOMICS/scripts/rm_58Se_LSU_V2.R $d "*.\\.58" "*.\\.lsu" $d.fa $S $LOWQUAL
+	$METAGENOMICS/scripts/ITS.sh $METAGENOMICS/scripts/rm_58Se_LSU_v2.R $d "*.\\.58" "*.\\.lsu" $d.fa $S $LOWQUAL
 done
 ```
 
