@@ -96,17 +96,13 @@ ___
 
 ```shell
 #run for each analysis
-mkdir $METAGENOMICS/analysis/$RUN
-mkdir $METAGENOMICS/analysis/$RUN/16S
+mkdir -p $METAGENOMICS/analysis/$RUN/16S
 mkdir $METAGENOMICS/analysis/$RUN/ITS	
-mkdir $METAGENOMICS/data/$RUN
-mkdir $METAGENOMICS/data/$RUN/fastq
-mkdir $METAGENOMICS/data/$RUN/16S
-mkdir $METAGENOMICS/data/$RUN/16S/fastq
+mkdir -p $METAGENOMICS/data/$RUN/fastq
+mkdir -p $METAGENOMICS/data/$RUN/16S/fastq
 mkdir $METAGENOMICS/data/$RUN/16S/filtered
 mkdir $METAGENOMICS/data/$RUN/16S/unfiltered
-mkdir $METAGENOMICS/data/$RUN/ITS
-mkdir $METAGENOMICS/data/$RUN/ITS/fastq
+mkdir -p $METAGENOMICS/data/$RUN/ITS/fastq
 mkdir $METAGENOMICS/data/$RUN/ITS/filtered
 mkdir $METAGENOMICS/data/$RUN/ITS/unfilterd
 
