@@ -233,7 +233,7 @@ do
 	R1=$f;     
 	R2=$(echo $R1|sed 's/_R1_/_R2_/');     
 	S=$(echo $f|awk -F"_" -v D=$RUN '{print $2"D"D}');
-	$METAGENOMICS/scripts/ITSpre.sh $R1 $R2 $S  $METAGENOMICS/data/$RUN/ITS/fasta $METAGENOMICS/primers/primers.db 200 230 1; 
+	$METAGENOMICS/scripts/ITSpre.sh $R1 $R2 $S  $METAGENOMICS/data/$RUN/ITS/fasta $METAGENOMICS/primers/primers.db 200 200 1; 
 done
 ```
 
