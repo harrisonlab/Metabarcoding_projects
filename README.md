@@ -274,26 +274,16 @@ do
 	$METAGENOMICS/scripts/ITS.sh $METAGENOMICS/scripts/rm_SSU_58Ss.R $d "*.\\.ssu" "*.\\.58" $d.fa $S
 done
 ```
-Two versions are provided for reverse reads. If the quality is high and it is not necessary to truncate reads to get more than a couple of reads past the filter use V1, otherwise use V2.
+If reverse read quality was poor and it was necessary to truncate reads to get more than a couple of reads past set LOWQUAL to TRUE
 
-V2 keeps reads which lack 5.8S homology - this is necessary as trimming will in most instances remove it. 
+LOWQUAL keeps reads which lack 5.8S homology - this is necessary as trimming will in most instances have removed the homologous region. 
 
 ```shell
-# V1
+$LOWQUAL=TRUE
 for d in $METAGENOMICS/data/$RUN/ITS/fasta/*R2
 do
 	S=$(echo $d|awk -F"/" '{print $NF}'|awk -F"_" '{print $1}');
-	$METAGENOMICS/scripts/ITS.sh $METAGENOMICS/scripts/rm_58Se_LSU.R $d "*.\\.58" "*.\\.lsu" $d.fa $S
-done
-```
-
-
-```shell
-# V2
-for d in $METAGENOMICS/data/$RUN/ITS/fasta/*R2
-do
-	S=$(echo $d|awk -F"/" '{print $NF}'|awk -F"_" '{print $1}');
-	$METAGENOMICS/scripts/ITS.sh $METAGENOMICS/scripts/rm_58Se_LSU_V2.R $d "*.\\.58" "*.\\.lsu" $d.fa $S
+	$METAGENOMICS/scripts/ITS.sh $METAGENOMICS/scripts/rm_58Se_LSU_V2.R $d "*.\\.58" "*.\\.lsu" $d.fa $S $LOWQUAL
 done
 ```
 
