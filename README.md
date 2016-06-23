@@ -286,8 +286,10 @@ done
 ##### Return ITS1 where fasta header matches ITS2, unique ITS1 and unique ITS2
 
 ```shell
-find $METAGENOMICS/data/$RUN/ITS/fasta -type f -name *.r*|xargs -I myfile mv myfile ../filtered/.
+mkdir -p $METAGENOMICS/data/$RUN/ITS/filtered
+find $METAGENOMICS/data/$RUN/ITS/fasta -type f -name *.r*|xargs -I myfile mv myfile $METAGENOMICS/data/$RUN/ITS/filtered/.
 
+cd $METAGENOMICS/data/$RUN/ITS/filtered
 for f in $METAGENOMICS/data/$RUN/ITS/filtered/*r1.fa
 do
     R1=$f
@@ -295,6 +297,11 @@ do
     S=$(echo $f|awk -F"." '{print $1}'|awk -F"/" '{print $NF}')
     $METAGENOMICS/scripts/catfiles_v2.pl $R1 $R2 $S;
 done
+
+mkdir R1
+mkdir R2
+mv *r1* R1/.
+mv *r2* R2/.
 ```
 
 ### UPARSE
