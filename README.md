@@ -279,7 +279,7 @@ If reverse read quality was poor and it was necessary to truncate reads to get m
 LOWQUAL keeps reads which lack 5.8S homology - this is necessary as trimming will in most instances have removed the homologous region. 
 
 ```shell
-$LOWQUAL=TRUE
+LOWQUAL=TRUE
 for d in $METAGENOMICS/data/$RUN/ITS/fasta/*R2
 do
 	S=$(echo $d|awk -F"/" '{print $NF}'|awk -F"_" '{print $1}');
