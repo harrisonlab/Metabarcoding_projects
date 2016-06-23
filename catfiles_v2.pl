@@ -13,17 +13,25 @@ my %hash_ITS2 = seqbuilder($its2);
 #open output files
 open(MYFASTA, '>', "$myfasta.fa") or die "Could not open file '$myfasta' $!";
 
+# Keep count of reads for new fasta headers
+my $count = 1;
 
 #Print ITS1 
 my @U_ITS1 = ();
 foreach (keys %hash_ITS1) {
-    print MYFASTA "$_\n$hash_ITS1{$_}\n";
+    print MYFASTA ">$myfasta.$count\n$hash_ITS1{$_}\n";
+    $count++;
 }
 
 #find and print unique ITS2 
 my @U_ITS2 = ();
 foreach (keys %hash_ITS2) {
-    print MYFASTA "$_\n$hash_ITS2{$_}\n" unless exists $hash_ITS1{$_};
+    if (!exists $hash_ITS1{$_}) {
+    	print MYFASTA ">$myfasta.$count\n$hash_ITS2{$_}\n";
+    	$count++;
+    }
+    #print MYFASTA "$count\n$hash_ITS2{$_}\n" unless exists $hash_ITS1{$_};
+    
 }
 	
 close(MYFASTA);
