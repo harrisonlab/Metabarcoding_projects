@@ -227,7 +227,6 @@ Script will:
 3. Filter for quality and minimum length (with UTRIM)
 4. Convert FASTQ to single line FASTA
 
-
 ```shell
 for f in $METAGENOMICS/data/$RUN/ITS/fastq/*R1*; 
 do     
@@ -274,13 +273,28 @@ do
 	S=$(echo $d|awk -F"/" '{print $NF}'|awk -F"_" '{print $1}');
 	$METAGENOMICS/scripts/ITS.sh $METAGENOMICS/scripts/rm_SSU_58Ss.R $d "*.\\.ssu" "*.\\.58" $d.fa $S
 done
+```
+Two versions are provided for reverse reads. If the quality is high and it is not necessary to truncate reads to get more than a couple of reads past the filter use V1, otherwise use V2.
 
+V2 keeps reads which lack 5.8S homology - this is necessary as trimming will in most instances remove it. 
+
+```shell
+# V1
 for d in $METAGENOMICS/data/$RUN/ITS/fasta/*R2
 do
 	S=$(echo $d|awk -F"/" '{print $NF}'|awk -F"_" '{print $1}');
 	$METAGENOMICS/scripts/ITS.sh $METAGENOMICS/scripts/rm_58Se_LSU.R $d "*.\\.58" "*.\\.lsu" $d.fa $S
 done
+```
 
+
+```shell
+# V2
+for d in $METAGENOMICS/data/$RUN/ITS/fasta/*R2
+do
+	S=$(echo $d|awk -F"/" '{print $NF}'|awk -F"_" '{print $1}');
+	$METAGENOMICS/scripts/ITS.sh $METAGENOMICS/scripts/rm_58Se_LSU_V2.R $d "*.\\.58" "*.\\.lsu" $d.fa $S
+done
 ```
 
 ##### Return ITS1 where fasta header matches ITS2, unique ITS1 and unique ITS2
