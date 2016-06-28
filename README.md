@@ -362,9 +362,10 @@ Biom table for samples from multiple NGS runs are required.
 
 This will mean the names of each fasta will need to be made unique and the sequence lengths will need to be set to the same.
 
-Concatanate required samples per run. All fastas have common naming format so should be able to change with sed:
+Something like the below will copy samples with the wholename string to a new location. Uses original fastq file name and reconsructs the sample ID for each sample used in the workflow.
 ```shell
-sed -e -i 's/_/_runID_/g' < input file
+find .. -type f -wholename "*[0-9]/fastq/G[0|O]*R1*"|awk -F"/" '{print $2"_"$4}'|awk -F"_" '{print "cp ../"$1"/16S/unfiltered/"$3"D"$1".unfiltered.fastq 16S/unfiltered/."}' > runme.sh
+./runme.sh
 ```
 
 ## old stuff
