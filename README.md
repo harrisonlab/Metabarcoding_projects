@@ -178,7 +178,7 @@ The taxa file output by utax is difficult to manipulate in R. Therefore the scri
 
 ```shell
 ##### Concatenate files
-cat $METAGENOMICS/data/$RUN/16S/filtered/*filtered* > $METAGENOMICS/data/$RUN/16S/16S.t.fa
+cat $METAGENOMICS/data/$RUN/16S/filtered/*filtered* > $METAGENOMICS/data/$RUN/16S.t.fa
 ##### Truncate and pad (Remove multiplex primers and pad reads to same length.)
 X=`cat 16S.t.fa|awk '{if ($1!~/>/) {print length($0)};}'|awk '$0>x{x=$0};END{print x}'`
 usearch8.1 -fastx_truncate 16S.t.fa -stripleft 17 -stripright 21 -trunclen $X -padlen $X -fastaout 16S.fa
