@@ -199,7 +199,7 @@ fq2fa_v2.pl will convert fastq to fasta and trim left and right ends of reads
 
 ```shell
 ##### Concatenate unfiltered reads (Unfiltered fastq will need to be converted to fasta first )
-for f in $METAGENOMICS/data/$RUN/16S/unfilteres/*.fastq
+for f in $METAGENOMICS/data/$RUN/16S/unfiltered/*.fastq
 do
 	S=$(echo $f|awk -F"." '{print $1}'|awk -F"/" '{print $NF}')
 	$METAGENOMICS/scripts/fq2fa_v2.pl $f $METAGENOMICS/data/$RUN/16S/16S.unfiltered.fa $S 17 21
