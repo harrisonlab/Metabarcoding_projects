@@ -309,14 +309,15 @@ mv *r2* R2/.
 #### Cluster and assign taxonomy
 ```shell
 ##### Concatenate
-cat S[1-9].fa S[1-9][0-9].fa > ITS.fa
+cat $METAGENOMICS/data/$RUN/ITS/filtered/*.fa > $METAGENOMICS/data/$RUN/ITS.t.fa
 ##### Pad
-X=`cat ITS.fa|awk '{if ($1!~/>/) {print length($0)};}'|awk '$0>x{x=$0};END{print x}'`
-usearch8.1 -fastx_truncate ITS.fa -trunclen $X -padlen $X -fastaout ITS.t.fa
+X=`cat ITS.t.fa|awk '{if ($1!~/>/) {print length($0)};}'|awk '$0>x{x=$0};END{print x}'`
+usearch8.1 -fastx_truncate ITS.t.fa -trunclen $X -padlen $X -fastaout ITS.fa
+rm ITS.t.fa
 ##### Dereplicate
-usearch8.1 -derep_fulllength ITS.t.fa -fastaout ITS.uniques.fasta -sizeout
+usearch8.1 -derep_fulllength ITS.fa -fastaout ITS.uniques.fasta -sizeout
 usearch8.1 -sortbysize ITS.uniques.fasta -fastaout ITS.sorted.fasta -minsize 2
-rm ITS.uniques.fasta
+rm ITS.fa ITS.uniques.fasta
 ##### Cluster
 usearch8.1 -cluster_otus ITS.sorted.fasta -otus ITS.otus.fa -uparseout ITS.out.up -relabel OTU -minsize 2 
 ##### Taxonomy
