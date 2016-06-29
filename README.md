@@ -177,15 +177,13 @@ get_uniq.pl will give output comparable to derep_fulllength and sortbysize for l
 
 For 1,000,000 reads
 
-	derep		sortbysize
-real    0m38.037s	0m15.242s
-user    0m18.361s	0m5.236s
-sys     0m0.744s	0m0.304s
+|	|derep|sortbysize|get_uniq.pl|
+|---|---|---|---|
+|real|0m38.037s|m15.242s|0m16.738s|
+|user|0m18.361s|0m5.236s|0m9.585s|
+|sys|0m0.744s|m0.304s|0m1.124s|
 
-	get_uniq.pl
-real    0m16.738s
-user    0m9.585s
-sys     0m1.124s
+
     
 
 
