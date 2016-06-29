@@ -187,7 +187,7 @@ rm 16S.t.fa
 ##### Dereplication
 usearch8.1 -derep_fulllength 16S.fa -fastaout 16S.uniques.fasta -sizeout 
 #low mem dereplication (slower than usearch method)
-#cat 16S.fa|awk '/^>/ {printf("\n%s\n",$0);next; } { printf("%s",$0);}  END {printf("\n");}'|$metagenomics/scripts/get_uniq.pl > 16S.uniques.fasta 
+#cat 16S.fa|awk '/^>/ {printf("\n%s\n",$0);next; } { printf("%s",$0);}  END {printf("\n");}'|$METAGENOMICS/scripts/get_uniq.pl > 16S.uniques.fasta 
 usearch8.1 -sortbysize 16S.uniques.fasta -fastaout 16S.sorted.fasta -minsize 2
 rm 16S.fa 16S.uniques.fasta
 ##### Clustering (Cluster dereplicated seqeunces and produce OTU fasta (also filters for chimeras))
