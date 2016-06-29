@@ -170,7 +170,11 @@ done
 #### Cluster and assign taxonomy
 Problem with (free version) usearch running out of memory for dereplication and subsequent steps. Cutting and recombining data during dereplication phase gives a fairly unsatisfactory, but working method. 
 
-get_uniq.pl will give output comparable to derep_fulllength for larger sequence collections
+get_uniq.pl will give output comparable to derep_fulllength for larger sequence collections. get_uniq.pl requires unformatted fasta (as in sequence not split every 80 nucleotides). Something like the below should do this:
+```shell
+ cat 16S.fa|awk '/^>/ {printf("\n%s\n",$0);next; } { printf("%s",$0);}  END {printf("\n");}'|$metagenomics/scripts/get_uniq.pl > 16S.uniques.fasta
+```
+
 combine_uniq.pl will combine several sets of dereplicated sequences, maintaining the counts.
 The sorting algorithm may run out of memory as well - it shouldn't be too difficult to adjust combine_uniq.pl to sort and filter on size (though the cluster algorithm will also filter on min size)
 
