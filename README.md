@@ -171,8 +171,8 @@ done
 Problem with (free version) usearch running out of memory for dereplication and subsequent steps. Cutting and recombining data during dereplication phase gives a fairly unsatisfactory, but working method. combine_uniq.pl will combine several sets of dereplicated sequences, maintaining the counts.
 The sorting algorithm may run out of memory as well - it shouldn't be too difficult to adjust combine_uniq.pl to sort and filter on size (though the cluster algorithm will also filter on min size)
 
-get_uniq.pl will give output comparable to derep_fulllength and sortbysize for larger sequence collections. get_uniq.pl requires unformatted fasta (as in sequence not split every 80 nucleotides). It also sorts and removes singletons. It is remmed out in the script as low mem version. This is a fair bit slower than the usearch method.
-
+get_uniq.pl will give output comparable to derep_fulllength and sortbysize for larger sequence collections. get_uniq.pl requires unformatted fasta (as in sequence not split every 80 nucleotides). It also sorts and removes singletons. It is remmed out in the script as low mem version.
+... Need to do some testing on speed as I don't think there is much difference between usearch and get_uniq.pl.
 
 The taxa file output by utax is difficult to manipulate in R. Therefore the script mod_taxa.pl should be used to produce an R friendly taxa file.
 
@@ -187,7 +187,7 @@ rm 16S.t.fa
 usearch8.1 -derep_fulllength 16S.fa -fastaout 16S.uniques.fasta -sizeout 
 usearch8.1 -sortbysize 16S.uniques.fasta -fastaout 16S.sorted.fasta -minsize 2
 rm 16S.fa 16S.uniques.fasta
-#low mem dereplication (slower than usearch method)
+#low mem dereplication 
 #cat 16S.fa|awk '/^>/ {printf("\n%s\n",$0);next; } { printf("%s",$0);}  END {printf("\n");}'|$METAGENOMICS/scripts/get_uniq.pl > 16S.sorted.fasta 
 #rm 16S.fa
 ##### Clustering (Cluster dereplicated seqeunces and produce OTU fasta (also filters for chimeras))
