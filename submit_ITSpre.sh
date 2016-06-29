@@ -39,12 +39,12 @@ awk '/^>/ {printf("\n%s\n",$0);next; } { printf("%s",$0);}  END {printf("\n");}'
 sed -i -e '1d' ${OUTFILE}_R2.fa
 
 mkdir -p $OUTDIR/../unfiltered 
-mv ${F}.t2.fastq $OUTDIR/../unfiltered/${OUTFILE}.r1.unfiltered.fastq
-mv ${R}.t2.fastq $OUTDIR/../unfiltered/${OUTFILE}.r2.unfiltered.fastq
+mv $F $OUTDIR/../unfiltered/${OUTFILE}.r1.unfiltered.fastq
+mv $R $OUTDIR/../unfiltered/${OUTFILE}.r2.unfiltered.fastq
 
 
 rm ${F}.t1.txt ${R}.t1.txt ${F}.t1.fastq ${R}.t1.fastq ${OUTFILE}_t1.fa ${OUTFILE}_t2.fa ${OUTFILE}.temp.sed
 
 
-#xargs -I ¬ sed -i -ne:t -e"/*\@¬.*/D" -e'$!N;//D;/'"\@¬/{" -e"s/\n/&/3;t" -e'$q;bt' -e\} -e's/\n/&/'"1;tP" -e'$!bt' -e:P  -e'P;D' ${F}.t.fastq
-#xargs -I ¬ sed -i -ne:t -e"/*\@¬.*/D" -e'$!N;//D;/'"\@¬/{" -e"s/\n/&/3;t" -e'$q;bt' -e\} -e's/\n/&/'"1;tP" -e'$!bt' -e:P  -e'P;D' ${R}.t.fastq
+#xargs -I Â¬ sed -i -ne:t -e"/*\@Â¬.*/D" -e'$!N;//D;/'"\@Â¬/{" -e"s/\n/&/3;t" -e'$q;bt' -e\} -e's/\n/&/'"1;tP" -e'$!bt' -e:P  -e'P;D' ${F}.t.fastq
+#xargs -I Â¬ sed -i -ne:t -e"/*\@Â¬.*/D" -e'$!N;//D;/'"\@Â¬/{" -e"s/\n/&/3;t" -e'$q;bt' -e\} -e's/\n/&/'"1;tP" -e'$!bt' -e:P  -e'P;D' ${R}.t.fastq
