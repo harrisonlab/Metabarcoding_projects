@@ -355,7 +355,7 @@ do
 done
 
 ##### Make table (creates an OTU table of read counts per OTU per sample)
-usearch8.1 -usearch_global ITS.unfiltered.fa -db ITS.otus.fa -strand plus -id 0.97 -biomout ITS.otu_table.biom -otutabout ITS.otu_table.txt -output_no_hits -userout ITS.hits.out -userfields query+target
+usearch8.1 -usearch_global ITS.unfiltered.fa -db ITS.otus.fa -strand plus -id 0.97 -biomout ITS.otu_table1.biom -otutabout ITS.otu_table1.txt -output_no_hits -userout ITS.hits.out -userfields query+target
 ```
 
 ```shell
@@ -366,7 +366,10 @@ do
 	S=$(echo $f|awk -F"." '{print $1}'|awk -F"/" '{print $NF}')
 	$METAGENOMICS/scripts/fq2fa_v2.pl $f $METAGENOMICS/data/$RUN/ITS/ITS.unfiltered.fa $S 20 0
 done
-	
+
+usearch8.1 -usearch_global ITS.unfiltered.fa -db ITS.otus.fa -strand plus -id 0.97 -biomout ITS.otu_table2.biom -otutabout ITS.otu_table2.txt
+
+```	
 
 
 ### Statistical analysis
