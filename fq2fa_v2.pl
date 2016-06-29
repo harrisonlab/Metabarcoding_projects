@@ -28,11 +28,15 @@ open (OUTFILE2, ">>$outfile2") or die "Failed to open file '$outfile2' for writi
 
 # parse field and trim 
 my $count = 2;
+my $fid="";
 while (my $id_line = <FILE>) {
+    if ($count%4==2) {
+    	$fid=$id_line;
+    }
     $count++;
     next if ($count%4!=0);
     my $fas = $count/4;
-    print OUTFILE2 ">$id.$fas\n";
+    print OUTFILE2 ">$id.$fas;$fid\n";
     $id_line=substr($id_line,$ltrim,length($id_line)-($ltrim+$rtrim+1));
     print OUTFILE2 "$id_line\n";
 }
