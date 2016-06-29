@@ -25,9 +25,13 @@ cat ${OUTFILE}.t1.txt|awk -F"\t" '{print $1}'|sort|uniq|$SCRIPT_DIR/adapt_delete
 
 #xargs -I ¬ sed -i -ne:t -e"/*\@¬.*/D" -e'$!N;//D;/'"\@¬/{" -e"s/\n/&/3;t" -e'$q;bt' -e\} -e's/\n/&/'"1;tP" -e'$!bt' -e:P  -e'P;D' ${OUTFILE}.t1
 
-usearch8.1 -fastq_filter ${OUTFILE}.t2 -fastq_minlen $MINL -fastq_maxee $QUAL -relabel $LABEL -fastaout ${OUTFILE}.filtered.fa
+usearch8.1 -fastq_filter ${OUTFILE}.t2 -fastq_minlen $MINL -fastq_maxee $QUAL -relabel $LABEL -fastaout ${OUTFILE}.t3.fa
+
+awk '/^>/ {printf("\n%s\n",$0);next; } { printf("%s",$0);}  END {printf("\n");}'  <${OUTFILE}.t3.fa > ${OUTFILE}.filtered.fa
+sed -i -e '1d' ${OUTFILE}.filtered.fa
+
 
 mkdir -p $OUTDIR/../unfiltered 
-mv ${OUTFILE}.t2 $OUTDIR/../unfiltered/${OUTFILE}.unfiltered.fastq
+mv ${OUTFILE}.t2 ${OUTFILE}.t2 $OUTDIR/../unfiltered/${OUTFILE}.unfiltered.fastq
 
-rm ${OUTFILE}.t1.txt ${OUTFILE}.t1
+rm ${OUTFILE}.t1.txt ${OUTFILE}.t1 ${OUTFILE}.t3
