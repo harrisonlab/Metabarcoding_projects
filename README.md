@@ -344,6 +344,8 @@ cat ITS.rdp|$METAGENOMICS/scripts/mod_taxa.pl > ITS.taxa
 
 #### OTU table creation
 
+First assigns ITS1 reads to OTUs. Then for any non-hits, the reverse read (ITS2) is assigned to OTUs. 
+
 ```shell
 ##### Concatenate unfiltered reads (Unfiltered fastq will need to be converted to fasta first)
 for f in $METAGENOMICS/data/$RUN/ITS/unfiltered/*.r1.*
@@ -352,15 +354,20 @@ do
 	$METAGENOMICS/scripts/fq2fa_v2.pl $f $METAGENOMICS/data/$RUN/ITS/ITS.unfiltered.fa $S 22 0
 done
 
+##### Make table (creates an OTU table of read counts per OTU per sample)
+usearch8.1 -usearch_global ITS.unfiltered.fa -db ITS.otus.fa -strand plus -id 0.97 -biomout ITS.otu_table.biom -otutabout ITS.otu_table.txt -output_no_hits -userout ITS.hits.out -userfields query+target
+```
+
+```shell
+grep \* ITS.hits.out|awk -F"\t" '{print $1}'
+
 for f in $METAGENOMICS/data/$RUN/ITS/unfiltered/*.r2.*
 do
 	S=$(echo $f|awk -F"." '{print $1}'|awk -F"/" '{print $NF}')
 	$METAGENOMICS/scripts/fq2fa_v2.pl $f $METAGENOMICS/data/$RUN/ITS/ITS.unfiltered.fa $S 20 0
 done
 	
-##### Make table (creates an OTU table of read counts per OTU per sample)
-usearch8.1 -usearch_global ITS.unfiltered.fa -db ITS.otus.fa -strand plus -id 0.97 -biomout ITS.otu_table.biom -otutabout ITS.otu_table.txt
-```
+
 
 ### Statistical analysis
 Requires analysis2.R and deseq.r
