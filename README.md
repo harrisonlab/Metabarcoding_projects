@@ -172,7 +172,22 @@ Problem with (free version) usearch running out of memory for dereplication and 
 The sorting algorithm may run out of memory as well - it shouldn't be too difficult to adjust combine_uniq.pl to sort and filter on size (though the cluster algorithm will also filter on min size)
 
 get_uniq.pl will give output comparable to derep_fulllength and sortbysize for larger sequence collections. get_uniq.pl requires unformatted fasta (as in sequence not split every 80 nucleotides). It also sorts and removes singletons. It is remmed out in the script as low mem version.
+
 ... Need to do some testing on speed as I don't think there is much difference between usearch and get_uniq.pl.
+
+For 1,000,000 reads
+
+	derep		sortbysize
+real    0m38.037s	0m15.242s
+user    0m18.361s	0m5.236s
+sys     0m0.744s	0m0.304s
+
+	get_uniq.pl
+real    0m16.738s
+user    0m9.585s
+sys     0m1.124s
+    
+
 
 The taxa file output by utax is difficult to manipulate in R. Therefore the script mod_taxa.pl should be used to produce an R friendly taxa file.
 
