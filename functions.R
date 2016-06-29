@@ -1,24 +1,3 @@
-
-s3biom <- function(locX, locY) {
-	require(biom)
-	print("loading biom data")
-	bm.biom <- read_biom(locX)
-	colData <- read.table(locY)
-	print("extracting useful data")
-	df.biom.data <- data.frame(as.matrix(biom_data(bm.biom)))
-	df.biom.data <- df.biom.data[,rownames(colData)]
-	if (length(bm.biom$rows) > 7) {
-		df.biom.taxa <-  suppressWarnings(as.data.frame(do.call(rbind,observation_metadata(bm.biom, 1:length(bm.biom$rows)))))
-	} else {
-		df.biom.taxa <-  suppressWarnings(as.data.frame(do.call(cbind,observation_metadata(bm.biom, 1:length(bm.biom$rows)))))
-	}
-	colnames(df.biom.taxa) <- c("kingdom", "phylum", "class", "order", "family", "genus", "species")
-	df.biom.data[is.na(df.biom.data)] <- c("No blast hit")
-	ls.biom <- list(df.biom.data,colData, df.biom.taxa)
-	names(ls.biom) <- c("countData","colData","taxa")
-	return(ls.biom)
-}
-
 ubiom <- function(locX,locY,locZ) {
 	options(stringsAsFactors = FALSE)
 	countData <- read.table(locX,header=T,sep="\t", comment.char="")
@@ -113,10 +92,6 @@ plotPCA <- function (object, intgroup = "condition", ntop = 500,pcx = 1,pcy = 2,
     ylab(paste0("PC",pcy,": ", round(percentVar[pcy] * 100), "% variance"))
 }
 
-
-
-
-
 ddsCalc <- function(X, design=~condition) {
 	suppressPackageStartupMessages(require(DESeq2))
 	dds <- 	DESeqDataSetFromMatrix(X$countData,X$colData,design)
@@ -134,7 +109,6 @@ ddsCalc <- function(X, design=~condition) {
 	}
 	return(DESeq(dds, fitType="local"))
 } 
-
 
 sumTaxa <- function(X,taxon="phylum",condition="condition") {
 	suppressPackageStartupMessages(require(plyr))
@@ -159,7 +133,6 @@ sumTaxa <- function(X,taxon="phylum",condition="condition") {
 	return(nd)
 }
 
-
 fltTaxon <- function(X,taxon="phylum") {
   n <- which(colnames(X$taxa)==taxon)
 	x <- aggregate(X$countData,by=X$taxa[,1:n],sum)
@@ -167,86 +140,3 @@ fltTaxon <- function(X,taxon="phylum") {
 	names(ls.biom) <- c("countData","colData","taxa")
 	return(ls.biom)	
 }
-
-
-##### TEST FUNCTIONS
-
-#{
-#	if (plotme) {
-#		rld <- varianceStabilizingTransformation(dds,blind=F,fitType="local")
-#		print("plotting PCA")
-#		pdf(out,height=8,width=8)
-#		plotPCAWithLabels(rld,)
-#		dev.off()
-#	}
-#	)	
-#}
-
-
-ddsfun <- function(X,design=~condition) {
-	suppressPackageStartupMessages(require(DESeq2))
-	DESeqDataSetFromMatrix(X$countData,X$colData,design)
-}
-
-testfun <- function(X,plotme=F,out="funtest.pdf") {
-#	if (plotme) {
-		rld <- DESeqTransform(SummarizedExperiment(log2(counts(estimateSizeFactors(dds,geoMeans = geoMeans), normalized=TRUE) + 1),colData=colData(dds)))
-		#varianceStabilizingTransformation(dds,blind=F,fitType="local")
-		#pdf(out,height=8,width=8)
-		plotPCAWithLabels(rld)
-		#dev.off()
-#	}
-}
-
-ddsMedian <- function(X, design=~condition, cutoff=3,plot=F,out="median.pdf") {
-	suppressPackageStartupMessages(require(DESeq2))
-	countData<- X$countData[rowSums(X$countData)>=cutoff,]
-	dds <- 	DESeqDataSetFromMatrix(countData,X$colData,design)
-	sizeFactors(dds) <- calcNormFactors(counts(dds))
-	if (plot) {
-		desPCAplotter(dds,out)
-	}
-	return(DESeq(dds, fitType="local"))
-}
-
-
-ddsGeoMeans <- function(X, design=~condition, cutoff=3,plot=F,out="geo.pdf") {
-	suppressPackageStartupMessages(require(DESeq2))
-
-	gm_mean = function(x, na.rm=TRUE){
-		exp(sum(log(x[x > 0]), na.rm=na.rm) / length(x))
-	}
-
-	countData<- X$countData[rowSums(X$countData)>=cutoff,]
-	dds <- 	DESeqDataSetFromMatrix(countData,X$colData,design)
-	geoMeans = apply(counts(dds), 1, gm_mean)
-	diagdds = estimateSizeFactors(dds, geoMeans = geoMeans)
-	if (plot) {
-		desPCAplotter(dds,out)
-	}
-	
-	return(DESeq(diagdds, fitType="local"))
-}
-
-
-desPCAplotter<- function(dds,out) {
-	rld <- tryCatch( {
-		print("Calculating VST")
-		varianceStabilizingTransformation(dds,blind=F,fitType="local")
-	}, error = function(e) {
-		print("Unable to calculate VST")
-		rld <- tryCatch( {
-			DESeqTransform(SummarizedExperiment(log2(counts(estimateSizeFactors(dds), normalized=TRUE) + 1),colData=colData(dds)))
-		}, error = function(e) {
-			print("Unable to calculate DST")
-			print("skipping rlog - PCA will use untransformed data") 
-			return(dds)
-		})
-		return(rld)
-	})
-	print("plotting PCA")
-	pdf(out,height=8,width=8)
-	plotPCAWithLabels(rld)
-	dev.off()
-}
-
