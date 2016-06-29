@@ -6,7 +6,8 @@ my $fasta="";
 my $lastcount=0;
 while (<>) {
 	if ($_=~/\>/) {
-
+		#@l=split(/;size=/,$_);
+		#my $count = substr($l[1],0,-2);
 		if ($fasta ne "") {
 			if (exists $seq{$fasta}) {
 				$seq{$fasta}++;
@@ -14,7 +15,7 @@ while (<>) {
 				$seq{$fasta}=1;
 			}
 		}
-
+		#$lastcount=$count;
 		$fasta="";		
 	} else{
 		chomp;
@@ -32,7 +33,9 @@ if ($fasta ne "") {
 
 
 my $counter=1;
-foreach my $key (keys %seq) {
-	print">uniq.$counter;size=$seq{$key};\n$key\n";
-	$counter++;
+foreach my $key (sort {$seq{$a} <=> $seq{$b}} keys %seq) {
+	if($seq{$key}>1) {
+		print">uniq.$counter;size=$seq{$key};\n$key\n";
+		$counter++;
+	}
 }
