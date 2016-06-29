@@ -329,9 +329,6 @@ X=`cat ITS.t.fa|awk '{if ($1!~/>/) {print length($0)};}'|awk '$0>x{x=$0};END{pri
 usearch8.1 -fastx_truncate ITS.t.fa -trunclen $X -padlen $X -fastaout ITS.fa
 rm ITS.t.fa
 ##### Dereplicate
-#usearch8.1 -derep_fulllength ITS.fa -fastaout ITS.uniques.fasta -sizeout
-#usearch8.1 -sortbysize ITS.uniques.fasta -fastaout ITS.sorted.fasta -minsize 2
-#rm ITS.fa ITS.uniques.fasta
 cat ITS.fa|awk '/^>/ {printf("\n%s\n",$0);next; } { printf("%s",$0);}  END {printf("\n");}'|$METAGENOMICS/scripts/get_uniq.pl > ITS.sorted.fasta 
 rm ITS.fa
 ##### Cluster
