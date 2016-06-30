@@ -344,7 +344,8 @@ cat ITS.rdp|$METAGENOMICS/scripts/mod_taxa.pl > ITS.taxa
 
 #### OTU table creation
 
-First assigns ITS1 reads to OTUs. Then for any non-hits, the reverse read (ITS2) is assigned to OTUs. 
+First assign ITS1 reads to OTUs. Then, for any non-hits, attemp to assign reverse read (ITS2) to an OTU. 
+(may update this to use named pipes - not certain it will work at moment)
 
 ```shell
 ##### Concatenate unfiltered reads (Unfiltered fastq will need to be converted to fasta first)
@@ -368,7 +369,7 @@ do
 done
 rm t1
 
-usearch8.1 -usearch_global ITS.unfiltered.fa -db ITS.otus.fa -strand plus -id 0.97 -biomout ITS.otu_table2.biom -otutabout ITS.otu_table2.txt
+usearch8.1 -usearch_global ITS.unfiltered.fa -db ITS.otus.fa -strand both -id 0.97 -biomout ITS.otu_table2.biom -otutabout ITS.otu_table2.txt
 
 ```	
 
