@@ -19,7 +19,7 @@ close INFILE;
 
 my $skipper = 0;
 my $counter = 4;
-
+ 
 foreach(@fastq) {
 	if ($counter%4==0) {
 		my @new = split(" ",$_,);
