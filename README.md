@@ -351,7 +351,7 @@ First assigns ITS1 reads to OTUs. Then for any non-hits, the reverse read (ITS2)
 for f in $METAGENOMICS/data/$RUN/ITS/unfiltered/*.r1.*
 do
 	S=$(echo $f|awk -F"." '{print $1}'|awk -F"/" '{print $NF}')
-	$METAGENOMICS/scripts/fq2fa_v2.pl $f $METAGENOMICS/data/$RUN/ITS/ITS.unfiltered.fa $S 22 0
+	awk -v S="$S" -F" " '{if(NR % 4 == 1){print ">" S "." count+1 ";"$1;count=count+1} if(NR % 4 == 2){$1=substr($1,23);print $1}}' $f >>ITS1.unfiltered.fa
 done
 
 ##### Make table (creates an OTU table of read counts per OTU per sample)
