@@ -356,7 +356,7 @@ do
 done
 
 ##### Make table (creates an OTU table of read counts per OTU per sample)
-usearch8.1 -usearch_global ITS1.unfiltered.fa -db ITS.otus.fa -strand plus -id 0.97 -biomout ITS1.otu_table1.biom -otutabout ITS1.otu_table1.txt -output_no_hits -userout ITS1.hits.out -userfields query+target
+usearch8.1 -usearch_global ITS1.unfiltered.fa -db ITS.otus.fa -strand plus -id 0.97 -biomout ITS1.otu_table.biom -otutabout ITS1.otu_table.txt -output_no_hits -userout ITS1.hits.out -userfields query+target
 ```
 
 ```shell
@@ -369,7 +369,7 @@ do
 done
 rm t1
 
-usearch8.1 -usearch_global ITS.unfiltered.fa -db ITS.otus.fa -strand both -id 0.97 -biomout ITS.otu_table2.biom -otutabout ITS.otu_table2.txt
+usearch8.1 -usearch_global ITS2.unfiltered.fa -db ITS.otus.fa -strand both -id 0.97 -biomout ITS2.otu_table.biom -otutabout ITS2.otu_table.txt
 
 ```	
 
