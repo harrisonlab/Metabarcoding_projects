@@ -355,17 +355,18 @@ do
 done
 
 ##### Make table (creates an OTU table of read counts per OTU per sample)
-usearch8.1 -usearch_global ITS.unfiltered.fa -db ITS.otus.fa -strand plus -id 0.97 -biomout ITS.otu_table1.biom -otutabout ITS.otu_table1.txt -output_no_hits -userout ITS.hits.out -userfields query+target
+usearch8.1 -usearch_global ITS1.unfiltered.fa -db ITS.otus.fa -strand plus -id 0.97 -biomout ITS1.otu_table1.biom -otutabout ITS1.otu_table1.txt -output_no_hits -userout ITS1.hits.out -userfields query+target
 ```
 
 ```shell
-grep \* ITS.hits.out|awk -F"\t" '{print $1}'
 
 for f in $METAGENOMICS/data/$RUN/ITS/unfiltered/*.r2.*
 do
 	S=$(echo $f|awk -F"." '{print $1}'|awk -F"/" '{print $NF}')
-	$METAGENOMICS/scripts/fq2fa_v2.pl $f $METAGENOMICS/data/$RUN/ITS/ITS.unfiltered.fa $S 20 0
+	awk -v S="$S" -F" " '{if(NR % 4 == 1){print ">" S "." count+1 ";"$1;count=count+1} if(NR % 4 == 2){$1=substr($1,21);print $1}}' $f >t1
+	grep "$S.*\*" ITS1.hits.out|awk -F";" '{print $2}'|awk -F" " '{print $1}'|$METAGENOMICS/scripts/seq_select.pl t1 >> ITS2.unfiltered.fa
 done
+rm t1
 
 usearch8.1 -usearch_global ITS.unfiltered.fa -db ITS.otus.fa -strand plus -id 0.97 -biomout ITS.otu_table2.biom -otutabout ITS.otu_table2.txt
 
