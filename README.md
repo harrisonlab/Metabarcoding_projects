@@ -345,7 +345,9 @@ cat ITS.rdp|$METAGENOMICS/scripts/mod_taxa.pl > ITS.taxa
 #### OTU table creation
 
 First assign ITS1 reads to OTUs. Then, for any non-hits, attemp to assign reverse read (ITS2) to an OTU. 
-(may update this to use named pipes - not certain it will work at moment)
+
+The ITS2 stuff could be run as a set of array jobs - probably not worth the effort as it's not too slow (about 2 - 3 minutes for 100 samples). 
+
 
 ```shell
 ##### Concatenate unfiltered reads (Unfiltered fastq will need to be converted to fasta first)
