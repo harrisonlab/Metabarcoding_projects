@@ -347,7 +347,7 @@ cat ITS.rdp|$METAGENOMICS/scripts/mod_taxa.pl > ITS.taxa
 
 First assign ITS1 reads to OTUs. Then, for any non-hits, attemp to assign reverse read (ITS2) to an OTU. 
 
-The ITS2 stuff could be run as a set of array jobs - probably not worth the effort as it's not too slow (about 2 - 3 minutes for 100 samples). 
+The ITS2 stuff could be parellelised on the cluster - probably not worth the effort as it's not too slow (about 2 - 3 minutes for 100 samples). 
 
 
 ```shell
