@@ -211,8 +211,9 @@ cat 16S.rdp|$METAGENOMICS/scripts/mod_taxa.pl > 16S.taxa
 
 fq2fa_v2.pl will convert fastq to fasta and trim left and right ends of reads
 
-usearch_global may run out of memory as well. 16S.unfiltered.fa and seperate OTU tables create. It is trivial to recombine these in R.
+usearch_global may run out of memory as well. 16S.unfiltered.fa can be split into chunks (reads from a single sample must not be split across chunks) and seperate OTU tables created for each chunk. It is trivial to recombine these in R.
 
+fq2fa_v2.pl could be replaced with a similar awk script as per ITS - will save a couple of minutes.
 ```shell
 ##### Concatenate unfiltered reads (Unfiltered fastq will need to be converted to fasta first )
 for f in $METAGENOMICS/data/$RUN/16S/unfiltered/*.fastq
