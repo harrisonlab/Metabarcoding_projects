@@ -82,9 +82,10 @@ ITS_IR <- IRanges(start=mytable$end+1,end=mytable$start-1,names=mytable$seq)
 print("set ITS")
 ITS <- DNAStringSet(myfasta,start=ITS_IR@start,width=ITS_IR@width)
 
+ITS <- ITS[ITS@ranges@width>=140]
 #ITS <- ITS[ITS@ranges@width>0]
-ITS <- stackStrings(ITS,0,max(ITS@ranges@width),Lpadding.letter="N",Rpadding.letter="N")
-ITS <- subseq(ITS ,start=2,width = (max(ITS@ranges@width)-1))
+#ITS <- stackStrings(ITS,0,max(ITS@ranges@width),Lpadding.letter="N",Rpadding.letter="N")
+#ITS <- subseq(ITS ,start=2,width = (max(ITS@ranges@width)-1))
 
 print("write ITS")
 writeXStringSet(ITS,paste(args[5],".r1.fa",sep=""))
