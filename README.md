@@ -129,7 +129,7 @@ grep -x "[ATCG]\+" $(ls|head -n1)| cut -c-16|sort|uniq > zzexpressions.txt
 grep -x "[ATCG]\+" $(ls|head -n1)| cut -c-16|sort|uniq|xargs -I r grep -c ^r $(ls|head -n1) >zzcounts.txt
 ```
 
-I typically use the first 8 nucleotides of the primer and allow 2 mismatches (the final parameter)
+I typically use the first 8 nucleotides of the primer and allow 2 mismatches (the final parameter). Anything sequence which has too many mismatches, or none mathching primers is removed to a file x.ambigous.fq
 ```shell
 for f in $METAGENOMICS/data/$RUN/fastq/*_R1_*
 do     
