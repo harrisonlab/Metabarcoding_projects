@@ -1,6 +1,15 @@
 #Statistical analysis
 
-## R analyis
+## Combine biom and taxa
+biom_make.pl will take a hacked UPARSE taxonomy file and UPARSE biom and output a combined taxa and biom file to standard out
+
+e.g. for 16S
+```shell
+./biom_maker.pl 16S.taxa 16S.otu_table.biom >16S.taxa.biom
+```
+
+
+## R analysis
 R will import table with character columns as factors. This might be prefereable if your doing lots of linear modeling, but for any data manipulation it is a disaster and will lead to unexpected (or worse unnoticed) errors.
 
 Set strinAsFactor to false - apparently this can be set in .Rprofile, but this doesn't work on my production cluster environment
