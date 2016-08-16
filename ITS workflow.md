@@ -1,10 +1,10 @@
 ## ITS workflow
 
 ### Pre-processing
-Script will:
-1. Remove reads with both forward and reverse primers
-2. Remove reads with adapter contamination
-3. Filter for quality and minimum length (with UTRIM)
+Script will:<br>
+1. Remove reads with both forward and reverse primers<br>
+2. Remove reads with adapter contamination<br>
+3. Filter for quality and minimum length (with UTRIM)<br>
 4. Convert FASTQ to single line FASTA
 
 ```shell
@@ -140,10 +140,3 @@ rm t1
 usearch8.1 -usearch_global ITS2.unfiltered.fa -db ITS.otus.fa -strand both -id 0.97 -biomout ITS2.otu_table.biom -otutabout ITS2.otu_table.txt
 
 ```	
-
-
-### Statistical analysis
-Requires analysis2.R and deseq.r
-
-ubiom makes a S3 biom object from the OTU table (ITS.otu_table.txt), OTU taxonomy (ITS.taxa) and sample description file (colData)
-analysis2.R/deseq.r contain scripts to produce deseq objects and run differential analysis + a few graphing options.
