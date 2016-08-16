@@ -32,34 +32,59 @@ fltTaxon <- function(X,taxon="phylum") {
 	return(ls.biom)	
 }
 
-plotPCA <- function (object, intgroup = "condition", ntop = 500,pcx = 1,pcy = 2, returnData = FALSE)
+plotPCA <- function (	
+			object, 
+			intgroup = "condition",
+			labelby,
+			ntop = 500,
+			pcx = 1,
+			pcy = 2, 
+			returnData = FALSE,
+			cofix=F,
+			transform= function(	object,
+						blind=F,
+						fitType="local"
+					) 
+			{
+					suppressPackageStartupMessages(require(DESeq2))
+					return(varianceStabilizingTransformation(object,blind=blind,fitType=fitType))
+			}
+		) 
 {
     suppressPackageStartupMessages(require(genefilter))
     suppressPackageStartupMessages(require(ggplot2))
-    rv <- rowVars(assay(object))
-    select <- order(rv, decreasing = TRUE)[seq_len(min(ntop,
-        length(rv)))]
-    pca <- prcomp(t(assay(object)[select, ]))
+    suppressPackageStartupMessages(require(DESeq2))
+    rld <- transform(object=object)
+    rv <- rowVars(assay(rld))
+    select <- order(rv, decreasing = TRUE)[seq_len(min(ntop, length(rv)))]
+    pca <- prcomp(t(assay(rld)[select, ]))
     percentVar <- pca$sdev^2/sum(pca$sdev^2)
-    if (!all(intgroup %in% names(object@colData))) {
+    if (!all(intgroup %in% names(rld@colData))) {
         stop("the argument 'intgroup' should specify columns of colData")
     }
-    intgroup.df <- as.data.frame(object@colData[, intgroup,
-        drop = FALSE])
+    intgroup.df <- as.data.frame(rld@colData[, intgroup,drop = FALSE])
     group <- if (length(intgroup) > 1) {
         factor(apply(intgroup.df, 1, paste, collapse = " : "))
     }
     else {
-        colData(object)[[intgroup]]
+        colData(rld)[[intgroup]]
     }
-    d <- data.frame(PC1 = pca$x[, pcx], PC2 = pca$x[, pcy], group = group,
-        intgroup.df, name = object$label)
+
+   shape <- if (missing(labelby)) {factor("All")}else {as.factor(rld@colData[,labelby]) }
+
+    d <- data.frame(PC1 = pca$x[, pcx], PC2 = pca$x[, pcy], group = group,intgroup.df,shape=shape)
     if (returnData) {
         attr(d, "percentVar") <- percentVar[1:2]
         return(d)
     }
 
+    if(cofix) {
+	d[,1] <- d[,1] * percentVar[pcx]
+	d[,2] <- d[,2] * percentVar[pcy]
+    }
+
     ggplot() +
+    coord_fixed(ratio = 1, xlim = NULL, ylim = NULL, expand = TRUE) +
     geom_point(data=d, mapping=aes(x=PC1, y=PC2, colour=group),size=3) +
     xlab(paste0("PC",pcx,": ", round(percentVar[pcx] * 100), "% variance")) +
     ylab(paste0("PC",pcy,": ", round(percentVar[pcy] * 100), "% variance"))
@@ -99,16 +124,28 @@ plotPCAWithLabels <- function (object, intgroup = "condition", ntop = 500,pcx = 
     ylab(paste0("PC",pcy,": ", round(percentVar[pcy] * 100), "% variance"))
 }
 
-plot_taxa <- function(obj=mybiom,taxon="phylum",condition,proportional=T,cutoff=1,topn=0,others=T,reorder=F,type=1,fixed=F,ncol=1) {
-	# obj (phloseq) must is a phyloseq object which must include taxonomy and sample data
-	# taxon (str) is the taxonomic level of interest
-	# condition (str) describes how the samples should be grouped (must be column of sample data)
-	# proportional (bool) whether the graph should use proportional or absolute values
-	# cutoff (double) for proportional graphs. Taxons below this value will be pooled into "other"
-	# topn (int)taxons to display (by total reads) for non-prortional graphs. Taxons below topn will be pooled into "other"
-	# type is limited to by sample (1) or by taxa (2)
-	# fixed is a ggplot parameter to apply coord_fixed(ratio = 0.1)
-	# ncol is a ggplot paramter to use n columns for the legend
+plotTaxa <- function(
+			obj=mybiom, # obj (phloseq) must is a phyloseq object which must include taxonomy and sample data
+			taxon="phylum", # taxon (str) is the taxonomic level of interest
+			condition, # condition (str) describes how the samples should be grouped (must be column of sample data)
+			proportional=T,# proportional (bool) whether the graph should use proportional or absolute values
+			cutoff=1, # cutoff (double) for proportional graphs. 
+			topn=0, # topn (int)taxons to display (by total reads) for non-prortional graphs. T
+			others=T, # combine values less than cutoff/topn into group "other"
+			reorder=F, # order by value (max to min)
+			type=1, # type is limited to by sample (1) or by taxa (2)
+			fixed=F, # fixed is a ggplot parameter to apply coord_fixed(ratio = 0.1)
+			ncol=1, # ncol is a ggplot paramter to use n columns for the legend
+			transform= function(	object,
+						blind=F,
+						fitType="local"
+					) 
+			{
+					suppressPackageStartupMessages(require(DESeq2))
+					return(varianceStabilizingTransformation(object,blind=blind,fitType=fitType))
+			} # data transformation function - transform takes a dds oject as input
+		)
+{
 	suppressPackageStartupMessages(require(DESeq2))
 	suppressPackageStartupMessages(require(ggplot2))
 	suppressPackageStartupMessages(require(scales))
@@ -133,7 +170,7 @@ plot_taxa <- function(obj=mybiom,taxon="phylum",condition,proportional=T,cutoff=
 		geoMeans = apply(counts(dds), 1, gm_mean)
 		dds <- estimateSizeFactors(dds, geoMeans = geoMeans)
 	}
-	countData <- as.data.frame(assay(varianceStabilizingTransformation(dds,blind=F,fitType="local")))
+	countData <- as.data.frame(assay(transform(dds)))
 	countData[countData<0] <- 0
 
 	mybiom <- list(
@@ -149,13 +186,13 @@ plot_taxa <- function(obj=mybiom,taxon="phylum",condition,proportional=T,cutoff=
 		tx <- sumTaxa(mybiom,taxon=taxon,"MLUflop")
 		tx[,-1] <- prop.table(as.matrix(tx[,-1]),2)*100
 		txk <- tx[tx[,2]>=cutoff,1]
-
 	} else {
 		taxa_sum[,ncol(taxa_sum)+1]<- 0
 		taxa_sum <- taxa_sum[order(rowSums(taxa_sum[,-1]),decreasing=T),]
 		taxa_sum <- taxa_sum[,-ncol(taxa_sum)]	
 		txk <- taxa_sum[1:topn,1]
 	}
+	
 	if(proportional) {
 		taxa_sum[,-1] <- prop.table(as.matrix(taxa_sum[,-1]),2)*100
 	}
@@ -263,4 +300,10 @@ ubiom <- function(locX,locY,locZ) {
 	names(ls.biom) <- c("countData","colData","taxa")
 	return(ls.biom)
 }
+
+vst <- function(object,blind=F,fitType="local") {
+	suppressPackageStartupMessages(require(DESeq2))
+	return(varianceStabilizingTransformation(object,blind=blind,fitType=fitType))
+}
+
 
