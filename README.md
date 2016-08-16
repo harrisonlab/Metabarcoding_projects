@@ -62,13 +62,9 @@ mkdir $METAGENOMICS/taxonomies
 ```
 
 ___
-https://github.com/harrisonlab/apple_replant/blob/master/Common%20workflow.md
-##Common workflow
-[Common workflow](../Common%20workflow.md)
-
-##[16S workflow](https://github.com/harrisonlab/apple_replant/blob/master/16S%20%20workflow.md)
-##ITS workflow
-https://github.com/harrisonlab/apple_replant/blob/master/ITS%20workflow.md
+##[Common workflow](../master/Common%20workflow.md)
+##[16S workflow](../master/16S%20%20workflow.md)
+##[ITS workflow](../master//ITS%20%20workflow.md)
 
 
 ##oomycetes
