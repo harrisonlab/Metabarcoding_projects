@@ -54,10 +54,8 @@ dev.off()
 
 ##### beta diversity
 ```{r}
-rld <- varianceStabilizingTransformation(dds,blind=F,fitType="local")
-rld$label <-  rld$condition
-pdf("ITS.beta-diversity.pdf",height=8,width=8)
-plotPCA(rld)
+pdf("16S.beta-diversity.pdf",height=8,width=8)
+plotPCA(dds)
 dev.off()
 ```
 
