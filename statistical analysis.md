@@ -31,15 +31,24 @@ otu_file = "16S.otus.fa" # might be useful at some stage
 colData = "colData"
 mybiom <- import_biom(biom_file,refseqfilename=out_file)
 sample_data(mybiom) <- read.table(colData,header=T,sep="\t",row.names=1)
-
-
-
 ```
 ### DESeq2
 It's possible to convert a phyloseq object to a DESeq datamatrix with phyloseq_to_deseq2
-
 ```{r}
 dds <- phylo_to_des(mybiom)
+```
+#### Differential OTU abundance
+```{r}
+alpha <- 0.05
+res = results(dds, alpha=alpha)	
+#res = results(dds, alpha=alpha,contrast=c("condition","N","K"))	## specify different contrasts to make
+taxa=mybiom@tax_table
+colnames(taxa) <- c("kingdom","phylum","class","order","family","genus","species")
+taxa <- sub("*._+","",taxa)
+res.merge <- merge(as.data.frame(res),taxa,by="row.names",all.x=TRUE)
+rownames(res.merge) <- res.merge$Row.names
+res.merge <- res.merge[-1]
+sig.res <- subset(res.merge,padj<=alpha)
 ```
 ### plots
 
@@ -59,6 +68,11 @@ plotPCA(dds)
 dev.off()
 ```
 
+#### taxa graphs
+```{r}
+pdf("16S.phylum.pdf",height=8,width=8)
+plotTaxa(mybiom,"phylum","condition")
+dev.off()
 
 Requires analysis2.R and deseq.r
 
