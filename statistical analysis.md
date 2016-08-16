@@ -38,8 +38,12 @@ It's possible to convert a phyloseq object to a DESeq datamatrix with phyloseq_t
 dds <- phylo_to_des(mybiom)
 ```
 #### Differential OTU abundance
+Using DESeq2 it's possible to calculate the probability of OTUs having different abundances between condtions. The default will use the the condition column of the dds object's colData table, and take the first two conditions. To specify a different column or use different "condtions use the contrast=c("column_name","condition_1","condition_2") construct when calling the results method.
+
+This code will merge the phyloseq taxonomy object to the results.
+
 ```{r}
-alpha <- 0.05
+alpha <- 0.05 # significance level
 res = results(dds, alpha=alpha)	
 #res = results(dds, alpha=alpha,contrast=c("condition","N","K"))	## specify different contrasts to make
 taxa=mybiom@tax_table
@@ -60,22 +64,16 @@ pdf("16S.alpha_bysex.pdf", height=8,width=8)
 plot_richness(mybiom,x="condition",color="Sex",measures=c("Chao1", "ACE", "Shannon", "Simpson"))
 dev.off()
 ```
-
 ##### beta diversity
 ```{r}
 pdf("16S.beta-diversity.pdf",height=8,width=8)
 plotPCA(dds)
 dev.off()
 ```
-
 #### taxa graphs
 ```{r}
 pdf("16S.phylum.pdf",height=8,width=8)
 plotTaxa(mybiom,"phylum","condition")
 dev.off()
+```
 
-Requires analysis2.R and deseq.r
-
-ubiom makes a S3 biom object from the OTU table (16S.otu_table.txt), OTU taxonomy (16S.taxa) and sample description file (colData) analysis2.R/deseq.r contain scripts to produce deseq objects and run differential analysis + a few graphing options.
-
-The OTU table header starts with a hash. To import into R set comment.char="" in the read.table parameter
