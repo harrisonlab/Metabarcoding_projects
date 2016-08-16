@@ -1,9 +1,10 @@
 # apple_replant
 Metagenomic study of apple replant disease  
  1. HMM Preperation for ITS analysis  
- 2. Common workflow 
- 6. 16S workflow
- 18. ITS workflow
+ 2. [Common workflow](../master/Common%20workflow.md)
+ 6. [16S workflow](../master/16S%20%20workflow.md)
+ 18. [ITS workflow](../master//ITS%20workflow.md)
+ 19. [Statistical analysis](../master/statistical%20analysis.md)
  35. Oomycetes workflow
  36. Combine samples
  37. Old (Qiime method)
@@ -65,6 +66,7 @@ ___
 ###[Common workflow](../master/Common%20workflow.md)
 ###[16S workflow](../master/16S%20%20workflow.md)
 ###[ITS workflow](../master//ITS%20workflow.md)
+###[Statistical analysis](../master/statistical%20analysis.md)
 
 ##oomycetes
 ```shell
