@@ -16,6 +16,11 @@ Set stringAsFactor to false - apparently this can be set in .Rprofile, but this 
 ```{r}
 options(stringsAsFactors = FALSE)
 ```
+There are several R functions throughout this module which are found in functions.R
+```{r}
+source("functions.R")
+```
+
 ### phyloseq
 Import biom table, taxonomy and sample data into a phyloseq object
 Create phyloseq object in R
@@ -24,56 +29,37 @@ library("phyloseq")
 biom_file = "16S.taxa.biom"
 otu_file = "16S.otus.fa" # might be useful at some stage
 colData = "colData"
-
 mybiom <- import_biom(biom_file,refseqfilename=out_file)
 sample_data(mybiom) <- read.table(colData,header=T,sep="\t",row.names=1)
 
-# alpha diversity
-estimate_richness(mybiom)
-pdf("16S.alpha_bysex.pdf", height=8,width=8)
-plot_richness(mybiom,x="condition",color="Sex",measures=c("Chao1", "ACE", "Shannon", "Simpson"))
-dev.off()
+
 
 ```
-
-
 ### DESeq2
 It's possible to convert a phyloseq object to a DESeq datamatrix with phyloseq_to_deseq2
 
 ```{r}
-library(DESeq2)
-library(edgeR)
-phylo_to_des <- function(X, design=~condition) {
-	suppressPackageStartupMessages(require(DESeq2))
-	dds <- 	phyloseq_to_deseq2(X,design)
-	if (sum(apply(counts(dds),1,function(x) prod(x!=0)))>0) {
-		suppressPackageStartupMessages(require(edgeR))
-		sizeFactors(dds) <- calcNormFactors(counts(dds))	
-	} else {
-		print("every gene contains at least one zero")
-		print("ignoring all zero values")
-		gm_mean = function(x, na.rm=TRUE){
-			exp(sum(log(x[x > 0]), na.rm=na.rm) / length(x))
-		}
-		geoMeans = apply(counts(dds), 1, gm_mean)
-		dds <- estimateSizeFactors(dds, geoMeans = geoMeans)
-	}
-	return(DESeq(dds, fitType="local"))
-} 
-
 dds <- phylo_to_des(mybiom)
+```
+### plots
 
-# beta diversity
+#### alpha diversity
+```{r}
+
+estimate_richness(mybiom)
+pdf("16S.alpha_bysex.pdf", height=8,width=8)
+plot_richness(mybiom,x="condition",color="Sex",measures=c("Chao1", "ACE", "Shannon", "Simpson"))
+dev.off()
+```
+
+##### beta diversity
+```{r}
 rld <- varianceStabilizingTransformation(dds,blind=F,fitType="local")
 rld$label <-  rld$condition
-#sub("[0-9].","",sub("-.*","",as.character(mybiom$colData$condition)))
 pdf("ITS.beta-diversity.pdf",height=8,width=8)
 plotPCA(rld)
 dev.off()
 ```
-
-
-
 
 
 Requires analysis2.R and deseq.r
