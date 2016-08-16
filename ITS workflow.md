@@ -1,6 +1,6 @@
-## ITS workflow
+# ITS workflow
 
-### Pre-processing
+## Pre-processing
 Script will:<br>
 1. Remove reads with both forward and reverse primers<br>
 2. Remove reads with adapter contamination<br>
@@ -17,9 +17,9 @@ do
 done
 ```
 
-#### SSU/58S/LSU removal 
+### SSU/58S/LSU removal 
 
-##### Identify SSU, 5.8S  and LSU regions
+#### Identify SSU, 5.8S  and LSU regions
 
 This will create a large number of array jobs on the cluster
 ```shell
@@ -45,7 +45,7 @@ do counter=$((counter+1))
 done
 ```
 
-##### Remove SSU, 5.8S  and LSU regions and merge output
+#### Remove SSU, 5.8S  and LSU regions and merge output
 
 ```shell
 for d in $METAGENOMICS/data/$RUN/ITS/fasta/*R1
@@ -67,7 +67,7 @@ do
 done
 ```
 
-##### Return ITS1 where fasta header matches ITS2, unique ITS1 and unique ITS2
+#### Return ITS1 where fasta header matches ITS2, unique ITS1 and unique ITS2
 
 ```shell
 mkdir -p $METAGENOMICS/data/$RUN/ITS/filtered
@@ -88,9 +88,9 @@ mv *r1* R1/.
 mv *r2* R2/.
 ```
 
-### UPARSE
+## UPARSE
 
-#### Cluster and assign taxonomy
+### Cluster and assign taxonomy
 ```shell
 ##### Concatenate
 cat $METAGENOMICS/data/$RUN/ITS/filtered/*.fa > $METAGENOMICS/data/$RUN/ITS.t.fa
@@ -108,7 +108,7 @@ usearch8.1 -utax ITS.otus.fa -db $METAGENOMICS/taxonomies/utax/ITS_ref.udb -stra
 cat ITS.rdp|$METAGENOMICS/scripts/mod_taxa.pl > ITS.taxa
 ```
 
-#### OTU table creation
+### OTU table creation
 
 First assign ITS1 reads to OTUs. Then, for any non-hits, attemp to assign reverse read (ITS2) to an OTU. 
 
