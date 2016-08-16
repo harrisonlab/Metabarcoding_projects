@@ -31,6 +31,19 @@ otu_file = "16S.otus.fa" # might be useful at some stage
 colData = "colData"
 mybiom <- import_biom(biom_file,refseqfilename=out_file)
 sample_data(mybiom) <- read.table(colData,header=T,sep="\t",row.names=1)
+
+# an example of removing certain OTUs from a phyloseq object
+# this will filter based on OTU present in all conditions
+
+taxa_sums(subset_samples(mybiom,mybiom@sam_data$condition))
+
+test <- filtbiom$taxa[attr(emrh,"names")[which(emrh*emrs*neaves*kelsey*hlf > 0)],]
+
+
+
+kp <- row.names(mybiom@otu_table[)
+myfiltbiom <- prune_taxa(kp,mybiom)
+
 ```
 ### DESeq2
 It's possible to convert a phyloseq object to a DESeq datamatrix with phyloseq_to_deseq2
