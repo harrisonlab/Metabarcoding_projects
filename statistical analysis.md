@@ -46,7 +46,7 @@ dds <- phylo_to_des(mybiom)
 #### alpha diversity
 ```{r}
 
-estimate_richness(mybiom)
+# res <- estimate_richness(mybiom) ## data used for plot_richness graphs
 pdf("16S.alpha_bysex.pdf", height=8,width=8)
 plot_richness(mybiom,x="condition",color="Sex",measures=c("Chao1", "ACE", "Shannon", "Simpson"))
 dev.off()
