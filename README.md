@@ -63,6 +63,9 @@ mkdir $METAGENOMICS/taxonomies
 
 ___
 
+##Common workflow
+https://github.com/harrisonlab/apple_replant/blob/master/16S%20%20workflow.md
+
 
 ##oomycetes
 ```shell
