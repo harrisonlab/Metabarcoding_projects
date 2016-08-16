@@ -73,6 +73,9 @@ plotPCA <- function (
    shape <- if (missing(labelby)) {factor("All")}else {as.factor(rld@colData[,labelby]) }
 
     d <- data.frame(PC1 = pca$x[, pcx], PC2 = pca$x[, pcy], group = group,intgroup.df,shape=shape)
+    colnames(d)[grep("group", colnames(d))] <- intgroup
+    colnames(d)[grep("shape", colnames(d))] <- labelby
+
     if (returnData) {
         attr(d, "percentVar") <- percentVar[1:2]
         return(d)
@@ -83,11 +86,14 @@ plotPCA <- function (
 	d[,2] <- d[,2] * percentVar[pcy]
     }
 
-    ggplot() +
-    coord_fixed(ratio = 1, xlim = NULL, ylim = NULL, expand = TRUE) +
-    geom_point(data=d, mapping=aes(x=PC1, y=PC2, colour=group),size=3) +
-    xlab(paste0("PC",pcx,": ", round(percentVar[pcx] * 100), "% variance")) +
-    ylab(paste0("PC",pcy,": ", round(percentVar[pcy] * 100), "% variance"))
+    g <- ggplot()
+    g <- g + coord_fixed(ratio = 1, xlim = NULL, ylim = NULL, expand = TRUE)
+    g <- g + geom_point(data=d, mapping=aes(x=PC1, y=PC2, colour=group, shape=shape),size=3)
+    g <- g + scale_colour_discrete(name=intgroup)
+    g <- g + scale_shape_discrete(name=labelby)
+    g <- g + xlab(paste0("PC",pcx,": ", round(percentVar[pcx] * 100), "% variance"))
+    g <- g + ylab(paste0("PC",pcy,": ", round(percentVar[pcy] * 100), "% variance"))
+    return(g)
 }
 
 plotPCAWithLabels <- function (object, intgroup = "condition", ntop = 500,pcx = 1,pcy = 2, returnData = FALSE)
