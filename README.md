@@ -62,10 +62,9 @@ mkdir $METAGENOMICS/taxonomies
 ```
 
 ___
-##[Common workflow](../master/Common%20workflow.md)
-##[16S workflow](../master/16S%20%20workflow.md)
-##[ITS workflow](../master//ITS%20%20workflow.md)
-
+###[Common workflow](../master/Common%20workflow.md)
+###[16S workflow](../master/16S%20%20workflow.md)
+###[ITS workflow](../master//ITS%20workflow.md)
 
 ##oomycetes
 ```shell
