@@ -34,15 +34,9 @@ sample_data(mybiom) <- read.table(colData,header=T,sep="\t",row.names=1)
 
 # an example of removing certain OTUs from a phyloseq object
 # this will filter based on OTU present in all conditions
-
-taxa_sums(subset_samples(mybiom,mybiom@sam_data$condition))
-
-test <- filtbiom$taxa[attr(emrh,"names")[which(emrh*emrs*neaves*kelsey*hlf > 0)],]
-
-
-
-kp <- row.names(mybiom@otu_table[)
-myfiltbiom <- prune_taxa(kp,mybiom)
+t1 <- aggregate(t(mybiom@otu_table),by=list(mybiom@sam_data$condition),FUN=sum)
+t1 <- t1[-1]
+myfiltbiom <- prune_taxa(apply(t1,2,prod)>0,mybiom)
 
 ```
 ### DESeq2
