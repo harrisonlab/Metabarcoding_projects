@@ -131,17 +131,22 @@ plotPCAWithLabels <- function (object, intgroup = "condition", ntop = 500,pcx = 
 }
 
 plotTaxa <- function(
-			obj=mybiom, # obj (phloseq) must is a phyloseq object which must include taxonomy and sample data
-			taxon="phylum", # taxon (str) is the taxonomic level of interest
-			condition, # condition (str) describes how the samples should be grouped (must be column of sample data)
-			proportional=T,# proportional (bool) whether the graph should use proportional or absolute values
-			cutoff=1, # cutoff (double) for proportional graphs. 
-			topn=0, # topn (int)taxons to display (by total reads) for non-prortional graphs. T
-			others=T, # combine values less than cutoff/topn into group "other"
-			reorder=F, # order by value (max to min)
-			type=1, # type is limited to by sample (1) or by taxa (2)
-			fixed=F, # fixed is a ggplot parameter to apply coord_fixed(ratio = 0.1)
-			ncol=1, # ncol is a ggplot paramter to use n columns for the legend
+			obj=mybiom, 	# obj (phloseq) must is a phyloseq object which must include taxonomy and sample data
+			taxon="phylum", 	# taxon (str) is the taxonomic level of interest
+			condition, 	# condition (str) describes how the samples should be grouped (must be column of sample data)
+			proportional=T,	# proportional (bool) whether the graph should use proportional or absolute values
+			cutoff=1, 	# cutoff (double) for proportional graphs. 
+			topn=0, 		# topn (int)taxons to display (by total reads) for non-prortional graphs. T
+			others=T, 	# combine values less than cutoff/topn into group "other"
+			reorder=F, 	# order by value (max to min)
+			type=1, 		# type is limited to by sample (1) or by taxa (2)
+			fixed=F, 		# fixed is a ggplot parameter to apply coord_fixed(ratio = 0.1)
+			ncol=1, 		# ncol is a ggplot paramter to use n columns for the legend
+			calcFactors="DES", # can accept a function e.g. to use edgeR size factors:
+					   # function(counts){
+					   #    suppressPackageStartupMessages(require(edgeR))
+					   #    calcNormFactors(counts)
+					   # }
 			transform= function(	object,
 						blind=F,
 						fitType="local"
@@ -149,7 +154,7 @@ plotTaxa <- function(
 			{
 					suppressPackageStartupMessages(require(DESeq2))
 					return(varianceStabilizingTransformation(object,blind=blind,fitType=fitType))
-			} # data transformation function - transform takes a dds oject as input
+			} 		# data transformation function 
 		)
 {
 	suppressPackageStartupMessages(require(DESeq2))
@@ -162,20 +167,21 @@ plotTaxa <- function(
 	colnames(colData) <- sample_data(obj)@names
 	colnames(taxa) <- c("kingdom","phylum","class","order","family","genus","species")
 	taxa <- sub("*._+","",taxa)
-
 	dds <- 	DESeqDataSetFromMatrix(countData,colData,~1)
-	if (sum(apply(countData,1,function(x) prod(x!=0)))>0) {
-		suppressPackageStartupMessages(require(edgeR))
-		sizeFactors(dds) <- calcNormFactors(counts(dds))	
-	} else {
-		print("every gene contains at least one zero")
-		print("ignoring all zero values")
-		gm_mean = function(x, na.rm=TRUE){
-			exp(sum(log(x[x > 0]), na.rm=na.rm) / length(x))
+	if (class(calcFactors)!="function") {
+		if (sum(apply(countData,1,function(x) prod(x!=0)))>0) {
+			dds <- estimateSizeFactors(dds)
+		} else {
+			gm_mean = function(x, na.rm=TRUE){
+				exp(sum(log(x[x > 0]), na.rm=na.rm) / length(x))
+			}
+			geoMeans = apply(counts(dds), 1, gm_mean)
+			dds <- estimateSizeFactors(dds, geoMeans = geoMeans)
 		}
-		geoMeans = apply(counts(dds), 1, gm_mean)
-		dds <- estimateSizeFactors(dds, geoMeans = geoMeans)
-	}
+	} else {
+		sizeFactors(dds) <- calcFactors(counts(dds))
+	}	
+
 	countData <- as.data.frame(assay(transform(dds)))
 	countData[countData<0] <- 0
 
