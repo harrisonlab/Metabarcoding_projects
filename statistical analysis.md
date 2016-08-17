@@ -123,11 +123,7 @@ plotTaxa(mybiom,"phylum","condition",calcFactors=
 ) # edgeR size factors 
 plotTaxa(mybiom,"phylum","condition",calcFactors=
 	function(d) {
-		gm_mean = function(x, na.rm=TRUE){
-			exp(sum(log(x[x > 0]), na.rm=na.rm) / length(x))
-		}
-		geoMeans = apply(counts(d), 1, gm_mean)
-		sizeFactors(estimateSizeFactors(d, geoMeans = geoMeans))
+		sizeFactors(estimateSizeFactors(d, type="iterate"))
 	}
 ) # modified estimateSizeFactors to exclude rows with all 0 counts	
 dev.off()
