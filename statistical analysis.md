@@ -29,7 +29,7 @@ library("phyloseq")
 biom_file = "16S.taxa.biom"
 otu_file = "16S.otus.fa" # might be useful at some stage
 colData = "colData"
-mybiom <- import_biom(biom_file,refseqfilename=out_file)
+mybiom <- import_biom(biom_file) # ,refseqfilename=out_file
 sample_data(mybiom) <- read.table(colData,header=T,sep="\t",row.names=1)
 
 # an example of removing certain OTUs from a phyloseq object
