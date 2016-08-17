@@ -108,7 +108,8 @@ It takes the following options:
 9. type (int (1/2) - required, def=1) Type 1 produces a stacked barchart by sample, type 2 a barchart by taxa 
 10. fixed (bool - optional, def=F) fixed is a ggplot parameter to apply coord_fixed(ratio = 0.1)
 11. ncol (int - optional, def=1) ncol is a ggplot paramter to use n columns for the legend
-12. transform (fun - required, default VST) a function which describes how to transform the DDS size factors for plotting. Object will be passed to this function as its first option.
+12. calcFactors (fun - optional) user supplied function to replace DESeq2 estimateSizeFactors, to calculate size factors on the OTU count matrix.  
+13. transform (fun - required, default VST) a function which describes how to transform the DDS size factors for plotting. Object will be passed to this function as its first option.
 
 ```{r}
 pdf("16S.phylum.pdf",height=8,width=8)
