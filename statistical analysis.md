@@ -100,13 +100,13 @@ It takes the following options:
 2. taxon (str - required) is the taxonomic level of interest
 3. condition (str - required) describes how the samples should be grouped (must be column of sample data)
 4. proportional (bool - optional, def=T) whether the graph should use proportional or absolute values
-5. cutoff=1, 	# cutoff (double - optional, def =1) for proportional graphs. 
-6. topn=0, 		# topn (int - optional)taxons to display (by total reads) for non-prortional graphs. 
-7. others (bool - optional, def=T), 	# combine values less than cutoff/topn into group "other"
-8. reorder (bool - optional, =F) 	# order by value (max to min)
-9. type (int - required, def=1), 		# type is limited to by sample (1) or by taxa (2)
-10. fixed (bool - optional, def=F) 		# fixed is a ggplot parameter to apply coord_fixed(ratio = 0.1)
-11. ncol (int - optional, def=1), 		# ncol is a ggplot paramter to use n columns for the legend
+5. cutoff (double - optional, def =1) for proportional graphs. 
+6. topn (int - optional)taxons to display (by total reads) for non-prortional graphs. 
+7. others (bool - optional, def=T), combine values less than cutoff/topn into group "other"
+8. reorder (bool - optional, =F) order by value (max to min)
+9. type (int (1/2) - required, def=1) Type 1 produces a stacked barchart by sample, type 2 a barchart by taxa 
+10. fixed (bool - optional, def=F) fixed is a ggplot parameter to apply coord_fixed(ratio = 0.1)
+11. ncol (int - optional, def=1) ncol is a ggplot paramter to use n columns for the legend
 12. transform (fun - required, default VST) a function which describes how to transform the DDS size factors for plotting. Object will be passed to this function as its first option.
 
 ```{r}
