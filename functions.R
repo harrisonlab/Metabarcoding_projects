@@ -32,6 +32,13 @@ fltTaxon <- function(X,taxon="phylum") {
 	return(ls.biom)	
 }
 
+phylo_to_des <- function(X, design=~condition,calcFactors=function(d){sizeFactors(estimateSizeFactors(d))}) {
+    suppressPackageStartupMessages(require(DESeq2))
+    dds <-  phyloseq_to_deseq2(X,design)
+    sizeFactors(dds) <- calcFactors(dds)
+    return(DESeq(dds, fitType="local"))
+} 
+
 plotPCA <- function (	
 			object, 
 			intgroup = "condition",
@@ -251,25 +258,6 @@ plotTaxa <- function(
 	}	
 	return(g)
 }
-
-
-phylo_to_des <- function(X, design=~condition) {
-    suppressPackageStartupMessages(require(DESeq2))
-    dds <-  phyloseq_to_deseq2(X,design)
-    if (sum(apply(counts(dds),1,function(x) prod(x!=0)))>0) {
-        suppressPackageStartupMessages(require(edgeR))
-        sizeFactors(dds) <- calcNormFactors(counts(dds))    
-    } else {
-        print("every gene contains at least one zero")
-        print("ignoring all zero values")
-        gm_mean = function(x, na.rm=TRUE){
-            exp(sum(log(x[x > 0]), na.rm=na.rm) / length(x))
-        }
-        geoMeans = apply(counts(dds), 1, gm_mean)
-        dds <- estimateSizeFactors(dds, geoMeans = geoMeans)
-    }
-    return(DESeq(dds, fitType="local"))
-} 
 
 sumTaxa <- function(X,taxon="phylum",condition="condition") {
 	suppressPackageStartupMessages(require(plyr))
