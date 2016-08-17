@@ -64,14 +64,29 @@ sig.res <- subset(res.merge,padj<=alpha)
 ### plots
 
 #### alpha diversity
-```{r}
+Phyloseq has a builtin method for plotting alpha diversity graphs (plot_richness). Estimate_richness will return the data points used to plot the graphs (I may edit this function as the graphs are pretty basic - ugly anyway)
 
+```{r}
 # res <- estimate_richness(mybiom) ## data used for plot_richness graphs
 pdf("16S.alpha_bysex.pdf", height=8,width=8)
 plot_richness(mybiom,x="condition",color="Sex",measures=c("Chao1", "ACE", "Shannon", "Simpson"))
 dev.off()
 ```
 ##### beta diversity
+Beta diversity is plotted with a modified version of the DESeq2 plotPCA method. 
+It take the following options:
+
+1. object (DESeq2 - required) a DESeq object with size factors
+2. intgroup (string - optional, default="condition") a column of colData used to describe (colour) the samples (e.g. infected/control)
+3. labelby (string - optional) a 2nd column of colData used to descibe (shape) the samples (e.g. male/female)
+4. ntop (int - optional, default=500) number of OTUs in descending count order to use in the PCA calculation
+5. pcx (int - optional, default=1) X-axis pricipal component
+6. pcy (int - optional, default=2) Y-axis pricipal component
+7. returnData (bool - optional, default=F) returns the PCA results and exits
+8. cofix (bool - optional, default=F) produces a graph with axes on the same scale
+9. transform(fun - optional, default VST) a function which describes how to transform the DDS size factors for plotting. Object will be passed to this function as its first option. 
+
+plotPCAWithLabels will produce the same graph but with the addition of sample labels - useful for getting the name of outliers
 ```{r}
 pdf("16S.beta-diversity.pdf",height=8,width=8)
 plotPCA(dds)
