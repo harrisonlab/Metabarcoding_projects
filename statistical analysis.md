@@ -72,7 +72,7 @@ pdf("16S.alpha_bysex.pdf", height=8,width=8)
 plot_richness(mybiom,x="condition",color="Sex",measures=c("Chao1", "ACE", "Shannon", "Simpson"))
 dev.off()
 ```
-##### beta diversity
+#### beta diversity
 Beta diversity is plotted with a modified version of the DESeq2 plotPCA method. 
 It take the following options:
 
