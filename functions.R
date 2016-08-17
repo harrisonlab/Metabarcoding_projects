@@ -32,32 +32,73 @@ fltTaxon <- function(X,taxon="phylum") {
 	return(ls.biom)	
 }
 
-phylo_to_des <- function(X, design=~condition,calcFactors=function(d){sizeFactors(estimateSizeFactors(d))}) {
+phylo_to_des <- function(
+	X, 
+	design=~condition,
+	calcFactors=function(d){
+		sizeFactors(estimateSizeFactors(d))
+	}
+) {
     suppressPackageStartupMessages(require(DESeq2))
     dds <-  phyloseq_to_deseq2(X,design)
     sizeFactors(dds) <- calcFactors(dds)
     return(DESeq(dds, fitType="local"))
 } 
 
-plotPCA <- function (	
-			object, 
-			intgroup = "condition",
-			labelby,
-			ntop = 500,
-			pcx = 1,
-			pcy = 2, 
-			returnData = FALSE,
-			cofix=F,
-			transform= function(	object,
-						blind=F,
-						fitType="local"
-					) 
-			{
-					suppressPackageStartupMessages(require(DESeq2))
-					return(varianceStabilizingTransformation(object,blind=blind,fitType=fitType))
-			}
-		) 
+phylo_to_ubiom <- function(obj)
 {
+	countData=as.data.frame(as.matrix(obj@otu_table)@.Data)
+	taxa=obj@tax_table
+	colnames(taxa) <- c("kingdom","phylum","class","order","family","genus","species")
+	taxa <- sub("*._+","",taxa)
+	colData=as.data.frame(sample_data(obj)@.Data,row.names=sample_data(obj)@row.names)	
+	colnames(colData) <- sample_data(obj)@names
+	mybiom <- list(
+		countData=countData,
+		taxa=taxa,
+		colData=colData
+	)
+}
+
+transformUbiom <- function(obj, calcFactors=function(d)
+	{
+		sizeFactors(estimateSizeFactors(d))
+	},
+	transform=function(	
+		object,
+		blind=F,
+		fitType="local" 
+	) {
+		varianceStabilizingTransformation(object,blind=blind,fitType=fitType)
+	} 
+) {
+	suppressPackageStartupMessages(require(DESeq2))
+	dds <- 	DESeqDataSetFromMatrix(obj$countData,obj$colData,~1)
+	sizeFactors(dds) <- calcFactors(dds)
+	countData <- as.data.frame(assay(transform(dds)))
+	countData[countData<0] <- 0
+	obj$countData <- countData
+	return(obj)
+}
+
+plotPCA <- function (	
+	object, 
+	intgroup = "condition",
+	labelby,
+	ntop = 500,
+	pcx = 1,
+	pcy = 2, 
+	returnData = FALSE,
+	cofix=F,
+	transform= function(
+		object,
+		blind=F,
+		fitType="local"
+	) {
+		suppressPackageStartupMessages(require(DESeq2))
+		return(varianceStabilizingTransformation(object,blind=blind,fitType=fitType))
+	}
+) {
     suppressPackageStartupMessages(require(genefilter))
     suppressPackageStartupMessages(require(ggplot2))
     suppressPackageStartupMessages(require(DESeq2))
@@ -138,66 +179,39 @@ plotPCAWithLabels <- function (object, intgroup = "condition", ntop = 500,pcx = 
 }
 
 plotTaxa <- function(
-			obj=mybiom, 	# obj (phloseq) must is a phyloseq object which must include taxonomy and sample data
-			taxon="phylum", 	# taxon (str) is the taxonomic level of interest
-			condition, 	# condition (str) describes how the samples should be grouped (must be column of sample data)
-			proportional=T,	# proportional (bool) whether the graph should use proportional or absolute values
-			cutoff=1, 	# cutoff (double) for proportional graphs. 
-			topn=0, 		# topn (int)taxons to display (by total reads) for non-prortional graphs. T
-			others=T, 	# combine values less than cutoff/topn into group "other"
-			reorder=F, 	# order by value (max to min)
-			type=1, 		# type is limited to by sample (1) or by taxa (2)
-			fixed=F, 		# fixed is a ggplot parameter to apply coord_fixed(ratio = 0.1)
-			ncol=1, 		# ncol is a ggplot paramter to use n columns for the legend
-			calcFactors="DES", # can accept a function e.g. to use edgeR size factors:
-					   # function(counts){
-					   #    suppressPackageStartupMessages(require(edgeR))
-					   #    calcNormFactors(counts)
-					   # }
-			transform= function(	object,
-						blind=F,
-						fitType="local"
-					) 
-			{
-					suppressPackageStartupMessages(require(DESeq2))
-					return(varianceStabilizingTransformation(object,blind=blind,fitType=fitType))
-			} 		# data transformation function 
-		)
-{
-	suppressPackageStartupMessages(require(DESeq2))
+	obj=mybiom, 	# obj (phloseq) a phyloseq object which must include taxonomy and sample data (or alternatively an S3 list)
+	taxon="phylum", # taxon (str) is the taxonomic level of interest
+	condition, 	# condition (str) describes how the samples should be grouped (must be column of sample data)
+	proportional=T,	# proportional (bool) whether the graph should use proportional or absolute values
+	cutoff=1, 	# cutoff (double) for proportional graphs. 
+	topn=0, 	# topn (int)taxons to display (by total reads) for non-prortional graphs. T
+	others=T, 	# combine values less than cutoff/topn into group "other"
+	reorder=F, 	# order by value (max to min)
+	type=1, 	# type is limited to by sample (1) or by taxa (2)
+	fixed=F, 	# fixed is a ggplot parameter to apply coord_fixed(ratio = 0.1)
+	ncol=1, 	# ncol is a ggplot paramter to use n columns for the legend
+	calcFactors=function(d)
+	{
+		sizeFactors(estimateSizeFactors(d))
+	},		# size factor function
+	transform=function(	
+		object,
+		blind=F,
+		fitType="local" 
+	) {
+		varianceStabilizingTransformation(object,blind=blind,fitType=fitType)
+	} 		# data transformation function 
+) {
 	suppressPackageStartupMessages(require(ggplot2))
 	suppressPackageStartupMessages(require(scales))
-
-	countData=as.data.frame(as.matrix(obj@otu_table)@.Data)
-	taxa=obj@tax_table
-	colData=as.data.frame(sample_data(obj)@.Data,row.names=sample_data(obj)@row.names)	
-	colnames(colData) <- sample_data(obj)@names
-	colnames(taxa) <- c("kingdom","phylum","class","order","family","genus","species")
-	taxa <- sub("*._+","",taxa)
-	dds <- 	DESeqDataSetFromMatrix(countData,colData,~1)
-	if (class(calcFactors)!="function") {
-		if (sum(apply(countData,1,function(x) prod(x!=0)))>0) {
-			dds <- estimateSizeFactors(dds)
-		} else {
-			gm_mean = function(x, na.rm=TRUE){
-				exp(sum(log(x[x > 0]), na.rm=na.rm) / length(x))
-			}
-			geoMeans = apply(counts(dds), 1, gm_mean)
-			dds <- estimateSizeFactors(dds, geoMeans = geoMeans)
-		}
+	
+	if(isS4(obj)) {
+		mybiom <- phylo_to_ubiom(obj)
 	} else {
-		sizeFactors(dds) <- calcFactors(counts(dds))
-	}	
-
-	countData <- as.data.frame(assay(transform(dds)))
-	countData[countData<0] <- 0
-
-	mybiom <- list(
-		countData=countData,
-		taxa=taxa,
-		colData=colData
-	)
-
+		mybiom <- obj
+	}
+	mybiom <- transformUbiom(mybiom,calcFactors,transform)
+	
 	taxa_sum <- sumTaxa(mybiom,taxon=taxon,condition=condition)
 
 	if(!topn) {
@@ -216,7 +230,6 @@ plotTaxa <- function(
 		taxa_sum[,-1] <- prop.table(as.matrix(taxa_sum[,-1]),2)*100
 	}
 
-	### common
 	taxa_cut <- taxa_sum[taxa_sum[,1]%in%txk,]
 	taxa_cut <- taxa_cut[order(taxa_cut[,1],decreasing=T),]
 	if(others) {
@@ -230,7 +243,7 @@ plotTaxa <- function(
 		taxa_cut <- taxa_cut[,-ncol(taxa_cut)]
 	}
 	md2 <- melt(taxa_cut,id=colnames(taxa_cut)[1])
-	md2$variable <- factor(md2$variable, levels =levels(md2$variable)[order(levels(md2$variable))]  )
+	md2$variable <- factor(md2$variable, levels=levels(md2$variable)[order(levels(md2$variable))]  )
 	if (type==1) {
 		g <- ggplot(md2,aes_string(x=md2[,2],y=md2[,3],fill=taxon))
 	} else if (type==2) {
