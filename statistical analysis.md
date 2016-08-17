@@ -92,6 +92,7 @@ pdf("16S.beta-diversity.pdf",height=8,width=8)
 plotPCA(dds)
 dev.off()
 ```
+I may update this to accept a phlyoseq object rather than DESeq and do the size factor calculations internally
 #### taxa graphs
 Produces a ggplot2 bar chart of taxa counts
 It takes the following options:
@@ -114,4 +115,3 @@ pdf("16S.phylum.pdf",height=8,width=8)
 plotTaxa(mybiom,"phylum","condition")
 dev.off()
 ```
-
