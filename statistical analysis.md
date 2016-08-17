@@ -40,7 +40,8 @@ myfiltbiom <- prune_taxa(apply(t1,2,prod)>0,mybiom)
 
 ```
 ### DESeq2
-It's possible to convert a phyloseq object to a DESeq datamatrix with phyloseq_to_deseq2
+It's possible to convert a phyloseq object to a DESeq datamatrix with the wrapper function phylo_to_des.
+phylo_to_des has the option to specify the size factor calculation using the option calcFactors (see plotTaxa for examples of how to use this option)
 ```{r}
 dds <- phylo_to_des(mybiom)
 ```
@@ -94,7 +95,7 @@ dev.off()
 ```
 I may update this to accept a phlyoseq object rather than DESeq and do the size factor calculations internally
 #### taxa graphs
-Produces a ggplot2 bar chart of taxa counts
+plotTaxa produces a ggplot2 bar chart of taxa counts
 It takes the following options:
 
 1. obj (phyloseq - required) must is a phyloseq object which must include taxonomy and sample data
