@@ -113,7 +113,7 @@ It takes the following options:
 9. type (int (1/2) - required, def=1) Type 1 produces a stacked barchart by sample, type 2 a barchart by taxa 
 10. fixed (bool - optional, def=F) fixed is a ggplot parameter to apply coord_fixed(ratio = 0.1)
 11. ncol (int - optional, def=1) ncol is a ggplot paramter to use n columns for the legend
-12. transform (fun - optional) a user supplied function to replace DESeq2 variance stabilising transform to transform the count matrix. A DESeq2 object will be passed to this function. 
+12. transform (fun - optional) a user supplied function to replace DESeq2 variance stabilising transform to transform the count matrix. An S3 list of countData, Taxonomy and colData is passed to the transform function . 
 13. ... arguments to pass to transform function (o.k. these could just be set in the function, but this is a neater solution if the default function is used)
 
 ```{r}
