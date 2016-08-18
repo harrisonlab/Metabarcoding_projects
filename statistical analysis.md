@@ -118,6 +118,7 @@ It takes the following options:
 ```{r}
 pdf("16S.phylum.pdf",height=8,width=8)
 plotTaxa(mybiom,"phylum","condition")
+plotTaxa(mybiom,"phylum","condition",blind=F) # passes  blind=F to transform function
 dev.off()
 ```
 Not implemented: calcFactors (fun - optional) user supplied function to replace DESeq2 estimateSizeFactors, to calculate size factors on the OTU count matrix (DESeq2 object will be passed to function). 
