@@ -24,6 +24,9 @@ source("functions.R")
 ### phyloseq
 Import biom table, taxonomy and sample data into a phyloseq object
 Create phyloseq object in R
+
+The taxonomy imported from UPARSE doesn't include rank names and adds extra stuff to the taxa names (k__,p__ and etc.)
+phyloTaxaTidy will fix this and change "unknown" to the lowest known rank (and append a character indicating rank)
 ```{r}
 library("phyloseq")
 biom_file = "16S.taxa.biom"
@@ -31,10 +34,7 @@ otu_file = "16S.otus.fa" # might be useful at some stage
 colData = "colData"
 mybiom <- import_biom(biom_file) # ,refseqfilename=out_file
 sample_data(mybiom) <- read.table(colData,header=T,sep="\t",row.names=1)
-
-# the taxonomy imported from UPARSE doesn't include rank names and adds extra stuff to the names (k__,p__ and etc.)
-colnames(mybiom@tax_table) <- c("kingdom","phylum","class","order","family","genus","species")
-tax_table(mybiom) <- sub("*._+","",tax_table(mybiom))
+tax_table(mybiom) <- phyloTaxaTidy(tax_table(mybiom))
 
 # an example of removing certain OTUs from a phyloseq object
 # this will filter based on OTU present in all conditions
