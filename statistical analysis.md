@@ -32,6 +32,10 @@ colData = "colData"
 mybiom <- import_biom(biom_file) # ,refseqfilename=out_file
 sample_data(mybiom) <- read.table(colData,header=T,sep="\t",row.names=1)
 
+# the taxonomy imported from UPARSE doesn't include rank names and adds extra stuff to the names (k__,p__ and etc.)
+colnames(mybiom@tax_table) <- c("kingdom","phylum","class","order","family","genus","species")
+tax_table(mybiom) <- sub("*._+","",tax_table(mybiom))
+
 # an example of removing certain OTUs from a phyloseq object
 # this will filter based on OTU present in all conditions
 t1 <- aggregate(t(mybiom@otu_table),by=list(mybiom@sam_data$condition),FUN=sum)
