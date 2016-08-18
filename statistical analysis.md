@@ -81,7 +81,7 @@ dev.off()
 Beta diversity is plotted with a modified version of the DESeq2 plotPCA method. 
 It take the following options:
 
-1. object (DESeq2 - required) a DESeq object with size factors
+1. object (DESeq2 - required) a DESeq object 
 2. intgroup (string - optional, default="condition") a column of colData used to describe (colour) the samples (e.g. infected/control)
 3. labelby (string - optional) a 2nd column of colData used to descibe (shape) the samples (e.g. male/female)
 4. ntop (int - optional, default=500) number of OTUs in descending count order to use in the PCA calculation
@@ -113,22 +113,11 @@ It takes the following options:
 9. type (int (1/2) - required, def=1) Type 1 produces a stacked barchart by sample, type 2 a barchart by taxa 
 10. fixed (bool - optional, def=F) fixed is a ggplot parameter to apply coord_fixed(ratio = 0.1)
 11. ncol (int - optional, def=1) ncol is a ggplot paramter to use n columns for the legend
-12. calcFactors (fun - optional) user supplied function to replace DESeq2 estimateSizeFactors, to calculate size factors on the OTU count matrix (DESeq2 object will be passed to function). 
-13. transform (fun - optional) a user supplied function to replace DESeq2 variance stabilising transform to transform the count matrix. A DESeq2 object will be passed to this function. 
+12. transform (fun - optional) a user supplied function to replace DESeq2 variance stabilising transform to transform the count matrix. A DESeq2 object will be passed to this function. 
 
 ```{r}
 pdf("16S.phylum.pdf",height=8,width=8)
 plotTaxa(mybiom,"phylum","condition")
-plotTaxa(mybiom,"phylum","condition",calcFactors=
-	function(d){
-		suppressPackageStartupMessages(require(edgeR))
-		calcNormFactors(counts(d))
-	}
-) # edgeR size factors 
-plotTaxa(mybiom,"phylum","condition",calcFactors=
-	function(d) {
-		sizeFactors(estimateSizeFactors(d, type="iterate"))
-	}
-) # modified estimateSizeFactors to exclude rows with all 0 counts	
 dev.off()
 ```
+Not implemented: calcFactors (fun - optional) user supplied function to replace DESeq2 estimateSizeFactors, to calculate size factors on the OTU count matrix (DESeq2 object will be passed to function). 
