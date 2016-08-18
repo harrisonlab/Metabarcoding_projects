@@ -114,6 +114,7 @@ It takes the following options:
 10. fixed (bool - optional, def=F) fixed is a ggplot parameter to apply coord_fixed(ratio = 0.1)
 11. ncol (int - optional, def=1) ncol is a ggplot paramter to use n columns for the legend
 12. transform (fun - optional) a user supplied function to replace DESeq2 variance stabilising transform to transform the count matrix. A DESeq2 object will be passed to this function. 
+13. ... arguments to pass to transform function (o.k. these could just be set in the function, but this is a neater solution if the default function is used)
 
 ```{r}
 pdf("16S.phylum.pdf",height=8,width=8)
