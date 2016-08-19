@@ -18,7 +18,7 @@ options(stringsAsFactors = FALSE)
 ```
 There are several R functions throughout this module which are found in functions.R
 ```{r}
-source("functions.R")
+source("../../scripts/functions.R")
 ```
 
 ### phyloseq
