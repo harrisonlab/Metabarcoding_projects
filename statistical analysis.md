@@ -42,6 +42,13 @@ t1 <- aggregate(t(otu_table(mybiom)),by=list(sample_data(mybiom)[[1]]),FUN=sum)[
 myfiltbiom <- prune_taxa(apply(t1,2,prod)>0,mybiom)
 rm(t1)
 ```
+
+##### Merge ITS1 and ITS2
+```{r}
+ITS1 = "ITS1.taxa.biom"
+ITS2 = "ITS2.taxa.biom"
+mybiom <- merge_phyloseq(import_biom(ITS1),import_biom(ITS2))
+```
 ### DESeq2
 It's possible to convert a phyloseq object to a DESeq datamatrix with the wrapper function phylo_to_des.phylo_to_des has the option to specify the size factor calculation using the option calcFactors (see plotTaxa for examples of how to use this option). Set fit=T to fit a GLM model to the data. Further arguments will be passed to DESeq.
 ```{r}
