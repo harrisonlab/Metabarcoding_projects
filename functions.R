@@ -22,7 +22,7 @@ import_ubiom <- function (
 }
 
 ubiom_to_des <- function(
-	X, 
+	obj, 
 	calcFactors=function(d)
 	{
 		sizeFactors(estimateSizeFactors(d))
@@ -32,7 +32,7 @@ ubiom_to_des <- function(
 	...
 ){
 	suppressPackageStartupMessages(require(DESeq2))
-	dds <- 	DESeqDataSetFromMatrix(X$countData,X$colData,design)
+	dds <- 	suppressWarnings(DESeqDataSetFromMatrix(obj[[1]],obj[[3]],design))
     	if (fit) {
     		sizeFactors(dds) <- calcFactors(dds)
     	 	return(DESeq(dds,...))
@@ -41,16 +41,16 @@ ubiom_to_des <- function(
     	}
 } 	
 
-ubiom_to_phylo <- function(X){
+ubiom_to_phylo <- function(obj){
 	 phyloseq(
-	 	otu_table(X$countData,taxa_are_rows=T),
-	 	tax_table(as.matrix(X$taxonomy)),
-	 	sample_data(X$colData)
+	 	otu_table(obj[[1]],taxa_are_rows=T),
+	 	tax_table(as.matrix(obj[[2]])),
+	 	sample_data(obj[[3]])
 	 )
 }
 
 phylo_to_des <- function(
-	X,
+	obj,
 	calcFactors=function(d)
 	{
 		sizeFactors(estimateSizeFactors(d))
@@ -60,9 +60,9 @@ phylo_to_des <- function(
 	...
 ){
 	suppressPackageStartupMessages(require(DESeq2))
-	dds <-  phyloseq_to_deseq2(X,design)
-	sizeFactors(dds) <- calcFactors(dds)
+	dds <-  phyloseq_to_deseq2(obj,design)
     	if (fit) {
+    		sizeFactors(dds) <- calcFactors(dds)
     	 	return(DESeq(dds,...))
     	} else {
     		return(dds)
@@ -201,13 +201,13 @@ plotTaxa <- function(
 		obj <- phylo_to_ubiom(obj)
 	} 
 	
-	obj$countData <- as.data.frame(transform(obj,design,...))
-	obj$countData[obj$countData<0] <- 0
+	obj[[1]] <- as.data.frame(transform(obj,design,...))
+	obj[[1]][obj[[1]]<0] <- 0
 	
 	taxa_sum <- sumTaxa(obj,taxon=taxon,design=design)
 
 	if(!topn) {
-		obj$colData$MLUflop <- 1 #assigns the MLU flop digit
+		obj[[3]]$MLUflop <- 1 #assigns the MLU flop digit
 		tx <- sumTaxa(obj,taxon=taxon,"MLUflop")
 		tx[,-1] <- prop.table(as.matrix(tx[,-1]),2)*100
 		txk <- tx[tx[,2]>=cutoff,1]
@@ -282,17 +282,17 @@ taxonomyTidy <- function(x) {
 }
 
 sumTaxa <- function(
-	X,
+	obj,
 	taxon="phylum",
 	design="condition"
 ){
 # sums by sample data 
 	suppressPackageStartupMessages(require(plyr))
 	suppressPackageStartupMessages(require(reshape2))
-	tx <- X$taxonomy[,taxon]
-	dtx <- cbind(X$countData,tx)
+	tx <- obj[[2]][,taxon]
+	dtx <- cbind(obj[[1]],tx)
 	md <- melt(dtx,id="tx")
-	md$variable <- mapvalues(md$variable,from=rownames(X$colData), to=as.character(X$colData[,design]))
+	md$variable <- mapvalues(md$variable,from=rownames(obj[[3]]), to=as.character(obj[[3]][,design]))
 	nd <- dcast(md,...~variable,sum)
 	colnames(nd)[1] <- taxon
 	return(nd)
