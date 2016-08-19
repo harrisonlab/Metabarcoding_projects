@@ -8,7 +8,7 @@ Script will:<br>
 4. Convert FASTQ to single line FASTA
 
 ```shell
-for f in $METAGENOMICS/data/$RUN/ITS/fastq/*R1*; 
+for f in $METAGENOMICS/data/$RUN/ITS/fastq/*R1*.fastq; 
 do     
 	R1=$f;     
 	R2=$(echo $R1|sed 's/_R1_/_R2_/');     
