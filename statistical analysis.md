@@ -38,10 +38,9 @@ tax_table(mybiom) <- phyloTaxaTidy(tax_table(mybiom))
 
 # an example of removing certain OTUs from a phyloseq object
 # this will filter based on OTU present in all conditions
-t1 <- aggregate(t(mybiom@otu_table),by=list(mybiom@sam_data$condition),FUN=sum)
-t1 <- t1[-1]
+t1 <- aggregate(t(mybiom@otu_table),by=list(mybiom@sam_data$condition),FUN=sum)[-1]
 myfiltbiom <- prune_taxa(apply(t1,2,prod)>0,mybiom)
-
+rm(t1)
 ```
 ### DESeq2
 It's possible to convert a phyloseq object to a DESeq datamatrix with the wrapper function phylo_to_des.phylo_to_des has the option to specify the size factor calculation using the option calcFactors (see plotTaxa for examples of how to use this option). Set fit=T to fit a GLM model to the data. Further arguments will be passed to DESeq.
