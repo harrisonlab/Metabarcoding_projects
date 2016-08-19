@@ -1,4 +1,8 @@
-import_ubiom <- function(locX,locY,locZ) {
+import_ubiom <- function (
+	locX,
+	locY,
+	locZ
+){
 	options(stringsAsFactors = FALSE)
 	countData <- read.table(locX,header=T,sep="\t", comment.char="")
 	rownames(countData ) <- countData [,1]
@@ -17,13 +21,21 @@ import_ubiom <- function(locX,locY,locZ) {
 	return(ls.biom)
 }
 
-ubiom_to_des <- function(X, calcFactors=function(d){sizeFactors(estimateSizeFactors(d))},design=~condition,fit=F,...) 
-{
+ubiom_to_des <- function(
+	X, 
+	calcFactors=function(d)
+	{
+		sizeFactors(estimateSizeFactors(d))
+	},
+	design=~condition,
+	fit=F,
+	...
+){
 	suppressPackageStartupMessages(require(DESeq2))
 	dds <- 	DESeqDataSetFromMatrix(X$countData,X$colData,design)
     	if (fit) {
     		sizeFactors(dds) <- calcFactors(dds)
-    	 	return(DESeq(dds, fitType="local",...))
+    	 	return(DESeq(dds,...))
     	} else {
     		return(dds)
     	}
@@ -37,20 +49,27 @@ ubiom_to_phylo <- function(X){
 	 )
 }
 
-phylo_to_des <- function(X,calcFactors=function(d){sizeFactors(estimateSizeFactors(d))},design=~condition,fit=F,...) 
-{
+phylo_to_des <- function(
+	X,
+	calcFactors=function(d)
+	{
+		sizeFactors(estimateSizeFactors(d))
+	},
+	design=~condition,
+	fit=F,
+	...
+){
 	suppressPackageStartupMessages(require(DESeq2))
 	dds <-  phyloseq_to_deseq2(X,design)
 	sizeFactors(dds) <- calcFactors(dds)
     	if (fit) {
-    	 	return(DESeq(dds, fitType="local",...))
+    	 	return(DESeq(dds,...))
     	} else {
     		return(dds)
     	}
 } 
 
-phylo_to_ubiom <- function(obj)
-{
+phylo_to_ubiom <- function(obj) {
 	list(
 		countData=as.data.frame(obj@otu_table@.Data),
 		taxonomy=as.data.frame(obj@tax_table@.Data),
@@ -168,10 +187,10 @@ plotTaxa <- function(
 	type=1, 	# type is limited to by sample (1) or by taxonomy (2)
 	fixed=F, 	# fixed is a ggplot parameter to apply coord_fixed(ratio = 0.1)
 	ncol=1, 	# ncol is a ggplot paramter to use n columns for the legend
-	transform=function(o,...) 
+	transform=function(o,design,...) 
 	{
 		suppressPackageStartupMessages(require(DESeq2))
-		assay(varianceStabilizingTransformation(ubiom_to_des(o,design=~condition),...))
+		assay(varianceStabilizingTransformation(ubiom_to_des(o,~design),...))
 	}, # data transformation function 
 	... # arguments to pass to transform function (obviously they could just be set in the function, but this looks neater)
 ) {
@@ -179,19 +198,17 @@ plotTaxa <- function(
 	suppressPackageStartupMessages(require(scales))
 	
 	if(isS4(obj)) {
-		mybiom <- phylo_to_ubiom(obj)
-	} else {
-		mybiom <- obj
-	}
+		obj <- phylo_to_ubiom(obj)
+	} 
 	
-	mybiom$countData <- as.data.frame(transform(mybiom,...))
-	mybiom$countData[mybiom$countData<0] <- 0
+	obj$countData <- as.data.frame(transform(obj,design,...))
+	obj$countData[obj$countData<0] <- 0
 	
-	taxa_sum <- sumTaxa(mybiom,taxon=taxon,design=condition)
+	taxa_sum <- sumTaxa(obj,taxon=taxon,design=design)
 
 	if(!topn) {
-		mybiom$colData$MLUflop <- 1 #assigns the MLU flop digit
-		tx <- sumTaxa(mybiom,taxon=taxon,"MLUflop")
+		obj$colData$MLUflop <- 1 #assigns the MLU flop digit
+		tx <- sumTaxa(obj,taxon=taxon,"MLUflop")
 		tx[,-1] <- prop.table(as.matrix(tx[,-1]),2)*100
 		txk <- tx[tx[,2]>=cutoff,1]
 	} else {
@@ -247,31 +264,64 @@ plotTaxa <- function(
 	return(g)
 }
 
-sumTaxa <- function(X,taxon="phylum",design="condition") {
-# similar to phyloseq tax_glom, but
-# is faster for lower ranks 
-# replaces "unknown" with highest known rank
-# sums by sample data 
-# (set a column of colData all to the same value and set design argument to this column will give equivelent results to tax_glom) 
+phyloTaxaTidy <- function(obj) {
+	colnames(obj) <- c("kingdom","phylum","class","order","family","genus","species")
+	obj <- sub("*._+","",obj)
+	obj <- t(apply(obj,1,taxonomyTidy))
+	return(obj)
+}
 
+taxonomyTidy <- function(x) {
+	if (x[2]=="unknown") {x[2] <- paste(x[1],"(k)",sep="")}
+	if (x[3]=="unknown") {if(any(grep('\\(',x[2]))) {x[3]<-x[2]}else{x[3]<-paste(x[2],"(p)",sep="")}}
+	if (x[4]=="unknown") {if(any(grep('\\(',x[3]))) {x[4]<-x[3]}else{x[4]<-paste(x[3],"(c)",sep="")}}
+	if (x[5]=="unknown") {if(any(grep('\\(',x[4]))) {x[5]<-x[4]}else{x[5]<-paste(x[4],"(o)",sep="")}}
+	if (x[6]=="unknown") {if(any(grep('\\(',x[5]))) {x[6]<-x[5]}else{x[6]<-paste(x[5],"(f)",sep="")}}
+	if (x[7]=="unknown") {if(any(grep('\\(',x[6]))) {x[7]<-x[6]}else{x[7]<-paste(x[6],"(g)",sep="")}}
+	return(x)
+}
+
+sumTaxa <- function(
+	X,
+	taxon="phylum",
+	design="condition"
+){
+# sums by sample data 
 	suppressPackageStartupMessages(require(plyr))
 	suppressPackageStartupMessages(require(reshape2))
-	
-	X$taxonomy <- as.data.frame(t(apply(X$taxonomy,1,function(x) {
-			if (x[2]=="unknown") {x[2] <- paste(tx[1],"(k)",sep="")}
-			if (x[3]=="unknown") {if(any(grep('\\(',x[2]))) {x[3]<-x[2]}else{x[3]<-paste(x[2],"(p)",sep="")}}
-			if (x[4]=="unknown") {if(any(grep('\\(',x[3]))) {x[4]<-x[3]}else{x[4]<-paste(x[3],"(c)",sep="")}}
-			if (x[5]=="unknown") {if(any(grep('\\(',x[4]))) {x[5]<-x[4]}else{x[5]<-paste(x[4],"(o)",sep="")}}
-			if (x[6]=="unknown") {if(any(grep('\\(',x[5]))) {x[6]<-x[5]}else{x[6]<-paste(x[5],"(f)",sep="")}}
-			if (x[7]=="unknown") {if(any(grep('\\(',x[6]))) {x[7]<-x[6]}else{x[7]<-paste(x[6],"(g)",sep="")}}
-						
-		return(x)}
-	      )))
 	tx <- X$taxonomy[,taxon]
 	dtx <- cbind(X$countData,tx)
 	md <- melt(dtx,id="tx")
-	md$variable <- mapvalues(md$variable,from=rownames(X$colData), to=as.character(X$colData[,condition]))
+	md$variable <- mapvalues(md$variable,from=rownames(X$colData), to=as.character(X$colData[,design]))
 	nd <- dcast(md,...~variable,sum)
 	colnames(nd)[1] <- taxon
 	return(nd)
+}
+
+combine_biom <- function(locX,locY) {
+	biom1 <- read.table(locX,header=T,sep="\t", comment.char="")	
+	biom2 <- read.table(locY,header=T,sep="\t", comment.char="")
+	biom <- merge(biom1,biom2,by.x="X.OTU.ID",by.y="X.OTU.ID",all=T)
+	biom[is.na(biom)] <- 0
+	return(biom)	
+}
+
+fltTaxon <- function(
+	obj,
+	taxon="phylum",
+	out="phylo"
+){
+# same as phyloseq tax_glom (drops NA columns returned by tax_glom), but works on S3 biom data (i.e. ubiom)
+# perhaps tax_glom is good with big datasets as fltTaxon is miles faster - aggregate will get pretty slow for large datasets
+	if(class(obj)[[1]]=="phyloseq") {
+		obj <- phylo_to_ubiom(obj)
+	}
+	n <- which(colnames(obj[[2]])==taxon)
+	x <- aggregate(obj[[1]],by=obj[[2]][,1:n],sum)
+	ls.biom <- list(x[,(n+1):ncol(x)],x[,1:n],obj[[3]])
+	names(ls.biom) <- c("countData","taxonomy","colData")
+	if(out=="phylo") {
+		return(ubiom_to_phylo(ls.biom))
+	}
+	return(ls.biom)	
 }
