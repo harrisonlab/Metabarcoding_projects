@@ -38,7 +38,7 @@ tax_table(mybiom) <- phyloTaxaTidy(tax_table(mybiom))
 
 # an example of removing certain OTUs from a phyloseq object
 # this will filter based on OTU present in all conditions
-t1 <- aggregate(t(mybiom@otu_table),by=list(mybiom@sam_data$condition),FUN=sum)[-1]
+t1 <- aggregate(t(otu_table(mybiom)),by=list(sample_data(mybiom)$condition),FUN=sum)[-1]
 myfiltbiom <- prune_taxa(apply(t1,2,prod)>0,mybiom)
 rm(t1)
 ```
