@@ -43,9 +43,6 @@ X=`cat 16S.t.fa|awk '{if ($1!~/>/){mylen=mylen+length($0)}else{print mylen;mylen
 usearch8.1 -fastx_truncate 16S.t.fa -stripleft 17 -stripright 21 -trunclen $X -padlen $X -fastaout 16S.fa
 rm 16S.t.fa
 #### Dereplication
-#usearch8.1 -derep_fulllength 16S.fa -fastaout 16S.uniques.fasta -sizeout 
-#usearch8.1 -sortbysize 16S.uniques.fasta -fastaout 16S.sorted.fasta -minsize 2
-#rm 16S.fa 16S.uniques.fasta
 cat 16S.fa|awk '/^>/ {printf("\n%s\n",$0);next; } { printf("%s",$0);}  END {printf("\n");}'|$METAGENOMICS/scripts/get_uniq.pl > 16S.sorted.fasta 
 rm 16S.fa
 #### Clustering (Cluster dereplicated seqeunces and produce OTU fasta (also filters for chimeras))
@@ -53,6 +50,12 @@ usearch8.1 -cluster_otus 16S.sorted.fasta -otus 16S.otus.fa -uparseout 16S.out.u
 #### Assign Taxonomy
 usearch8.1 -utax 16S.otus.fa -db $METAGENOMICS/taxonomies/utax/16s_ref.udb -strand both -utaxout 16S.reads.utax -rdpout 16S.rdp -alnout 16S.aln.txt
 cat 16S.rdp|$METAGENOMICS/scripts/mod_taxa.pl > 16S.taxa
+
+
+### Not implemented (but keep incase something breaks)
+#usearch8.1 -derep_fulllength 16S.fa -fastaout 16S.uniques.fasta -sizeout 
+#usearch8.1 -sortbysize 16S.uniques.fasta -fastaout 16S.sorted.fasta -minsize 2
+#rm 16S.fa 16S.uniques.fasta
 ```
 ### OTU table 
 
