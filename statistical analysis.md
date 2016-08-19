@@ -45,7 +45,7 @@ rm(t1)
 ### DESeq2
 It's possible to convert a phyloseq object to a DESeq datamatrix with the wrapper function phylo_to_des.phylo_to_des has the option to specify the size factor calculation using the option calcFactors (see plotTaxa for examples of how to use this option). Set fit=T to fit a GLM model to the data. Further arguments will be passed to DESeq.
 ```{r}
-dds <- phylo_to_des(mybiom,fit=T, fitType="local")
+dds <- phylo_to_des(mybiom,fit=T, fitType="local",...)
 ```
 #### Differential OTU abundance
 Using DESeq2 it's possible to calculate the probability of OTUs having different abundances between condtions. The default will use the the condition column of the dds object's colData table, and take the first two conditions. To specify a different column or use different "condtions use the contrast=c("column_name","condition_1","condition_2") construct when calling the results method.
@@ -117,4 +117,4 @@ plotTaxa(mybiom,"phylum","condition")
 plotTaxa(mybiom,"phylum","condition",blind=F) # passes  blind=F to transform function
 dev.off()
 ```
-Not implemented: calcFactors (fun - optional) user supplied function to replace DESeq2 estimateSizeFactors, to calculate size factors on the OTU count matrix (DESeq2 object will be passed to function). 
+
