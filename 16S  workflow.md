@@ -3,7 +3,7 @@
 ## Pre-processing
 Script will join PE reads (and save joined files to unfiltered folder), remove adapter contamination and filter on minimum size and quality threshold.
 ```shell
-for f in $METAGENOMICS/data/$RUN/16S/fastq/*R1*
+for f in $METAGENOMICS/data/$RUN/16S/fastq/*R1*.fastq
 do
     R1=$f
     R2=$(echo $R1|sed 's/_R1_/_R2_/')
