@@ -36,8 +36,8 @@ mybiom <- import_biom(biom_file) # ,refseqfilename=out_file
 sample_data(mybiom) <- read.table(colData,header=T,sep="\t",row.names=1)
 tax_table(mybiom) <- phyloTaxaTidy(tax_table(mybiom))
 
-# an example of removing certain OTUs from a phyloseq object
-# this will filter based on OTU present in the first column "condition" of colData
+# An example of removing certain OTUs from a phyloseq object - and using S4 methods to access the data.
+# This will filter based on OTU present in the first column "condition" of colData 
 t1 <- aggregate(t(otu_table(mybiom)),by=list(sample_data(mybiom)[[1]]),FUN=sum)[-1]
 myfiltbiom <- prune_taxa(apply(t1,2,prod)>0,mybiom)
 rm(t1)
