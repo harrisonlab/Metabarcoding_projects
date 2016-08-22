@@ -55,3 +55,6 @@ mv $METAGENOMICS/data/$RUN/fastq/*bacterial* $METAGENOMICS/data/$RUN/16S/fastq/.
 mv $METAGENOMICS/data/$RUN/fastq/*fungal* $METAGENOMICS/data/$RUN/ITS/fastq/.
 mv $METAGENOMICS/data/$RUN/fastq/*ambig* $METAGENOMICS/data/$RUN/ambiguous/.
 ```
+
+###[16S workflow](../master/16S%20%20workflow.md)
+###[ITS workflow](../master//ITS%20workflow.md)
