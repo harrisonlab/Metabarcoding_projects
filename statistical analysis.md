@@ -40,7 +40,6 @@ tax_table(mybiom) <- phyloTaxaTidy(tax_table(mybiom))
 # This will filter based on OTU present in the first column "condition" of colData 
 t1 <- aggregate(t(otu_table(mybiom)),by=list(sample_data(mybiom)[[1]]),FUN=sum)[-1]
 myfiltbiom <- prune_taxa(apply(t1,2,prod)>0,mybiom)
-rm(t1)
 ```
 
 ##### Merge ITS1 and ITS2
@@ -118,10 +117,17 @@ It takes the following options:
 12. transform (fun - optional) a user supplied function to replace DESeq2 variance stabilising transform to transform the count matrix. An S3 list of countData, Taxonomy and colData is passed to the transform function . 
 13. ... arguments to pass to transform function (o.k. these could just be set in the function, but this is a neater solution if the default function is used)
 
+The default transform firts creates a DESeq2 object using ubiom_to_des. If all OTUs contain at least one zero value DDS can't calculate sizeFactors. The transform function could be modified to calculate VST on a data matrix, or a function "calcFactors" can be passed to the ubiom_to_des method which can calculate the sizeFatcors (e.g, edgeR calcNormFactors) 
+
 ```{r}
 pdf("16S.phylum.pdf",height=8,width=8)
 plotTaxa(mybiom,"phylum","condition")
 plotTaxa(mybiom,"phylum","condition",blind=F) # passes  blind=F to transform function
+
+t1 <- aggregate(t(otu_table(mybiom)),by=list(sample_data(mybiom)[[1]]),FUN=sum)[-1]
+myfiltbiom <- prune_taxa(apply(t1,2,prod)>==0,mybiom)
+plotTaxa(myfiltbiom,design="condition",calcFactors=function(d){library(edgeR);sizeFactors(d) <- calcNormFactors(counts(d))}) # pass calcFactors to ubiom_to_des
+
 dev.off()
 ```
 
