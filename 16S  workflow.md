@@ -57,6 +57,13 @@ cat 16S.rdp|$METAGENOMICS/scripts/mod_taxa.pl > 16S.taxa
 #usearch8.1 -sortbysize 16S.uniques.fasta -fastaout 16S.sorted.fasta -minsize 2
 #rm 16S.fa 16S.uniques.fasta
 ```
+### OTU evolutionary distance
+
+Output a phylogentic tree in phylip format (both upper and lower triangles)
+```shell
+usearch8 -calc_distmx 16S.otus.fa -distmxout 16S.phy -distmo fractdiff -format phylip_square
+```
+
 ### OTU table 
 
 fq2fa_v2.pl will convert fastq to fasta and trim left and right ends of reads
