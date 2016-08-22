@@ -140,3 +140,6 @@ rm t1
 usearch8.1 -usearch_global ITS2.unfiltered.fa -db ITS.otus.fa -strand both -id 0.97 -biomout ITS2.otu_table.biom -otutabout ITS2.otu_table.txt
 
 ```	
+
+###[16S workflow](../master/16S%20%20workflow.md)
+###[Statistical analysis](../master/statistical%20analysis.md)
