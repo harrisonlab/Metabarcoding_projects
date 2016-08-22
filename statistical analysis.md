@@ -131,3 +131,5 @@ plotTaxa(myfiltbiom,design="condition",calcFactors=function(d){library(edgeR);si
 dev.off()
 ```
 
+###[16S workflow](../master/16S%20%20workflow.md)
+###[ITS workflow](../master//ITS%20workflow.md)
