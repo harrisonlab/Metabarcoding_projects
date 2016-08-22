@@ -124,10 +124,17 @@ pdf("16S.phylum.pdf",height=8,width=8)
 plotTaxa(mybiom,"phylum","condition")
 plotTaxa(mybiom,"phylum","condition",blind=F) # passes  blind=F to transform function
 
+# all OTUs contain at least one zer - pass calcFactors to ubiom_to_des
 t1 <- aggregate(t(otu_table(mybiom)),by=list(sample_data(mybiom)[[1]]),FUN=sum)[-1]
 myfiltbiom <- prune_taxa(apply(t1,2,prod)>==0,mybiom) # Keep OTUs with at least one zero value 
-plotTaxa(myfiltbiom,design="condition",calcFactors=function(d){library(edgeR);sizeFactors(d) <- calcNormFactors(counts(d))}) # pass calcFactors to ubiom_to_des
+plotTaxa(myfiltbiom,design="condition",calcFactors=function(d){library(edgeR);sizeFactors(d) <- calcNormFactors(counts(d))}) 
 
+# precalculate transform
+dds <- phylo_to_des(mybiom,design=~1)
+rld <- varianceStabilizingTransformation(dds)
+mybiom <- mytransbiom
+mytransbiom@otu_table@.Data <- assay(rld) # couldn't get method otu_table(mybiom) to accept rld data..
+plotTaxa(mytransbiom,taxon="genus",design="condition",trans=F)
 dev.off()
 ```
 
