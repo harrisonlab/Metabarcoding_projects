@@ -67,7 +67,7 @@ do
 done
 ```
 
-#### Return ITS1 where fasta header matches ITS2, unique ITS1 and unique ITS2
+#### Returns ITS1 where fasta header matches ITS2, unique ITS1 and unique ITS2
 
 ```shell
 mkdir -p $METAGENOMICS/data/$RUN/ITS/filtered
