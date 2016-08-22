@@ -74,3 +74,6 @@ done
 #### Make table (Creates an OTU table of read counts per OTU per sample)
 usearch8.1 -usearch_global 16S.unfiltered.fa -db 16S.otus.fa -strand plus -id 0.97 -biomout 16S.otu_table.biom -otutabout 16S.otu_table.txt
 ```
+
+###[ITS workflow](../master//ITS%20workflow.md)
+###[Statistical analysis](../master/statistical%20analysis.md)
