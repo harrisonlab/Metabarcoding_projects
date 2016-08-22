@@ -125,7 +125,7 @@ plotTaxa(mybiom,"phylum","condition")
 plotTaxa(mybiom,"phylum","condition",blind=F) # passes  blind=F to transform function
 
 t1 <- aggregate(t(otu_table(mybiom)),by=list(sample_data(mybiom)[[1]]),FUN=sum)[-1]
-myfiltbiom <- prune_taxa(apply(t1,2,prod)>==0,mybiom)
+myfiltbiom <- prune_taxa(apply(t1,2,prod)>==0,mybiom) # Keep OTUs with at least one zero value 
 plotTaxa(myfiltbiom,design="condition",calcFactors=function(d){library(edgeR);sizeFactors(d) <- calcNormFactors(counts(d))}) # pass calcFactors to ubiom_to_des
 
 dev.off()
