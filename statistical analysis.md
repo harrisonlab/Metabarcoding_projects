@@ -48,6 +48,21 @@ ITS1 = "ITS1.taxa.biom"
 ITS2 = "ITS2.taxa.biom"
 mybiom <- merge_phyloseq(import_biom(ITS1),import_biom(ITS2))
 ```
+
+##### Create and add phylogentic tree to mybiom
+
+```{r}
+library(ape)
+temp_connection = file("ITS.phy", 'r')
+len = readLines(temp_connection, n=1)
+len = as.numeric(len)
+close(temp_connection)
+phylip_data = read.table("ITS.phy", fill=T, row.names=1, skip=1, col.names=1:len)
+ITS.nj <- nj(as.dist(phylip_data))
+phy_tree(mybiom) <- ITS.nj
+```
+
+
 ### DESeq2
 It's possible to convert a phyloseq object to a DESeq datamatrix with the wrapper function phylo_to_des.phylo_to_des has the option to specify the size factor calculation using the option calcFactors (see plotTaxa for examples of how to use this option). Set fit=T to fit a GLM model to the data. Further arguments will be passed to DESeq.
 ```{r}
