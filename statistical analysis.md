@@ -59,6 +59,7 @@ len = as.numeric(len)
 close(temp_connection)
 phylip_data = read.table("ITS.phy", fill=T, row.names=1, skip=1, col.names=1:len)
 ITS.nj <- nj(as.dist(phylip_data))
+write.tree(ITS.nj,"ITS.tree")
 phy_tree(mybiom) <- ITS.nj
 ```
 
