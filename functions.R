@@ -23,18 +23,19 @@ import_ubiom <- function (
 
 ubiom_to_des <- function(
 	obj, 
+	design=~1,
+	fit=F,
 	calcFactors=function(d)
 	{
 		sizeFactors(estimateSizeFactors(d))
 	},
-	design=~condition,
-	fit=F,
 	...
 ){
 	suppressPackageStartupMessages(require(DESeq2))
 	dds <- 	suppressWarnings(DESeqDataSetFromMatrix(obj[[1]],obj[[3]],design))
+	sizeFactors(dds) <- calcFactors(dds)
+
     	if (fit) {
-    		sizeFactors(dds) <- calcFactors(dds)
     	 	return(DESeq(dds,...))
     	} else {
     		return(dds)
@@ -51,18 +52,18 @@ ubiom_to_phylo <- function(obj){
 
 phylo_to_des <- function(
 	obj,
+	design=~1,
+	fit=F,	
 	calcFactors=function(d)
 	{
 		sizeFactors(estimateSizeFactors(d))
 	},
-	design=~condition,
-	fit=F,
 	...
 ){
 	suppressPackageStartupMessages(require(DESeq2))
 	dds <-  phyloseq_to_deseq2(obj,design)
+	sizeFactors(dds) <- calcFactors(dds)
     	if (fit) {
-    		sizeFactors(dds) <- calcFactors(dds)
     	 	return(DESeq(dds,...))
     	} else {
     		return(dds)
@@ -75,70 +76,8 @@ phylo_to_ubiom <- function(obj) {
 		taxonomy=as.data.frame(obj@tax_table@.Data),
 		colData=as.data.frame(suppressWarnings(as.matrix(sample_data(obj)))) # suppresses a warning from the matrix call about loss of S4 state
 	)
-}	
-
-plotPCA <- function (	
-	object, 
-	intgroup = "condition",
-	labelby,
-	ntop = 500,
-	pcx = 1,
-	pcy = 2, 
-	returnData = FALSE,
-	cofix=F,
-	transform= function(
-		object,
-		blind=F,
-		fitType="local"
-	) {
-		suppressPackageStartupMessages(require(DESeq2))
-		return(varianceStabilizingTransformation(object,blind=blind,fitType=fitType))
-	}
-) {
-    suppressPackageStartupMessages(require(genefilter))
-    suppressPackageStartupMessages(require(ggplot2))
-    suppressPackageStartupMessages(require(DESeq2))
-    rld <- transform(object=object)
-    rv <- rowVars(assay(rld))
-    select <- order(rv, decreasing = TRUE)[seq_len(min(ntop, length(rv)))]
-    pca <- prcomp(t(assay(rld)[select, ]))
-    percentVar <- pca$sdev^2/sum(pca$sdev^2)
-    if (!all(intgroup %in% names(rld@colData))) {
-        stop("the argument 'intgroup' should specify columns of colData")
-    }
-    intgroup.df <- as.data.frame(rld@colData[, intgroup,drop = FALSE])
-    group <- if (length(intgroup) > 1) {
-        factor(apply(intgroup.df, 1, paste, collapse = " : "))
-    }
-    else {
-        colData(rld)[[intgroup]]
-    }
-
-   shape <- if (missing(labelby)) {factor("All")}else {as.factor(rld@colData[,labelby]) }
-
-    d <- data.frame(PC1 = pca$x[, pcx], PC2 = pca$x[, pcy], group = group,intgroup.df,shape=shape)
-    colnames(d)[grep("group", colnames(d))] <- intgroup
-    colnames(d)[grep("shape", colnames(d))] <- labelby
-
-    if (returnData) {
-        attr(d, "percentVar") <- percentVar[1:2]
-        return(d)
-    }
-
-    if(cofix) {
-	d[,1] <- d[,1] * percentVar[pcx]
-	d[,2] <- d[,2] * percentVar[pcy]
-    }
-
-    g <- ggplot()
-    g <- g + coord_fixed(ratio = 1, xlim = NULL, ylim = NULL, expand = TRUE)
-    g <- g + geom_point(data=d, mapping=aes(x=PC1, y=PC2, colour=group, shape=shape),size=3)
-    g <- g + scale_colour_discrete(name=intgroup)
-    g <- g + scale_shape_discrete(name=labelby)
-    g <- g + xlab(paste0("PC",pcx,": ", round(percentVar[pcx] * 100), "% variance"))
-    g <- g + ylab(paste0("PC",pcy,": ", round(percentVar[pcy] * 100), "% variance"))
-    return(g)
 }
+
 
 plotPCAWithLabels <- function (object, intgroup = "condition", ntop = 500,pcx = 1,pcy = 2, returnData = FALSE)
 {
@@ -175,6 +114,94 @@ plotPCAWithLabels <- function (object, intgroup = "condition", ntop = 500,pcx = 
     ylab(paste0("PC",pcy,": ", round(percentVar[pcy] * 100), "% variance"))
 }
 
+
+plotPCA <- function (	
+	obj, 
+	design = "condition",
+	labelby,
+	ntop = 500,
+	pcx = 1,
+	pcy = 2, 
+	returnData = FALSE,
+	cofix=F,
+	trans=T,
+	transform=function(o,design,...) 
+	{	
+		suppressPackageStartupMessages(require(DESeq2))
+		dots <- list(...)
+		if(!is.null(dots$calcFactors)) {
+			calcFactors <- dots$calcFactors
+			dots$calcFactors<-NULL
+			if(length(dots)>1) {
+				assay(varianceStabilizingTransformation(phylo_to_des(o,design,calcFactors=calcFactors),unlist(dots)))
+			} else {
+				assay(varianceStabilizingTransformation(phylo_to_des(o,design,calcFactors=calcFactors)))
+			}
+		} else {
+			assay(varianceStabilizingTransformation(phylo_to_des(o,as.formula(design)),...))
+		}
+	},...
+) {
+	suppressPackageStartupMessages(require(genefilter))
+	suppressPackageStartupMessages(require(ggplot2))
+	suppressPackageStartupMessages(require(DESeq2))
+
+	if(trans) {
+		obj@otu_table@.Data <- transform(obj,as.formula(paste0("~",design)),...)
+	}
+    
+    	rv <- rowVars(otu_table(obj))
+ 
+	colData <- sample_data(obj)
+	#suppressWarnings(as.data.frame(as.matrix(obj@sam_data)))
+	select <- order(rv, decreasing = TRUE)[seq_len(min(ntop, length(rv)))]
+	pca <- prcomp(t(otu_table(obj)[select, ]))
+	percentVar <- pca$sdev^2/sum(pca$sdev^2)
+	if (!all(design %in% names(colData))) {
+		stop("the argument 'design' should specify columns of colData")
+	}
+	design.df <- as.data.frame(colData[, design,drop = FALSE])
+	group <- if (length(design) > 1) {
+		factor(apply(design.df, 1, paste, collapse = " : "))
+	}
+	else {
+		as.factor(sample_data(obj)[[design]])
+	}
+	
+	if (!missing(labelby)) {
+		shape <- as.factor(sample_data(obj)[[labelby]])
+		d <- data.frame(PC1 = pca$x[, pcx], PC2 = pca$x[, pcy], group = group,design.df,shape = shape)
+		colnames(d)[grep("shape", colnames(d))] <- labelby
+	} else {
+		d <- data.frame(PC1 = pca$x[, pcx], PC2 = pca$x[, pcy], group = group,design.df)
+	}
+
+	colnames(d)[grep("group", colnames(d))] <- design
+
+	if (returnData) {
+		attr(d, "percentVar") <- percentVar[1:2]
+		return(d)
+	}
+
+	if(cofix) {
+		d[,1] <- d[,1] * percentVar[pcx]
+		d[,2] <- d[,2] * percentVar[pcy]
+	}
+
+	g <- ggplot()
+	g <- g + coord_fixed(ratio = 1, xlim = NULL, ylim = NULL, expand = TRUE)
+	if (!missing(labelby)) {
+	g <- g + geom_point(data=d, mapping=aes(x=PC1, y=PC2, colour=group, shape=shape),size=3)
+	g <- g + scale_shape_discrete(name=labelby)
+	} else {
+	g <- g + geom_point(data=d, mapping=aes(x=PC1, y=PC2, colour=group),size=3)
+	}
+	g <- g + scale_colour_discrete(name=design)
+	g <- g + xlab(paste0("PC",pcx,": ", round(percentVar[pcx] * 100), "% variance"))
+	g <- g + ylab(paste0("PC",pcy,": ", round(percentVar[pcy] * 100), "% variance"))
+	return(g)
+}
+
 plotTaxa <- function(
 	obj=mybiom, 	# obj (phloseq) a phyloseq object which must include taxonomy and sample data (or alternatively an S3 list)
 	taxon="phylum", # taxon (str) is the taxonomic level of interest
@@ -187,10 +214,22 @@ plotTaxa <- function(
 	type=1, 	# type is limited to by sample (1) or by taxonomy (2)
 	fixed=F, 	# fixed is a ggplot parameter to apply coord_fixed(ratio = 0.1)
 	ncol=1, 	# ncol is a ggplot paramter to use n columns for the legend
+	trans=T,	# set to False if obj already contains pre-transformed counts (useful for larger OTU tables) 
 	transform=function(o,design,...) 
-	{
+	{	
 		suppressPackageStartupMessages(require(DESeq2))
-		assay(varianceStabilizingTransformation(ubiom_to_des(o,~design),...))
+		dots <- list(...)
+		if(!is.null(dots$calcFactors)) {
+			calcFactors <- dots$calcFactors
+			dots$calcFactors<-NULL
+			if(length(dots)>1) {
+				assay(varianceStabilizingTransformation(ubiom_to_des(o,design,calcFactors=calcFactors),unlist(dots)))
+			} else {
+				assay(varianceStabilizingTransformation(ubiom_to_des(o,design,calcFactors=calcFactors)))
+			}
+		} else {
+			assay(varianceStabilizingTransformation(ubiom_to_des(o,as.formula(design)),...))
+		}
 	}, # data transformation function 
 	... # arguments to pass to transform function (obviously they could just be set in the function, but this looks neater)
 ) {
@@ -201,7 +240,9 @@ plotTaxa <- function(
 		obj <- phylo_to_ubiom(obj)
 	} 
 	
-	obj[[1]] <- as.data.frame(transform(obj,design,...))
+	if(trans) {
+		obj[[1]] <- as.data.frame(transform(obj,as.formula(paste0("~",design)),...))
+	}
 	obj[[1]][obj[[1]]<0] <- 0
 	
 	taxa_sum <- sumTaxa(obj,taxon=taxon,design=design)
