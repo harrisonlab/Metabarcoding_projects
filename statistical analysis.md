@@ -68,7 +68,7 @@ Using PERMANOVA and euclidean distance (will update with other distance methods 
 ```{r}
 library(vegan)
 obj <- mybiom
-obj@otu_table@.Data <- counts(phylo_to_des(mybiom,design=~1),normalised=T)
+obj@otu_table@.Data <- counts(phylo_to_des(mybiom,design=~1),normalize=T)
 d <- as.data.frame(cbind(sample_data(obj),t(otu_table(obj))))
 euclid <- scale(d[,c(-1,-2)]) # minus howvever many columns colData has defined
 adonis(euclid~condition,d,method='eu')
