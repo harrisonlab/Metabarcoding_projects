@@ -64,14 +64,14 @@ phy_tree(mybiom) <- ITS.nj
 ```
 
 #### Beta-diversity statistical analysis
-Using PERMANOVA and euclidean distance (will update with other distance methods - phyloseq can probably do a fair amount of this already)
+Using PERMANOVA (scale could/should be replaced with variance stabilisation for consistency with other methods
 ```{r}
 library(vegan)
 obj <- mybiom
 obj@otu_table@.Data <- counts(phylo_to_des(mybiom,design=~1),normalize=T)
 d <- as.data.frame(cbind(sample_data(obj),t(otu_table(obj))))
-euclid <- scale(d[,c(-1,-2)]) # minus howvever many columns colData has defined
-adonis(euclid~condition,d,method='eu')
+euclid <- scale(d[,c(-1,-2)]) # minus however many columns colData has defined
+adonis(euclid~condition,d,method='bray')
 ```
 
 
