@@ -63,6 +63,15 @@ write.tree(ITS.nj,"ITS.tree")
 phy_tree(mybiom) <- ITS.nj
 ```
 
+#### Beta-diversity statistical analysis
+Using PERMANOVA and euclidean distance (will update with other distance methods - phyloseq can probably do a fair amount of this already)
+```{r}
+library(vegan)
+d <- as.data.frame(cbind(sample_data(obj),t(otu_table(obj))))
+euclid <- scale(d[,-2]) # minus howvever many columns colData has defined
+adonis(euclid~condition,d,method='eu')
+```
+
 
 ### DESeq2
 It's possible to convert a phyloseq object to a DESeq datamatrix with the wrapper function phylo_to_des.phylo_to_des has the option to specify the size factor calculation using the option calcFactors (see plotTaxa for examples of how to use this option). Set fit=T to fit a GLM model to the data. Further arguments will be passed to DESeq.
