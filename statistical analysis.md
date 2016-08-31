@@ -67,6 +67,8 @@ phy_tree(mybiom) <- ITS.nj
 Using PERMANOVA and euclidean distance (will update with other distance methods - phyloseq can probably do a fair amount of this already)
 ```{r}
 library(vegan)
+obj <- mybiom
+otu_table(obj) <- counts(phylo_to_des(mybiom,~1),normalised=T)
 d <- as.data.frame(cbind(sample_data(obj),t(otu_table(obj))))
 euclid <- scale(d[,-2]) # minus howvever many columns colData has defined
 adonis(euclid~condition,d,method='eu')
