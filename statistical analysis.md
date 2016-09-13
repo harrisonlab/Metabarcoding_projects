@@ -64,7 +64,7 @@ phy_tree(mybiom) <- ITS.nj
 ```
 
 #### Beta-diversity statistical analysis
-Using PERMANOVA (can't find any info on whether to use normised or raw reads)
+Using PERMANOVA (This needs additional work, can't find any info on whether to use normised or raw reads - if bray-curtis is non-parametric then no need for library size normalisation, but I'm using scaling what's the point of doing this??)
 ```{r}
 library(vegan)
 obj <- mybiom
