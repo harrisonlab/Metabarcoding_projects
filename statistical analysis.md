@@ -64,7 +64,7 @@ phy_tree(mybiom) <- ITS.nj
 ```
 
 #### Beta-diversity statistical analysis
-Using PERMANOVA (scale could/should be replaced with variance stabilisation for consistency with other methods
+Using PERMANOVA (can't find any info on whether to use normised or raw reads)
 ```{r}
 library(vegan)
 obj <- mybiom
