@@ -116,7 +116,7 @@ mynmds <- ordinate(obj,method = "NMDS",distance="bray",autotransform=F,try=100)
 plot_ordination(obj,mynmds,color="condition",shape="location")
 ```
 
-plotOrd is a ggplot wrapper that does something similar to plot_ordination.
+plotOrd is a ggplot wrapper that does something similar to plot_ordination, but without the background and with axes on the same scale. This needs modifying to allow more control on axes and background (not available via the phyloseq implementation).
 
 
 plotPCA is modified version of the DESeq2 version. 
