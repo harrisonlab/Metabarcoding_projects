@@ -114,11 +114,12 @@ obj@otu_table@.Data <- assay(varianceStabilizingTransformation(phylo_to_des(obj)
 mynmds <- ordinate(obj,method = "NMDS",distance="bray",autotransform=F,try=100)
 #plotOrd(mynmds$points,sample_data(obj))
 plot_ordination(obj,mynmds,color="condition",shape="location")
-
 ```
 
+plotOrd is a ggplot wrapper that does something similar to plot_ordination.
 
-Beta diversity is plotted with a modified version of the DESeq2 plotPCA method. 
+
+plotPCA is modified version of the DESeq2 version. 
 It take the following options:
 
 1. object (DESeq2 - required) a DESeq object 
@@ -137,7 +138,8 @@ pdf("16S.beta-diversity.pdf",height=8,width=8)
 plotPCA(dds)
 dev.off()
 ```
-I may update this to accept a phlyoseq object rather than DESeq and do the size factor calculations internally
+
+
 #### taxa graphs
 plotTaxa produces a ggplot2 bar chart of taxa counts
 It takes the following options:
