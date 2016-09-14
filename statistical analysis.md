@@ -112,7 +112,7 @@ NMDS etc. plots
 obj <- mybiom
 obj@otu_table@.Data <- assay(varianceStabilizingTransformation(phylo_to_des(obj)))
 mynmds <- ordinate(obj,method = "NMDS",distance="bray",autotransform=F,try=100)
-#plotOrd(mynmds$points,sample_data(obj))
+#plotOrd(mynmds$points,sample_data(obj),design="condition",shapes="location")
 plot_ordination(obj,mynmds,color="condition",shape="location")
 ```
 
