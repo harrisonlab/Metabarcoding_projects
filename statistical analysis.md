@@ -106,13 +106,15 @@ plot_richness(mybiom,x="condition",color="Sex",measures=c("Chao1", "ACE", "Shann
 dev.off()
 ```
 #### beta diversity
-NMDS etc. plots (phyloseq can do this as well, but I haven't checked it yet - welll ordinate <i>is</i> a method from phyloseq rather than a call directly to vegan)
+NMDS etc. plots 
 
 ```{R}
 obj <- mybiom
 obj@otu_table@.Data <- assay(varianceStabilizingTransformation(phylo_to_des(obj)))
 mynmds <- ordinate(obj,method = "NMDS",distance="bray",autotransform=F,try=100)
-plotOrd(mynmds$points,sample_data(obj))
+#plotOrd(mynmds$points,sample_data(obj))
+plot_ordination(obj,mynmds,color="condition",shape="location")
+
 ```
 
 
