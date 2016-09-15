@@ -74,6 +74,45 @@ euclid <- scale(d[,c(-1,-2)]) # minus however many columns colData has defined
 adonis(euclid~condition,d,method='bray')
 ```
 
+### Spatial analysis
+Simple first step - correspondence analysis
+1. All data
+2. Tree station
+3. Aisle
+```{r}
+myfiltbiom <- prune_samples(sample_data(mybiom)[[10]]=="experiment",mybiom)
+
+f1 <- prune_samples(sample_data(myfiltbiom)[[1]]!="C",myfiltbiom)
+f2 <- prune_samples(sample_data(myfiltbiom)[[1]]=="Y",myfiltbiom)
+f3 <- prune_samples(sample_data(myfiltbiom)[[1]]=="N",myfiltbiom)
+
+f1 <- prune_taxa(rowSums(otu_table(f1))>2,f1)
+f2 <- prune_taxa(rowSums(otu_table(f2))>2,f2)
+f3 <- prune_taxa(rowSums(otu_table(f3))>2,f3)
+
+CCA1 <- ordinate(f1,method="CCA",formula=~distance)
+CCA2 <- ordinate(f2,method="CCA",formula=~distance)
+CCA3 <- ordinate(f3,method="CCA",formula=~distance)
+
+plot(CCA1)
+plot(CCA2)
+plot(CCA3)
+
+anova(CCA1) # permutation analysis
+anova(CCA2)
+anova(CCA3)
+
+```
+
+```{R}
+obj <- mybiom
+obj@otu_table@.Data <- assay(varianceStabilizingTransformation(phylo_to_des(obj)))
+mynmds <- ordinate(obj,method = "NMDS",distance="bray",autotransform=F,try=100)
+#plotOrd(mynmds$points,sample_data(obj),design="condition",shapes="location")
+plot_ordination(obj,mynmds,color="condition",shape="location")
+```
+
+
 
 ### DESeq2
 It's possible to convert a phyloseq object to a DESeq datamatrix with the wrapper function phylo_to_des.phylo_to_des has the option to specify the size factor calculation using the option calcFactors (see plotTaxa for examples of how to use this option). Set fit=T to fit a GLM model to the data. Further arguments will be passed to DESeq.
