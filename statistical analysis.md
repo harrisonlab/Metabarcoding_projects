@@ -64,7 +64,7 @@ phy_tree(mybiom) <- ITS.nj
 ```
 
 #### Beta-diversity statistical analysis
-Using PERMANOVA (This needs additional work, can't find any info on whether to use normised or raw reads - if bray-curtis is non-parametric then no need for library size normalisation, but I'm using scaling what's the point of doing this??)
+Using PERMANOVA (This needs additional work, can't find any info on whether to use normised or raw reads - if bray-curtis is non-parametric then no need for library size normalisation, but I'm using scale to transform by translation and expansion what's the point of doing this??)
 ```{r}
 library(vegan)
 obj <- mybiom
@@ -76,9 +76,11 @@ adonis(euclid~condition,d,method='bray')
 
 ### Spatial analysis
 Simple first step - correspondence analysis
+
 1. All data
 2. Tree station
 3. Aisle
+
 ```{r}
 myfiltbiom <- prune_samples(sample_data(mybiom)[[10]]=="experiment",mybiom)
 
@@ -97,12 +99,39 @@ CCA3 <- ordinate(f3,method="CCA",formula=~distance)
 plot(CCA1)
 plot(CCA2)
 plot(CCA3)
+dev.off()
 
 anova(CCA1) # permutation analysis
 anova(CCA2)
 anova(CCA3)
 
 ```
+More advanced technique; Principal Coordinates of Neighbour Matrices
+```{R}
+library(vegan)
+#remove control data (has no position associated with it)
+myfiltbiom <- prune_samples((sample_data(mybiom)[[10]]=="experiment")&(sample_data(mybiom)[[1]]!="C"),mybiom)
+#set aisle gap (longitude) to 0 
+myfiltbiom@sam_data$gap[myfiltbiom@sam_data$condition=="N"] <- 0
+#filter out OTUs with count less than 2
+myfiltbiom <- prune_taxa(rowSums(otu_table(myfiltbiom))>2,myfiltbiom)
+#calculate euclidean distance between sample points
+euclid <- dist(sample_data(myfiltbiom)[,6:7],method="euclidean")
+#unweighted PCNM
+pcnm1 <- pcnm(euclid)
+#calculate PCNM weights
+cs <- colSums(otu_table(myfiltbiom))/sum(otu_table(myfiltbiom))
+#weighted PCNM (this is more useful for cca)
+pcnm2 <- pcnm(euclid,w=cs)
+#cca on OTU data with positive eigen vectors from PCNM as the independent variables
+#the residual should have no distance trend
+ord <- cca(t(otu_table(myfiltbiom))~scores(pcnm2))
+plot(ord)
+msoplot(mso(ord, sample_data(myfiltbiom)[,6:7]))
+dev.off()
+anova(ord)
+```
+
 
 ```{R}
 obj <- mybiom
