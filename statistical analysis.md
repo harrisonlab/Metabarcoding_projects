@@ -124,12 +124,14 @@ cs <- colSums(otu_table(myfiltbiom))/sum(otu_table(myfiltbiom))
 #weighted PCNM (this is more useful for cca)
 pcnm2 <- pcnm(euclid,w=cs)
 #cca on OTU data with positive eigen vectors from PCNM as the independent variables
-#the residual should have no distance trend
+#the residual should have no distance trend (i.e. the CA component of the ord object)
 ord <- cca(t(otu_table(myfiltbiom))~scores(pcnm2))
 plot(ord)
 msoplot(mso(ord, sample_data(myfiltbiom)[,6:7]))
 dev.off()
-anova(ord)
+#spatial free data
+newCounts <- t(ord$CA$Xbar)
+
 ```
 
 
