@@ -109,16 +109,16 @@ anova(CCA3)
 More advanced technique; Principal Coordinates of Neighbour Matrices
 ```{R}
 library(vegan)
-#remove control data (has no position associated with it)
+
+# apply various filters to data
 myfiltbiom <- prune_samples((sample_data(mybiom)[[10]]=="experiment")&(sample_data(mybiom)[[1]]!="C"),mybiom)
-#set aisle gap (longitude) to 0 
 myfiltbiom@sam_data$gap[myfiltbiom@sam_data$condition=="N"] <- 0
-#filter out OTUs with count less than 2
 myfiltbiom <- prune_taxa(rowSums(otu_table(myfiltbiom))>2,myfiltbiom)
+
 #calculate euclidean distance between sample points
 euclid <- dist(sample_data(myfiltbiom)[,6:7],method="euclidean")
 #unweighted PCNM
-pcnm1 <- pcnm(euclid)
+#pcnm1 <- pcnm(euclid)
 #calculate PCNM weights
 cs <- colSums(otu_table(myfiltbiom))/sum(otu_table(myfiltbiom))
 #weighted PCNM (this is more useful for cca)
