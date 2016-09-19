@@ -113,16 +113,41 @@ library(vegan)
 # apply various filters to data
 myfiltbiom <- prune_samples((sample_data(mybiom)[[10]]=="experiment")&(sample_data(mybiom)[[1]]!="C"),mybiom)
 myfiltbiom@sam_data$gap[myfiltbiom@sam_data$condition=="N"] <- 0
-myfiltbiom <- prune_taxa(rowSums(otu_table(myfiltbiom))>2,myfiltbiom)
+myfiltbiom <- prune_taxa(rowSums(otu_table(myfiltbiom))>5,myfiltbiom)
+
+# the phyloseq object structure messes up some of the following scripts, therefore convert to an S3 object
+myubiom <- phylo_to_ubiom(myfiltbiom) 
+myubiom$colData$gap <- 0
+myubiom$colData$distance <- as.numeric(myubiom$colData$distance)
+myubiom$colData$genotype <- as.factor(myubiom$colData$genotype)
+myubiom$colData$block <- as.factor(myubiom$colData$block)
 
 #calculate euclidean distance between sample points
-euclid <- dist(sample_data(myfiltbiom)[,6:7],method="euclidean")
-#unweighted PCNM
-#pcnm1 <- pcnm(euclid)
-#calculate PCNM weights
-cs <- colSums(otu_table(myfiltbiom))/sum(otu_table(myfiltbiom))
+euclid <- dist(myubiom$colData[,6:7],method="euclidean")
+
+#rda
+#unweighted PCNM for RDA, theshold is set to cover ~ 5 samples which seems to describe the maximum variation 
+pcnm1 <- pcnm(euclid,threshold=7.2)
+ord <- rda(t(myubiom$countData)~scores(pcnm1))
+# test model significance (is the data described by a spatial dimension)
+anova(ord)
+# if yes find which spatial dimensions are significant
+dim(scores(pcnm1)) # 14 eigenvectors
+ord <- rda(t(myubiom$countData)~scores(pcnm1)[,1],...,scores(pcnm1)[,14])
+anova(ord,by="terms",parellel=12,model="direct",permu=2000)
+
+ord <- rda(t(myubiom$countData)~genotype+block+Condition(scores(pcnm1)[,c(1,2,x,y)]))
+anova(ord) # model shouldn't be significant for year 0  data
+
+plot(ord)
+msoplot(mso(ord, sample_data(myfiltbiom)[,6:7]))
+dev.off()
+
+#cca
+#calculate PCNM weights for CCA
+cs <- colSums(myubiom$countData/sum(myubiom$countData))
 #weighted PCNM (this is more useful for cca)
-pcnm2 <- pcnm(euclid,w=cs)
+pcnm2 <- pcnm(euclid,w=cs,threshold=7.2)
 #cca on OTU data with positive eigen vectors from PCNM as the independent variables
 #the residual should have no distance trend (i.e. the CA component of the ord object)
 ord <- cca(t(otu_table(myfiltbiom))~scores(pcnm2))
@@ -130,6 +155,9 @@ anova(ord)
 plot(ord)
 msoplot(mso(ord, sample_data(myfiltbiom)[,6:7]))
 dev.off()
+
+
+
 #spatial free data
 newCounts <- t(ord$CA$Xbar)
 ## 
