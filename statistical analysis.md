@@ -58,9 +58,9 @@ len = readLines(temp_connection, n=1)
 len = as.numeric(len)
 close(temp_connection)
 phylip_data = read.table("16S.phy", fill=T, row.names=1, skip=1, col.names=1:len)
-16S.nj <- nj(as.dist(phylip_data))
-write.tree(ITS.nj,"16S.tree")
-phy_tree(mybiom) <- 16S.nj
+nj.16S <- nj(as.dist(phylip_data))
+write.tree(nj.16S,"16S.tree")
+phy_tree(mybiom) <- nj.16S
 ```
 
 #### Beta-diversity statistical analysis
