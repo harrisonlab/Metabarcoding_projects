@@ -49,18 +49,18 @@ ITS2 = "ITS2.taxa.biom"
 mybiom <- merge_phyloseq(import_biom(ITS1),import_biom(ITS2))
 ```
 
-##### Create and add phylogentic tree to mybiom
+##### Create and add phylogentic tree to mybiom - need to add step for creating phy object
 
 ```{r}
 library(ape)
-temp_connection = file("ITS.phy", 'r')
+temp_connection = file("16S.phy", 'r')
 len = readLines(temp_connection, n=1)
 len = as.numeric(len)
 close(temp_connection)
-phylip_data = read.table("ITS.phy", fill=T, row.names=1, skip=1, col.names=1:len)
-ITS.nj <- nj(as.dist(phylip_data))
-write.tree(ITS.nj,"ITS.tree")
-phy_tree(mybiom) <- ITS.nj
+phylip_data = read.table("16S.phy", fill=T, row.names=1, skip=1, col.names=1:len)
+16S.nj <- nj(as.dist(phylip_data))
+write.tree(ITS.nj,"16S.tree")
+phy_tree(mybiom) <- 16S.nj
 ```
 
 #### Beta-diversity statistical analysis
