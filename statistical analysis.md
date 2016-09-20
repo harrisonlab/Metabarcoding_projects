@@ -107,6 +107,7 @@ anova(CCA3)
 
 ```
 More advanced technique; Principal Coordinates of Neighbour Matrices
+but see Gilbert & Bennett 2010 for probelms with this (and other) spatial analysis
 ```{R}
 library(vegan)
 library(packfor)
@@ -122,6 +123,8 @@ myubiom$colData$gap <- 0
 myubiom$colData$distance <- as.numeric(myubiom$colData$distance)
 myubiom$colData$genotype <- as.factor(myubiom$colData$genotype)
 myubiom$colData$block <- as.factor(myubiom$colData$block)
+myubiom$colData <- myubiom$colData[order(myubiom$colData$distance),]
+myubiom$countData <- myubiom$countData[,rownames(myubiom$colData)]
 
 #calculate euclidean distance between sample points
 euclid <- dist(myubiom$colData[,6:7],method="euclidean")
