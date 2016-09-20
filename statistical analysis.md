@@ -173,7 +173,17 @@ anova(ord2,by="terms",parellel=12,model="direct",permu=2000)
 
 With threshold of 7.2 using RDA, for Goatham both tree and aisle have significant vectors 2,3,8 and 10, with 5 close to significant for both.
 
-
+Calculate the pearson correlation coefficient for each OTU against the forward selected spatial parameters
+```{R}
+library(Hmisc)
+library(stats)
+test2 <- rcorr(t(myubiom$countData),scores(pcnm2)[,c(14,15,16,1,8)],type="pearson")
+test3$r <- test2$r[1:7084,7085:7089]
+test3$P <- test2$P[1:7084,7085:7089]
+test3$n <- test2$n[1:7084,7085:7089]
+test3$p.adj <- apply(test3$P,2,function(x) p.adjust(x,"BH"))
+ 
+```
 
 ### DESeq2
 It's possible to convert a phyloseq object to a DESeq datamatrix with the wrapper function phylo_to_des.phylo_to_des has the option to specify the size factor calculation using the option calcFactors (see plotTaxa for examples of how to use this option). Set fit=T to fit a GLM model to the data. Further arguments will be passed to DESeq.
