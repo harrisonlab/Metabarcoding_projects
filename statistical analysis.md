@@ -157,7 +157,6 @@ msoplot(mso(ord, sample_data(myfiltbiom)[,6:7]))
 dev.off()
 
 
-
 #spatial free data
 newCounts <- t(ord$CA$Xbar)
 ## 
@@ -166,14 +165,7 @@ anova(ord2)
 anova(ord2,by="terms",parellel=12,model="direct",permu=2000)
 ```
 
-
-```{R}
-obj <- mybiom
-obj@otu_table@.Data <- assay(varianceStabilizingTransformation(phylo_to_des(obj)))
-mynmds <- ordinate(obj,method = "NMDS",distance="bray",autotransform=F,try=100)
-#plotOrd(mynmds$points,sample_data(obj),design="condition",shapes="location")
-plot_ordination(obj,mynmds,color="condition",shape="location")
-```
+With threshold of 7.2 using RDA, for Goatham both tree and aisle have significant vectors 2,3,8 and 10, with 5 close to significant for both.
 
 
 
