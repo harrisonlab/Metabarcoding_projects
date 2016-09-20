@@ -109,6 +109,7 @@ anova(CCA3)
 More advanced technique; Principal Coordinates of Neighbour Matrices
 ```{R}
 library(vegan)
+library(packfor)
 
 # apply various filters to data
 myfiltbiom <- prune_samples((sample_data(mybiom)[[10]]=="experiment")&(sample_data(mybiom)[[1]]!="C"),mybiom)
@@ -135,6 +136,8 @@ anova(ord)
 dim(scores(pcnm1)) # 14 eigenvectors
 ord <- rda(t(myubiom$countData)~scores(pcnm1)[,1],...,scores(pcnm1)[,14])
 anova(ord,by="terms",parellel=12,model="direct",permu=2000)
+forward.sel(t(myubiom$countData),scores(pcnm1),Xscale=F,nperm=2000) # this should give results equivelent to anova above without having to redefine the model. 
+
 
 ord <- rda(t(myubiom$countData)~genotype+block+Condition(scores(pcnm1)[,c(1,2,x,y)]))
 anova(ord) # model shouldn't be significant for year 0  data
