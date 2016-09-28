@@ -82,15 +82,9 @@ adonis(euclid~condition,d,method='bray')
 myfiltbiom <- prune_samples((sample_data(mybiom)[[10]]=="experiment")&(sample_data(mybiom)[[1]]!="C"),mybiom)
 myfiltbiom <- prune_taxa(rowSums(otu_table(myfiltbiom))>5,myfiltbiom)
 
-dds <- phylo_to_des(myfiltbiom,~1)
-rld <- varianceStabilizingTransformation(dds)
-rv <- rowVars(assay(rld))
-select <- order(rv, decreasing = TRUE)[seq_len(min(ntop, length(rv)))]
-mypca <-prcomp(t(assay(rdl)[select, ]))
-mypca$percentVar <- pca$sdev^2/sum(pca$sdev^2)
+mypca <- plotPCA(myfiltbiom,design="1",returnData=T)
 
-colData<-as.data.frame(suppressWarnings(as.matrix(sample_data(myfiltbiom))))
-sum_squares <- t(apply(mypca$x,2,function(x) t(summary(aov(x~colData$condition+colData$location))[[1]][2])))
+sum_squares <- t(apply(mypca$x,2,function(x) t(summary(aov(x~sample_data(myfiltbiom)$condition+sample_data(myfiltbiom)$location))[[1]][2])))
 colnames(sum_squares) <- c("condition","location","residual")
 
 ```
