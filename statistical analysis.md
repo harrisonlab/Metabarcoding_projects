@@ -46,7 +46,10 @@ myfiltbiom <- prune_taxa(apply(t1,2,prod)>0,mybiom)
 ```{r}
 ITS1 = "ITS1.taxa.biom"
 ITS2 = "ITS2.taxa.biom"
+colData = "colData"
 mybiom <- merge_phyloseq(import_biom(ITS1),import_biom(ITS2))
+sample_data(mybiom) <- read.table(colData,header=T,sep="\t",row.names=1)
+tax_table(mybiom) <- phyloTaxaTidy(tax_table(mybiom))
 ```
 
 ##### Create and add phylogentic tree to mybiom - need to add step for creating phy object
