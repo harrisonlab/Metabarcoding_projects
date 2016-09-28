@@ -90,7 +90,7 @@ myfiltbiom <- prune_taxa(rowSums(otu_table(myfiltbiom))>5,myfiltbiom)
 myfiltbiom@sam_data$location <- as.factor(myfiltbiom@sam_data$location)
 
 # plotPCA will return a prcomp object if returnData is set to TRUE
-mypca <- plotPCA(myfiltbiom,design="1",ntop= nrow(myfiltbiom@otu_table),returnData=T)
+mypca <- plotPCA(myfiltbiom,design="1",ntop= nrow(myfiltbiom@otu_table),returnData=T,fitType="local",blind=T)
 
 # get the sum of squares for tree/aisle, location and residual
 sum_squares <- t(apply(mypca$x,2,function(x) t(summary(aov(x~sample_data(myfiltbiom)$condition+sample_data(myfiltbiom)$location))[[1]][2])))
