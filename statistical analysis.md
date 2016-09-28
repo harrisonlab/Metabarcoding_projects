@@ -104,8 +104,8 @@ Plot residual after removing spatial component for first couple of PCA vectors
 test <- cbind(mypca$x,sample_data(myfiltbiom))
 pc1 <- aov(PC1~location,test)$residual
 pc2 <- aov(PC2~location,test)$residual
-d <- data.frame(pc1*mypca$percentVar[,1],pc2*mypca$percentVar[,2])
-plotOrd(d,sample_data(myfiltbiom))
+d <- data.frame(pc1*mypca$percentVar[1],pc2*mypca$percentVar[2])
+plotOrd(d,test)
 ```
 #### CCA
 Simple first step - correspondence analysis
