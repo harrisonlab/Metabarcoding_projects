@@ -79,13 +79,18 @@ adonis(euclid~condition,d,method='bray')
 #### Anova of PCA eigenvectors
 
 ```{r}
+# filter out OTUs with less than 6 counts (and remove "extra samples")
 myfiltbiom <- prune_samples((sample_data(mybiom)[[10]]=="experiment")&(sample_data(mybiom)[[1]]!="C"),mybiom)
 myfiltbiom <- prune_taxa(rowSums(otu_table(myfiltbiom))>5,myfiltbiom)
 
+# plotPCA will return a prcomp object if returnData is set to TRUE
 mypca <- plotPCA(myfiltbiom,design="1",returnData=T)
 
+# get the sum of squares for tree/aisle, location and residual
 sum_squares <- t(apply(mypca$x,2,function(x) t(summary(aov(x~sample_data(myfiltbiom)$condition+sample_data(myfiltbiom)$location))[[1]][2])))
 colnames(sum_squares) <- c("condition","location","residual")
+perVar <- sum_squares * mypca$percentVar
+colSums(perVar)
 
 ```
 
