@@ -101,9 +101,10 @@ colSums(perVar)/sum(colSums(perVar))*100
 ```
 Plot residual after removing spatial component for first couple of PCA vectors
 ```{r}
-pc1 <- aov(mypca$x[,1]~sample_data(myfiltbiom)$location)
-pc2 <- aov(mypca$x[,2]~sample_data(myfiltbiom)$location)
-d <- data.frame(PC1=pc1$residual*mypca$percentVar[,1],PC2=pc2$residual*mypca$percentVar[,2])
+test <- cbind(mypca$x,sample_data(myfiltbiom))
+pc1 <- aov(PC1~location,test)$residual
+pc2 <- aov(PC2~location,test)$residual
+d <- data.frame(pc1*mypca$percentVar[,1],pc2*mypca$percentVar[,2])
 plotOrd(d,sample_data(myfiltbiom))
 ```
 #### CCA
