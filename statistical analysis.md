@@ -92,6 +92,7 @@ sum_squares <- t(apply(mypca$x,2,function(x) t(summary(aov(x~sample_data(myfiltb
 colnames(sum_squares) <- c("condition","location","residual")
 perVar <- sum_squares * mypca$percentVar
 colSums(perVar)
+colSums(perVar)/sum(colSums(perVar))*100
 
 ```
 
