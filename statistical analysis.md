@@ -110,8 +110,8 @@ plotOrd(d,test)
 ```
 Manova of first couple of pca with tree/aisle
 ```{r}
-#for some reason doesn't accept test[,1:4]
-summary(manova(mypca$x[,1:4]~condition,test))
+fit <- manova(cbind(PC1,PC2,PC3,PC4)~condition,test)
+summary(fit, test="Pillai") # could just call summary directly 
 ```
 
 #### CCA
