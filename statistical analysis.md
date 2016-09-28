@@ -108,6 +108,12 @@ pc2 <- aov(PC2~location,test)$residual
 d <- data.frame(pc1*mypca$percentVar[1],pc2*mypca$percentVar[2])
 plotOrd(d,test)
 ```
+Manova of first couple of pca with tree/aisle
+```{r}
+#for some reason doesn't accept test[,1:4]
+summary(manova(mypca$x[,1:4]~condition,test))
+```
+
 #### CCA
 Simple first step - correspondence analysis
 
