@@ -81,6 +81,8 @@ adonis(euclid~condition,d,method='bray')
 
 #### Anova of PCA eigenvectors
 
+The condition and location can't be seperated in this analysis so final result should be a sum of both
+
 ```{r}
 # filter out OTUs with less than 6 counts (and remove "extra samples")
 myfiltbiom <- prune_samples((sample_data(mybiom)[[10]]=="experiment")&(sample_data(mybiom)[[1]]!="C"),mybiom)
@@ -96,9 +98,14 @@ colnames(sum_squares) <- c("condition","location","residual")
 perVar <- sum_squares * mypca$percentVar
 colSums(perVar)
 colSums(perVar)/sum(colSums(perVar))*100
-
 ```
-
+Plot residual after removing spatial component for first couple of PCA vectors
+```{r}
+pc1 <- aov(mypca$x[,1]~sample_data(myfiltbiom)$location)
+pc2 <- aov(mypca$x[,2]~sample_data(myfiltbiom)$location)
+d <- data.frame(PC1=pc1$residual*mypca$percentVar[,1],PC2=pc2$residual*mypca$percentVar[,2])
+plotOrd(d,sample_data(myfiltbiom))
+```
 #### CCA
 Simple first step - correspondence analysis
 
