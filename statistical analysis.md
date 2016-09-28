@@ -114,6 +114,17 @@ fit <- manova(cbind(PC1,PC2,PC3,PC4)~condition,test)
 summary(fit, test="Pillai") # could just call summary directly 
 ```
 
+#### Auto correlation
+
+```{r}
+cond="Y"
+myfiltbiom <- prune_samples((sample_data(mybiom)[[10]]=="experiment")&(sample_data(mybiom)[[1]]==cond),mybiom)
+myfiltbiom <- prune_taxa(rowSums(otu_table(myfiltbiom))>5,myfiltbiom)
+mypca <- plotPCA(myfiltbiom,design="1",ntop= nrow(myfiltbiom@otu_table),returnData=T,fitType="local",blind=T)
+
+
+```
+
 #### CCA
 Simple first step - correspondence analysis
 
