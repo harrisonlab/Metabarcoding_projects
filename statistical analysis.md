@@ -87,7 +87,8 @@ The condition and location can't be seperated in this analysis so final result s
 # filter out OTUs with less than 6 counts (and remove "extra samples")
 myfiltbiom <- prune_samples((sample_data(mybiom)[[10]]=="experiment")&(sample_data(mybiom)[[1]]!="C"),mybiom)
 myfiltbiom <- prune_taxa(rowSums(otu_table(myfiltbiom))>5,myfiltbiom)
-myfiltbiom@sam_data$location <- as.factor(myfiltbiom@sam_data$location)
+# meters is correct (location is incorrect in my original data, should change it maybe)
+myfiltbiom@sam_data$location <- as.factor(myfiltbiom@sam_data$meters)
 
 # plotPCA will return a prcomp object if returnData is set to TRUE
 mypca <- plotPCA(myfiltbiom,design="1",ntop= nrow(myfiltbiom@otu_table),returnData=T,fitType="local",blind=T)
