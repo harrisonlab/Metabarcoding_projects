@@ -102,10 +102,8 @@ colSums(perVar)/sum(colSums(perVar))*100
 ```
 Plot residual after removing spatial component for first couple of PCA vectors
 ```{r}
-test <- cbind(mypca$x,sample_data(myfiltbiom))
-pc1 <- aov(PC1~location,test)$residual
-pc2 <- aov(PC2~location,test)$residual
-d <- data.frame(pc1*mypca$percentVar[1],pc2*mypca$percentVar[2])
+pc.res <- resid(aov(mypca$x~sample_data(myfiltbiom)$location))
+d <- data.frame(pc.res[,1]*mypca$percentVar[1],pc.res[,1]*mypca$percentVar[2])
 plotOrd(d,test)
 ```
 Manova of first couple of pca with tree/aisle
@@ -143,6 +141,11 @@ rownames(moran.bin) <- rownames(moran)
 mydist <- dist(cbind(sample_data(myfiltbiom)$distance, sample_data(myfiltbiom)$gap))
 mantel.out <- t(apply(mypca$x,2,function(x) unlist(mantel(mydist,dist(x),permutations=9999)[3:4])))
 
+# Mantel correlogram
+pc.res <- resid(aov(mypca$x~sample_data(myfiltbiom)$location))
+pc.dist <- dist(pc.res)
+pc.correlog <- mantel.correlog(pc.dist,cbind(sample_data(myfiltbiom)$distance,sample_data(myfiltbiom)$gap),cutoff=F)
+plot(pc.correlog)
 ```
 
 #### CCA
