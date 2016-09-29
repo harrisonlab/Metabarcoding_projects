@@ -120,8 +120,26 @@ summary(fit, test="Pillai") # could just call summary directly
 cond="Y"
 myfiltbiom <- prune_samples((sample_data(mybiom)[[10]]=="experiment")&(sample_data(mybiom)[[1]]==cond),mybiom)
 myfiltbiom <- prune_taxa(rowSums(otu_table(myfiltbiom))>5,myfiltbiom)
+myfiltbiom@sam_data$gap <- 0
 mypca <- plotPCA(myfiltbiom,design="1",ntop= nrow(myfiltbiom@otu_table),returnData=T,fitType="local",blind=T)
 
+# Moran I test
+distmat <- as.matrix(dist(cbind(sample_data(myfiltbiom)$distance, sample_data(myfiltbiom)$gap)))
+distmat.inv <- 1/distmat
+#diag(distmat.inv) <- 0
+distmat.inv[is.infinite(distmat.inv)] <- 0
+moran <- apply(mypca$x,2,function(x) t(Moran.I(x,distmat.inv)))
+names(moran)->temp
+moran <- do.call(rbind,moran)
+rownames(moran) <- temp
+# this is similar to PCNM method shown below
+distmat.bin <- (distmat > 0 $ distmat <=7.2)
+moran.bin <- apply(mypca$x,2,function(x) t(Moran.I(x,distmat.bin)))
+rownames(moran.bin) <- rownames(moran)
+
+# Mantel test
+mydist <- dist(cbind(sample_data(myfiltbiom)$distance, sample_data(myfiltbiom)$gap))
+mantel.out <- t(apply(mypca$x,2,function(x) unlist(mantel(mydist,dist(x),permutations=9999)[3:4])))
 
 ```
 
