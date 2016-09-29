@@ -146,6 +146,7 @@ pc.res <- resid(aov(mypca$x~sample_data(myfiltbiom)$location))
 pc.dist <- dist(pc.res)
 pc.correlog <- mantel.correlog(pc.dist,cbind(sample_data(myfiltbiom)$distance,sample_data(myfiltbiom)$gap),cutoff=F)
 plot(pc.correlog)
+
 ```
 
 #### CCA
