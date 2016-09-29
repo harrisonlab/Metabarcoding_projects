@@ -137,6 +137,11 @@ distmat.bin <- (distmat > 0 $ distmat <=7.2)
 moran.bin <- apply(mypca$x,2,function(x) t(Moran.I(x,distmat.bin)))
 rownames(moran.bin) <- rownames(moran)
 
+# Moran correlogram
+library(ncf)
+ncf.cor <- correlog(sample_data(myfiltbiom)$distance,sample_data(myfiltbiom)$gap,mypca$x[,1],increment=7.2)
+dev.off()
+
 # Mantel test
 mydist <- dist(cbind(sample_data(myfiltbiom)$distance, sample_data(myfiltbiom)$gap))
 mantel.out <- t(apply(mypca$x,2,function(x) unlist(mantel(mydist,dist(x),permutations=9999)[3:4])))
