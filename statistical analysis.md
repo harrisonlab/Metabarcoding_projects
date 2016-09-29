@@ -117,6 +117,8 @@ summary(fit, test="Pillai") # could just call summary directly
 #### Auto correlation
 
 ```{r}
+library(ape)
+library(vegan)
 cond="Y"
 myfiltbiom <- prune_samples((sample_data(mybiom)[[10]]=="experiment")&(sample_data(mybiom)[[1]]==cond),mybiom)
 myfiltbiom <- prune_taxa(rowSums(otu_table(myfiltbiom))>5,myfiltbiom)
