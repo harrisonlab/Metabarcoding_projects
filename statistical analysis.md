@@ -81,8 +81,6 @@ adonis(euclid~condition,d,method='bray')
 
 #### Anova of PCA eigenvectors
 
-The condition and location can't be seperated in this analysis so final result should be a sum of both
-
 ```{r}
 # filter out OTUs with less than 6 counts (and remove "extra samples")
 myfiltbiom <- prune_samples((sample_data(mybiom)[[10]]=="experiment")&(sample_data(mybiom)[[1]]!="C"),mybiom)
