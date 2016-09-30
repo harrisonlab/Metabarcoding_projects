@@ -117,11 +117,9 @@ summary(fit, test="Pillai") # could just call summary directly
 ```{r}
 library(ape)
 library(vegan)
-cond="Y"
-myfiltbiom <- prune_samples((sample_data(mybiom)[[10]]=="experiment")&(sample_data(mybiom)[[1]]==cond),mybiom)
-myfiltbiom <- prune_taxa(rowSums(otu_table(myfiltbiom))>5,myfiltbiom)
+library(ncf)
+
 myfiltbiom@sam_data$gap <- 0
-mypca <- plotPCA(myfiltbiom,design="1",ntop= nrow(myfiltbiom@otu_table),returnData=T,fitType="local",blind=T)
 
 # Moran I test
 distmat <- as.matrix(dist(cbind(sample_data(myfiltbiom)$distance, sample_data(myfiltbiom)$gap)))
@@ -138,7 +136,7 @@ moran.bin <- apply(mypca$x,2,function(x) t(Moran.I(x,distmat.bin)))
 rownames(moran.bin) <- rownames(moran)
 
 # Moran correlogram
-library(ncf)
+
 ncf.cor <- correlog(sample_data(myfiltbiom)$distance,sample_data(myfiltbiom)$gap,mypca$x[,1],increment=7.2)
 dev.off()
 
@@ -147,6 +145,7 @@ mydist <- dist(cbind(sample_data(myfiltbiom)$distance, sample_data(myfiltbiom)$g
 mantel.out <- t(apply(mypca$x,2,function(x) unlist(mantel(mydist,dist(x),permutations=9999)[3:4])))
 
 # Mantel correlogram
+# this was copied from http://www.ats.ucla.edu not certain of the point of removing the spatial data before looking for autocorrelation
 pc.res <- resid(aov(mypca$x~sample_data(myfiltbiom)$location))
 pc.dist <- dist(pc.res)
 pc.correlog <- mantel.correlog(pc.dist,cbind(sample_data(myfiltbiom)$distance,sample_data(myfiltbiom)$gap),cutoff=F)
@@ -194,8 +193,8 @@ library(vegan)
 library(packfor)
 
 # apply various filters to data
-myfiltbiom <- prune_samples((sample_data(mybiom)[[10]]=="experiment")&(sample_data(mybiom)[[1]]!="C"),mybiom)
-myfiltbiom@sam_data$gap[myfiltbiom@sam_data$condition=="N"] <- 0
+cond="Y"
+myfiltbiom <- prune_samples((sample_data(mybiom)[[10]]=="experiment")&(sample_data(mybiom)[[1]]==cond),mybiom)
 myfiltbiom <- prune_taxa(rowSums(otu_table(myfiltbiom))>5,myfiltbiom)
 
 # the phyloseq object structure messes up some of the following scripts, therefore convert to an S3 object
