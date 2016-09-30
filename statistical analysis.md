@@ -79,17 +79,24 @@ adonis(euclid~condition,d,method='bray')
 
 #### Core biom
 ```{r}
-myfiltbiom <- prune_samples((sample_data(mybiom)[[10]]=="experiment")&sample_data(mybiom)[[1]]!="C",mybiom)
 # normalise the reads
-myfiltbiom@otu_table@.Data <- counts(phylo_to_des(myfiltbiom,fitType="Local"),normalized=T)
+mynormbiom <- mybiom
+mynormbiom@otu_table@.Data <- counts(phylo_to_des(mynormbiom,fitType="Local"),normalized=T)
+
+myfiltbiom <- prune_samples((sample_data(mynormbiom)[[10]]=="experiment")&sample_data(mybiom)[[1]]!="C",mynormbiom)
 otu_prop_table <- otu_table(myfiltbiom)/colSums(otu_table(myfiltbiom))
 
 min_freq <- 0.002   # the minimum count frequency for OTU to be considred present
 min_samp <- 0.8  # the minimum proportion of samples for OTU to be present ot be include in core biom 
-mycorebiom <- prune_taxa(apply(otu_prop_table,1,function(x) (sum(x>=min_freq))/ncol(otu_prop_table)>min_samp),myfiltbiom)
+mycorebiom <- prune_taxa(apply(otu_prop_table,1,function(x) (sum(x>=min_freq))/ncol(otu_prop_table)>=min_samp),myfiltbiom)
+colSums(otu_table(otu_prop_table)[rownames(otu_table(mycorebiom)),])
+
+write.table(tax_table(mycorebiom),"core.taxa",quote=F,sep="\t")
+write.table(round(otu_table(mycorebiom),0),"core.otu",quote=F,sep="\t")
+write.table(round(otu_table(otu_prop_table)[rownames(otu_table(mycorebiom)),],4),"core.prop",sep="\t",quote=F)
 
 ## plotting with plotTaxa will require converting back to unnormalised reads or supplying a seperate transform function
-mycorebiom@otu_table@.Data <- counts(phylo_to_des(mycorebiom,fitType="Local"),normalized=F)
+otu_table(mycorebiom) <- otu_table(mybiom)[rownames(otu_table(mycorebiom)),]
 plotTaxa(mycorebiom,"genus","condition",type=2, others=F,fitType="local",ordered=T)
 ```
 
