@@ -84,9 +84,13 @@ myfiltbiom <- prune_samples((sample_data(mybiom)[[10]]=="experiment")&sample_dat
 myfiltbiom@otu_table@.Data <- counts(phylo_to_des(myfiltbiom,fitType="Local"),normalized=T)
 otu_prop_table <- otu_table(myfiltbiom)/colSums(otu_table(myfiltbiom))
 
-min_freq <- 0.001   # the minimum count frequency for OTU to be considred present
+min_freq <- 0.002   # the minimum count frequency for OTU to be considred present
 min_samp <- 0.8  # the minimum proportion of samples for OTU to be present ot be include in core biom 
 mycorebiom <- prune_taxa(apply(otu_prop_table,1,function(x) (sum(x>=min_freq))/ncol(otu_prop_table)>min_samp),myfiltbiom)
+
+## plotting with plotTaxa will require converting back to unnormalised reads or supplying a seperate transform function
+mycorebiom@otu_table@.Data <- counts(phylo_to_des(mycorebiom,fitType="Local"),normalized=F)
+plotTaxa(mycorebiom,"genus","condition",type=2, others=F,fitType="local",ordered=T)
 ```
 
 ### Spatial analysis
@@ -359,7 +363,7 @@ It takes the following options:
 5. cutoff (double - optional, def =1) for proportional graphs. 
 6. topn (int - optional)taxons to display (by total reads) for non-prortional graphs. 
 7. others (bool - optional, def=T), combine values less than cutoff/topn into group "other"
-8. reorder (bool - optional, =F) order by value (max to min)
+8. ordered (bool - optional, =F) order by value (max to min)
 9. type (int (1/2) - required, def=1) Type 1 produces a stacked barchart by sample, type 2 a barchart by taxa 
 10. fixed (bool - optional, def=F) fixed is a ggplot parameter to apply coord_fixed(ratio = 0.1)
 11. ncol (int - optional, def=1) ncol is a ggplot paramter to use n columns for the legend
