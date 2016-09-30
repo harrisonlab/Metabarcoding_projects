@@ -81,7 +81,7 @@ adonis(euclid~condition,d,method='bray')
 ```{r}
 # normalise the reads
 mynormbiom <- mybiom
-mynormbiom@otu_table@.Data <- counts(phylo_to_des(mynormbiom,fitType="Local"),normalized=T)
+mynormbiom@otu_table@.Data <- counts(phylo_to_des(mynormbiom,fitType="local"),normalized=T)
 
 myfiltbiom <- prune_samples((sample_data(mynormbiom)[[10]]=="experiment")&sample_data(mybiom)[[1]]!="C",mynormbiom)
 otu_prop_table <- otu_table(myfiltbiom)/colSums(otu_table(myfiltbiom))
@@ -97,7 +97,8 @@ write.table(round(otu_table(otu_prop_table)[rownames(otu_table(mycorebiom)),],4)
 
 ## plotting with plotTaxa will require converting back to unnormalised reads or supplying a seperate transform function
 otu_table(mycorebiom) <- otu_table(mybiom)[rownames(otu_table(mycorebiom)),]
-plotTaxa(mycorebiom,"genus","condition",type=2, others=F,fitType="Local",ordered=T)
+# produces a graph of proportions within the core microbiome
+plotTaxa(mycorebiom,"genus","condition",type=2, others=F,fitType="local",ordered=T)
 ```
 
 ### Spatial analysis
