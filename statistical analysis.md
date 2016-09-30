@@ -119,7 +119,7 @@ library(ncf)
 
 myfiltbiom@sam_data$gap <- 0
 
-cond <= "Y"
+cond <- "Y"
 pc.x <- scores(mypca)[sample_data(myfiltbiom)$condition==cond,]
 # col.x remains a sample_data object, this is a bit of a pain - could convert to matrix then dataframe but will lose any type info (i.e. all columns will be factors/characters)
 col.x <- sample_data(myfiltbiom)[sample_data(myfiltbiom)$condition==cond,]
