@@ -79,7 +79,7 @@ adonis(euclid~condition,d,method='bray')
 
 #### Core biom
 ```{r}
-myfiltbiom <- prune_samples((sample_data(mybiom)[[10]]=="experiment")&sample_data(myfiltbiom)[[1]]!="C",mybiom)
+myfiltbiom <- prune_samples((sample_data(mybiom)[[10]]=="experiment")&sample_data(mybiom)[[1]]!="C",mybiom)
 min_samp <- 0.8  # the minimum proportion of samples to be considered in the core biom
 min_freq <- 0.001   # the minimum frequency counts  to be considered present
 otu_prop_table <- otu_table(myfiltbiom)/colSums(otu_table(myfiltbiom))
