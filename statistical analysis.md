@@ -340,7 +340,7 @@ It take the following options:
 8. cofix (bool - optional, default=F) produces a graph with axes on the same scale
 9. transform(fun - optional) a user supplied function to replace DESeq2 variance stabilising transform to transform the count matrix. A DESeq2 object will be passed to this function. 
 
-plotPCAWithLabels will produce the same graph but with the addition of sample labels - useful for getting the name of outliers
+plotPCAWithLabels will produce the same graph but with the addition of sample labels - useful for getting the name of outliers (this will be an option for plotPCA/plotOrd, when I get round to it)
 ```{r}
 pdf("16S.beta-diversity.pdf",height=8,width=8)
 plotPCA(dds)
