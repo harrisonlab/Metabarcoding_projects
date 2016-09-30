@@ -77,6 +77,15 @@ euclid <- scale(d[,c(-1,-2)]) # minus however many columns colData has defined
 adonis(euclid~condition,d,method='bray')
 ```
 
+#### Core biom
+```{r}
+myfiltbiom <- prune_samples((sample_data(mybiom)[[10]]=="experiment")&sample_data(myfiltbiom)[[1]]!="C",mybiom)
+min_samp <- 0.8  # the minimum proportion of samples to be considered in the core biom
+min_freq <- 0.001   # the minimum frequency counts  to be considered present
+otu_prop_table <- otu_table(myfiltbiom)/colSums(otu_table(myfiltbiom))
+mycorebiom <- prune_taxa(apply(otu_prop_table,1,function(x) (sum(x>=min_freq))/ncol(otu_prop_table)>min_samp),myfiltbiom)
+```
+
 ### Spatial analysis
 
 #### Anova of PCA eigenvectors
