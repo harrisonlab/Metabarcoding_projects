@@ -119,36 +119,41 @@ library(ncf)
 
 myfiltbiom@sam_data$gap <- 0
 
+cond <= "Y"
+pc.x <- scores(mypca)[sample_data(myfiltbiom)$condition==cond,]
+# col.x remains a sample_data object, this is a bit of a pain - could convert to matrix then dataframe but will lose any type info (i.e. all columns will be factors/characters)
+col.x <- sample_data(myfiltbiom)[sample_data(myfiltbiom)$condition==cond,]
+
 # Moran I test
-distmat <- as.matrix(dist(cbind(sample_data(myfiltbiom)$distance, sample_data(myfiltbiom)$gap)))
+distmat <- as.matrix(dist(cbind(sample_data(col.x)$distance, sample_data(col.x)$gap)))
 distmat.inv <- 1/distmat
 #diag(distmat.inv) <- 0
 distmat.inv[is.infinite(distmat.inv)] <- 0
-moran <- apply(mypca$x,2,function(x) t(Moran.I(x,distmat.inv)))
+moran <- apply(pc.x,2,function(x) t(Moran.I(x,distmat.inv)))
 names(moran)->temp
 moran <- do.call(rbind,moran)
 rownames(moran) <- temp
 # this is similar to PCNM method shown below
 distmat.bin <- (distmat > 0 $ distmat <=7.2)
-moran.bin <- apply(mypca$x,2,function(x) t(Moran.I(x,distmat.bin)))
+moran.bin <- apply(pc.x,2,function(x) t(Moran.I(x,distmat.bin)))
 rownames(moran.bin) <- rownames(moran)
 
 # Moran correlogram
-
-ncf.cor <- correlog(sample_data(myfiltbiom)$distance,sample_data(myfiltbiom)$gap,mypca$x[,1],increment=7.2)
+pdf("bac.tree.correlogs.pdf")
+sapply(seq(5:7),function(y) plot(correlog(sample_data(col.x)$distance,sample_data(col.x)$gap,pc.x[,1],increment=y,quiet=T)))
+#plot(correlog(sample_data(col.x)$distance,sample_data(col.x)$gap,pc.x[,1],increment=7.2,quiet=T))
 dev.off()
 
 # Mantel test
-mydist <- dist(cbind(sample_data(myfiltbiom)$distance, sample_data(myfiltbiom)$gap))
-mantel.out <- t(apply(mypca$x,2,function(x) unlist(mantel(mydist,dist(x),permutations=9999)[3:4])))
+mydist <- dist(cbind(sample_data(col.x)$distance, sample_data(col.x)$gap))
+mantel.out <- t(apply(pc.x,2,function(x) unlist(mantel(mydist,dist(x),permutations=9999)[3:4])))
 
 # Mantel correlogram
 # this was copied from http://www.ats.ucla.edu not certain of the point of removing the spatial data before looking for autocorrelation
-pc.res <- resid(aov(mypca$x~sample_data(myfiltbiom)$location))
+pc.res <- resid(aov(pc.x~sample_data(col.x)$location))
 pc.dist <- dist(pc.res)
-pc.correlog <- mantel.correlog(pc.dist,cbind(sample_data(myfiltbiom)$distance,sample_data(myfiltbiom)$gap),cutoff=F)
+pc.correlog <- mantel.correlog(pc.dist,cbind(sample_data(col.x)$distance,sample_data(col.x)$gap),cutoff=F)
 plot(pc.correlog)
-
 ```
 
 #### CCA
