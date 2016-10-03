@@ -302,7 +302,7 @@ phylo_to_des has the option to specify the size factor calculation using the opt
 library("BiocParallel")
 register(MulticoreParam(8))
 
-myfiltbiom <- prune_samples((sample_data(mybiom)[[10]]=="experiment"),mybiom)
+myfiltbiom <- prune_samples((sample_data(mybiom)[[10]]=="experiment"&(sample_data(mybiom)[[1]]!="C")),mybiom)
 myfiltbiom <- prune_taxa(rowSums(otu_table(myfiltbiom))>5,myfiltbiom)
 myfiltbiom@sam_data$location <- as.factor( myfiltbiom@sam_data$meters)
 dds <- phylo_to_des(myfiltbiom,fit=T, fitType="local",..)
