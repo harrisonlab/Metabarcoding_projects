@@ -86,7 +86,7 @@ mynormbiom@otu_table@.Data <- counts(phylo_to_des(mynormbiom,fitType="local"),no
 myfiltbiom <- prune_samples((sample_data(mynormbiom)[[10]]=="experiment")&sample_data(mybiom)[[1]]!="C",mynormbiom)
 otu_prop_table <- t(t(otu_table(myfiltbiom))/colSums(otu_table(myfiltbiom)))
 
-min_freq <- 0.002   # the minimum count frequency (per sample) for OTU to be considered present
+min_freq <- 0.002   # the minimum count frequency (per sample) for OTU to be considered present (using 0.001 for fungi)
 min_samp <- 0.8  # the minimum proportion of samples for OTU to be present ot be include in core biom 
 mycorebiom <- prune_taxa(apply(otu_prop_table,1,function(x) (sum(x>=min_freq))/ncol(otu_prop_table)>=min_samp),myfiltbiom)
 colSums(otu_table(otu_prop_table)[rownames(otu_table(mycorebiom)),])
