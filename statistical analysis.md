@@ -298,12 +298,16 @@ test4 <- corr.test(t(myubiom$countData),scores(pcnm2)[,c(14,15,16,1,8)],adjust="
 It's possible to convert a phyloseq object to a DESeq datamatrix with the wrapper function phylo_to_des.
 phylo_to_des has the option to specify the size factor calculation using the option calcFactors (see plotTaxa for examples of how to use this option). Set fit=T to fit a GLM model to the data. Further arguments will be passed to DESeq.
 ```{r}
+# Can be a bit slow if lots of samples (100+), best to use multiple cores 
+library("BiocParallel")
+register(MulticoreParam(8))
+
 myfiltbiom <- prune_samples((sample_data(mybiom)[[10]]=="experiment"),mybiom)
 myfiltbiom <- prune_taxa(rowSums(otu_table(myfiltbiom))>5,myfiltbiom)
 myfiltbiom@sam_data$location <- as.factor( myfiltbiom@sam_data$meters)
 dds <- phylo_to_des(myfiltbiom,fit=T, fitType="local",..)
 # specify a design formula to look at conditon excluding info on loation (i.e. independent of spatial data) 
-dds <- phylo_to_des(myfiltbiom,fit=T, fitType="local",design=~location+condition)
+dds <- phylo_to_des(myfiltbiom,fit=T, fitType="local",design=~location+condition,parallel=T)
 ```
 #### Differential OTU abundance
 Using DESeq2 it's possible to calculate the probability of OTUs having different abundances between condtions. The default will use the the condition column of the dds object's colData table, and take the first two conditions. To specify a different column or use different "condtions use the contrast=c("column_name","condition_1","condition_2") construct when calling the results method.
