@@ -125,7 +125,7 @@ colSums(perVar)/sum(colSums(perVar))*100
 Plot residual after removing spatial component for first couple of PCA vectors
 ```{r}
 pc.res <- resid(aov(mypca$x~sample_data(myfiltbiom)$location))
-d <- data.frame(pc.res[,1]*mypca$percentVar[1],pc.res[,1]*mypca$percentVar[2])
+d <- data.frame(pc.res[,1]*mypca$percentVar[1],pc.res[,2]*mypca$percentVar[2])
 plotOrd(d,sample_data(myfiltbiom))
 ```
 Manova of first couple of pca with tree/aisle
