@@ -164,6 +164,7 @@ rownames(moran.bin) <- rownames(moran)
 
 # Moran correlogram
 pdf("bac.tree.correlogs.pdf")
+moran.res <- sapply(seq(5,7),function(y) correlog(sample_data(col.x)$distance,sample_data(col.x)$gap,pc.x[,1],increment=y,quiet=T))
 sapply(seq(5,7),function(y) plot(correlog(sample_data(col.x)$distance,sample_data(col.x)$gap,pc.x[,1],increment=y,quiet=T)))
 #plot(correlog(sample_data(col.x)$distance,sample_data(col.x)$gap,pc.x[,1],increment=7.2,quiet=T))
 dev.off()
