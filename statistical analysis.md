@@ -86,7 +86,7 @@ mynormbiom@otu_table@.Data <- counts(phylo_to_des(mynormbiom,fitType="local"),no
 myfiltbiom <- mynormbiom
 myfiltbiom <- prune_samples((sample_data(myfiltbiom)[[10]]=="experiment"),mynormbiom)
 cond="Y"
-myfiltbiom <- prune_samples(sample_data(mybiom)[[1]]=="Y",myfiltbiom)
+myfiltbiom <- prune_samples(sample_data(mybiom)[[1]]==cond,myfiltbiom)
 
 otu_prop_table <- t(t(otu_table(myfiltbiom))/colSums(otu_table(myfiltbiom)))
 
