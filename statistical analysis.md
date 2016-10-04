@@ -80,10 +80,14 @@ adonis(euclid~condition,d,method='bray')
 #### Core biom
 ```{r}
 # normalise the reads
-mynormbiom <- mybiom
+mybiom <- mybiom
 mynormbiom@otu_table@.Data <- counts(phylo_to_des(mynormbiom,fitType="local"),normalized=T)
 
-myfiltbiom <- prune_samples((sample_data(mynormbiom)[[10]]=="experiment")&sample_data(mybiom)[[1]]!="C",mynormbiom)
+myfiltbiom <- mynormbiom
+myfiltbiom <- prune_samples((sample_data(myfiltbiom)[[10]]=="experiment"),mynormbiom)
+cond="Y"
+myfiltbiom <- sample_data(mybiom)[[1]]=="Y",myfiltbiom)
+
 otu_prop_table <- t(t(otu_table(myfiltbiom))/colSums(otu_table(myfiltbiom)))
 
 min_freq <- 0.002   # the minimum count frequency (per sample) for OTU to be considered present (using 0.001 for fungi)
