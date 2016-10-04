@@ -324,7 +324,7 @@ This code will merge the phyloseq taxonomy object to the results.
 
 ```{r}
 alpha <- 0.05 # significance level
-res = results(dds, alpha=alpha,cooksCutoff=F,parallel=T)	
+res = results(dds, alpha=alpha,cooksCutoff=F,parallel=T)	# probably loads of outliers, so set cooksCutoff to F
 #res = results(dds, alpha=alpha,contrast=c("condition","N","K"))	## specify different contrasts to make
 res.merge <- merge(as.data.frame(res),tax_table(myfiltbiom),by="row.names",all.x=TRUE)
 rownames(res.merge) <- res.merge$Row.names
