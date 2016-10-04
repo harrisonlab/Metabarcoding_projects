@@ -130,7 +130,7 @@ plotOrd(d,sample_data(myfiltbiom))
 ```
 Manova of first couple of pca with tree/aisle
 ```{r}
-fit <- manova(cbind(PC1,PC2,PC3,PC4)~condition,test)
+fit <- manova(mypca$x[,1:4]~condition,as.data.frame(as.matrix(sample_data(myfiltbiom))))
 summary(fit, test="Pillai") # could just call summary directly 
 ```
 
