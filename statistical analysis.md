@@ -291,6 +291,9 @@ With threshold of 7.2 using RDA, for Goatham both tree and aisle have significan
 Calculate the pearson correlation coefficient for each OTU against the forward selected spatial parameters
 Two methods - produce slightly different results 
 ```{R}
+pc.median <- aggregate(pc.x,by=as.list(col.x[,4]),median)
+
+
 #library(Hmisc)
 #library(stats)
 #test2 <- rcorr(t(myubiom$countData),scores(pcnm2)[,c(14,15,16,1,8)],type="pearson")
