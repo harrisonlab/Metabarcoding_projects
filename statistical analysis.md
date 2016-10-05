@@ -292,7 +292,7 @@ Calculate the pearson correlation coefficient for each OTU against the forward s
 Two methods - produce slightly different results 
 ```{R}
 pc.median <- aggregate(pc.x,by=as.list(col.x[,4]),median)
-
+pc.median <- pc.median[order(as.numeric(as.character(pc.median[,1]))),]
 
 #library(Hmisc)
 #library(stats)
