@@ -181,6 +181,18 @@ mydist <- dist(cbind(sample_data(col.x)$distance, sample_data(col.x)$gap))
 mantel.out <- t(apply(pc.x,2,function(x) unlist(mantel(mydist,dist(x),permutations=9999)[3:4])))
 
 # Mantel correlogram
+
+pc <- 1
+df <- merge(pc.x[,pc],col.x,by="row.names")
+n.df <- reshape(df,idvar="location",timevar="rep",drop=c("Row.names","condition","time_point","block","genotype_code"),direction="wide")
+n.df <- n.df[order(n.df$meters.a),]
+n.df <- n.df[,c(2,6,10,1,3,4,5)]
+moran.mv  <- lapply(seq(1,10),function(y) correlog(n.df$distance.a,n.df$gap.a,n.df[,1:3],increment=y,quiet=T,na.rm=T))
+sapply(seq(1,10),function(x) plot.correlog(moran.mv[[x]]))
+moran.mv  <- lapply(seq(1,10),function(y) correlog(n.df$meters.a,rep(0,24),n.df[,1:3],increment=y,quiet=T,na.rm=T))
+sapply(seq(1,10),function(x) plot.correlog(moran.mv[[x]]))
+
+
 # this was copied from http://www.ats.ucla.edu not certain of the point of removing the spatial data before looking for autocorrelation
 pc.res <- resid(aov(pc.x~sample_data(col.x)$location))
 pc.dist <- dist(pc.res)
