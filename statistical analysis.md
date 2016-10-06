@@ -83,7 +83,7 @@ adonis(euclid~condition,d,method='bray')
 mynormbiom <- mybiom
 mynormbiom@otu_table@.Data <- counts(phylo_to_des(mynormbiom,fitType="local"),normalized=T)
 ## one of my samples had a massively over inflated count for a single OTU. Replacing calcFactors with a new geoMean calculation to ignore 0 values fixes this..
-mynormbiom@otu_table@.Data <- counts(phylo_to_des(mynormbiom,fitType="local",calcFactors=function(d)geoMeans(d)),normalized=T)
+mynormbiom@otu_table@.Data <- counts(phylo_to_des(mynormbiom,fitType="local",calcFactors=function(d){sizeFactors(estimateSizeFactors(d,geoMeans=geoMeans(d)))},normalized=T))
 
 
 myfiltbiom <- mynormbiom
