@@ -331,6 +331,8 @@ myfiltbiom@sam_data$location <- as.factor( myfiltbiom@sam_data$meters)
 dds <- phylo_to_des(myfiltbiom,fit=T, fitType="local",..)
 # specify a design formula to look at conditon excluding info on loation (i.e. independent of spatial data) 
 dds <- phylo_to_des(myfiltbiom,fit=T, fitType="local",design=~location+condition,parallel=T)
+# for dds error all genes contain at least one zero
+dds <- phylo_to_des(myfiltbiom,fit=T, fitType="local",design=~location+condition,parallel=T,calcFactors=function(d){sizeFactors(estimateSizeFactors(d,geoMeans=geoMeans(d)))})
 ```
 #### Differential OTU abundance
 Using DESeq2 it's possible to calculate the probability of OTUs having different abundances between condtions. The default will use the the condition column of the dds object's colData table, and take the first two conditions. To specify a different column or use different "condtions use the contrast=c("column_name","condition_1","condition_2") construct when calling the results method.
