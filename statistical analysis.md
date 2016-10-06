@@ -347,6 +347,22 @@ rownames(res.merge) <- res.merge$Row.names
 res.merge <- res.merge[-1]
 sig.res <- subset(res.merge,padj<=alpha)
 ```
+
+##### DEOTU plots
+```{r}
+with(res.merge,plot(log2FoldChange,log10(baseMean),pch=20, main="Volano like plot", xlim=c(-2.5,2)))
+with(subset(res.merge, padj<.01 ), points(log2FoldChange, log10(baseMean), pch=20, col="red"))
+with(subset(res.merge, abs(log2FoldChange)>1), points(log2FoldChange, log10(baseMean), pch=20, col="orange"))
+with(subset(res.merge, padj<.01 & abs(log2FoldChange)>1), points(log2FoldChange, log10(baseMean), pch=20, col="green"))
+
+rld <- varianceStabilizingTransformation(dds)
+plot1 <- prune_taxa(rownames(sig.res[(sig.res$log2FoldChange>0),]),myfiltbiom)
+plot1@otu_table@.Data <- assay(rld[rownames(otu_table(plot1))])
+plotTaxa(plot1,"family","condition",type=2, others=F,fitType="local",ordered=T,trans=F,proportional=F)
+plotTaxa(plot1,"family","condition",type=2, others=T,fitType="local",ordered=T,trans=F,proportional=T)
+dev.off()
+plot2 <- prune_taxa(rownames(sig.res[(sig.res$log2FoldChange<0),]),myfiltbiom)
+```
 ### plots
 
 #### alpha diversity
