@@ -1,14 +1,18 @@
 # 16s workflow
 
 ## Pre-processing
-Script will join PE reads (and save joined files to unfiltered folder), remove adapter contamination and filter on minimum size and quality threshold.
+Script will join PE reads (with a maximum % difference in overlap) remove adapter contamination and filter on minimum size and quality threshold.
+Unfiltered joined reads are saved to unfiltered folder, filtered reads are saved to filtered folder.
+
+16Spre.sh forward_read reverse_read output_file_name output_directory adapters min_size percent_diff max_errrors 
+
 ```shell
 for f in $METAGENOMICS/data/$RUN/16S/fastq/*R1*.fastq
 do
     R1=$f
     R2=$(echo $R1|sed 's/_R1_/_R2_/')
     S=$(echo $f|awk -F"_" -v D=$RUN '{print $2"D"D}')
-    $METAGENOMICS/scripts/16Spre.sh $R1 $R2 $S  $METAGENOMICS/data/$RUN/16S/filtered $METAGENOMICS/primers/adapters.db 300 1 
+    $METAGENOMICS/scripts/16Spre.sh $R1 $R2 $S  $METAGENOMICS/data/$RUN/16S/filtered $METAGENOMICS/primers/adapters.db 300 15 1 
 done   
 
 ```
