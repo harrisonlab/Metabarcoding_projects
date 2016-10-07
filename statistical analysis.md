@@ -185,7 +185,7 @@ moran.mv  <- lapply(seq(1,10),function(y) correlog(n.df$distance.a,n.df$gap.a,ro
 sapply(seq(1,10),function(x) plot.correlog(moran.mv[[x]]))
 # I've knocked up a ggplot2 alternative plotting function, gets rid of the box around the plots
 # second argument is the (two-tail) sig figure to colour points black
-lapply(seq(1,10),function(x) plot.corr(moran.mv[[x]],0.025))
+lapply(seq(1,10),function(x) plot.corr(moran.mv[[x]][c(1:3,5)],0.025))
 dev.off()
 
 moran.mv  <- lapply(seq(1,10),function(y) correlog(n.df$meters.a,rep(0,24),rowMeans(n.df[,1:3]),increment=y,quiet=T,na.rm=T))
