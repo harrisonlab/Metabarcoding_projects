@@ -19,23 +19,10 @@ done
 ## UPARSE
 
 ### Cluster and assign taxonomy
-Problem with (free version) usearch running out of memory for dereplication and subsequent steps. Cutting and recombining data during dereplication phase gives a fairly unsatisfactory, but working method. combine_uniq.pl will combine several sets of dereplicated sequences, maintaining the counts.
+Problem with (free version) usearch running out of memory for dereplication and subsequent steps. combine_uniq.pl will combine several sets of dereplicated sequences, maintaining the counts.
 The sorting algorithm may run out of memory as well - it shouldn't be too difficult to adjust combine_uniq.pl to sort and filter on size (though the cluster algorithm will also filter on min size)
 
-get_uniq.pl will give output comparable to derep_fulllength and sortbysize for larger sequence collections. get_uniq.pl requires unformatted fasta (as in sequence not split every 80 nucleotides). It also sorts and removes singletons. 
-
-... Need to do some testing on speed as I don't think there is much difference between usearch and get_uniq.pl.
-
-For 1,000,000 reads
-
-|	|derep|sortbysize|get_uniq.pl|
-|---|---|---|---|
-|real|0m38.037s|0m15.242s|0m16.738s|
-|user|0m18.361s|0m5.236s|0m9.585s|
-|sys|0m0.744s|0m0.304s|0m1.124s|
-
-I've updated the below to use get_unique rather than usearch.    
-
+get_uniq.pl will give output comparable to derep_fulllength and sortbysize for larger sequence collections. get_uniq.pl requires unformatted fasta (as in sequence not split every 80 nucleotides). It also sorts and removes singletons. Performance wise this is slightly faster than the usearch method (though both only take minutes for several gig of data) 
 
 The taxa file output by utax is difficult to manipulate in R. Therefore the script mod_taxa.pl should be used to produce an R friendly taxa file.
 
@@ -61,6 +48,23 @@ cat 16S.rdp|$METAGENOMICS/scripts/mod_taxa.pl > 16S.taxa
 #usearch8.1 -sortbysize 16S.uniques.fasta -fastaout 16S.sorted.fasta -minsize 2
 #rm 16S.fa 16S.uniques.fasta
 ```
+
+There's a new version of usearch (v9) which has a different clustring step (denoising). However, it is a bit slower than cluster_otus (takes about 1.5hrs for 50meg derelicated file rather than about 5 minutes on one of our servers). There isn't a paper for this, so I don't know how it works internally - if each entry is independent there's no problem in splitting and running multiple instances as an array job (well with the free version of usearch anyway).
+
+ - doesn't work
+
+``` shell
+#mkdir -p temp 
+#split -l 2000 16S.sorted.fasta -a 4 -d temp/xx.
+#TASKS=`ls temp|wc -l`
+#cd temp 
+#find . $PWD -name 'xx*' >split_files.txt
+#qsub -t 1-$TASKS:1 $METAGENOMICS/scripts/submit_denoise.sh 16S.denoised  
+usearch9 -unoise 16S.sorted.fasta -tabbedout out.txt -fastaout 16S.denoised.fa
+```
+
+
+
 ### OTU evolutionary distance
 
 Output a phylogentic tree in phylip format (both upper and lower triangles)
