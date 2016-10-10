@@ -32,7 +32,9 @@ ubiom_to_des <- function(
 	...
 ){
 	suppressPackageStartupMessages(require(DESeq2))
+
 	dds <- 	suppressWarnings(DESeqDataSetFromMatrix(obj[[1]],obj[[3]],design))
+
 	sizeFactors(dds) <- calcFactors(dds)
 
     	if (fit) {
@@ -150,13 +152,24 @@ plotPCA <- function (
 		obj@otu_table@.Data <- transform(obj,as.formula(paste0("~",design)),...)
 	}
     
-    	rv <- rowVars(otu_table(obj))
+ 	if (returnData) {
+ 		#d <- pca$x
+ 		#attr(d, "percentVar") <- percentVar
+ 		pca <- prcomp(t(otu_table(obj)))
+ 		pca$percentVar <- pca$sdev^2/sum(pca$sdev^2)
+ 		return(pca)
+	}
+ 
+ 	rv <- rowVars(otu_table(obj))
  
 	colData <- sample_data(obj)
 	#suppressWarnings(as.data.frame(as.matrix(obj@sam_data)))
 	select <- order(rv, decreasing = TRUE)[seq_len(min(ntop, length(rv)))]
 	pca <- prcomp(t(otu_table(obj)[select, ]))
 	percentVar <- pca$sdev^2/sum(pca$sdev^2)
+	
+
+	
 	if (!all(design %in% names(colData))) {
 		stop("the argument 'design' should specify columns of colData")
 	}
@@ -178,11 +191,6 @@ plotPCA <- function (
 
 	colnames(d)[grep("group", colnames(d))] <- design
 
-	if (returnData) {
-		attr(d, "percentVar") <- percentVar[1:2]
-		return(d)
-	}
-
 	if(cofix) {
 		d[,1] <- d[,1] * percentVar[pcx]
 		d[,2] <- d[,2] * percentVar[pcy]
@@ -202,6 +210,58 @@ plotPCA <- function (
 	return(g)
 }
 
+plotOrd <- function (	
+	obj, 
+	colData,
+	design = "condition",
+	shapes,
+	...
+) {
+
+	suppressPackageStartupMessages(require(ggplot2))
+   
+	if (!all(design %in% names(colData))) {
+		stop("the argument 'design' should specify columns of colData")
+	}
+	design.df <- as.data.frame(colData[, design,drop = FALSE])
+	group <- if (length(design) > 1) {
+		factor(apply(design.df, 1, paste, collapse = " : "))
+	}
+	else {
+		as.factor(colData[[design]])
+	}
+	
+	if (!missing(shapes)) {
+		shape <- as.factor(colData[[shapes]])
+		d <- data.frame(PC1 = obj[, 1], PC2 = obj[, 2], group = group,design.df,shape = shape)
+		colnames(d)[grep("shape", colnames(d))] <- shapes
+	} else {
+		d <- data.frame(PC1 = obj[, 1], PC2 = obj[, 2], group = group,design.df)
+	}
+
+	colnames(d)[grep("group", colnames(d))] <- design
+
+	g <- ggplot()
+	g <- g + coord_fixed(ratio = 1, xlim = NULL, ylim = NULL, expand = TRUE)
+	g <- g + theme_bw()
+	g <- g + theme(panel.border = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank())
+	#g <- g + xlim(-0.06,0.06) + ylim(-0.06,0.06)
+	g <- g + theme(axis.line.x = element_line(size=0.5,colour = "black"),axis.line.y = element_line(size=0.5,colour = "black"),axis.text = element_text(colour = "black"))
+	
+	if (!missing(shapes)) {
+		g <- g + geom_point(data=d, mapping=aes(x=PC1, y=PC2, colour=group, shape=shape),size=2)
+		g <- g + scale_shape_discrete(name=shapes)
+	} else {
+		g <- g + geom_point(data=d, mapping=aes(x=PC1, y=PC2, colour=group),size=2)
+	}
+	g <- g + scale_colour_discrete(name=design)
+	g <- g + xlab("Dimension 1")
+	g <- g + ylab("Dimension 2")
+	return(g)
+}
+
+
+
 plotTaxa <- function(
 	obj=mybiom, 	# obj (phloseq) a phyloseq object which must include taxonomy and sample data (or alternatively an S3 list)
 	taxon="phylum", # taxon (str) is the taxonomic level of interest
@@ -210,19 +270,21 @@ plotTaxa <- function(
 	cutoff=1, 	# cutoff (double) for proportional graphs. 
 	topn=0, 	# topn (int)taxons to display (by total reads) for non-prortional graphs. T
 	others=T, 	# combine values less than cutoff/topn into group "other"
-	reorder=F, 	# order by value (max to min)
+	ordered=F, 	# order by value (max to min)
 	type=1, 	# type is limited to by sample (1) or by taxonomy (2)
 	fixed=F, 	# fixed is a ggplot parameter to apply coord_fixed(ratio = 0.1)
 	ncol=1, 	# ncol is a ggplot paramter to use n columns for the legend
+	ret_data=F,
 	trans=T,	# set to False if obj already contains pre-transformed counts (useful for larger OTU tables) 
 	transform=function(o,design,...) 
 	{	
 		suppressPackageStartupMessages(require(DESeq2))
 		dots <- list(...)
+		
 		if(!is.null(dots$calcFactors)) {
 			calcFactors <- dots$calcFactors
 			dots$calcFactors<-NULL
-			if(length(dots)>1) {
+			if(length(dots)>=1) {
 				assay(varianceStabilizingTransformation(ubiom_to_des(o,design,calcFactors=calcFactors),unlist(dots)))
 			} else {
 				assay(varianceStabilizingTransformation(ubiom_to_des(o,design,calcFactors=calcFactors)))
@@ -241,7 +303,13 @@ plotTaxa <- function(
 	} 
 	
 	if(trans) {
+		temp <- design
+		idx <- grep(design,colnames(obj[[3]]))
+		if(length(unique(obj[[3]][idx]))==1) {
+			design<-1
+		}
 		obj[[1]] <- as.data.frame(transform(obj,as.formula(paste0("~",design)),...))
+		design<-temp
 	}
 	obj[[1]][obj[[1]]<0] <- 0
 	
@@ -270,18 +338,21 @@ plotTaxa <- function(
 	}
 	taxa_cut <- na.omit(taxa_cut)
 	taxa_cut[,1] <- as.factor(taxa_cut[,1])
-	if(reorder) {
+	if(ordered) {
 		taxa_cut[,ncol(taxa_cut)+1] <- 0
 		taxa_cut[,1] <- reorder(taxa_cut[,1],-rowSums(taxa_cut[,-1]))
 		taxa_cut <- taxa_cut[,-ncol(taxa_cut)]
+	}
+	if(ret_data) {
+		return(taxa_cut)
 	}
 	md2 <- melt(taxa_cut,id=colnames(taxa_cut)[1])
 	md2$variable <- factor(md2$variable, levels=levels(md2$variable)[order(levels(md2$variable))]  )
 	if (type==1) {
 		g <- ggplot(md2,aes_string(x=md2[,2],y=md2[,3],fill=taxon))
 	} else if (type==2) {
-		colnames(md2) <- c("taxa","all","value")
-		g <- ggplot(md2,aes_string(x=as.factor(md2[,1]),y=md2[,3],fill="all"))
+		colnames(md2) <- c("taxa",design,"value")
+		g <- ggplot(md2,aes_string(x=as.factor(md2[,1]),y=md2[,3],fill=design))
 	}
 	g <- g + geom_bar(stat="identity",colour="white")
 	g <- g + theme_bw() + theme(panel.border = element_blank(), panel.grid.major = element_blank(),
@@ -339,6 +410,11 @@ sumTaxa <- function(
 	return(nd)
 }
 
+topTaxa <- function(
+	obj
+)
+
+
 combine_biom <- function(locX,locY) {
 	biom1 <- read.table(locX,header=T,sep="\t", comment.char="")	
 	biom2 <- read.table(locY,header=T,sep="\t", comment.char="")
@@ -366,3 +442,13 @@ fltTaxon <- function(
 	}
 	return(ls.biom)	
 }
+
+# function sometimes useful for replacing calcfactors
+geoMeans <- function(d) {
+	gm_mean = function(x, na.rm=TRUE){
+		exp(sum(log(x[x > 0]), na.rm=na.rm) / length(x))
+	}	
+	gm = apply(counts(d), 1, gm_mean)
+	sizeFactors(estimateSizeFactors(d, geoMeans =gm))
+}
+
