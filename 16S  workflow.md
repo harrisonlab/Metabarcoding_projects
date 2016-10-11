@@ -113,7 +113,8 @@ rm(merged)
 m2 <- m2[,1:2,with=F]
 m2[,count:=.N,by=list(V1,V2)]
 m3 <- unique(m2)
-m4 <- reshape(m3,idvar="V2",timevar="V1",direction="wide")
+#m4 <- reshape(m3,idvar="V2",timevar="V1",direction="wide")
+m4 <- dcast(m2, V1 ~ V2, value.var = "count")
 
 ```
 
