@@ -182,8 +182,8 @@ dev.off()
 
 pc <- 1
 df <- merge(pc.x[,pc],col.x,by="row.names")
-n.df <- reshape(df,idvar="location",timevar="rep",drop=c("Row.names","condition","time_point","block","genotype_code"),direction="wide")
-# n.df <- reshape(df,idvar="location",timevar="replicate",drop=c("Row.names","condition","time","block","genotype","genotype_name","sample_id","type"),direction="wide")
+#n.df <- reshape(df,idvar="location",timevar="rep",drop=c("Row.names","condition","time_point","block","genotype_code"),direction="wide")
+n.df <- reshape(df,idvar="location",timevar="replicate",drop=c("Row.names","condition","time","block","genotype","genotype_name","sample_id","type"),direction="wide")
 n.df <- n.df[order(n.df$meters.a),]
 n.df <- n.df[,c(2,6,10,1,3,4,5)]
 moran.mv  <- lapply(seq(1,10),function(y) correlog(n.df$distance.a,n.df$gap.a,rowMeans(n.df[,1:3]),increment=y,quiet=T,na.rm=T))
