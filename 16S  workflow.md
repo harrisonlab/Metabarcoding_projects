@@ -93,29 +93,17 @@ usearch8.1 -usearch_global 16S.unfiltered.fa -db 16S.otus.fa -strand plus -id 0.
 Occasionally, due to v.poor reverse read quality joining of f+r reads fails for the vast majority. The following will cluster f+r reads separately and then merge read counts which allign to the same OTU. I've dropped the clustering down to 0.95 similarity - both reads aligning to the same OTU at this similarity, I'd suggest is pretty good evidence they're the same. 
 I've also added a rev compliment routine to fq2fa_v2.pl, means the reverse reads can be called as plus strand by usearch_global.
 
-
 ```shell
+for f in $METAGENOMICS/data/$RUN/16S/fastq/*R1*
+do
+	R1=$f
+    	R2=$(echo $R1|sed 's/\.r1\.fa/\.r2\.fa/')
+	$METAGENOMICS/scripts/fq2fa_v2.pl $R1 $METAGENOMICS/data/$RUN/16S.r1.unfiltered.fa $S 17 0
+	$METAGENOMICS/scripts/fq2fa_v2.pl $R2 $METAGENOMICS/data/$RUN/16S.r2.unfiltered.fa $S 21 20 rev
+done
 usearch8.1 -usearch_global 16S.r1.unfiltered.fa -db 16S.otus.fa -strand plus -id 0.95 -userout hits.r1.txt -userfields query+target+id
 usearch8.1 -usearch_global 16S.r2.unfiltered.fa -db 16S.otus.fa -strand plus -id 0.95 -userout hits.r2.txt -userfields query+target+id
-```
-
-```{R}
-library(data.table)
-library(reshape2)
-r1 <- fread("hits.r1.txt")
-r2 <- fread("hits.r2.txt")
-r2$V1 <- sub("R2","R1",r2$V1)
-merged <- merge(r1,r2,by=c("V1","V2"))
-rm(r1,r2)
-merged$V1 <- sub("_*","",merged$V1)
-m2 <- merged[(V3.x>=97|V3.y>=97)]
-rm(merged)
-m2 <- m2[,1:2,with=F]
-m2[,count:=.N,by=list(V1,V2)]
-m3 <- unique(m2)
-#m4 <- reshape(m3,idvar="V2",timevar="V1",direction="wide")
-m4 <- dcast(m2, V1 ~ V2, value.var = "count")
-
+$METAGENOMICS/scripts/merge_hits.sh $METAGENOMICS/scripts/merge_hits.R hits.r1.txt hits.r2.txt 16S.otu_table.txt
 ```
 
 ###[ITS workflow](../master//ITS%20workflow.md)
