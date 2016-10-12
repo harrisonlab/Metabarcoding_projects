@@ -90,7 +90,7 @@ done
 usearch8.1 -usearch_global 16S.unfiltered.fa -db 16S.otus.fa -strand plus -id 0.97 -biomout 16S.otu_table.biom -otutabout 16S.otu_table.txt
 ```
 
-Occasionally, due to v.poor reverse read quality joining of f+r reads fails for the vast majority. The following will cluster f+r reads separately and then merge read counts which allign to the same OTU. I've dropped the clustering down to 0.95 similarity - both reads aligning to the same OTU at this similarity, I'd suggest is pretty good evidence they're the same. 
+Occasionally, due to v.poor reverse read quality, joining of f+r reads fails for the vast majority. The following will cluster f+r reads separately and then merge read counts which align to the same OTU. I've dropped the clustering down to 0.95 similarity - both reads aligning to the same OTU at this similarity, I'd suggest is pretty good evidence they're the same. 
 I've also added a rev compliment routine to fq2fa_v2.pl, means the reverse reads can be called as plus strand by usearch_global.
 
 ```shell
@@ -99,7 +99,7 @@ do
 	R1=$f
     	R2=$(echo $R1|sed 's/\.r1\.fa/\.r2\.fa/')
 	$METAGENOMICS/scripts/fq2fa_v2.pl $R1 $METAGENOMICS/data/$RUN/16S.r1.unfiltered.fa $S 17 0
-	$METAGENOMICS/scripts/fq2fa_v2.pl $R2 $METAGENOMICS/data/$RUN/16S.r2.unfiltered.fa $S 21 20 rev
+	$METAGENOMICS/scripts/fq2fa_v2.pl $R2 $METAGENOMICS/data/$RUN/16S.r2.unfiltered.fa $S 21 30 rev
 done
 usearch8.1 -usearch_global 16S.r1.unfiltered.fa -db 16S.otus.fa -strand plus -id 0.95 -userout hits.r1.txt -userfields query+target+id
 usearch8.1 -usearch_global 16S.r2.unfiltered.fa -db 16S.otus.fa -strand plus -id 0.95 -userout hits.r2.txt -userfields query+target+id
