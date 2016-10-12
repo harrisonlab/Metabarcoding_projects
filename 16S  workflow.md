@@ -97,7 +97,8 @@ I've also added a rev compliment routine to fq2fa_v2.pl, means the reverse reads
 for f in $METAGENOMICS/data/$RUN/16S/fastq/*R1*
 do
 	R1=$f
-    	R2=$(echo $R1|sed 's/\.r1\.fa/\.r2\.fa/')
+	R2=$(echo $R1|sed 's/\.r1\.fa/\.r2\.fa/')
+	S=$(echo $f|awk -F"." '{print $1}'|awk -F"/" '{print $NF}')
 	$METAGENOMICS/scripts/fq2fa_v2.pl $R1 $METAGENOMICS/data/$RUN/16S.r1.unfiltered.fa $S 17 0
 	$METAGENOMICS/scripts/fq2fa_v2.pl $R2 $METAGENOMICS/data/$RUN/16S.r2.unfiltered.fa $S 21 30 rev
 done
