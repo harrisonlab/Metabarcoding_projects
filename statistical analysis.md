@@ -186,7 +186,7 @@ df <- merge(pc.x[,pc],col.x,by="row.names")
 n.df <- reshape(df,idvar="location",timevar="replicate",drop=c("Row.names","condition","time","block","genotype","genotype_name","sample_id","type"),direction="wide")
 n.df <- n.df[order(n.df$meters.a),]
 n.df <- n.df[,c(2,6,10,1,3,4,5)]
-moran.mv  <- lapply(seq(1,10),function(y) correlog(n.df$distance.a,n.df$gap.a,rowMeans(n.df[,1:3]),increment=y,quiet=T,na.rm=T))
+moran.mv  <- lapply(seq(1,10),function(y) correlog(n.df$distance.a,n.df$gap.a,rowMeans(n.df[,1:3],na.rm=T),increment=y,quiet=T))
 sapply(seq(1,10),function(x) plot.correlog(moran.mv[[x]]))
 # I've knocked up a ggplot2 alternative plotting function, gets rid of the box around the plots
 # second argument is the (two-tail) sig figure to colour points black
