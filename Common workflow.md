@@ -46,6 +46,12 @@ do
 	$METAGENOMICS/scripts/demulti.sh $R1 $R2 "CCTACGGG" "GACTACHV" "CTTGGTCA" "ATATGCTT" 2  
 done   
 ```
+	F	R		
+ITS4-6	TCCTCCGC	GAAGGTGA
+Nem	CGCGAATR	GGCGGTCC	
+ITS7-6	GAAGGTGA	AGCGTTCT
+
+
 ```shell
 mkdir -p $METAGENOMICS/data/$RUN/16S/fastq
 mkdir -p $METAGENOMICS/data/$RUN/ITS/fastq
