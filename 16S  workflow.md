@@ -104,7 +104,7 @@ do
 done
 usearch8.1 -usearch_global 16S.r1.unfiltered.fa -db 16S.otus.fa -strand plus -id 0.95 -userout hits.r1.txt -userfields query+target+id
 usearch8.1 -usearch_global 16S.r2.unfiltered.fa -db 16S.otus.fa -strand plus -id 0.95 -userout hits.r2.txt -userfields query+target+id
-$METAGENOMICS/scripts/merge_hits.sh $METAGENOMICS/scripts/merge_hits.R hits.r1.txt hits.r2.txt 16S.otu_table.txt
+$METAGENOMICS/scripts/ARDERI.sh -c merge_hits $METAGENOMICS/scripts/merge_hits.R hits.r1.txt hits.r2.txt 16S.otu_table.txt
 $METAGENOMICS/scripts/otu_to_biom.pl row_biom col_biom data_biom >16S.otu_table.biom
 rm row_biom col_biom data_biom
 ```
