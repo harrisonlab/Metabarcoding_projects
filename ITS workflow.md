@@ -13,7 +13,7 @@ do
 	R1=$f;     
 	R2=$(echo $R1|sed 's/_R1_/_R2_/');     
 	S=$(echo $f|awk -F"_" -v D=$RUN '{print $2"D"D}');
-	$METAGENOMICS/scripts/ITSpre.sh $R1 $R2 $S  $METAGENOMICS/data/$RUN/ITS/fasta $METAGENOMICS/primers/primers.db 200 200 1; 
+	$METAGENOMICS/scripts/ARDERI.sh -c ITSpre $R1 $R2 $S  $METAGENOMICS/data/$RUN/ITS/fasta $METAGENOMICS/primers/primers.db 200 200 1; 
 done
 ```
 
@@ -51,7 +51,7 @@ done
 for d in $METAGENOMICS/data/$RUN/ITS/fasta/*R1
 do
 	S=$(echo $d|awk -F"/" '{print $NF}'|awk -F"_" '{print $1}');
-	$METAGENOMICS/scripts/ITS.sh $METAGENOMICS/scripts/rm_SSU_58Ss.R $d "*.\\.ssu" "*.\\.58" $d.fa $S
+	$METAGENOMICS/scripts/ARDERI.sh -c ITS $METAGENOMICS/scripts/rm_SSU_58Ss.R $d "*.\\.ssu" "*.\\.58" $d.fa $S
 done
 ```
 If reverse read quality was poor and it was necessary to truncate reads to get more than a couple of reads past set LOWQUAL to TRUE
@@ -63,7 +63,7 @@ LOWQUAL=TRUE
 for d in $METAGENOMICS/data/$RUN/ITS/fasta/*R2
 do
 	S=$(echo $d|awk -F"/" '{print $NF}'|awk -F"_" '{print $1}');
-	$METAGENOMICS/scripts/ITS.sh $METAGENOMICS/scripts/rm_58Se_LSU_v2.R $d "*.\\.58" "*.\\.lsu" $d.fa $S $LOWQUAL
+	$METAGENOMICS/scripts/ARDERI.sh -c ITS $METAGENOMICS/scripts/rm_58Se_LSU_v2.R $d "*.\\.58" "*.\\.lsu" $d.fa $S $LOWQUAL
 done
 ```
 
