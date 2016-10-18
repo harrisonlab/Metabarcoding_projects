@@ -12,7 +12,7 @@ do
     R1=$f
     R2=$(echo $R1|sed 's/_R1_/_R2_/')
     S=$(echo $f|awk -F"_" -v D=$RUN '{print $2"D"D}')
-    $METAGENOMICS/scripts/16Spre.sh $R1 $R2 $S  $METAGENOMICS/data/$RUN/16S/filtered $METAGENOMICS/primers/adapters.db 300 15 1 
+    $METAGENOMICS/scripts/ARDERI.sh -c 16Spre $R1 $R2 $S  $METAGENOMICS/data/$RUN/16S/filtered $METAGENOMICS/primers/adapters.db 300 15 1 
 done   
 
 ```
