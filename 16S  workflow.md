@@ -27,23 +27,29 @@ get_uniq.pl will give output comparable to derep_fulllength and sortbysize for l
 The taxa file output by utax is difficult to manipulate in R. Therefore the script mod_taxa.pl should be used to produce an R friendly taxa file.
 
 ```shell
-#### Concatenate files
-cat $METAGENOMICS/data/$RUN/16S/filtered/*filtered* > $METAGENOMICS/data/$RUN/16S.t.fa
-#### Truncate and pad (Remove multiplex primers and pad reads to same length.)
-X=`cat 16S.t.fa|awk '{if ($1!~/>/){mylen=mylen+length($0)}else{print mylen;mylen=0};}'|awk '$0>x{x=$0};END{print x}'`
-usearch8.1 -fastx_truncate 16S.t.fa -stripleft 17 -stripright 21 -trunclen $X -padlen $X -fastaout 16S.fa
-rm 16S.t.fa
-#### Dereplication
-cat 16S.fa|awk '/^>/ {printf("\n%s\n",$0);next; } { printf("%s",$0);}  END {printf("\n");}'|$METAGENOMICS/scripts/get_uniq.pl > 16S.sorted.fasta 
-rm 16S.fa
-#### Clustering (Cluster dereplicated seqeunces and produce OTU fasta (also filters for chimeras))
-usearch8.1 -cluster_otus 16S.sorted.fasta -otus 16S.otus.fa -uparseout 16S.out.up -relabel OTU -minsize 2
+ $METAGENOMICS/scripts/ARDERI.sh -c UPARSE $METAGENOMICS/data/$RUN/16S/filtered/*filtered* $METAGENOMICS/data/$RUN 16S 17 21
+```
+
+```shell
 #### Assign Taxonomy
 usearch8.1 -utax 16S.otus.fa -db $METAGENOMICS/taxonomies/utax/16s_ref.udb -strand both -utaxout 16S.reads.utax -rdpout 16S.rdp -alnout 16S.aln.txt
 cat 16S.rdp|$METAGENOMICS/scripts/mod_taxa.pl > 16S.taxa
+```
 
-
+```
 ### Not implemented (but keep incase something breaks)
+#### Concatenate files
+#cat $METAGENOMICS/data/$RUN/16S/filtered/*filtered* > $METAGENOMICS/data/$RUN/16S.t.fa
+#### Truncate and pad (Remove multiplex primers and pad reads to same length.)
+#X=`cat 16S.t.fa|awk '{if ($1!~/>/){mylen=mylen+length($0)}else{print mylen;mylen=0};}'|awk '$0>x{x=$0};END{print x}'`
+#usearch8.1 -fastx_truncate 16S.t.fa -stripleft 17 -stripright 21 -trunclen $X -padlen $X -fastaout 16S.fa
+#rm 16S.t.fa
+#### Dereplication
+#cat 16S.fa|awk '/^>/ {printf("\n%s\n",$0);next; } { printf("%s",$0);}  END {printf("\n");}'|$METAGENOMICS/scripts/get_uniq.pl > #16S.sorted.fasta 
+#rm 16S.fa
+#### Clustering (Cluster dereplicated seqeunces and produce OTU fasta (also filters for chimeras))
+#usearch8.1 -cluster_otus 16S.sorted.fasta -otus 16S.otus.fa -uparseout 16S.out.up -relabel OTU -minsize 2
+
 #usearch8.1 -derep_fulllength 16S.fa -fastaout 16S.uniques.fasta -sizeout 
 #usearch8.1 -sortbysize 16S.uniques.fasta -fastaout 16S.sorted.fasta -minsize 2
 #rm 16S.fa 16S.uniques.fasta
@@ -51,7 +57,7 @@ cat 16S.rdp|$METAGENOMICS/scripts/mod_taxa.pl > 16S.taxa
 
 There's a new version of usearch (v9) which has a different clustring step (denoising). However, it is a bit slower than cluster_otus (takes about 1.5hrs for 50meg derelicated file rather than about 5 minutes on one of our servers). There isn't a paper for this, so I don't know how it works internally - if each entry is independent there's no problem in splitting and running multiple instances as an array job (well with the free version of usearch anyway).
 
- - doesn't work
+
 
 ``` shell
 #mkdir -p temp 
