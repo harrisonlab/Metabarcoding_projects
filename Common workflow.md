@@ -43,7 +43,7 @@ do
 	R2=$(echo $R1|sed 's/_R1_/_R2_/')    
 	S=$(echo $f|awk -F"_" '{print $2}')     
 	echo $f    
-	$METAGENOMICS/scripts/demulti.sh $R1 $R2 1 "CCTACGGG" "GACTACHV" "CTTGGTCA" "ATATGCTT" "GAAGGTGA" "TCCTCCGC" "GAAGGTGA" "AGCGTTCT" "CGCGAATR" "GGCGGTAT"
+	$METAGENOMICS/scripts/ARDERI.sh -c demultiplex $R1 $R2 1 "CCTACGGG" "GACTACHV" "CTTGGTCA" "ATATGCTT" "GAAGGTGA" "TCCTCCGC" "GAAGGTGA" "AGCGTTCT" "CGCGAATR" "GGCGGTAT"
 done   
 ```
 	Type	F	R
