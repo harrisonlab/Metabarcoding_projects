@@ -156,15 +156,17 @@ library(data.table)
 myfiltbiom@sam_data$gap <- 0
 
 cond <- "Y"
+
 pc.x <- scores(mypca)[sample_data(myfiltbiom)$condition==cond,]
-# col.x remains a sample_data object, this is a bit of a pain - could convert to matrix then dataframe but will lose any type info (i.e. all columns will be factors/characters)
-col.x <- sample_data(myfiltbiom)[sample_data(myfiltbiom)$condition==cond,]
-
-
 pc.dt<- data.table(merge(pc.x,col.x,by="row.names"))
-pc.reshape <- dcast(pc.dt,distance~.,fun.aggregate=mean,value.var=c( names(pc.dt)[grep("PC",names(pc.dt))]))
-pc.reshape <- pc.reshape[,-"location",with=F]
-distmat <- as.matrix(dist(cbind(sample_data(col.x)$distance[sample_data(col.x)$replicate=="a"], rep(0,24))))
+pc.reshape <- dcast(pc.dt,distance~.,fun.aggregate=function(x) mean(x,na.rm=T),value.var=c(names(pc.dt)[grep("PC",names(pc.dt))]))
+names(pc.reshape)[grep("PC",names(pc.reshape))] <- sub("_.*","",names(pc.reshape)[grep("PC",names(pc.reshape))])
+
+col.x <- sample_data(myfiltbiom)[sample_data(myfiltbiom)$condition==cond,]
+col.reshape <- sample_data(col.x)[sample_data(col.x)$replicate=="a"]
+col.reshape <- col.reshape[order(col.reshape$meters)]
+
+distmat <- as.matrix(dist(cbind(sample_data(col.reshape)$distance, rep(0,24))))
 distmat.inv <- 1/distmat
 distmat.inv[is.infinite(distmat.inv)] <- 0
 moran <- apply(pc.reshape,2,function(x) t(Moran.I(x,distmat.inv)))
@@ -174,11 +176,11 @@ rownames(moran) <- temp
 
 
 # Moran I test
-distmat <- as.matrix(dist(cbind(sample_data(col.x)$distance, sample_data(col.x)$gap)))
+
+distmat <- as.matrix(dist(cbind(sample_data(col.reshape)$distance, rep(0,24))))
 distmat.inv <- 1/distmat
-#diag(distmat.inv) <- 0
 distmat.inv[is.infinite(distmat.inv)] <- 0
-moran <- apply(pc.x,2,function(x) t(Moran.I(x,distmat.inv)))
+moran <- apply(pc.reshape,2,function(x) t(Moran.I(x,distmat.inv)))
 names(moran)->temp
 moran <- do.call(rbind,moran)
 rownames(moran) <- temp
@@ -188,42 +190,25 @@ moran.bin <- apply(pc.x,2,function(x) t(Moran.I(x,distmat.bin)))
 rownames(moran.bin) <- rownames(moran)
 
 # Moran correlogram
-pdf("bac.tree.correlogs.pdf")
-moran.res <- lapply(seq(1,10),function(y) correlog(sample_data(col.x)$distance,sample_data(col.x)$gap,pc.x[,1],increment=y,quiet=T))
-sapply(seq(1,10),function(x) plot.correlog(moran.res[[x]]))
-#plot(correlog(sample_data(col.x)$distance,sample_data(col.x)$gap,pc.x[,1],increment=7.2,quiet=T))
-dev.off()
 
-pc <- 1
-df <- merge(pc.x[,pc],col.x,by="row.names")
-#n.df <- reshape(df,idvar="location",timevar="rep",drop=c("Row.names","condition","time_point","block","genotype_code"),direction="wide")
-n.df <- reshape(df,idvar="location",timevar="replicate",drop=c("Row.names","condition","time","block","genotype","genotype_name","sample_id","type"),direction="wide")
-n.df <- n.df[order(n.df$meters.a),]
-n.df <- n.df[,c(2,6,10,1,3,4,5)]
-moran.mv  <- lapply(seq(1,10),function(y) correlog(n.df$distance.a,n.df$gap.a,rowMeans(n.df[,1:3],na.rm=T),increment=y,quiet=T))
+moran.mv  <- lapply(seq(1,10),function(y) correlog(sample_data(col.reshape)$distance,sample_data(col.reshape)$gap,pc.reshape$PC1,increment=y,quiet=T))
 sapply(seq(1,10),function(x) plot.correlog(moran.mv[[x]]))
 # I've knocked up a ggplot2 alternative plotting function, gets rid of the box around the plots
 # second argument is the (two-tail) sig figure to colour points black
 lapply(seq(1,10),function(x) plot.corr(moran.mv[[x]][c(1:3,5)],0.025))
 dev.off()
 
-moran.mv  <- lapply(seq(1,10),function(y) correlog(n.df$meters.a,rep(0,24),rowMeans(n.df[,1:3]),increment=y,quiet=T,na.rm=T))
-sapply(seq(1,10),function(x) plot.correlog(moran.mv[[x]]))
-
 # Manual Pearson Correlelog
-
-
-# Mantel test
-mydist <- dist(cbind(sample_data(col.x)$distance, sample_data(col.x)$gap))
-mantel.out <- t(apply(pc.x,2,function(x) unlist(mantel(mydist,dist(x),permutations=9999)[3:4])))
-
-# Mantel correlogram
-# this was copied from http://www.ats.ucla.edu not certain of the point of removing the spatial data before looking for autocorrelation
-pc.res <- resid(aov(pc.x~sample_data(col.x)$location))
-pc.dist <- dist(pc.res)
-pc.correlog <- mantel.correlog(pc.dist,cbind(sample_data(col.x)$distance,sample_data(col.x)$gap),cutoff=F)
-plot(pc.correlog)
+p.corr <- correr2(pc.reshape$PC1_mean_.)
+d<-as.data.frame(cbind(p.corr,pc.reshape$distance[1:22],rep(1,22)))
+names(d) <- c("correlation","distance","Significant")
+g <- ggplot(d, aes(x = distance, y = correlation))
+g <- g + geom_line(na.rm=T)
+g <- g + geom_point(na.rm=T,size=2.5,mapping=aes())
+g
 ```
+
+
 
 #### CCA
 Simple first step - correspondence analysis
@@ -477,3 +462,53 @@ dev.off()
 
 ###[16S workflow](../master/16S%20%20workflow.md)
 ###[ITS workflow](../master//ITS%20workflow.md)
+
+
+
+OLD STUFF (to delete)
+```shell
+# Moran correlogram
+#distmat <- as.matrix(dist(cbind(sample_data(col.x)$distance, sample_data(col.x)$gap)))
+#distmat.inv <- 1/distmat
+#diag(distmat.inv) <- 0
+#distmat.inv[is.infinite(distmat.inv)] <- 0
+#moran <- apply(pc.x,2,function(x) t(Moran.I(x,distmat.inv)))
+#names(moran)->temp
+#moran <- do.call(rbind,moran)
+#rownames(moran) <- temp
+
+
+
+#pdf("bac.tree.correlogs.pdf")
+#moran.res <- lapply(seq(1,10),function(y) correlog(sample_data(col.x)$distance,sample_data(col.x)$gap,pc.x[,1],increment=y,quiet=T))
+#sapply(seq(1,10),function(x) plot.correlog(moran.res[[x]]))
+#plot(correlog(sample_data(col.x)$distance,sample_data(col.x)$gap,pc.x[,1],increment=7.2,quiet=T))
+#dev.off()
+
+#pc <- 1
+#df <- merge(pc.x[,pc],col.x,by="row.names")
+#n.df <- #reshape(df,idvar="location",timevar="rep",drop=c("Row.names","condition","time_point","block","genotype_code"),direction="wide")
+#n.df <- reshape(df,idvar="location",timevar="replicate",drop=c("Row.names","condition","time","block","genotype","genotype_name","sample_id","type"),direction="wide")
+#n.df <- n.df[order(n.df$meters.a),]
+#n.df <- n.df[,c(2,6,10,1,3,4,5)]
+#moran.mv  <- lapply(seq(1,10),function(y) correlog(n.df$distance.a,n.df$gap.a,rowMeans(n.df[,1:3],na.rm=T),increment=y,quiet=T))
+#sapply(seq(1,10),function(x) plot.correlog(moran.mv[[x]]))
+# I've knocked up a ggplot2 alternative plotting function, gets rid of the box around the plots
+# second argument is the (two-tail) sig figure to colour points black
+#lapply(seq(1,10),function(x) plot.corr(moran.mv[[x]][c(1:3,5)],0.025))
+#dev.off()
+
+#moran.mv  <- lapply(seq(1,10),function(y) correlog(n.df$meters.a,rep(0,24),rowMeans(n.df[,1:3]),increment=y,quiet=T,na.rm=T))
+#sapply(seq(1,10),function(x) plot.correlog(moran.mv[[x]]))
+
+# Mantel test
+mydist <- dist(cbind(sample_data(col.x)$distance, sample_data(col.x)$gap))
+mantel.out <- t(apply(pc.x,2,function(x) unlist(mantel(mydist,dist(x),permutations=9999)[3:4])))
+
+# Mantel correlogram
+# this was copied from http://www.ats.ucla.edu not certain of the point of removing the spatial data before looking for autocorrelation
+pc.res <- resid(aov(pc.x~sample_data(col.x)$location))
+pc.dist <- dist(pc.res)
+pc.correlog <- mantel.correlog(pc.dist,cbind(sample_data(col.x)$distance,sample_data(col.x)$gap),cutoff=F)
+plot(pc.correlog)
+```
