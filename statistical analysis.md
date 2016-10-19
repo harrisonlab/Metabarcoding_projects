@@ -174,7 +174,6 @@ names(moran)->temp
 moran <- do.call(rbind,moran)
 rownames(moran) <- temp
 
-
 # Moran I test
 
 distmat <- as.matrix(dist(cbind(sample_data(col.reshape)$distance, rep(0,24))))
@@ -199,7 +198,7 @@ lapply(seq(1,10),function(x) plot.corr(moran.mv[[x]][c(1:3,5)],0.025))
 dev.off()
 
 # Manual Pearson Correlelog
-p.corr <- correr2(pc.reshape$PC1_mean_.)
+p.corr <- correr2(pc.reshape$PC1)
 d<-as.data.frame(cbind(p.corr,pc.reshape$distance[1:22],rep(1,22)))
 names(d) <- c("correlation","distance","Significant")
 g <- ggplot(d, aes(x = distance, y = correlation))
