@@ -151,6 +151,7 @@ summary(fit, test="Pillai") # could just call summary directly
 library(ape)
 library(vegan)
 library(ncf)
+library(data.table)
 
 myfiltbiom@sam_data$gap <- 0
 
@@ -158,6 +159,19 @@ cond <- "Y"
 pc.x <- scores(mypca)[sample_data(myfiltbiom)$condition==cond,]
 # col.x remains a sample_data object, this is a bit of a pain - could convert to matrix then dataframe but will lose any type info (i.e. all columns will be factors/characters)
 col.x <- sample_data(myfiltbiom)[sample_data(myfiltbiom)$condition==cond,]
+
+
+pc.dt<- data.table(merge(pc.x,col.x,by="row.names"))
+pc.reshape <- dcast(pc.dt,distance~.,fun.aggregate=mean,value.var=c( names(pc.dt)[grep("PC",names(pc.dt))]))
+pc.reshape <- pc.reshape[,-"location",with=F]
+distmat <- as.matrix(dist(cbind(sample_data(col.x)$distance[sample_data(col.x)$replicate=="a"], rep(0,24))))
+distmat.inv <- 1/distmat
+distmat.inv[is.infinite(distmat.inv)] <- 0
+moran <- apply(pc.reshape,2,function(x) t(Moran.I(x,distmat.inv)))
+names(moran)->temp
+moran <- do.call(rbind,moran)
+rownames(moran) <- temp
+
 
 # Moran I test
 distmat <- as.matrix(dist(cbind(sample_data(col.x)$distance, sample_data(col.x)$gap)))
