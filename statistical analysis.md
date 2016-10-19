@@ -196,6 +196,8 @@ dev.off()
 moran.mv  <- lapply(seq(1,10),function(y) correlog(n.df$meters.a,rep(0,24),rowMeans(n.df[,1:3]),increment=y,quiet=T,na.rm=T))
 sapply(seq(1,10),function(x) plot.correlog(moran.mv[[x]]))
 
+# Manual Pearson Correlelog
+
 
 # Mantel test
 mydist <- dist(cbind(sample_data(col.x)$distance, sample_data(col.x)$gap))
