@@ -159,11 +159,11 @@ myfiltbiom@sam_data$gap <- 0
 cond <- "Y"
 
 pc.x <- scores(mypca)[sample_data(myfiltbiom)$condition==cond,]
+col.x <- sample_data(myfiltbiom)[sample_data(myfiltbiom)$condition==cond,]
 pc.dt<- data.table(merge(pc.x,col.x,by="row.names"))
 pc.reshape <- dcast(pc.dt,distance~.,fun.aggregate=function(x) mean(x,na.rm=T),value.var=c(names(pc.dt)[grep("PC",names(pc.dt))]))
 names(pc.reshape)[grep("PC",names(pc.reshape))] <- sub("_.*","",names(pc.reshape)[grep("PC",names(pc.reshape))])
 
-col.x <- sample_data(myfiltbiom)[sample_data(myfiltbiom)$condition==cond,]
 col.reshape <- sample_data(col.x)[sample_data(col.x)$replicate=="a"]
 col.reshape <- col.reshape[order(col.reshape$meters)]
 
