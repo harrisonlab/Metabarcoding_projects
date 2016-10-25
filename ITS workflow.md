@@ -92,7 +92,7 @@ mv *r2* R2/.
 
 ### Cluster and assign taxonomy
 ```shell
-$METAGENOMICS/scripts/ARDERI.sh -c UPARSE $METAGENOMICS/data/$RUN/ITS/joined $METAGENOMICS/data/$RUN ITS 0 0
+$METAGENOMICS/scripts/ARDERI.sh -c UPARSE $METAGENOMICS/data/$RUN/ITS/filtered $METAGENOMICS/data/$RUN ITS 0 0
 
 ##### Taxonomy
 usearch8.1 -utax ITS.otus.fa -db $METAGENOMICS/taxonomies/utax/ITS_ref.udb -strand both -utaxout ITS.reads.utax -rdpout ITS.rdp -alnout ITS.aln.txt
