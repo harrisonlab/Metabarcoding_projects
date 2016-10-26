@@ -66,17 +66,6 @@ write.tree(nj.16S,"16S.tree")
 phy_tree(mybiom) <- nj.16S
 ```
 
-#### Beta-diversity statistical analysis
-Using PERMANOVA (This needs additional work, can't find any info on whether to use normised or raw reads - if bray-curtis is non-parametric then no need for library size normalisation, but I'm using scale to transform by translation and expansion what's the point of doing this??)
-```{r}
-library(vegan)
-obj <- mybiom
-obj@otu_table@.Data <- counts(phylo_to_des(mybiom,design=~1),normalize=T)
-d <- as.data.frame(cbind(sample_data(obj),t(otu_table(obj))))
-euclid <- scale(d[,c(-1,-2)]) # minus however many columns colData has defined
-adonis(euclid~condition,d,method='bray')
-```
-
 #### Core biom
 ```{r}
 library(DESeq2)
@@ -374,6 +363,19 @@ plotTaxa(plot1,"family","condition",type=2, others=T,fitType="local",ordered=T,t
 dev.off()
 plot2 <- prune_taxa(rownames(sig.res[(sig.res$log2FoldChange<0),]),myfiltbiom)
 ```
+
+#### Beta-diversity statistical analysis
+Using PERMANOVA (best adonis method to use???)
+PCA score are generated from library size normalised and variance stabilised (DESeq2) OTU counts.  
+```{r}
+myfiltbiom <- mybiom
+myfiltbiom <- prune_taxa(rowSums(otu_table(myfiltbiom))>5,myfiltbiom)
+mypca <- plotPCA(myfiltbiom,design="1",ntop= nrow(myfiltbiom@otu_table),returnData=T,fitType="local",blind=T)
+adonis(mypca$x~condition,sample_data(myfiltbiom),method='bray')
+```
+
+
+
 ### plots
 
 #### alpha diversity
