@@ -399,6 +399,17 @@ plot_ordination(obj,mynmds,color="condition",shape="location")
 ```
 
 plotOrd is a ggplot wrapper that does something similar to the phyloseq plotting method, but without the background and with axes on the same scale. Needs modifying to give a bit more control.
+Example - PCA (PC1 vs PC2) with most abundant genera used to colour samples.
+```{R}
+myfiltbiom <- mybiom
+myfiltbiom <- prune_taxa(rowSums(otu_table(myfiltbiom))>5,myfiltbiom)
+
+mypca <- plotPCA(myfiltbiom,design="1",ntop= nrow(myfiltbiom@otu_table),returnData=T,fitType="local",blind=T)
+sample_data(myfiltbiom)$sample <- row.names(sample_data(myfiltbiom))
+mytaxa <- sumTaxa(phylo_to_ubiom(myfiltbiom),"genus","sample")
+
+
+```
 
 
 
