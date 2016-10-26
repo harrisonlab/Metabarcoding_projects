@@ -406,7 +406,7 @@ myfiltbiom <- prune_taxa(rowSums(otu_table(myfiltbiom))>5,myfiltbiom)
 mypca <- plotPCA(myfiltbiom,design="1",ntop= nrow(myfiltbiom@otu_table),returnData=T,fitType="local",blind=T)
 sample_data(myfiltbiom)$sample <- row.names(sample_data(myfiltbiom))
 myubiom <- phylo_to_ubiom(myfiltbiom)
-myubiom$countData <- as.data.frame(counts(ubiom_to_des(myubiom,design=~1),normalize=T))
+myubiom$countData <- as.data.frame(assay(varianceStabilizingTransformation(ubiom_to_des(myubiom,design=~1),blind=T)))
 myubiom$colData$sample <- row.names(myubiom$colData)
 mytaxa <- sumTaxa(myubiom,"genus","sample")
 mytaxa <- mytaxa[order(rowSums(mytaxa[,-1]),decreasing=T),]
