@@ -371,7 +371,7 @@ PCA score are generated from library size normalised and variance stabilised (DE
 myfiltbiom <- mybiom
 myfiltbiom <- prune_taxa(rowSums(otu_table(myfiltbiom))>5,myfiltbiom)
 mypca <- plotPCA(myfiltbiom,design="1",ntop= nrow(myfiltbiom@otu_table),returnData=T,fitType="local",blind=T)
-adonis(mypca$x~condition,sample_data(myfiltbiom),method='bray')
+adonis(mypca$x~condition,as.data.frame(as.matirx(sample_data(myfiltbiom))),method='bray')
 ```
 
 
