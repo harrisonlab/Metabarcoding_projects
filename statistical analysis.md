@@ -368,11 +368,11 @@ plot2 <- prune_taxa(rownames(sig.res[(sig.res$log2FoldChange<0),]),myfiltbiom)
 Using PERMANOVA (best adonis method to use???)
 PCA score are generated from library size normalised and variance stabilised (DESeq2) OTU counts.  
 ```{r}
-myfiltbiom <- mybiom
+myfiltbiom <- prune_samples(sample_data(mybiom)[[1]]=="some_condition",mybiom)
 myfiltbiom <- prune_taxa(rowSums(otu_table(myfiltbiom))>5,myfiltbiom)
 vld<-assay(varianceStabilizingTransformation(phylo_to_des(myfiltbiom,~1),blind=F)) # blind t/f should give same results
 vld <- vld+abs(min(vld)) # add constant (min) to bring all values to 0 or above
-adonis(t(vld)~condition,as.data.frame(as.matirx(sample_data(myfiltbiom))),method='bray') # bray is non-parametric
+adonis(t(vld)~condition,as.data.frame(as.matrix(sample_data(myfiltbiom))),method='bray') # bray is non-parametric
 ```
 
 
