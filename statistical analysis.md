@@ -301,7 +301,8 @@ myubiom$colData[mytaxa[1,1]] <- as.numeric(t(mytaxa[1,-1]))
 df <- data.frame(mypca$x[,1]*mypca$percentVar[1],mypca$x[,2]*mypca$percentVar[2])
 plotOrd(df,myubiom$colData,design=mytaxa[1,1],continuous=T)
 
-lapply(seq(2:20),function(x) plotOrd(df,data.frame(Val1=mytaxa[,x]),design="Val1",continuous=T,xlabel="PC1",ylabel="PC2")) # mytaxa may need to be transposed...
+row.names(mytaxa) <- mytaxa[,1]
+lapply(seq(1:20),function(x) plotOrd(pc.res.var,as.data.frame(t(mytaxa[,-1])),design=as.character(mytaxa[x,1]),continuous=T,xlabel="PC1",ylabel="PC2")))
 
 ```
 plotOrd has several other features - need to write about them at sometime.
