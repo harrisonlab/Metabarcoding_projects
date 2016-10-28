@@ -128,6 +128,10 @@ plotOrd(df,sample_data(myfiltbiom))
 pc.res <- resid(aov(mypca$x~sample_data(myfiltbiom)$location))
 d <- data.frame(pc.res[,1]*mypca$percentVar[1],pc.res[,2]*mypca$percentVar[2])
 plotOrd(d,sample_data(myfiltbiom))
+
+mypca$y <- t(t(mypca$x)*mypca$percentVar)
+plotOrd(mypca$y,sample_data(myfiltbiom),dimx=1,dimy=2)
+
 ```
 Manova of first couple of pca with tree/aisle
 ```{r}
