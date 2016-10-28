@@ -21,6 +21,8 @@ if (defined $ARGV[4]) {
 	$rtrim=$ARGV[4];	
 }
 
+
+
 open (FILE, "<$sequence_file") || die "File $sequence_file doesn't exist!!";
 
 # open output for appending
@@ -36,11 +38,25 @@ while (my $id_line = <FILE>) {
     $count++;
     next if ($count%4!=0);
     my $fas = $count/4;
-    print OUTFILE2 ">$id.$fas;$fid\n";
+    print OUTFILE2 ">$id.$fas;$fid";
     $id_line=substr($id_line,$ltrim,length($id_line)-($ltrim+$rtrim+1));
+    if (defined $ARGV[5]) {
+    	$id_line=reverse_complement_IUPAC($id_line)	
+    }
     print OUTFILE2 "$id_line\n";
 }
 
-
 close FILE;
 close OUTFILE2;
+
+
+sub reverse_complement_IUPAC {
+        my $dna = shift;
+
+	# reverse the DNA sequence
+        my $revcomp = reverse($dna);
+
+	# complement the reversed DNA sequence
+        $revcomp =~ tr/ABCDGHMNRSTUVWXYabcdghmnrstuvwxy/TVGHCDKNYSAABWXRtvghcdknysaabwxr/;
+        return $revcomp;
+}

@@ -1,13 +1,6 @@
 #!/bin/bash
 
-FORWARD=$1
-REVERSE=$2
-FPRIM1=$3
-RPRIM1=$4
-FPRIM2=$5
-RPRIM2=$6
-MISSMATCH=$7
-
 SCRIPT_DIR=$(readlink -f ${0%/*})
+S=$SCRIPT_DIR
 
-qsub $SCRIPT_DIR/submit_demulti.sh $FORWARD $REVERSE $FPRIM1 $RPRIM1 $FPRIM2 $RPRIM2 $MISSMATCH $SCRIPT_DIR
+qsub $SCRIPT_DIR/submit_demulti.sh $@ $SCRIPT_DIR

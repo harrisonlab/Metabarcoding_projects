@@ -3,15 +3,8 @@
 #$ -cwd
 #$ -l virtual_free=4G
 
-FORWARD=$1
-REVERSE=$2
-FPRIM1=$3
-RPRIM1=$4
-FPRIM2=$5
-RPRIM2=$6
-MISSMATCH=$7
-S=$8
+for SCRIPT_DIR; do true; done
 
-${S}/demulti.pl $FORWARD $REVERSE $FPRIM1 $RPRIM1 $FPRIM2 $RPRIM2 $MISSMATCH 
+${SCRIPT_DIR}/demulti_v2.pl $@
 
 

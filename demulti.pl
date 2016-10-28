@@ -1,4 +1,6 @@
-#! /usr/bin/perl -w -s
+#! /usr/bin/perl 
+#use warnings;
+use strict;
 
 ############################################################
 #
@@ -9,10 +11,12 @@
 #
 ###########################################################
 
-open (my $R1_bac,'>', "$ARGV[0].bacterial.fastq") or die "Could not open $ARGV[0].bacterial.fastq for writing";
-open (my $R1_fun,'>', "$ARGV[0].fungal.fastq") or die "Could not open $ARGV[0].fungal.fastq for writing";
-open (my $R2_bac,'>', "$ARGV[1].bacterial.fastq") or die "Could not open $ARGV[1].bacterial.fastq for writing";
-open (my $R2_fun,'>', "$ARGV[1].fungal.fastq") or die "Could not open $ARGV[1].fungal.fastq for writing";
+#pop;
+
+open (my $R1_bac,'>', "$ARGV[0].ps1.fastq") or die "Could not open $ARGV[0].bacterial.fastq for writing";
+open (my $R1_fun,'>', "$ARGV[0].ps2.fastq") or die "Could not open $ARGV[0].fungal.fastq for writing";
+open (my $R2_bac,'>', "$ARGV[1].ps1.fastq") or die "Could not open $ARGV[1].bacterial.fastq for writing";
+open (my $R2_fun,'>', "$ARGV[1].ps2.fastq") or die "Could not open $ARGV[1].fungal.fastq for writing";
 open (my $R1_ambig,'>', "$ARGV[0].ambig.fastq") or die "Could not open $ARGV[1].ambig.fastq for writing";
 open (my $R2_ambig,'>', "$ARGV[1].ambig.fastq") or die "Could not open $ARGV[1].ambig.fastq for writing";
 
@@ -23,6 +27,11 @@ my $ind_bac_f = shift;
 my $ind_bac_r = shift;
 my $ind_fun_f = shift;
 my $ind_fun_r = shift;
+
+my $lbf = length($ind_bac_f);
+my $lbr = length($ind_bac_r);
+my $lff = length($ind_fun_f);
+my $lfr = length($ind_fun_r);
 
 my $allowmiss = shift;
 $allowmiss ||= 1 unless defined $allowmiss;
@@ -40,10 +49,10 @@ do {
 
 	if(($counter+2)%4==0) {
 
-		my $countbf = count_match(substr($l1,0,length($ind_bac_f)),$ind_bac_f);
-		my $countbr = count_match(substr($l2,0,length($ind_bac_r)),$ind_bac_r);
-		my $countff = count_match(substr($l1,0,length($ind_fun_f)),$ind_fun_f);
-		my $countfr = count_match(substr($l2,0,length($ind_fun_r)),$ind_fun_r);
+		my $countbf = count_match(substr($l1,0,$lbf),$ind_bac_f);
+		my $countbr = count_match(substr($l2,0,$lbr),$ind_bac_r);
+		my $countff = count_match(substr($l1,0,$lff),$ind_fun_f);
+		my $countfr = count_match(substr($l2,0,$lfr),$ind_fun_r);
 		if ($countbf <= $allowmiss && $countbr <= $allowmiss) {
 			$output = 1;
 		} elsif ($countff <= $allowmiss && $countfr <= $allowmiss ) {
@@ -82,7 +91,8 @@ sub count_match {
 	my $str1 = uc(shift);
 	my $str2 = uc(shift);
 	my $count = length($str1);
-	for (my $i=0;$i<length($str1);$i++) {
+	my $l = length($str1);
+	for (my $i=0;$i<$l;$i++) {
 		my $x = to_bin(substr($str1,$i,1));
 		my $y = to_bin(substr($str2,$i,1));
 		$count -- if $x&$y;

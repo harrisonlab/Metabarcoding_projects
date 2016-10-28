@@ -215,6 +215,13 @@ plotOrd <- function (
 	colData,
 	design = "condition",
 	shapes,
+	labelled=F,
+	cluster=NULL,
+	continuous=F, 
+	xlims=NULL,
+	ylims=NULL,
+	xlabel="Dimension 1",
+	ylabel="Dimension 2",
 	...
 ) {
 
@@ -228,7 +235,11 @@ plotOrd <- function (
 		factor(apply(design.df, 1, paste, collapse = " : "))
 	}
 	else {
-		as.factor(colData[[design]])
+		if(continuous) {
+			colData[[design]]
+		} else {	
+			as.factor(colData[[design]])
+		}
 	}
 	
 	if (!missing(shapes)) {
@@ -242,10 +253,9 @@ plotOrd <- function (
 	colnames(d)[grep("group", colnames(d))] <- design
 
 	g <- ggplot()
-	g <- g + coord_fixed(ratio = 1, xlim = NULL, ylim = NULL, expand = TRUE)
+	g <- g + coord_fixed(ratio = 1, xlim = xlims, ylim = ylims, expand = TRUE)
 	g <- g + theme_bw()
 	g <- g + theme(panel.border = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank())
-	#g <- g + xlim(-0.06,0.06) + ylim(-0.06,0.06)
 	g <- g + theme(axis.line.x = element_line(size=0.5,colour = "black"),axis.line.y = element_line(size=0.5,colour = "black"),axis.text = element_text(colour = "black"))
 	
 	if (!missing(shapes)) {
@@ -254,9 +264,24 @@ plotOrd <- function (
 	} else {
 		g <- g + geom_point(data=d, mapping=aes(x=PC1, y=PC2, colour=group),size=2)
 	}
-	g <- g + scale_colour_discrete(name=design)
-	g <- g + xlab("Dimension 1")
-	g <- g + ylab("Dimension 2")
+	if(labelled) {
+		g <- g + geom_text(data=d, mapping=aes(x=PC1, y=PC2, label=row.names(obj),colour=group), size=3, vjust=2, hjust=0.5)
+	}
+	if(continuous) {
+		#g <- g + scale_color_gradientn(colours = rainbow(5))
+		g <- g + scale_color_gradient(low="red", high="green",name=design)
+	} else {
+		g <- g + scale_colour_discrete(name=design)
+
+		if(!is.null(cluster)) {
+			km <- kmeans(d[,1:2],centers=nlevels(group),nstart=5)
+			d$Cluster<-km$cluster
+			g<-g+stat_ellipse(data=d,mapping=aes(x=PC1,y=PC2,fill=factor(Cluster)), geom="polygon", level=cluster, alpha=0.2)
+		}
+	
+	}
+	g <- g + xlab(xlabel)
+	g <- g + ylab(ylabel)
 	return(g)
 }
 
@@ -271,7 +296,7 @@ plotTaxa <- function(
 	topn=0, 	# topn (int)taxons to display (by total reads) for non-prortional graphs. T
 	others=T, 	# combine values less than cutoff/topn into group "other"
 	ordered=F, 	# order by value (max to min)
-	type=1, 	# type is limited to by sample (1) or by taxonomy (2)
+	type=1, 	# type: (1) by sample stacked (2) by taxonomy stacked (3) by taxonomy compared
 	fixed=F, 	# fixed is a ggplot parameter to apply coord_fixed(ratio = 0.1)
 	ncol=1, 	# ncol is a ggplot paramter to use n columns for the legend
 	ret_data=F,
@@ -314,6 +339,7 @@ plotTaxa <- function(
 	obj[[1]][obj[[1]]<0] <- 0
 	
 	taxa_sum <- sumTaxa(obj,taxon=taxon,design=design)
+	taxa_sum$taxon[grep("\\(",taxa_sum$taxon)] <- taxa_sum$taxon[sub("\\(.*"," incertae sedis",taxa_sum$taxon)]
 
 	if(!topn) {
 		obj[[3]]$MLUflop <- 1 #assigns the MLU flop digit
@@ -450,5 +476,17 @@ geoMeans <- function(d) {
 	}	
 	gm = apply(counts(d), 1, gm_mean)
 	sizeFactors(estimateSizeFactors(d, geoMeans =gm))
+}
+
+correr2 <- function(x) {
+	y <- x
+	mycorr <- numeric(0)
+	count<-1
+	while (length(x) >2) {
+		mycorr[count] <- cor(y[1:(length(x)-1)],x[2:length(x)])
+		count <- count +1
+		x<-x[-1]
+	}
+	return(mycorr)
 }
 
