@@ -198,124 +198,6 @@ g
 ```
 
 
-
-#### CCA
-Simple first step - correspondence analysis
-
-1. All data
-2. Tree station
-3. Aisle
-
-```{r}
-myfiltbiom <- prune_samples(sample_data(mybiom)[[10]]=="experiment",mybiom)
-
-f1 <- prune_samples(sample_data(myfiltbiom)[[1]]!="C",myfiltbiom)
-f2 <- prune_samples(sample_data(myfiltbiom)[[1]]=="Y",myfiltbiom)
-f3 <- prune_samples(sample_data(myfiltbiom)[[1]]=="N",myfiltbiom)
-
-f1 <- prune_taxa(rowSums(otu_table(f1))>2,f1)
-f2 <- prune_taxa(rowSums(otu_table(f2))>2,f2)
-f3 <- prune_taxa(rowSums(otu_table(f3))>2,f3)
-
-CCA1 <- ordinate(f1,method="CCA",formula=~distance)
-CCA2 <- ordinate(f2,method="CCA",formula=~distance)
-CCA3 <- ordinate(f3,method="CCA",formula=~distance)
-
-plot(CCA1)
-plot(CCA2)
-plot(CCA3)
-dev.off()
-
-anova(CCA1) # permutation analysis
-anova(CCA2)
-anova(CCA3)
-
-```
-#### PCNM
-More advanced technique; Principal Coordinates of Neighbour Matrices
-but see Gilbert & Bennett 2010 for probelms with this (and other) spatial analysis
-```{R}
-library(vegan)
-library(packfor)
-
-# apply various filters to data
-cond="Y"
-myfiltbiom <- prune_samples((sample_data(mybiom)[[10]]=="experiment")&(sample_data(mybiom)[[1]]==cond),mybiom)
-myfiltbiom <- prune_taxa(rowSums(otu_table(myfiltbiom))>5,myfiltbiom)
-
-# the phyloseq object structure messes up some of the following scripts, therefore convert to an S3 object
-myubiom <- phylo_to_ubiom(myfiltbiom) 
-myubiom$colData$gap <- 0
-myubiom$colData$distance <- as.numeric(myubiom$colData$distance)
-myubiom$colData$genotype <- as.factor(myubiom$colData$genotype)
-myubiom$colData$block <- as.factor(myubiom$colData$block)
-myubiom$colData <- myubiom$colData[order(myubiom$colData$distance),]
-myubiom$countData <- myubiom$countData[,rownames(myubiom$colData)]
-
-#calculate euclidean distance between sample points
-euclid <- dist(myubiom$colData[,6:7],method="euclidean")
-
-#rda
-#unweighted PCNM for RDA, theshold is set to cover ~ 5 samples which seems to describe the maximum variation 
-pcnm1 <- pcnm(euclid,threshold=7.2)
-ord <- rda(t(myubiom$countData)~scores(pcnm1))
-# test model significance (is the data described by a spatial dimension)
-anova(ord)
-# if yes find which spatial dimensions are significant
-dim(scores(pcnm1)) # 14 eigenvectors
-ord <- rda(t(myubiom$countData)~scores(pcnm1)[,1],...,scores(pcnm1)[,14])
-anova(ord,by="terms",parellel=12,model="direct",permu=2000)
-forward.sel(t(myubiom$countData),scores(pcnm1),Xscale=F,nperm=2000) # this should give results equivelent to anova above without having to redefine the model. 
-
-
-ord <- rda(t(myubiom$countData)~genotype+block+Condition(scores(pcnm1)[,c(1,2,x,y)]))
-anova(ord) # model shouldn't be significant for year 0  data
-
-plot(ord)
-msoplot(mso(ord, sample_data(myfiltbiom)[,6:7]))
-dev.off()
-
-#cca
-#calculate PCNM weights for CCA
-cs <- colSums(myubiom$countData/sum(myubiom$countData))
-#weighted PCNM (this is more useful for cca)
-pcnm2 <- pcnm(euclid,w=cs,threshold=7.2)
-#cca on OTU data with positive eigen vectors from PCNM as the independent variables
-#the residual should have no distance trend (i.e. the CA component of the ord object)
-ord <- cca(t(otu_table(myfiltbiom))~scores(pcnm2))
-anova(ord)
-plot(ord)
-msoplot(mso(ord, sample_data(myfiltbiom)[,6:7]))
-dev.off()
-
-
-#spatial free data
-newCounts <- t(ord$CA$Xbar)
-## 
-ord2 <- cca(t(otu_table(myfiltbiom))~scores(pcnm2)[,1]+scores(pcnm2)[,2]+scores(pcnm2)[,3..n])
-anova(ord2)
-anova(ord2,by="terms",parellel=12,model="direct",permu=2000)
-```
-
-With threshold of 7.2 using RDA, for Goatham both tree and aisle have significant vectors 2,3,8 and 10, with 5 close to significant for both.
-
-Calculate the pearson correlation coefficient for each OTU against the forward selected spatial parameters
-Two methods - produce slightly different results 
-```{R}
-pc.median <- aggregate(pc.x,by=as.list(col.x[,4]),median)
-pc.median <- pc.median[order(as.numeric(as.character(pc.median[,1]))),]
-
-#library(Hmisc)
-#library(stats)
-#test2 <- rcorr(t(myubiom$countData),scores(pcnm2)[,c(14,15,16,1,8)],type="pearson")
-#test3$r <- test2$r[1:7084,7085:7089]
-#test3$P <- test2$P[1:7084,7085:7089]
-#test3$n <- test2$n[1:7084,7085:7089]
-#test3$p.adj <- apply(test3$P,2,function(x) p.adjust(x,"BH"))
-library("psych")
-test4 <- corr.test(t(myubiom$countData),scores(pcnm2)[,c(14,15,16,1,8)],adjust="BH")
-```
-
 ### DESeq2
 It's possible to convert a phyloseq object to a DESeq datamatrix with the wrapper function phylo_to_des.
 phylo_to_des has the option to specify the size factor calculation using the option calcFactors (see plotTaxa for examples of how to use this option). Set fit=T to fit a GLM model to the data. Further arguments will be passed to DESeq.
@@ -375,8 +257,6 @@ vld <- vld+abs(min(vld)) # add constant (min) to bring all values to 0 or above
 adonis(t(vld)~condition,as.data.frame(as.matrix(sample_data(myfiltbiom))),method='bray') # bray is non-parametric
 ```
 
-
-
 ### plots
 
 #### alpha diversity
@@ -399,7 +279,9 @@ mynmds <- ordinate(obj,method = "NMDS",distance="bray",autotransform=F,try=100)
 plot_ordination(obj,mynmds,color="condition",shape="location")
 ```
 
-plotOrd is a ggplot wrapper that does something similar to the phyloseq plotting method, but without the background and with axes on the same scale. Needs modifying to give a bit more control.
+#### plotOrd
+plotOrd is a ggplot wrapper that does something similar to the phyloseq plotting method, but without the background and with axes on the same scale.  
+
 Example - PCA (PC1 vs PC2) with most abundant genera used to colour samples.
 ```{R}
 myfiltbiom <- mybiom
@@ -416,8 +298,11 @@ df <- data.frame(mypca$x[,1]*mypca$percentVar[1],mypca$x[,2]*mypca$percentVar[2]
 plotOrd(df,myubiom$colData,design=mytaxa[1,1],continuous=T)
 
 ```
+plotOrd has several other features - need to write about them at sometime.
 
-plotPCA is modified version of the DESeq2 version. 
+#### plotPCA
+
+plotPCA is a modified version of the DESeq2 version. 
 It take the following options:
 
 1. object (DESeq2 - required) a DESeq object 
@@ -430,15 +315,15 @@ It take the following options:
 8. cofix (bool - optional, default=F) produces a graph with axes on the same scale
 9. transform(fun - optional) a user supplied function to replace DESeq2 variance stabilising transform to transform the count matrix. A DESeq2 object will be passed to this function. 
 
-plotPCAWithLabels will produce the same graph but with the addition of sample labels - useful for getting the name of outliers (this will be an option for plotPCA/plotOrd, when I get round to it)
+plotPCAWithLabels will produce the same graph but with the addition of sample labels - useful for getting the name of outliers 
 ```{r}
 pdf("16S.beta-diversity.pdf",height=8,width=8)
-plotPCA(dds)
+plotPCAWithLabels(dds)
 dev.off()
 ```
+NOTE - I  prefer to calculate and keep the PCA scores (using this function), then use plotOrd for plotting.
 
-
-#### taxa graphs
+#### plotTaxa
 plotTaxa produces a ggplot2 bar chart of taxa counts
 It takes the following options:
 
@@ -476,6 +361,125 @@ mytransbiom@otu_table@.Data <- assay(rld) # couldn't get method otu_table(mybiom
 plotTaxa(mytransbiom,taxon="genus",design="condition",trans=F)
 dev.off()
 ```
+
+### Spatial analyses not implemented
+
+#### CCA
+Simple first step - correspondence analysis
+
+1. All data
+2. Tree station
+3. Aisle
+
+```{r}
+myfiltbiom <- prune_samples(sample_data(mybiom)[[10]]=="experiment",mybiom)
+
+f1 <- prune_samples(sample_data(myfiltbiom)[[1]]!="C",myfiltbiom)
+f2 <- prune_samples(sample_data(myfiltbiom)[[1]]=="Y",myfiltbiom)
+f3 <- prune_samples(sample_data(myfiltbiom)[[1]]=="N",myfiltbiom)
+
+f1 <- prune_taxa(rowSums(otu_table(f1))>2,f1)
+f2 <- prune_taxa(rowSums(otu_table(f2))>2,f2)
+f3 <- prune_taxa(rowSums(otu_table(f3))>2,f3)
+
+CCA1 <- ordinate(f1,method="CCA",formula=~distance)
+CCA2 <- ordinate(f2,method="CCA",formula=~distance)
+CCA3 <- ordinate(f3,method="CCA",formula=~distance)
+
+plot(CCA1)
+plot(CCA2)
+plot(CCA3)
+dev.off()
+
+anova(CCA1) # permutation analysis
+anova(CCA2)
+anova(CCA3)
+```
+
+#### PCNM
+More advanced technique; Principal Coordinates of Neighbour Matrices
+but see Gilbert & Bennett 2010 for probelms with this (and other) spatial analysis
+```{R}
+library(vegan)
+library(packfor)
+
+# apply various filters to data
+cond="Y"
+myfiltbiom <- prune_samples((sample_data(mybiom)[[10]]=="experiment")&(sample_data(mybiom)[[1]]==cond),mybiom)
+myfiltbiom <- prune_taxa(rowSums(otu_table(myfiltbiom))>5,myfiltbiom)
+
+# the phyloseq object structure messes up some of the following scripts, therefore convert to an S3 object
+myubiom <- phylo_to_ubiom(myfiltbiom) 
+myubiom$colData$gap <- 0
+myubiom$colData$distance <- as.numeric(myubiom$colData$distance)
+myubiom$colData$genotype <- as.factor(myubiom$colData$genotype)
+myubiom$colData$block <- as.factor(myubiom$colData$block)
+myubiom$colData <- myubiom$colData[order(myubiom$colData$distance),]
+myubiom$countData <- myubiom$countData[,rownames(myubiom$colData)]
+
+#calculate euclidean distance between sample points
+euclid <- dist(myubiom$colData[,6:7],method="euclidean")
+
+#rda
+#unweighted PCNM for RDA, theshold is set to cover ~ 5 samples which seems to describe the maximum variation 
+pcnm1 <- pcnm(euclid,threshold=7.2)
+ord <- rda(t(myubiom$countData)~scores(pcnm1))
+# test model significance (is the data described by a spatial dimension)
+anova(ord)
+# if yes find which spatial dimensions are significant
+dim(scores(pcnm1)) # 14 eigenvectors
+ord <- rda(t(myubiom$countData)~scores(pcnm1)[,1],...,scores(pcnm1)[,14])
+anova(ord,by="terms",parellel=12,model="direct",permu=2000)
+forward.sel(t(myubiom$countData),scores(pcnm1),Xscale=F,nperm=2000) # this should give results equivelent to anova above without having to redefine the model. 
+
+
+ord <- rda(t(myubiom$countData)~genotype+block+Condition(scores(pcnm1)[,c(1,2,x,y)]))
+anova(ord) # model shouldn't be significant for year 0  data
+
+plot(ord)
+msoplot(mso(ord, sample_data(myfiltbiom)[,6:7]))
+dev.off()
+
+#cca
+#calculate PCNM weights for CCA
+cs <- colSums(myubiom$countData/sum(myubiom$countData))
+#weighted PCNM (this is more useful for cca)
+pcnm2 <- pcnm(euclid,w=cs,threshold=7.2)
+#cca on OTU data with positive eigen vectors from PCNM as the independent variables
+#the residual should have no distance trend (i.e. the CA component of the ord object)
+ord <- cca(t(otu_table(myfiltbiom))~scores(pcnm2))
+anova(ord)
+plot(ord)
+msoplot(mso(ord, sample_data(myfiltbiom)[,6:7]))
+dev.off()
+
+#spatial free data
+newCounts <- t(ord$CA$Xbar)
+## 
+ord2 <- cca(t(otu_table(myfiltbiom))~scores(pcnm2)[,1]+scores(pcnm2)[,2]+scores(pcnm2)[,3..n])
+anova(ord2)
+anova(ord2,by="terms",parellel=12,model="direct",permu=2000)
+```
+
+With threshold of 7.2 using RDA, for Goatham both tree and aisle have significant vectors 2,3,8 and 10, with 5 close to significant for both.
+
+Calculate the pearson correlation coefficient for each OTU against the forward selected spatial parameters
+Two methods - produce slightly different results 
+```{R}
+pc.median <- aggregate(pc.x,by=as.list(col.x[,4]),median)
+pc.median <- pc.median[order(as.numeric(as.character(pc.median[,1]))),]
+
+#library(Hmisc)
+#library(stats)
+#test2 <- rcorr(t(myubiom$countData),scores(pcnm2)[,c(14,15,16,1,8)],type="pearson")
+#test3$r <- test2$r[1:7084,7085:7089]
+#test3$P <- test2$P[1:7084,7085:7089]
+#test3$n <- test2$n[1:7084,7085:7089]
+#test3$p.adj <- apply(test3$P,2,function(x) p.adjust(x,"BH"))
+library("psych")
+test4 <- corr.test(t(myubiom$countData),scores(pcnm2)[,c(14,15,16,1,8)],adjust="BH")
+```
+
 
 ###[16S workflow](../master/16S%20%20workflow.md)
 ###[ITS workflow](../master//ITS%20workflow.md)
