@@ -48,7 +48,7 @@ done
 
 Oomycetes
 ```shell
-cd $METAGENOMICS/data/$RUN/OO/fasta
+cd $METAGENOMICS/data/$RUN/OO/filtered
 for f in *.fa;
 do 
     d=$(echo $f|awk -F"." '{print $1}')
