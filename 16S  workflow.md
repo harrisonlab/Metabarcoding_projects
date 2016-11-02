@@ -34,7 +34,7 @@ get_uniq.pl will give output comparable to derep_fulllength and sortbysize for l
 The taxa file output by utax is difficult to manipulate in R. Therefore the script mod_taxa.pl should be used to produce an R friendly taxa file.
 
 ```shell
- $METAGENOMICS/scripts/ARDERI.sh -c UPARSE $METAGENOMICS/data/$RUN/$SSU/filtered $METAGENOMICS/data/$RUN $SSU 17 21
+ $METAGENOMICS/scripts/ARDERI.sh -c UPARSE $METAGENOMICS/data/$RUN/$SSU/filtered $METAGENOMICS/data/$RUN $SSU 17 21 #23 18 NEM
 ```
 
 ```shell
