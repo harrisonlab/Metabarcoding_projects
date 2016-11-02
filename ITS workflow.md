@@ -1,5 +1,6 @@
 # ITS workflow
 
+
 ## Pre-processing
 Script will:<br>
 1. Remove reads with both forward and reverse primers<br>
@@ -41,6 +42,23 @@ do counter=$((counter+1))
         qsub -t 1-$TASKS:1 $METAGENOMICS/scripts/submit_nscan.sh ssu 20 $METAGENOMICS/hmm/ssu_end.hmm
         qsub -t 1-$TASKS:1 $METAGENOMICS/scripts/submit_nscan.sh 58ss 20 $METAGENOMICS/hmm/58s_start.hmm
     fi
+    cd ..    
+done
+```
+
+Oomycetes
+```shell
+cd $METAGENOMICS/data/$RUN/OO/fasta
+for f in *.fa;
+do 
+    d=$(echo $f|awk -F"." '{print $1}')
+    mkdir $d
+    split -l 2000 $f -a 3 -d ${d}/$f.
+    cd $d
+    find $PWD -name '*.fa.*' >split_files.txt
+    TASKS=$(wc -l split_files.txt|awk -F" " '{print $1}')
+    qsub -t 1-$TASKS:1 $METAGENOMICS/scripts/submit_nscan.sh ssu 20 $METAGENOMICS/hmm/others/Oomycota/ssu_end.hmm
+    qsub -t 1-$TASKS:1 $METAGENOMICS/scripts/submit_nscan.sh 58ss 20 $METAGENOMICS/hmm/others/Oomycota/58s_start.hmm
     cd ..    
 done
 ```
