@@ -43,28 +43,7 @@ usearch8.1 -utax 16S.otus.fa -db $METAGENOMICS/taxonomies/utax/16s_ref.udb -stra
 cat 16S.rdp|$METAGENOMICS/scripts/mod_taxa.pl > 16S.taxa
 ```
 
-```
-### Not implemented (but keep incase something breaks)
-#### Concatenate files
-#cat $METAGENOMICS/data/$RUN/16S/filtered/*filtered* > $METAGENOMICS/data/$RUN/16S.t.fa
-#### Truncate and pad (Remove multiplex primers and pad reads to same length.)
-#X=`cat 16S.t.fa|awk '{if ($1!~/>/){mylen=mylen+length($0)}else{print mylen;mylen=0};}'|awk '$0>x{x=$0};END{print x}'`
-#usearch8.1 -fastx_truncate 16S.t.fa -stripleft 17 -stripright 21 -trunclen $X -padlen $X -fastaout 16S.fa
-#rm 16S.t.fa
-#### Dereplication
-#cat 16S.fa|awk '/^>/ {printf("\n%s\n",$0);next; } { printf("%s",$0);}  END {printf("\n");}'|$METAGENOMICS/scripts/get_uniq.pl > #16S.sorted.fasta 
-#rm 16S.fa
-#### Clustering (Cluster dereplicated seqeunces and produce OTU fasta (also filters for chimeras))
-#usearch8.1 -cluster_otus 16S.sorted.fasta -otus 16S.otus.fa -uparseout 16S.out.up -relabel OTU -minsize 2
-
-#usearch8.1 -derep_fulllength 16S.fa -fastaout 16S.uniques.fasta -sizeout 
-#usearch8.1 -sortbysize 16S.uniques.fasta -fastaout 16S.sorted.fasta -minsize 2
-#rm 16S.fa 16S.uniques.fasta
-```
-
 There's a new version of usearch (v9) which has a different clustring step (denoising). However, it is a bit slower than cluster_otus (takes about 1.5hrs for 50meg derelicated file rather than about 5 minutes on one of our servers). There isn't a paper for this, so I don't know how it works internally - if each entry is independent there's no problem in splitting and running multiple instances as an array job (well with the free version of usearch anyway).
-
-
 
 ``` shell
 #mkdir -p temp 
@@ -75,8 +54,6 @@ There's a new version of usearch (v9) which has a different clustring step (deno
 #qsub -t 1-$TASKS:1 $METAGENOMICS/scripts/submit_denoise.sh 16S.denoised  
 usearch9 -unoise 16S.sorted.fasta -tabbedout out.txt -fastaout 16S.denoised.fa
 ```
-
-
 
 ### OTU evolutionary distance
 
@@ -94,13 +71,13 @@ usearch_global may run out of memory as well. 16S.unfiltered.fa can be split int
 fq2fa_v2.pl could be replaced with a similar awk script as per ITS - will save a couple of minutes.
 ```shell
 #### Concatenate unfiltered reads (Unfiltered fastq will need to be converted to fasta first )
-for f in $METAGENOMICS/data/$RUN/16S/unfiltered/*.fastq
+for f in $METAGENOMICS/data/$RUN/$SSU/unfiltered/*.fastq
 do
 	S=$(echo $f|awk -F"." '{print $1}'|awk -F"/" '{print $NF}')
-	$METAGENOMICS/scripts/fq2fa_v2.pl $f $METAGENOMICS/data/$RUN/16S.unfiltered.fa $S 17 21
+	$METAGENOMICS/scripts/fq2fa_v2.pl $f $METAGENOMICS/data/$RUN/$SSU.unfiltered.fa $S 17 21
 done
 #### Make table (Creates an OTU table of read counts per OTU per sample)
-usearch8.1 -usearch_global 16S.unfiltered.fa -db 16S.otus.fa -strand plus -id 0.97 -biomout 16S.otu_table.biom -otutabout 16S.otu_table.txt
+usearch8.1 -usearch_global $SSU.unfiltered.fa -db $SSU.otus.fa -strand plus -id 0.97 -biomout $SSU.otu_table.biom -otutabout $SSU.otu_table.txt
 ```
 
 Occasionally, due to v.poor reverse read quality, joining of f+r reads fails for the vast majority. The following will cluster f+r reads separately and then merge read counts which align to the same OTU. I've dropped the clustering down to 0.95 similarity - both reads aligning to the same OTU at this similarity, I'd suggest is pretty good evidence they're the same. 
@@ -124,3 +101,26 @@ rm row_biom col_biom data_biom
 
 ###[ITS workflow](../master//ITS%20workflow.md)
 ###[Statistical analysis](../master/statistical%20analysis.md)
+
+
+
+### OLD
+```
+### Not implemented (but keep incase something breaks)
+#### Concatenate files
+#cat $METAGENOMICS/data/$RUN/16S/filtered/*filtered* > $METAGENOMICS/data/$RUN/16S.t.fa
+#### Truncate and pad (Remove multiplex primers and pad reads to same length.)
+#X=`cat 16S.t.fa|awk '{if ($1!~/>/){mylen=mylen+length($0)}else{print mylen;mylen=0};}'|awk '$0>x{x=$0};END{print x}'`
+#usearch8.1 -fastx_truncate 16S.t.fa -stripleft 17 -stripright 21 -trunclen $X -padlen $X -fastaout 16S.fa
+#rm 16S.t.fa
+#### Dereplication
+#cat 16S.fa|awk '/^>/ {printf("\n%s\n",$0);next; } { printf("%s",$0);}  END {printf("\n");}'|$METAGENOMICS/scripts/get_uniq.pl > #16S.sorted.fasta 
+#rm 16S.fa
+#### Clustering (Cluster dereplicated seqeunces and produce OTU fasta (also filters for chimeras))
+#usearch8.1 -cluster_otus 16S.sorted.fasta -otus 16S.otus.fa -uparseout 16S.out.up -relabel OTU -minsize 2
+
+#usearch8.1 -derep_fulllength 16S.fa -fastaout 16S.uniques.fasta -sizeout 
+#usearch8.1 -sortbysize 16S.uniques.fasta -fastaout 16S.sorted.fasta -minsize 2
+#rm 16S.fa 16S.uniques.fasta
+```
+
