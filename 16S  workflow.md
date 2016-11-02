@@ -74,7 +74,7 @@ fq2fa_v2.pl could be replaced with a similar awk script as per ITS - will save a
 for f in $METAGENOMICS/data/$RUN/$SSU/unfiltered/*.fastq
 do
 	S=$(echo $f|awk -F"." '{print $1}'|awk -F"/" '{print $NF}')
-	$METAGENOMICS/scripts/fq2fa_v2.pl $f $METAGENOMICS/data/$RUN/$SSU.unfiltered.fa $S 17 21
+	$METAGENOMICS/scripts/fq2fa_v2.pl $f $METAGENOMICS/data/$RUN/$SSU.unfiltered.fa $S 17 21 #23 18 NEM
 done
 #### Make table (Creates an OTU table of read counts per OTU per sample)
 usearch8.1 -usearch_global $SSU.unfiltered.fa -db $SSU.otus.fa -strand plus -id 0.97 -biomout $SSU.otu_table.biom -otutabout $SSU.otu_table.txt
