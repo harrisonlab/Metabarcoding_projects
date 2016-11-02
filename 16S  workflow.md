@@ -1,4 +1,11 @@
-# 16s workflow
+# 16/18S workflow
+
+## Taxonomy
+SSU determines the file location
+```shell
+SSU=16S # bacteria
+SSU=NEM # nematodes
+```
 
 ## Pre-processing
 Script will join PE reads (with a maximum % difference in overlap) remove adapter contamination and filter on minimum size and quality threshold.
@@ -7,12 +14,12 @@ Unfiltered joined reads are saved to unfiltered folder, filtered reads are saved
 16Spre.sh forward_read reverse_read output_file_name output_directory adapters min_size percent_diff max_errrors 
 
 ```shell
-for f in $METAGENOMICS/data/$RUN/16S/fastq/*R1*.fastq
+for f in $METAGENOMICS/data/$RUN/$SSU/fastq/*R1*.fastq
 do
     R1=$f
     R2=$(echo $R1|sed 's/_R1_/_R2_/')
     S=$(echo $f|awk -F"_" -v D=$RUN '{print $2"D"D}')
-    $METAGENOMICS/scripts/ARDERI.sh -c 16Spre $R1 $R2 $S  $METAGENOMICS/data/$RUN/16S/filtered $METAGENOMICS/primers/adapters.db 300 15 1 
+    $METAGENOMICS/scripts/ARDERI.sh -c 16Spre $R1 $R2 $S  $METAGENOMICS/data/$RUN/$SSU/filtered $METAGENOMICS/primers/adapters.db 300 5 0.5
 done   
 
 ```
@@ -27,7 +34,7 @@ get_uniq.pl will give output comparable to derep_fulllength and sortbysize for l
 The taxa file output by utax is difficult to manipulate in R. Therefore the script mod_taxa.pl should be used to produce an R friendly taxa file.
 
 ```shell
- $METAGENOMICS/scripts/ARDERI.sh -c UPARSE $METAGENOMICS/data/$RUN/16S/filtered $METAGENOMICS/data/$RUN 16S 17 21
+ $METAGENOMICS/scripts/ARDERI.sh -c UPARSE $METAGENOMICS/data/$RUN/$SSU/filtered $METAGENOMICS/data/$RUN $SSU 17 21
 ```
 
 ```shell
