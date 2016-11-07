@@ -75,7 +75,6 @@ $METAGENOMICS/scripts/ARDERI.sh -c ITS /
 	"*.\\.ssu" "*.\\.58"
 ```
 
-
 #### Returns ITS1 where fasta header matches ITS2, unique ITS1 and unique ITS2
 
 ```shell
@@ -101,24 +100,18 @@ mv *r2* R2/.
 
 ### Cluster and assign taxonomy
 ```shell
-$METAGENOMICS/scripts/ARDERI.sh -c UPARSE $METAGENOMICS/data/$RUN/ITS/filtered $METAGENOMICS/data/$RUN ITS 0 0
+ITS=ITS # fungi
+ITS=OO # Oomycetes
+
+$METAGENOMICS/scripts/ARDERI.sh -c UPARSE 
+	$METAGENOMICS/data/$RUN/$ITS/filtered 
+	$METAGENOMICS/data/$RUN 
+	$ITS 0 0
 
 ##### Taxonomy
 usearch8.1 -utax ITS.otus.fa -db $METAGENOMICS/taxonomies/utax/ITS_ref.udb -strand both -utaxout ITS.reads.utax -rdpout ITS.rdp -alnout ITS.aln.txt
 cat ITS.rdp|$METAGENOMICS/scripts/mod_taxa.pl > ITS.taxa
 
-
-##### Concatenate
-#cat $METAGENOMICS/data/$RUN/ITS/filtered/*.fa > $METAGENOMICS/data/$RUN/ITS.t.fa
-##### Pad
-#X=`cat ITS.t.fa|awk '{if ($1!~/>/) {print length($0)};}'|awk '$0>x{x=$0};END{print x}'`
-#usearch8.1 -fastx_truncate ITS.t.fa -trunclen $X -padlen $X -fastaout ITS.fa
-#rm ITS.t.fa
-##### Dereplicate
-#cat ITS.fa|awk '/^>/ {printf("\n%s\n",$0);next; } { printf("%s",$0);}  END {printf("\n");}'|$METAGENOMICS/scripts/get_uniq.pl > #ITS.sorted.fasta 
-#rm ITS.fa
-##### Cluster
-#usearch8.1 -cluster_otus ITS.sorted.fasta -otus ITS.otus.fa -uparseout ITS.out.up -relabel OTU -minsize 2 
 ```
 
 ### OTU table creation
@@ -156,3 +149,23 @@ usearch8.1 -usearch_global ITS2.unfiltered.fa -db ITS.otus.fa -strand both -id 0
 
 ###[16S workflow](../master/16S%20%20workflow.md)
 ###[Statistical analysis](../master/statistical%20analysis.md)
+
+
+
+## Old stuff
+
+```shell
+
+
+##### Concatenate
+#cat $METAGENOMICS/data/$RUN/ITS/filtered/*.fa > $METAGENOMICS/data/$RUN/ITS.t.fa
+##### Pad
+#X=`cat ITS.t.fa|awk '{if ($1!~/>/) {print length($0)};}'|awk '$0>x{x=$0};END{print x}'`
+#usearch8.1 -fastx_truncate ITS.t.fa -trunclen $X -padlen $X -fastaout ITS.fa
+#rm ITS.t.fa
+##### Dereplicate
+#cat ITS.fa|awk '/^>/ {printf("\n%s\n",$0);next; } { printf("%s",$0);}  END {printf("\n");}'|$METAGENOMICS/scripts/get_uniq.pl > #ITS.sorted.fasta 
+#rm ITS.fa
+##### Cluster
+#usearch8.1 -cluster_otus ITS.sorted.fasta -otus ITS.otus.fa -uparseout ITS.out.up -relabel OTU -minsize 2 
+```
