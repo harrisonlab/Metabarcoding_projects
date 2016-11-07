@@ -43,16 +43,18 @@ usearch8.1 -utax 16S.otus.fa -db $METAGENOMICS/taxonomies/utax/16s_ref.udb -stra
 cat 16S.rdp|$METAGENOMICS/scripts/mod_taxa.pl > 16S.taxa
 ```
 
-There's a new version of usearch (v9) which has a different clustring step (denoising). However, it is a bit slower than cluster_otus (takes about 1.5hrs for 50meg derelicated file rather than about 5 minutes on one of our servers). There isn't a paper for this, so I don't know how it works internally - if each entry is independent there's no problem in splitting and running multiple instances as an array job (well with the free version of usearch anyway).
+There's a new version of usearch (v9) which has a different clustring step (denoising). However, it is a bit slower than cluster_otus.
+There isn't a paper for this, so I don't know how it works internally - if each entry is independent there's no problem in splitting and running multiple instances as an array job (well with the free version of usearch anyway).
 
 ``` shell
+usearch9 -unoise 16S.sorted.fasta -tabbedout out.txt -fastaout 16S.denoised.fa
+
 #mkdir -p temp 
 #split -l 2000 16S.sorted.fasta -a 4 -d temp/xx.
 #TASKS=`ls temp|wc -l`
 #cd temp 
 #find . $PWD -name 'xx*' >split_files.txt
 #qsub -t 1-$TASKS:1 $METAGENOMICS/scripts/submit_denoise.sh 16S.denoised  
-usearch9 -unoise 16S.sorted.fasta -tabbedout out.txt -fastaout 16S.denoised.fa
 ```
 
 ### OTU evolutionary distance
