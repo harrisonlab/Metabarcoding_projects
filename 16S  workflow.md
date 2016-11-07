@@ -41,9 +41,11 @@ $METAGENOMICS/scripts/ARDERI.sh -c 16Spre \
 ### Cluster and assign taxonomy
 This is mostly a UPARSE pipeline, but usearch (free version) runs out of memory for dereplication and subsequent steps. I've written my own scripts to do the dereplication and sorting 
 
-
 ```shell
- $METAGENOMICS/scripts/ARDERI.sh -c UPARSE $METAGENOMICS/data/$RUN/$SSU/filtered $METAGENOMICS/data/$RUN $SSU $FPL $RPL
+ $METAGENOMICS/scripts/ARDERI.sh -c UPARSE \
+ 	$METAGENOMICS/data/$RUN/$SSU/filtered \
+	$METAGENOMICS/data/$RUN \
+	$SSU $FPL $RPL
 ```
 
 The taxa file output by utax is difficult to manipulate in R. Therefore the script mod_taxa.pl should be used to produce an R friendly taxa file. 
