@@ -22,67 +22,59 @@ $METAGENOMICS/scripts/ARDERI.sh -c ITSpre /
 #### Identify SSU, 5.8S  and LSU regions
 
 This will create a large number of array jobs on the cluster
+
+Fungi
 ```shell
-cd $METAGENOMICS/data/$RUN/ITS/fasta
-counter=0
-for f in *.fa;
-do counter=$((counter+1))
-    d=$(echo $f|awk -F"." '{print $1}')
-    mkdir $d
-    split -l 2000 $f -a 3 -d ${d}/$f.
-    cd $d
-    find $PWD -name '*.fa.*' >split_files.txt
-    TASKS=$(wc -l split_files.txt|awk -F" " '{print $1}')
-    if (( $counter % 2 == 0 ))
-    then
-        qsub -t 1-$TASKS:1 $METAGENOMICS/scripts/submit_nscan.sh lsu 20 $METAGENOMICS/hmm/lsu_start.hmm
-        qsub -t 1-$TASKS:1 $METAGENOMICS/scripts/submit_nscan.sh 58se 20 $METAGENOMICS/hmm/58s_end.hmm
-    else
-        qsub -t 1-$TASKS:1 $METAGENOMICS/scripts/submit_nscan.sh ssu 20 $METAGENOMICS/hmm/ssu_end.hmm
-        qsub -t 1-$TASKS:1 $METAGENOMICS/scripts/submit_nscan.sh 58ss 20 $METAGENOMICS/hmm/58s_start.hmm
-    fi
-    cd ..    
-done
+$METAGENOMICS/scripts/ARDERI.sh -c procends /
+	$METAGENOMICS/data/$RUN/ITS/fasta /
+	$METAGENOMICS/hmm/lsu_start.hmm /
+	$METAGENOMICS/hmm/58s_end.hmm /
+	lsu 58se 20
+
+$METAGENOMICS/scripts/ARDERI.sh -c procends /
+	$METAGENOMICS/data/$RUN/ITS/fasta /
+	$METAGENOMICS/hmm/ssu_end.hmm /
+	$METAGENOMICS/hmm/58s_start.hmm /
+	ssu 58ss 20
 ```
 
 Oomycetes
 ```shell
-cd $METAGENOMICS/data/$RUN/OO/filtered
-for f in *.fa;
-do 
-    d=$(echo $f|awk -F"." '{print $1}')
-    mkdir $d
-    split -l 2000 $f -a 3 -d ${d}/$f.
-    cd $d
-    find $PWD -name '*.fa.*' >split_files.txt
-    TASKS=$(wc -l split_files.txt|awk -F" " '{print $1}')
-    qsub -t 1-$TASKS:1 $METAGENOMICS/scripts/submit_nscan.sh ssu 20 $METAGENOMICS/hmm/others/Oomycota/ssu_end.hmm
-    qsub -t 1-$TASKS:1 $METAGENOMICS/scripts/submit_nscan.sh 58ss 20 $METAGENOMICS/hmm/others/Oomycota/58s_start.hmm
-    cd ..    
-done
+$METAGENOMICS/scripts/ARDERI.sh -c procends /
+	$METAGENOMICS/data/$RUN/OO/filtered /
+	$METAGENOMICS/hmm/others/Oomycota/ssu_end.hmm /
+	$METAGENOMICS/hmm/others/Oomycota/58s_start.hmm /
+	ssu 58ss 20
 ```
 
 #### Remove SSU, 5.8S  and LSU regions and merge output
 
-```shell
-for d in $METAGENOMICS/data/$RUN/ITS/fasta/*R1
-do
-	S=$(echo $d|awk -F"/" '{print $NF}'|awk -F"_" '{print $1}');
-	$METAGENOMICS/scripts/ARDERI.sh -c ITS $METAGENOMICS/scripts/rm_SSU_58Ss.R $d "*.\\.ssu" "*.\\.58" $d.fa $S
-done
-```
 If reverse read quality was poor and it was necessary to truncate reads to get more than a couple of reads past set LOWQUAL to TRUE
 
-LOWQUAL keeps reads which lack 5.8S homology - this is necessary as trimming will in most instances have removed the homologous region. 
+LOWQUAL keeps reads which lack 5.8S homology - this is necessary as trimming will in most instances have removed the homologous region
 
+Fungi
 ```shell
-LOWQUAL=TRUE
-for d in $METAGENOMICS/data/$RUN/ITS/fasta/*R2
-do
-	S=$(echo $d|awk -F"/" '{print $NF}'|awk -F"_" '{print $1}');
-	$METAGENOMICS/scripts/ARDERI.sh -c ITS $METAGENOMICS/scripts/rm_58Se_LSU_v2.R $d "*.\\.58" "*.\\.lsu" $d.fa $S $LOWQUAL
-done
+$METAGENOMICS/scripts/ARDERI.sh -c ITS /
+	$METAGENOMICS/data/$RUN/ITS/fasta/*R1 /
+	$METAGENOMICS/scripts/rm_SSU_58Ss.R /
+	"*.\\.ssu" "*.\\.58"
+	
+LOWQUAL=FALSE	
+$METAGENOMICS/scripts/ARDERI.sh -c ITS /
+	$METAGENOMICS/data/$RUN/ITS/fasta/*R2 /
+	$METAGENOMICS/scripts/rm_58Se_LSU_v2.R /
+	"*.\\.58" "*.\\.lsu" $LOWQUAL	
 ```
+
+Oomycetes
+```shell
+$METAGENOMICS/scripts/ARDERI.sh -c ITS /
+	$METAGENOMICS/data/$RUN/OO/filtered/*[0-9] /
+	$METAGENOMICS/scripts/rm_SSU_58Ss.R /
+	"*.\\.ssu" "*.\\.58"
+```
+
 
 #### Returns ITS1 where fasta header matches ITS2, unique ITS1 and unique ITS2
 
