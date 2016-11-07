@@ -9,13 +9,12 @@ Script will:<br>
 4. Convert FASTQ to single line FASTA
 
 ```shell
-for f in $METAGENOMICS/data/$RUN/ITS/fastq/*R1*.fastq; 
-do     
-	R1=$f;     
-	R2=$(echo $R1|sed 's/_R1_/_R2_/');     
-	S=$(echo $f|awk -F"_" -v D=$RUN '{print $2"D"D}');
-	$METAGENOMICS/scripts/ARDERI.sh -c ITSpre $R1 $R2 $S  $METAGENOMICS/data/$RUN/ITS/fasta $METAGENOMICS/primers/primers.db 200 200 1; 
-done
+
+$METAGENOMICS/scripts/ARDERI.sh -c ITSpre /
+	$METAGENOMICS/data/$RUN/ITS/fastq/*R1*.fastq /
+	$METAGENOMICS/data/$RUN/ITS/fasta /
+	$METAGENOMICS/primers/primers.db /
+	200 200 1; 
 ```
 
 ### SSU/58S/LSU removal 
