@@ -75,7 +75,7 @@ $METAGENOMICS/scripts/ARDERI.sh -c ITS /
 	"*.\\.ssu" "*.\\.58"
 ```
 
-#### Returns ITS1 where fasta header matches ITS2, unique ITS1 and unique ITS2
+#### Return ITS1 where fasta header matches ITS2, unique ITS1 and unique ITS2
 
 ```shell
 mkdir -p $METAGENOMICS/data/$RUN/ITS/filtered
