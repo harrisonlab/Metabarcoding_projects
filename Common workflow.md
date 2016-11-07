@@ -25,17 +25,19 @@ From same folder containing fastq files ran:
 
 ## Demultiplexing
 
-### OLD (fast) method
 We have multiplexed 16S and ITS PCR reactions in same sequencing run which can be seperated by the index
 Run demulti.pl to demultiplex these into fungal and bacterial fastq files. Ambiguous reads are written to two (f & r) seperate files.
 
-Running something like the below should give a good indication of what index_1 and index_2 should be - this is useful if you don't knwo what the primer sequences are and to get a feel of how many mismatches to use. 
+Running something like the below should give a good indication of what index_1 and index_2 should be - this is useful if you don't knwo what the primer sequences are and to get a feel of how many mismatches (if necesary) to use. 
 ```shell
 grep -x "[ATCG]\+" $(ls|head -n1)| cut -c-16|sort|uniq > zzexpressions.txt
 grep -x "[ATCG]\+" $(ls|head -n1)| cut -c-16|sort|uniq|xargs -I r grep -c ^r $(ls|head -n1) >zzcounts.txt
 ```
 
-I typically use the first 8 nucleotides of the primer and allow 2 mismatches (the final parameter). Anything sequence which has too many mismatches, or none mathching primers is removed to a file x.ambigous.fq
+I typically use the first 8 nucleotides of the primer and allow 0 mismatches (the final parameter). Any sequence which has too many mismatches, or none mathching primers is removed to a file x.ambigous.fq
+
+demultiplex can accept any number of primer pairs (though for this project only 2 primer pairs are multiplexed)
+
 ```shell
 for f in $METAGENOMICS/data/$RUN/fastq/*_R1_*
 do     
@@ -43,7 +45,7 @@ do
 	R2=$(echo $R1|sed 's/_R1_/_R2_/')    
 	S=$(echo $f|awk -F"_" '{print $2}')     
 	echo $f    
-	$METAGENOMICS/scripts/ARDERI.sh -c demultiplex $R1 $R2 1 "CCTACGGG" "GACTACHV" "CTTGGTCA" "ATATGCTT" "GAAGGTGA" "TCCTCCGC" "GAAGGTGA" "AGCGTTCT" "CGCGAATR" "GGCGGTAT"
+	$METAGENOMICS/scripts/ARDERI.sh -c demultiplex $R1 $R2 0 "CCTACGGG" "GACTACHV" "CTTGGTCA" "ATATGCTT" "GAAGGTGA" "TCCTCCGC" "GAAGGTGA" "AGCGTTCT" "CGCGAATR" "GGCGGTAT"
 done   
 ```
 	Type	F	R
