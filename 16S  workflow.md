@@ -30,18 +30,11 @@ Unfiltered joined reads are saved to unfiltered folder, filtered reads are saved
 16Spre.sh forward_read reverse_read output_file_name output_directory adapters min_size percent_diff max_errrors 
 
 ```shell
-
-$METAGENOMICS/scripts/ARDERI.sh -c 16Spre $METAGENOMICS/data/$RUN/$SSU/fastq/*R1*.fastq  $METAGENOMICS/data/$RUN/$SSU/filtered $METAGENOMICS/primers/adapters.db $MINL $MINOVER $QUAL
-
-
-for f in $METAGENOMICS/data/$RUN/$SSU/fastq/*R1*.fastq
-do
-    R1=$f
-    R2=$(echo $R1|sed 's/_R1_/_R2_/')
-    S=$(echo $f|awk -F"_" -v D=$RUN '{print $2"D"D}')
-    $METAGENOMICS/scripts/ARDERI.sh -c 16Spre $R1 $R2 $S  $METAGENOMICS/data/$RUN/$SSU/filtered $METAGENOMICS/primers/adapters.db $MINL $MINOVER $QUAL
-done   
-
+$METAGENOMICS/scripts/ARDERI.sh -c 16Spre \
+	$METAGENOMICS/data/$RUN/$SSU/fastq/*R1*.fastq \
+	$METAGENOMICS/data/$RUN/$SSU/filtered \
+	$METAGENOMICS/primers/adapters.db \
+	$MINL $MINOVER $QUAL
 ```
 ## UPARSE
 
