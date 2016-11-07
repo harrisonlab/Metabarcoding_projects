@@ -42,16 +42,15 @@ done
 ## UPARSE
 
 ### Cluster and assign taxonomy
-Problem with (free version) usearch running out of memory for dereplication and subsequent steps. combine_uniq.pl will combine several sets of dereplicated sequences, maintaining the counts.
-The sorting algorithm may run out of memory as well - it shouldn't be too difficult to adjust combine_uniq.pl to sort and filter on size (though the cluster algorithm will also filter on min size)
+This is mostly a UPARSE pipeline, but usearch (free version) runs out of memory for dereplication and subsequent steps. I've written my own scripts to do the dereplication and sorting 
 
-get_uniq.pl will give output comparable to derep_fulllength and sortbysize for larger sequence collections. get_uniq.pl requires unformatted fasta (as in sequence not split every 80 nucleotides). It also sorts and removes singletons. Performance wise this is slightly faster than the usearch method (though both only take minutes for several gig of data) 
-
-The taxa file output by utax is difficult to manipulate in R. Therefore the script mod_taxa.pl should be used to produce an R friendly taxa file.
 
 ```shell
  $METAGENOMICS/scripts/ARDERI.sh -c UPARSE $METAGENOMICS/data/$RUN/$SSU/filtered $METAGENOMICS/data/$RUN $SSU $FPL $RPL
 ```
+
+The taxa file output by utax is difficult to manipulate in R. Therefore the script mod_taxa.pl should be used to produce an R friendly taxa file. 
+NOTE:- I still need to build nematode utax taxonomy database from Silva_SSU.
 
 ```shell
 #### Assign Taxonomy
