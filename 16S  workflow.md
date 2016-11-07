@@ -1,17 +1,26 @@
 # 16/18S workflow
 
-## Taxonomy
+## Conditions
 SSU determines the file location
+FPL is forward primer length
+RPL is reverse primer length
+
 ```shell
 #bacteria
 SSU=16S
-fpl=17 # forward primer length
-rpl=21 # reverse primer length
+FPL=17 
+RPL=21 
 
 # nematodes
 SSU=NEM 
-fpl=23
-rpl=18
+FPL=23
+RPL=18
+
+# all
+MINL=300
+MINOVER=5
+QUAL=0.5
+
 ```
 
 ## Pre-processing
@@ -26,7 +35,7 @@ do
     R1=$f
     R2=$(echo $R1|sed 's/_R1_/_R2_/')
     S=$(echo $f|awk -F"_" -v D=$RUN '{print $2"D"D}')
-    $METAGENOMICS/scripts/ARDERI.sh -c 16Spre $R1 $R2 $S  $METAGENOMICS/data/$RUN/$SSU/filtered $METAGENOMICS/primers/adapters.db 300 5 0.5
+    $METAGENOMICS/scripts/ARDERI.sh -c 16Spre $R1 $R2 $S  $METAGENOMICS/data/$RUN/$SSU/filtered $METAGENOMICS/primers/adapters.db $MINL $MINOVER $QUAL
 done   
 
 ```
@@ -41,7 +50,7 @@ get_uniq.pl will give output comparable to derep_fulllength and sortbysize for l
 The taxa file output by utax is difficult to manipulate in R. Therefore the script mod_taxa.pl should be used to produce an R friendly taxa file.
 
 ```shell
- $METAGENOMICS/scripts/ARDERI.sh -c UPARSE $METAGENOMICS/data/$RUN/$SSU/filtered $METAGENOMICS/data/$RUN $SSU $fpl $rpl
+ $METAGENOMICS/scripts/ARDERI.sh -c UPARSE $METAGENOMICS/data/$RUN/$SSU/filtered $METAGENOMICS/data/$RUN $SSU $FPL $RPL
 ```
 
 ```shell
@@ -83,7 +92,7 @@ fq2fa_v2.pl could be replaced with a similar awk script as per ITS - will save a
 for f in $METAGENOMICS/data/$RUN/$SSU/unfiltered/*.fastq
 do
 	S=$(echo $f|awk -F"." '{print $1}'|awk -F"/" '{print $NF}')
-	$METAGENOMICS/scripts/fq2fa_v2.pl $f $METAGENOMICS/data/$RUN/$SSU.unfiltered.fa $S $fpl $rpl
+	$METAGENOMICS/scripts/fq2fa_v2.pl $f $METAGENOMICS/data/$RUN/$SSU.unfiltered.fa $S $FPL $RPL
 done
 #### Make table (Creates an OTU table of read counts per OTU per sample)
 usearch8.1 -usearch_global $SSU.unfiltered.fa -db $SSU.otus.fa -strand plus -id 0.97 -biomout $SSU.otu_table.biom -otutabout $SSU.otu_table.txt
