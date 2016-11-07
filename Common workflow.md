@@ -39,14 +39,14 @@ I typically use the first 8 nucleotides of the primer and allow 0 mismatches (th
 demultiplex can accept any number of primer pairs (though for this project only 2 primer pairs are multiplexed)
 
 ```shell
-for f in $METAGENOMICS/data/$RUN/fastq/*_R1_*
-do     
-	R1=$f     
-	R2=$(echo $R1|sed 's/_R1_/_R2_/')    
-	S=$(echo $f|awk -F"_" '{print $2}')     
-	echo $f    
-	$METAGENOMICS/scripts/ARDERI.sh -c demultiplex $R1 $R2 0 "CCTACGGG" "GACTACHV" "CTTGGTCA" "ATATGCTT" "GAAGGTGA" "TCCTCCGC" "GAAGGTGA" "AGCGTTCT" "CGCGAATR" "GGCGGTAT"
-done   
+P1F=CCTACGGG # bacteria
+P1R=GACTACHV 
+P2F=CTTGGTCA # fungi
+P2R=ATATGCTT
+
+METAGENOMICS/scripts/ARDERI.sh -c demultiplex /
+	$METAGENOMICS/data/$RUN/fastq/*_R1_* 0/
+	$P1F $P1R $P2F $P2R
 ```
 	Type	F	R
 	16S	CCTACGGG	GACTACHV
@@ -54,8 +54,6 @@ done
 	ITS4-6	GAAGGTGA	TCCTCCGC
 	ITS7-6	GAAGGTGA	AGCGTTCT
 	Nem	CGCGAATR	GGCGGTAT
-	
-
 
 ```shell
 mkdir -p $METAGENOMICS/data/$RUN/16S/fastq
