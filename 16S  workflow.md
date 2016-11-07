@@ -3,8 +3,15 @@
 ## Taxonomy
 SSU determines the file location
 ```shell
-SSU=16S # bacteria
-SSU=NEM # nematodes
+#bacteria
+SSU=16S
+fpl=17 # forward primer length
+rpl=21 # reverse primer length
+
+# nematodes
+SSU=NEM 
+fpl=23
+rpl=18
 ```
 
 ## Pre-processing
@@ -34,7 +41,7 @@ get_uniq.pl will give output comparable to derep_fulllength and sortbysize for l
 The taxa file output by utax is difficult to manipulate in R. Therefore the script mod_taxa.pl should be used to produce an R friendly taxa file.
 
 ```shell
- $METAGENOMICS/scripts/ARDERI.sh -c UPARSE $METAGENOMICS/data/$RUN/$SSU/filtered $METAGENOMICS/data/$RUN $SSU 17 21 #23 18 NEM
+ $METAGENOMICS/scripts/ARDERI.sh -c UPARSE $METAGENOMICS/data/$RUN/$SSU/filtered $METAGENOMICS/data/$RUN $SSU $fpl $rpl
 ```
 
 ```shell
@@ -76,7 +83,7 @@ fq2fa_v2.pl could be replaced with a similar awk script as per ITS - will save a
 for f in $METAGENOMICS/data/$RUN/$SSU/unfiltered/*.fastq
 do
 	S=$(echo $f|awk -F"." '{print $1}'|awk -F"/" '{print $NF}')
-	$METAGENOMICS/scripts/fq2fa_v2.pl $f $METAGENOMICS/data/$RUN/$SSU.unfiltered.fa $S 17 21 #23 18 NEM
+	$METAGENOMICS/scripts/fq2fa_v2.pl $f $METAGENOMICS/data/$RUN/$SSU.unfiltered.fa $S $fpl $rpl
 done
 #### Make table (Creates an OTU table of read counts per OTU per sample)
 usearch8.1 -usearch_global $SSU.unfiltered.fa -db $SSU.otus.fa -strand plus -id 0.97 -biomout $SSU.otu_table.biom -otutabout $SSU.otu_table.txt
@@ -91,8 +98,8 @@ do
 	R1=$f
 	R2=$(echo $R1|sed 's/\_R1_/\_R2_/')
 	S=$(echo $f|awk -F"." '{print $1}'|awk -F"/" '{print $NF}')
-	$METAGENOMICS/scripts/fq2fa_v2.pl $R1 $METAGENOMICS/data/$RUN/16S.r1.unfiltered.fa $S 17 0
-	$METAGENOMICS/scripts/fq2fa_v2.pl $R2 $METAGENOMICS/data/$RUN/16S.r2.unfiltered.fa $S 21 30 rev
+	$METAGENOMICS/scripts/fq2fa_v2.pl $R1 $METAGENOMICS/data/$RUN/16S.r1.unfiltered.fa $S $fpl 0
+	$METAGENOMICS/scripts/fq2fa_v2.pl $R2 $METAGENOMICS/data/$RUN/16S.r2.unfiltered.fa $S $rpl 30 rev
 done
 usearch8.1 -usearch_global 16S.r1.unfiltered.fa -db 16S.otus.fa -strand plus -id 0.95 -userout hits.r1.txt -userfields query+target+id
 usearch8.1 -usearch_global 16S.r2.unfiltered.fa -db 16S.otus.fa -strand plus -id 0.95 -userout hits.r2.txt -userfields query+target+id
