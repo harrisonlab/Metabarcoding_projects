@@ -195,10 +195,18 @@ dev.off()
 p.corr <- correr2(pc.reshape$PC1)
 d<-as.data.frame(cbind(p.corr,pc.reshape$distance[1:22],rep(1,22)))
 names(d) <- c("correlation","distance","Significant")
+
+xlims=NULL
+ylims=c(-1,1)
 g <- ggplot(d, aes(x = distance, y = correlation))
+g <- g + coord_fixed(ratio = 10, xlim = xlims, ylim = ylims, expand = TRUE)
+g <- g + theme_bw()
+g <- g + theme(panel.border = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank())
+g <- g + theme(axis.line.x = element_line(size=0.5,colour = "black"),axis.line.y = element_line(size=0.5,colour = "black"),axis.text = element_text(colour = "black"))
 g <- g + geom_line(na.rm=T)
 g <- g + geom_point(na.rm=T,size=2.5,mapping=aes())
 g
+dev.off()
 ```
 
 
