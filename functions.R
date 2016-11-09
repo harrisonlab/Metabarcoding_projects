@@ -222,6 +222,8 @@ plotOrd <- function (
 	ylims=NULL,
 	xlabel="Dimension 1",
 	ylabel="Dimension 2",
+	dimx=1,
+	dimy=2,
 	...
 ) {
 
@@ -244,10 +246,10 @@ plotOrd <- function (
 	
 	if (!missing(shapes)) {
 		shape <- as.factor(colData[[shapes]])
-		d <- data.frame(PC1 = obj[, 1], PC2 = obj[, 2], group = group,design.df,shape = shape)
+		d <- data.frame(PC1 = obj[, dimx], PC2 = obj[, dimy], group = group,design.df,shape = shape)
 		colnames(d)[grep("shape", colnames(d))] <- shapes
 	} else {
-		d <- data.frame(PC1 = obj[, 1], PC2 = obj[, 2], group = group,design.df)
+		d <- data.frame(PC1 = obj[, dimx], PC2 = obj[, dimy], group = group,design.df)
 	}
 
 	colnames(d)[grep("group", colnames(d))] <- design
@@ -274,7 +276,7 @@ plotOrd <- function (
 		g <- g + scale_colour_discrete(name=design)
 
 		if(!is.null(cluster)) {
-			km <- kmeans(d[,1:2],centers=nlevels(group),nstart=5)
+			km <- kmeans(obj,...)
 			d$Cluster<-km$cluster
 			g<-g+stat_ellipse(data=d,mapping=aes(x=PC1,y=PC2,fill=factor(Cluster)), geom="polygon", level=cluster, alpha=0.2)
 		}
@@ -336,6 +338,8 @@ plotTaxa <- function(
 		obj[[1]] <- as.data.frame(transform(obj,as.formula(paste0("~",design)),...))
 		design<-temp
 	}
+	#obj[[1]][obj[[1]]] <- obj[[1]][obj[[1]]]+abs(min(obj[[1]][obj[[1]]]))
+
 	obj[[1]][obj[[1]]<0] <- 0
 	
 	taxa_sum <- sumTaxa(obj,taxon=taxon,design=design)
