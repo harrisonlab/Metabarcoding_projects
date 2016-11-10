@@ -75,10 +75,9 @@ mynormbiom@otu_table@.Data <- counts(phylo_to_des(mynormbiom,fitType="local"),no
 ## one of my samples had a massively over inflated count for a single OTU. Replacing calcFactors with a new geoMean calculation to ignore 0 values fixes this..
 #mynormbiom@otu_table@.Data <- counts(phylo_to_des(mynormbiom,fitType="local",calcFactors=function(d)geoMeans(d),normalized=T))
 
-
+cond="Y"
 myfiltbiom <- mynormbiom
 myfiltbiom <- prune_samples((sample_data(mynormbiom)[[10]]=="experiment"),mynormbiom)
-cond="Y"
 myfiltbiom <- prune_samples(sample_data(myfiltbiom)[[1]]==cond,myfiltbiom)
 
 otu_prop_table <- t(t(otu_table(myfiltbiom))/colSums(otu_table(myfiltbiom)))
