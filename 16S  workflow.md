@@ -61,7 +61,11 @@ There's a new version of usearch (v9) which has a different approach to producin
 There isn't a paper for this, so I don't know how it works internally - if each entry is independent there's no problem in splitting and running multiple instances as an array job (well with the free version of usearch anyway). 
 
 UPDATE there is a preprint paper available at: http://biorxiv.org/content/early/2016/10/15/081257
-It will be hard to make this into an array job (not impossible).
+It will be hard to make this into an array job (not impossible)....
+
+First attempt -  from the paper skew(M, C) ≤ β(d) is a valid member of a cluster defined by C. Where  M is the abundance of the "potential member", C is the abundance of the centroid. β(d) is defined as β(d)=1/2αd + 1
+Which for a Levenshtein distance (d) of 1 and α =2,   β(d) = 1/8. 
+Therefore using the default unoise parameters of minimum size 4, any centroid with size ≤ 31 can't have additional members.  
 
 ``` shell
 usearch9 -unoise 16S.sorted.fasta -tabbedout out.txt -fastaout 16S.denoised.fa
