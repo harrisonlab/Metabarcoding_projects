@@ -57,7 +57,7 @@ usearch8.1 -utax 16S.otus.fa -db $METAGENOMICS/taxonomies/utax/16s_ref.udb -stra
 cat 16S.rdp|$METAGENOMICS/scripts/mod_taxa.pl > 16S.taxa
 ```
 
-There's a new version of usearch (v9) which has a different clustring step (denoising). However, it is markedly slower than cluster_otus.
+There's a new version of usearch (v9) which has a different approach to producing clusters (denoising). However, it is markedly slower than cluster_otus.
 There isn't a paper for this, so I don't know how it works internally - if each entry is independent there's no problem in splitting and running multiple instances as an array job (well with the free version of usearch anyway). 
 
 UPDATE there is a preprint paper available at: http://biorxiv.org/content/early/2016/10/15/081257
