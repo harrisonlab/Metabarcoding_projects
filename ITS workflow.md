@@ -98,17 +98,21 @@ mv *r2* R2/.
 
 ## UPARSE
 
-### Cluster and assign taxonomy
-```shell
-ITS=ITS # fungi
-ITS=OO # Oomycetes
+### Cluster 
+This is mostly a UPARSE pipeline, but usearch (free version) runs out of memory for dereplication and subsequent steps. I've written my own scripts to do the dereplication and sorting 
 
-$METAGENOMICS/scripts/ARDERI.sh -c UPARSE 
-	$METAGENOMICS/data/$RUN/$ITS/filtered 
-	$METAGENOMICS/data/$RUN 
-	$ITS 0 0
+```shell
+$METAGENOMICS/scripts/ARDERI.sh -c UPARSE \ $METAGENOMICS $RUN $SSU $FPL $RPL
+```
+### Assign taxonomy
+NOTE:- I still need to build nematode utax taxonomy database from Silva_SSU.
+
+```shell
+$METAGENOMICS/scripts/ARDERI.sh -c tax_assign \ $METAGENOMICS $RUN $SSU 
+```
 
 ##### Taxonomy
+```shell
 usearch8.1 -utax ITS.otus.fa -db $METAGENOMICS/taxonomies/utax/ITS_ref.udb -strand both -utaxout ITS.reads.utax -rdpout ITS.rdp -alnout ITS.aln.txt
 cat ITS.rdp|$METAGENOMICS/scripts/mod_taxa.pl > ITS.taxa
 
