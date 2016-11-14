@@ -102,7 +102,7 @@ do
 	$METAGENOMICS/scripts/fq2fa_v2.pl $f $METAGENOMICS/data/$RUN/$SSU.unfiltered.fa $S $FPL $RPL
 done
 #### Make table (Creates an OTU table of read counts per OTU per sample)
-usearch8.1 -usearch_global $SSU.unfiltered.fa -db $SSU.otus.fa -strand plus -id 0.97 -biomout $SSU.otu_table.biom -otutabout $SSU.otu_table.txt
+usearch9 -usearch_global $SSU.unfiltered.fa -db $SSU.otus.fa -strand plus -id 0.97 -biomout $SSU.otu_table.biom -otutabout $SSU.otu_table.txt
 ```
 
 Occasionally, due to v.poor reverse read quality, joining of f+r reads fails for the vast majority. The following will cluster f+r reads separately and then merge read counts which align to the same OTU. I've dropped the clustering down to 0.95 similarity - both reads aligning to the same OTU at this similarity, I'd suggest is pretty good evidence they're the same. 
@@ -117,8 +117,8 @@ do
 	$METAGENOMICS/scripts/fq2fa_v2.pl $R1 $METAGENOMICS/data/$RUN/16S.r1.unfiltered.fa $S $fpl 0
 	$METAGENOMICS/scripts/fq2fa_v2.pl $R2 $METAGENOMICS/data/$RUN/16S.r2.unfiltered.fa $S $rpl 30 rev
 done
-usearch8.1 -usearch_global 16S.r1.unfiltered.fa -db 16S.otus.fa -strand plus -id 0.95 -userout hits.r1.txt -userfields query+target+id
-usearch8.1 -usearch_global 16S.r2.unfiltered.fa -db 16S.otus.fa -strand plus -id 0.95 -userout hits.r2.txt -userfields query+target+id
+usearch9 -usearch_global 16S.r1.unfiltered.fa -db 16S.otus.fa -strand plus -id 0.95 -userout hits.r1.txt -userfields query+target+id
+usearch9 -usearch_global 16S.r2.unfiltered.fa -db 16S.otus.fa -strand plus -id 0.95 -userout hits.r2.txt -userfields query+target+id
 $METAGENOMICS/scripts/ARDERI.sh -c merge_hits $METAGENOMICS/scripts/merge_hits.R hits.r1.txt hits.r2.txt 16S.otu_table.txt
 $METAGENOMICS/scripts/otu_to_biom.pl row_biom col_biom data_biom >16S.otu_table.biom
 rm row_biom col_biom data_biom
