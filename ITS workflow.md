@@ -113,13 +113,39 @@ NOTE:- I still need to build nematode utax taxonomy database from Silva_SSU.
 $METAGENOMICS/scripts/ARDERI.sh -c tax_assign \ $METAGENOMICS $RUN $SSU 
 ```
 
-### OTU table creation
+### Create OTU tables
 
-First assign ITS1 reads to OTUs. Then, for any non-hits, attemp to assign reverse read (ITS2) to an OTU. 
+First assigns ITS1 reads to OTUs. Then, for any non-hits, attemp to assign reverse read (ITS2) to an OTU. 
 
 The ITS2 stuff could be parellelised on the cluster - probably not worth the effort as it's not too slow (about 2 - 3 minutes for 100 samples). 
 
+```shell
+$METAGENOMICS/scripts/ARDERI.sh -c OTU \ $METAGENOMICS $RUN $SSU $FPL $RPL
+```
 
+
+###[16S workflow](../master/16S%20%20workflow.md)
+###[Statistical analysis](../master/statistical%20analysis.md)
+
+
+
+## Old stuff
+
+```shell
+
+
+##### Concatenate
+#cat $METAGENOMICS/data/$RUN/ITS/filtered/*.fa > $METAGENOMICS/data/$RUN/ITS.t.fa
+##### Pad
+#X=`cat ITS.t.fa|awk '{if ($1!~/>/) {print length($0)};}'|awk '$0>x{x=$0};END{print x}'`
+#usearch8.1 -fastx_truncate ITS.t.fa -trunclen $X -padlen $X -fastaout ITS.fa
+#rm ITS.t.fa
+##### Dereplicate
+#cat ITS.fa|awk '/^>/ {printf("\n%s\n",$0);next; } { printf("%s",$0);}  END {printf("\n");}'|$METAGENOMICS/scripts/get_uniq.pl > #ITS.sorted.fasta 
+#rm ITS.fa
+##### Cluster
+#usearch8.1 -cluster_otus ITS.sorted.fasta -otus ITS.otus.fa -uparseout ITS.out.up -relabel OTU -minsize 2 
+```
 ```shell
 ##### Concatenate unfiltered reads (Unfiltered fastq will need to be converted to fasta first)
 for f in $METAGENOMICS/data/$RUN/ITS/unfiltered/*.r1.*
@@ -144,27 +170,4 @@ rm t1
 
 usearch9 -usearch_global ITS2.unfiltered.fa -db ITS.otus.fa -strand both -id 0.97 -biomout ITS2.otu_table.biom -otutabout ITS2.otu_table.txt
 
-```	
-
-###[16S workflow](../master/16S%20%20workflow.md)
-###[Statistical analysis](../master/statistical%20analysis.md)
-
-
-
-## Old stuff
-
-```shell
-
-
-##### Concatenate
-#cat $METAGENOMICS/data/$RUN/ITS/filtered/*.fa > $METAGENOMICS/data/$RUN/ITS.t.fa
-##### Pad
-#X=`cat ITS.t.fa|awk '{if ($1!~/>/) {print length($0)};}'|awk '$0>x{x=$0};END{print x}'`
-#usearch8.1 -fastx_truncate ITS.t.fa -trunclen $X -padlen $X -fastaout ITS.fa
-#rm ITS.t.fa
-##### Dereplicate
-#cat ITS.fa|awk '/^>/ {printf("\n%s\n",$0);next; } { printf("%s",$0);}  END {printf("\n");}'|$METAGENOMICS/scripts/get_uniq.pl > #ITS.sorted.fasta 
-#rm ITS.fa
-##### Cluster
-#usearch8.1 -cluster_otus ITS.sorted.fasta -otus ITS.otus.fa -uparseout ITS.out.up -relabel OTU -minsize 2 
 ```
