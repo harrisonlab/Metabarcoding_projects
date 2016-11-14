@@ -97,12 +97,14 @@ mv *r2* R2/.
 ```
 
 ## UPARSE
+FPL=23 
+RPL=21
 
 ### Cluster 
 This is mostly a UPARSE pipeline, but usearch (free version) runs out of memory for dereplication and subsequent steps. I've written my own scripts to do the dereplication and sorting 
 
 ```shell
-$METAGENOMICS/scripts/ARDERI.sh -c UPARSE \ $METAGENOMICS $RUN $SSU $FPL $RPL
+$METAGENOMICS/scripts/ARDERI.sh -c UPARSE \ $METAGENOMICS $RUN $SSU 0 0
 ```
 ### Assign taxonomy
 NOTE:- I still need to build nematode utax taxonomy database from Silva_SSU.
@@ -123,7 +125,7 @@ The ITS2 stuff could be parellelised on the cluster - probably not worth the eff
 for f in $METAGENOMICS/data/$RUN/ITS/unfiltered/*.r1.*
 do
 	S=$(echo $f|awk -F"." '{print $1}'|awk -F"/" '{print $NF}')
-	awk -v S="$S" -F" " '{if(NR % 4 == 1){print ">" S "." count+1 ";"$1;count=count+1} if(NR % 4 == 2){$1=substr($1,23);print $1}}' $f >>ITS1.unfiltered.fa
+	awk -v S="$S" -v FPL=$FPL -F" " '{if(NR % 4 == 1){print ">" S "." count+1 ";"$1;count=count+1} if(NR % 4 == 2){$1=substr($1,FPL);print $1}}' $f >>ITS1.unfiltered.fa
 done
 
 ##### Make table (creates an OTU table of read counts per OTU per sample)
@@ -135,7 +137,7 @@ usearch9 -usearch_global ITS1.unfiltered.fa -db ITS.otus.fa -strand plus -id 0.9
 for f in $METAGENOMICS/data/$RUN/ITS/unfiltered/*.r2.*
 do
 	S=$(echo $f|awk -F"." '{print $1}'|awk -F"/" '{print $NF}')
-	awk -v S="$S" -F" " '{if(NR % 4 == 1){print ">" S "." count+1 ";"$1;count=count+1} if(NR % 4 == 2){$1=substr($1,21);print $1}}' $f >t1
+	awk -v S="$S" -v RPL=$RPL -F" " '{if(NR % 4 == 1){print ">" S "." count+1 ";"$1;count=count+1} if(NR % 4 == 2){$1=substr($1,RPL);print $1}}' $f >t1
 	grep "$S.*\*" ITS1.hits.out|awk -F";" '{print $2}'|awk -F" " '{print $1}'|$METAGENOMICS/scripts/seq_select_v2.pl t1 >> ITS2.unfiltered.fa
 done
 rm t1
