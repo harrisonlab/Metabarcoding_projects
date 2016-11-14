@@ -42,20 +42,20 @@ $METAGENOMICS/scripts/ARDERI.sh -c 16Spre \
 This is mostly a UPARSE pipeline, but usearch (free version) runs out of memory for dereplication and subsequent steps. I've written my own scripts to do the dereplication and sorting 
 
 ```shell
-$METAGENOMICS/scripts/ARDERI.sh -c UPARSE \ $METAGENOMICS $RUN $SSU $FPL $RPL
+$METAGENOMICS/scripts/ARDERI.sh -c UPARSE $METAGENOMICS $RUN $SSU $FPL $RPL
 ```
 
 ### Assign taxonomy
 NOTE:- I still need to build nematode utax taxonomy database from Silva_SSU.
 
 ```shell
-$METAGENOMICS/scripts/ARDERI.sh -c tax_assign \ $METAGENOMICS $RUN $SSU 
+$METAGENOMICS/scripts/ARDERI.sh -c tax_assign $METAGENOMICS $RUN $SSU 
 ```
 
 ### Create OTU table 
 
 ```shell
-$METAGENOMICS/scripts/ARDERI.sh -c OTU \ $METAGENOMICS $RUN $SSU $FPL $RPL
+$METAGENOMICS/scripts/ARDERI.sh -c OTU $METAGENOMICS $RUN $SSU $FPL $RPL
 ```
 
 usearch_global may run out of memory as well. 16S.unfiltered.fa can be split into chunks (reads from a single sample must not be split across chunks) and seperate OTU tables created for each chunk. It is trivial to recombine these in R. The above script will retain the catted unfiltered reads if the call to usearch global fails.
