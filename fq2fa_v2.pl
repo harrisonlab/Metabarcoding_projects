@@ -33,7 +33,8 @@ my $count = 2;
 my $fid="";
 while (my $id_line = <FILE>) {
     if ($count%4==2) {
-    	$fid=$id_line;
+    	$id_line=~s/\s.*//;
+	$fid=$id_line;
     }
     $count++;
     next if ($count%4!=0);

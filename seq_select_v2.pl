@@ -17,7 +17,7 @@ while ( <STDIN> ) {
 	$seq{$_}="";
 }
 
-my ($inpFile) = $ARGV[0] || die "Please provide fastq input" ; # this is actually fasta now 
+my ($inpFile) = $ARGV[0] || die "Please provide fasta input" ; 
 unless(open(INFILE, $inpFile) ) {
 	print("Cannot open input file \"$inpFile\"\n\n");
      	exit;

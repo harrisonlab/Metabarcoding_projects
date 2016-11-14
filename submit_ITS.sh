@@ -3,13 +3,14 @@
 #$ -cwd
 #$ -l virtual_free=4G
 
-RFILE=$1
-DIR=$2
-REG1=$3
-REG2=$4
-FASTA=$5
-ID=$6
-LOWQUAL=$7
+
+DIR=$1
+FASTA=${1}.fa
+ID=$2
+RFILE=$3
+REG1=$4
+REG2=$5
+LOWQUAL=$6
 
 cd $DIR
 

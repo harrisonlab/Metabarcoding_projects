@@ -33,8 +33,8 @@ if ($fasta ne "") {
 
 
 my $counter=1;
-foreach my $key (sort {$seq{$a} <=> $seq{$b}} keys %seq) {
-	if($seq{$key}>1) {
+foreach my $key (sort {$seq{$b} <=> $seq{$a}} keys %seq) {
+	if($seq{$key}>3) {
 		print">uniq.$counter;size=$seq{$key};\n$key\n";
 		$counter++;
 	}
