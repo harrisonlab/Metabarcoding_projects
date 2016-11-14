@@ -65,7 +65,9 @@ It will be hard to make this into an array job (not impossible)....
 
 First attempt -  from the paper skew(M, C) ≤ β(d) is a valid member of a cluster defined by C. Where  M is the abundance of the "potential member", C is the abundance of the centroid. β(d) is defined as β(d)=1/2αd + 1
 Which for a Levenshtein distance (d) of 1 and α =2,   β(d) = 1/8. 
-Therefore using the default unoise parameters of minimum size 4, any centroid with size ≤ 31 can't have additional members.  
+Therefore using the default unoise parameters of minimum size 4, any centroid with size ≤ 31 can't have additional members. The vast majority of unique seqeunces have size ≤ 31, therefore could denoise >31 and dechime < 32 and then split the dechimed sequences and denoise in parallel (with the denoised >31 size sequences).
+
+Nice idea, but it's the dechime that is taking the time...
 
 ``` shell
 usearch9 -unoise 16S.sorted.fasta -tabbedout out.txt -fastaout 16S.denoised.fa
