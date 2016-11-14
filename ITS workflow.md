@@ -111,13 +111,6 @@ NOTE:- I still need to build nematode utax taxonomy database from Silva_SSU.
 $METAGENOMICS/scripts/ARDERI.sh -c tax_assign \ $METAGENOMICS $RUN $SSU 
 ```
 
-##### Taxonomy
-```shell
-usearch8.1 -utax ITS.otus.fa -db $METAGENOMICS/taxonomies/utax/ITS_ref.udb -strand both -utaxout ITS.reads.utax -rdpout ITS.rdp -alnout ITS.aln.txt
-cat ITS.rdp|$METAGENOMICS/scripts/mod_taxa.pl > ITS.taxa
-
-```
-
 ### OTU table creation
 
 First assign ITS1 reads to OTUs. Then, for any non-hits, attemp to assign reverse read (ITS2) to an OTU. 
@@ -134,7 +127,7 @@ do
 done
 
 ##### Make table (creates an OTU table of read counts per OTU per sample)
-usearch8.1 -usearch_global ITS1.unfiltered.fa -db ITS.otus.fa -strand plus -id 0.97 -biomout ITS1.otu_table.biom -otutabout ITS1.otu_table.txt -output_no_hits -userout ITS1.hits.out -userfields query+target
+usearch9 -usearch_global ITS1.unfiltered.fa -db ITS.otus.fa -strand plus -id 0.97 -biomout ITS1.otu_table.biom -otutabout ITS1.otu_table.txt -output_no_hits -userout ITS1.hits.out -userfields query+target
 ```
 
 ```shell
@@ -147,7 +140,7 @@ do
 done
 rm t1
 
-usearch8.1 -usearch_global ITS2.unfiltered.fa -db ITS.otus.fa -strand both -id 0.97 -biomout ITS2.otu_table.biom -otutabout ITS2.otu_table.txt
+usearch9 -usearch_global ITS2.unfiltered.fa -db ITS.otus.fa -strand both -id 0.97 -biomout ITS2.otu_table.biom -otutabout ITS2.otu_table.txt
 
 ```	
 
