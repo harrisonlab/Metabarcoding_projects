@@ -115,12 +115,10 @@ $METAGENOMICS/scripts/ARDERI.sh -c tax_assign \ $METAGENOMICS $RUN $SSU
 
 ### Create OTU tables
 
-First assigns ITS1 reads to OTUs. Then, for any non-hits, attemp to assign reverse read (ITS2) to an OTU. 
-
-The ITS2 stuff could be parellelised on the cluster - probably not worth the effort as it's not too slow (about 2 - 3 minutes for 100 samples). 
+Concatenates unfiltered reads, then assigns forward reads to OTUs. For any non-hits, attemps to assign reverse read (ITS2) to an OTU. 
 
 ```shell
-$METAGENOMICS/scripts/ARDERI.sh -c OTU \ $METAGENOMICS $RUN $SSU $FPL $RPL
+$METAGENOMICS/scripts/ARDERI.sh -c OTU \ $METAGENOMICS $RUN $SSU $FPL $RPL true
 ```
 
 
