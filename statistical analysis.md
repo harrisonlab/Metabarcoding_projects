@@ -155,7 +155,6 @@ col.x <- sample_data(myfiltbiom)[sample_data(myfiltbiom)$condition==cond,]
 pc.dt<- data.table(merge(pc.x,col.x,by="row.names"))
 pc.reshape <- dcast(pc.dt,distance~.,fun.aggregate=function(x) mean(x,na.rm=T),value.var=c(names(pc.dt)[grep("PC",names(pc.dt))]))
 names(pc.reshape)[grep("PC",names(pc.reshape))] <- sub("_.*","",names(pc.reshape)[grep("PC",names(pc.reshape))])
-
 col.reshape <- sample_data(col.x)[sample_data(col.x)$replicate=="a"]
 col.reshape <- col.reshape[order(col.reshape$meters)]
 
@@ -183,19 +182,28 @@ lapply(seq(1,10),function(x) plot.corr(moran.mv[[x]][c(1:3,5)],0.025))
 dev.off()
 
 # Manual Pearson Correlelog
-p.corr <- correr2(pc.reshape$PC1)
-d<-as.data.frame(cbind(p.corr,pc.reshape$distance[1:22],rep(1,22)))
-names(d) <- c("correlation","distance","Significant")
+ct1 <- correr2(pc.reshape$PC1)
+ct2 <- correr2(pc.reshape$PC2)
+
+##recalulate and find
+ca1 <- correr2(pc.reshape$PC1)
+ca2 <- correr2(pc.reshape$PC2)
+d<-as.data.frame(cbind(ct1,ct2,ca1,ca2,pc.reshape$distance[1:22]))
+names(d) <- c("Tree_PC1","Tree_PC2","Aisle_PC1","Aisle_PC2","Distance")
+
+d2 <- melt(d[1:12,],id="Distance")
+colnames(d2)[3] <- c("Correlation")
 
 xlims=NULL
-ylims=c(-1,1)
-g <- ggplot(d, aes(x = distance, y = correlation))
+ylims=NULL#c((min(d2$Correlation)-0.1),(max(d2$Correlation)+0.1))
+g <- ggplot(d2)
 g <- g + coord_fixed(ratio = 10, xlim = xlims, ylim = ylims, expand = TRUE)
 g <- g + theme_bw()
 g <- g + theme(panel.border = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank())
 g <- g + theme(axis.line.x = element_line(size=0.5,colour = "black"),axis.line.y = element_line(size=0.5,colour = "black"),axis.text = element_text(colour = "black"))
-g <- g + geom_line(na.rm=T)
-g <- g + geom_point(na.rm=T,size=2.5,mapping=aes())
+g <- g + geom_line(na.rm=T,aes(x=Distance, y=Correlation, colour=variable))
+g <- g + scale_colour_manual(values=c("red","green","blue","orange"))
+#g <- g + geom_point(na.rm=T,size=2.5,mapping=aes())
 g
 dev.off()
 ```
