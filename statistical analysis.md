@@ -159,14 +159,6 @@ names(pc.reshape)[grep("PC",names(pc.reshape))] <- sub("_.*","",names(pc.reshape
 col.reshape <- sample_data(col.x)[sample_data(col.x)$replicate=="a"]
 col.reshape <- col.reshape[order(col.reshape$meters)]
 
-distmat <- as.matrix(dist(cbind(sample_data(col.reshape)$distance, rep(0,24))))
-distmat.inv <- 1/distmat
-distmat.inv[is.infinite(distmat.inv)] <- 0
-moran <- apply(pc.reshape,2,function(x) t(Moran.I(x,distmat.inv)))
-names(moran)->temp
-moran <- do.call(rbind,moran)
-rownames(moran) <- temp
-
 # Moran I test
 
 distmat <- as.matrix(dist(cbind(sample_data(col.reshape)$distance, rep(0,24))))
