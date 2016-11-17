@@ -182,7 +182,7 @@ lapply(seq(1,10),function(x) plot.corr(moran.mv[[x]][c(1:3,5)],0.025))
 dev.off()
 
 #  Pearson Correlelog
-plotCorrelog(mypca,myfiltbiom,"PC1",cutoff=17,xlim=NULL,ylim=NULL,na.add=c(9,17))
+plotCorrelog(mypca,myfiltbiom,"PC1",cutoff=17,xlim=NULL,ylim=c(-1,1),na.add=c(9,17))
 dev.off()
 ```
 
