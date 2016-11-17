@@ -181,8 +181,20 @@ sapply(seq(1,10),function(x) plot.correlog(moran.mv[[x]]))
 lapply(seq(1,10),function(x) plot.corr(moran.mv[[x]][c(1:3,5)],0.025))
 dev.off()
 
-#  Pearson Correlelog
-plotCorrelog(mypca,myfiltbiom,"PC1",cutoff=17,xlim=NULL,ylim=c(-1,1),na.add=c(9,17))
+#  Pearson Correlogram
+cutoff <- 17
+pc<-"PC1"
+plotCorrelog(mypca,myfiltbiom,pc,cutoff=cutoff,xlim=NULL,ylim=c(-1,1),na.add=c(9,17))
+dev.off()
+
+### For H samples - due to experimental design
+t1 <- plotCorrelog(mypca,prune_samples(sample_data(myfiltbiom)$block!=3,myfiltbiom),pc,na.add=c(9),returnCD=T)
+t2 <- plotCorrelog(mypca,prune_samples(sample_data(myfiltbiom)$block==3,myfiltbiom),pc,returnCD=T)
+t3 <- sapply(1:nrow(t1),function(i) if(i<=nrow(t2)){cbind(rbind(t1[[i,1]],t2[[i,1]]),rbind(t1[[i,2]],t2[[i,2]]))}else{cbind(t1[[i,1]],t1[[i,2]])})
+d <- as.data.frame(t(sapply(1:length(t3),function(i) diag(cor(t3[[i]],use="pairwise.complete.obs")[c(1,3),c(2,4)]))))
+d$V3 <- as.numeric(t1[[3]])
+
+plotCorrelog(data=d,cutoff=cutoff,pc=pc,ylim=c(-1,1))
 dev.off()
 ```
 
