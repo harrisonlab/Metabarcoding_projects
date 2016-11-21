@@ -10,11 +10,7 @@ Script will:<br>
 
 ```shell
 
-$METAGENOMICS/scripts/ARDERI.sh -c ITSpre /
-	$METAGENOMICS/data/$RUN/ITS/fastq/*R1*.fastq /
-	$METAGENOMICS/data/$RUN/ITS/fasta /
-	$METAGENOMICS/primers/primers.db /
-	200 200 1; 
+$METAGENOMICS/scripts/ARDERI.sh -c ITSpre $METAGENOMICS/data/$RUN/ITS/fastq/*R1*.fastq $METAGENOMICS/data/$RUN/ITS/fasta $METAGENOMICS/primers/primers.db 200 200 1; 
 ```
 
 ### SSU/58S/LSU removal 
@@ -25,26 +21,14 @@ This will create a large number of array jobs on the cluster
 
 Fungi
 ```shell
-$METAGENOMICS/scripts/ARDERI.sh -c procends /
-	$METAGENOMICS/data/$RUN/ITS/fasta /
-	$METAGENOMICS/hmm/lsu_start.hmm /
-	$METAGENOMICS/hmm/58s_end.hmm /
-	lsu 58se 20
+$METAGENOMICS/scripts/ARDERI.sh -c procends $METAGENOMICS/data/$RUN/$SSU/fasta R1 $METAGENOMICS/hmm/lsu_start.hmm $METAGENOMICS/hmm/58s_end.hmm lsu 58se 20
 
-$METAGENOMICS/scripts/ARDERI.sh -c procends /
-	$METAGENOMICS/data/$RUN/ITS/fasta /
-	$METAGENOMICS/hmm/ssu_end.hmm /
-	$METAGENOMICS/hmm/58s_start.hmm /
-	ssu 58ss 20
+$METAGENOMICS/scripts/ARDERI.sh -c procends $METAGENOMICS/data/$RUN/$SSU/fasta R2 $METAGENOMICS/hmm/ssu_end.hmm 	$METAGENOMICS/hmm/58s_start.hmm ssu 58ss 20
 ```
 
 Oomycetes
 ```shell
-$METAGENOMICS/scripts/ARDERI.sh -c procends /
-	$METAGENOMICS/data/$RUN/OO/filtered /
-	$METAGENOMICS/hmm/others/Oomycota/ssu_end.hmm /
-	$METAGENOMICS/hmm/others/Oomycota/58s_start.hmm /
-	ssu 58ss 20
+$METAGENOMICS/scripts/ARDERI.sh -c procends $METAGENOMICS/data/$RUN/$SSU/filtered "" $METAGENOMICS/hmm/others/Oomycota/ssu_end.hmm $METAGENOMICS/hmm/others/Oomycota/58s_start.hmm ssu 58ss 20
 ```
 
 #### Remove SSU, 5.8S  and LSU regions and merge output
