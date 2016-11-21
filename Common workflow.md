@@ -44,7 +44,7 @@ P1R=GACTACHV
 P2F=CTTGGTCA # fungi
 P2R=ATATGCTT
 
-METAGENOMICS/scripts/ARDERI.sh -c demultiplex /
+$METAGENOMICS/scripts/ARDERI.sh -c demultiplex /
 	$METAGENOMICS/data/$RUN/fastq/*_R1_* 0/
 	$P1F $P1R $P2F $P2R
 ```
