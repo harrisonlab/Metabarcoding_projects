@@ -10,7 +10,11 @@ Script will:<br>
 
 ```shell
 
-$METAGENOMICS/scripts/ARDERI.sh -c ITSpre $METAGENOMICS/data/$RUN/ITS/fastq/*R1*.fastq $METAGENOMICS/data/$RUN/ITS/fasta $METAGENOMICS/primers/primers.db 200 200 1; 
+$METAGENOMICS/scripts/ARDERI.sh -c ITSpre \ 
+ $METAGENOMICS/data/$RUN/ITS/fastq/*R1*.fastq \ 
+ $METAGENOMICS/data/$RUN/ITS/fasta \
+ $METAGENOMICS/primers/primers.db \
+ 200 200 1; 
 ```
 
 ### SSU/58S/LSU removal 
@@ -21,14 +25,29 @@ This will create a large number of array jobs on the cluster
 
 Fungi
 ```shell
-$METAGENOMICS/scripts/ARDERI.sh -c procends $METAGENOMICS/data/$RUN/$SSU/fasta R1 $METAGENOMICS/hmm/lsu_start.hmm $METAGENOMICS/hmm/58s_end.hmm lsu 58se 20
+$METAGENOMICS/scripts/ARDERI.sh -c procends \
+ $METAGENOMICS/data/$RUN/$SSU/fasta \
+ R1 \
+ $METAGENOMICS/hmm/lsu_start.hmm \
+ $METAGENOMICS/hmm/58s_end.hmm \
+ lsu 58se 20
 
-$METAGENOMICS/scripts/ARDERI.sh -c procends $METAGENOMICS/data/$RUN/$SSU/fasta R2 $METAGENOMICS/hmm/ssu_end.hmm 	$METAGENOMICS/hmm/58s_start.hmm ssu 58ss 20
+$METAGENOMICS/scripts/ARDERI.sh -c procends \
+ $METAGENOMICS/data/$RUN/$SSU/fasta \
+ R2 \
+ $METAGENOMICS/hmm/ssu_end.hmm 	\
+ $METAGENOMICS/hmm/58s_start.hmm \
+ ssu 58ss 20
 ```
 
 Oomycetes
 ```shell
-$METAGENOMICS/scripts/ARDERI.sh -c procends $METAGENOMICS/data/$RUN/$SSU/filtered "" $METAGENOMICS/hmm/others/Oomycota/ssu_end.hmm $METAGENOMICS/hmm/others/Oomycota/58s_start.hmm ssu 58ss 20
+$METAGENOMICS/scripts/ARDERI.sh -c procends \
+ $METAGENOMICS/data/$RUN/$SSU/filtered \
+ "" \
+ $METAGENOMICS/hmm/others/Oomycota/ssu_end.hmm \
+ $METAGENOMICS/hmm/others/Oomycota/58s_start.hmm \
+ ssu 58ss 20
 ```
 
 #### Remove SSU, 5.8S  and LSU regions and merge output
@@ -39,10 +58,19 @@ LOWQUAL keeps reads which lack 5.8S homology - this is necessary as trimming wil
 
 Fungi
 ```shell
-$METAGENOMICS/scripts/ARDERI.sh -c ITS "$METAGENOMICS/data/$RUN/$SSU/fasta/*R1" $METAGENOMICS/scripts/rm_SSU_58Ss.R "*.\\.ssu" "*.\\.58"
+$METAGENOMICS/scripts/ARDERI.sh -c ITS \
+ "$METAGENOMICS/data/$RUN/$SSU/fasta/*R1" \
+ $METAGENOMICS/scripts/rm_SSU_58Ss.R \
+ "*.\\.ssu" \
+ "*.\\.58"
 
 LOWQUAL=FALSE   
-$METAGENOMICS/scripts/ARDERI.sh -c ITS "$METAGENOMICS/data/$RUN/$SSU/fasta/*R2" $METAGENOMICS/scripts/rm_58Se_LSU_v2.R "*.\\.58" "*.\\.lsu" $LOWQUAL
+$METAGENOMICS/scripts/ARDERI.sh -c ITS \
+ "$METAGENOMICS/data/$RUN/$SSU/fasta/*R2" \
+ $METAGENOMICS/scripts/rm_58Se_LSU_v2.R \
+ "*.\\.58" \
+ "*.\\.lsu" \
+ $LOWQUAL
 ```
 
 Oomycetes
