@@ -39,24 +39,15 @@ LOWQUAL keeps reads which lack 5.8S homology - this is necessary as trimming wil
 
 Fungi
 ```shell
-$METAGENOMICS/scripts/ARDERI.sh -c ITS /
-	$METAGENOMICS/data/$RUN/ITS/fasta/*R1 /
-	$METAGENOMICS/scripts/rm_SSU_58Ss.R /
-	"*.\\.ssu" "*.\\.58"
-	
-LOWQUAL=FALSE	
-$METAGENOMICS/scripts/ARDERI.sh -c ITS /
-	$METAGENOMICS/data/$RUN/ITS/fasta/*R2 /
-	$METAGENOMICS/scripts/rm_58Se_LSU_v2.R /
-	"*.\\.58" "*.\\.lsu" $LOWQUAL	
+$METAGENOMICS/scripts/ARDERI.sh -c ITS "$METAGENOMICS/data/$RUN/$SSU/fasta/*R1" $METAGENOMICS/scripts/rm_SSU_58Ss.R "*.\\.ssu" "*.\\.58"
+
+LOWQUAL=FALSE   
+$METAGENOMICS/scripts/ARDERI.sh -c ITS "$METAGENOMICS/data/$RUN/$SSU/fasta/*R2" $METAGENOMICS/scripts/rm_58Se_LSU_v2.R "*.\\.58" "*.\\.lsu" $LOWQUAL
 ```
 
 Oomycetes
 ```shell
-$METAGENOMICS/scripts/ARDERI.sh -c ITS /
-	$METAGENOMICS/data/$RUN/OO/filtered/*[0-9] /
-	$METAGENOMICS/scripts/rm_SSU_58Ss.R /
-	"*.\\.ssu" "*.\\.58"
+$METAGENOMICS/scripts/ARDERI.sh -c ITS "$METAGENOMICS/data/$RUN/$SSU/filtered/*D" $METAGENOMICS/scripts/rm_SSU_58Ss.R "*.\\.ssu" "*.\\.58"
 ```
 
 #### Return ITS1 where fasta header matches ITS2, unique ITS1 and unique ITS2
