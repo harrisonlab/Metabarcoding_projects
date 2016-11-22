@@ -53,11 +53,11 @@ $METAGENOMICS/scripts/ARDERI.sh -c ITS "$METAGENOMICS/data/$RUN/$SSU/filtered/*D
 #### Return ITS1 where fasta header matches ITS2, unique ITS1 and unique ITS2
 
 ```shell
-mkdir -p $METAGENOMICS/data/$RUN/ITS/filtered
-find $METAGENOMICS/data/$RUN/ITS/fasta -type f -name *.r*|xargs -I myfile mv myfile $METAGENOMICS/data/$RUN/ITS/filtered/.
+mkdir -p $METAGENOMICS/data/$RUN/$SSU/filtered
+find $METAGENOMICS/data/$RUN/$SSU/fasta -type f -name *.r*|xargs -I myfile mv myfile $METAGENOMICS/data/$RUN/$SSU/filtered/.
 
-cd $METAGENOMICS/data/$RUN/ITS/filtered
-for f in $METAGENOMICS/data/$RUN/ITS/filtered/*r1.fa
+cd $METAGENOMICS/data/$RUN/$SSU/filtered
+for f in $METAGENOMICS/data/$RUN/$SSU/filtered/*r1.fa
 do
     R1=$f
     R2=$(echo $R1|sed 's/\.r1\.fa/\.r2\.fa/')
