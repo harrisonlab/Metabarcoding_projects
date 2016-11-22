@@ -80,6 +80,15 @@ Oomycetes
 $METAGENOMICS/scripts/ARDERI.sh -c ITS "$METAGENOMICS/data/$RUN/$SSU/filtered/*D" $METAGENOMICS/scripts/rm_SSU_58Ss.R "*.\\.ssu" "*.\\.58"
 ```
 
+There's a slight problem with one of the scripts and the fasta names...
+```shell
+for f in *.fa; do
+	sed -i -e 's/ .*//' $f
+done
+```
+
+
+
 #### Return ITS1 where fasta header matches ITS2, unique ITS1 and unique ITS2
 
 ```shell
