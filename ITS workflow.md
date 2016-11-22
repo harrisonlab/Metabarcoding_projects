@@ -28,16 +28,18 @@ Fungi
 $METAGENOMICS/scripts/ARDERI.sh -c procends \
  $METAGENOMICS/data/$RUN/$SSU/fasta \
  R1 \
- $METAGENOMICS/hmm/lsu_start.hmm \
- $METAGENOMICS/hmm/58s_end.hmm \
- lsu 58se 20
+ $METAGENOMICS/hmm/ssu_end.hmm 	\
+ $METAGENOMICS/hmm/58s_start.hmm \
+ ssu 58ss 20
 
 $METAGENOMICS/scripts/ARDERI.sh -c procends \
  $METAGENOMICS/data/$RUN/$SSU/fasta \
  R2 \
- $METAGENOMICS/hmm/ssu_end.hmm 	\
- $METAGENOMICS/hmm/58s_start.hmm \
- ssu 58ss 20
+ $METAGENOMICS/hmm/lsu_start.hmm \
+ $METAGENOMICS/hmm/58s_end.hmm \
+ lsu 58se 20
+
+
 ```
 
 Oomycetes
