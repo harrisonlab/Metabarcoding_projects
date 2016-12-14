@@ -83,8 +83,8 @@ $METAGENOMICS/scripts/ARDERI.sh -c OTU $METAGENOMICS $RUN $SSU $FPL $RPL
 
 
 ###[16S workflow](../master/16S%20%20workflow.md)
-###[ITS workflow](../master/ITS%20%20workflow.md)
-###[Nematoda workflow](../master/Nematode%20%20workflow.md)
+###[ITS workflow](../master//ITS%20workflow.md)
+###[Nematoda workflow](../master/Nematoda%20%20workflow.md)
 ###[Statistical analysis](../master/statistical%20analysis.md)
 
 
