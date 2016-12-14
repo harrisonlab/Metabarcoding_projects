@@ -8,21 +8,20 @@ RPL is reverse primer length
 ```shell
 # oomycota
 SSU=OO 
-FPL=28
-RPL=28
+FPL=21
+RPL=20
 
 # all
 MINL=300
 MINOVER=5
 QUAL=0.5
-
 ```
 
 ## Pre-processing
 Script will join PE reads (with a maximum % difference in overlap) remove adapter contamination and filter on minimum size and quality threshold.
 Unfiltered joined reads are saved to unfiltered folder, filtered reads are saved to filtered folder.
 
-16Spre.sh forward_read reverse_read output_file_name output_directory adapters min_size percent_diff max_errrors 
+16Spre.sh forward_read reverse_read output_file_name output_directory adapters min_size min_join_overlap max_errrors 
 
 ```shell
 $METAGENOMICS/scripts/ARDERI.sh -c 16Spre \
@@ -31,10 +30,9 @@ $METAGENOMICS/scripts/ARDERI.sh -c 16Spre \
 	$METAGENOMICS/primers/adapters.db \
 	$MINL $MINOVER $QUAL
 ```
+### SSU and 5.8S removal 
 
-### SSU/58S/LSU removal 
-
-#### Identify SSU, 5.8S  and LSU regions
+#### Identify SSU and 5.8S regions
 
 This will create a large number of array jobs on the cluster
 
@@ -47,10 +45,13 @@ $METAGENOMICS/scripts/ARDERI.sh -c procends \
  ssu 58ss 20
 ```
 
-#### Remove SSU, 5.8S  and LSU regions and merge output
+#### Remove identified SSU and 5.8S regions
 
 ```shell
-$METAGENOMICS/scripts/ARDERI.sh -c ITS "$METAGENOMICS/data/$RUN/$SSU/filtered/*D" $METAGENOMICS/scripts/rm_SSU_58Ss.R "*.\\.ssu" "*.\\.58"
+$METAGENOMICS/scripts/ARDERI.sh -c ITS \
+	"$METAGENOMICS/data/$RUN/$SSU/filtered/*D" \
+	$METAGENOMICS/scripts/rm_SSU_58Ss.R \
+	"*.\\.ssu" "*.\\.58"
 ```
 
 There's a slight problem with one of the scripts and the fasta names...
@@ -60,31 +61,30 @@ for f in *.fa; do
 done
 ```
 
-## UPARSE
-
-### Cluster 
+## OTU assignment 
 This is mostly a UPARSE pipeline, but usearch (free version) runs out of memory for dereplication and subsequent steps. I've written my own scripts to do the dereplication and sorting 
 
+### Cluster 
 ```shell
-$METAGENOMICS/scripts/ARDERI.sh -c UPARSE \ $METAGENOMICS $RUN $SSU 0 0
+$METAGENOMICS/scripts/ARDERI.sh -c UPARSE $METAGENOMICS $RUN $SSU 0 0
 ```
 ### Assign taxonomy
-NOTE:- I still need to build nematode utax taxonomy database from Silva_SSU.
-
 ```shell
-$METAGENOMICS/scripts/ARDERI.sh -c tax_assign \ $METAGENOMICS $RUN $SSU 
+$METAGENOMICS/scripts/ARDERI.sh -c tax_assign $METAGENOMICS $RUN $SSU 
+cp $SSU.otus.fa $SSU_v2.otus.fa
+$METAGENOMICS/scripts/ARDERI.sh -c tax_assign $METAGENOMICS $RUN $SSU_v2
+rm $SSU_v2.otus.fa
 ```
 
 ### Create OTU tables
-
-Concatenates unfiltered reads, then assigns forward reads to OTUs. For any non-hits, attemps to assign reverse read (ITS2) to an OTU. 
-
 ```shell
-$METAGENOMICS/scripts/ARDERI.sh -c OTU \ $METAGENOMICS $RUN $SSU $FPL $RPL true
+$METAGENOMICS/scripts/ARDERI.sh -c OTU $METAGENOMICS $RUN $SSU $FPL $RPL
 ```
 
 
 ###[16S workflow](../master/16S%20%20workflow.md)
+###[ITS workflow](../master/ITS%20%20workflow.md)
+###[Nematoda workflow](../master/Nematode%20%20workflow.md)
 ###[Statistical analysis](../master/statistical%20analysis.md)
 
 
