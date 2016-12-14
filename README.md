@@ -41,7 +41,7 @@ hmmpress lsu_start.hmm
 ```
 Ouptut files were copied to $METAGENOMICS/hmm. Hacked the HMM files to include a MAXL satement (required) and manually split out SSU,58S and LSU into seperate files (only fungal hmms are implemented in this pipeline)
 
-## Utax reference databases
+## Taxonomy reference databases
 Reference databases were downloaded from:
 http://drive5.com/usearch/manual/utax_downloads.html
 (Unite V7 and RDP trainset 15)
@@ -49,6 +49,16 @@ http://drive5.com/usearch/manual/utax_downloads.html
 usearch8.1 -makeudb_utax refdb.fa -output 16s_ref.udb -report 16s_report.txt
 usearch8.1 -makeudb_utax refdb.fa -utax_trainlevels kpcofgs ‑utax_splitlevels NVpcofgs -output ITS_ref.udb -report ITS_report.txt
 ```
+
+Oomycota database was created from a subset of the silva_ssu (stamenopiles) database
+```shell
+#combine and replace fasta headers with headers including full taxonomy
+awk -F";" 'NR==FNR{a[$1]=$0;next;}a[$1]{$0=a[$1]}1' Oomycota.txt Oomycota.fasta > Oomycota_new.fasta
+
+usearch9 -makeudb_sintax Oomycota_new.fasta Oomycota.udp
+```
+
+
 
 ## Set directories
 The following directories should be created prior to starting the workflow:
