@@ -27,7 +27,7 @@ Script will:<br>
 
 ```shell
 $METAGENOMICS/scripts/ARDERI.sh -c ITSpre \
- "$METAGENOMICS/data/$RUN/$SSU/fastq/*R1*.fastq" \
+ "$METAGENOMICS/data/$RUN/$SSU/fastq/*R1*.fastq" $RUN \
  $METAGENOMICS/data/$RUN/$SSU/fasta \
  $METAGENOMICS/primers/primers_nem.db \
  $MINL $MAXL $QUAL
