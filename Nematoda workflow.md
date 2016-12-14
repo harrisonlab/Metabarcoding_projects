@@ -29,7 +29,7 @@ Script will:<br>
 $METAGENOMICS/scripts/ARDERI.sh -c ITSpre \ 
  $METAGENOMICS/data/$RUN/$SSU/fastq/*R1*.fastq \ 
  $METAGENOMICS/data/$RUN/$SSU/fasta \
- $METAGENOMICS/primers/primers.db \
+ $METAGENOMICS/primers/primers_nem.db \
  $MINL $MAXL $QUAL; 
 ```
 
