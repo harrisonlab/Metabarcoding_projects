@@ -6,11 +6,6 @@ FPL is forward primer length
 RPL is reverse primer length
 
 ```shell
-#bacteria
-SSU=16S
-FPL=17 
-RPL=21 
-
 # nematodes
 SSU=NEM 
 FPL=23
