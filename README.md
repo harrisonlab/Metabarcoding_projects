@@ -61,8 +61,31 @@ usearch9 -makeudb_sintax Oomycota_new.fasta -output Oomycota.udp
 awk '/^>/ {printf("\n%s\n",$0);next; } { printf("%s",$0);}  END {printf("\n");}' < oomycetes.ITS1.fa | tail -n +2 > out.fasta
 
 ```
+Nematode database is also a subset of Silva_ssu - I've made a second taxonomy file containing other, non nematode eukaryotes.
+```shell
+awk '/^>/ {printf("\n%s\n",$0);next; } { printf("%s",$0);}  END {printf("\n");}' < SILVA_123_SSURef_Nr99_tax_silva.fasta | tail -n +2 >silva.fa
 
+grep Nematoda -A1 --no-group-separator silva.fa | sed -e 's/ Eukaryota;Opisthokonta;Holozoa;Metazoa (Animalia);Eumetazoa;Bilateria;/;tax=k:Metazoa;p:/'| \
+awk -F";" '{
+	if(NF>1){
+		if(NF==5) {print $1";"$2";" $3";c:"$4";s:"$5}
+		if(NF==6) {print $1";"$2";" $3";c:"$4";o:"$5";s:"$6}
+		if(NF==7) {print $1";"$2";" $3";c:"$4";o:"$6";s:"$7}
+		
+	} else {print $1}
+}'  > nem_tax.fasta
 
+grep Eumetazoa -A1 --no-group-separator silva.fa > Eumetazoa.fa
+
+grep -n -A1 Nematoda Eumetazoa.fa | \
+sed -n 's/^\([0-9]\{1,\}\).*/\1d/p' | \
+sed -f - Eumetazoa.fa|awk -F";" '{if(NF>1){print $1";tax=k:Metazoa;p:"$6}else {print $1}}' > nonem_tax.fasta
+
+cat nem_tax.fasta nonem_tax.fasta > Eumetazoa_tax.fasta
+
+usearch9 -makeudb_sintax nem_tax.fasta -output nematode.udp
+usearch9 -makeudb_sintax Eumetazoa_tax.fasta -output nematode2.udp
+```
 
 ## Set directories
 The following directories should be created prior to starting the workflow:
@@ -82,10 +105,7 @@ ___
 ###[ITS workflow](../master//ITS%20workflow.md)
 ###[Statistical analysis](../master/statistical%20analysis.md)
 
-##oomycetes
-```shell
-$METAGENOMICS/scripts/pick_OTU.sh  $METAGENOMICS/data/$RUN/ITS/final/ITS.all.fa $METAGENOMICS/analysis/$RUN/ITS/ITS_all_otus $METAGENOMICS/scripts/params.txt $METAGENOMICS/taxonomies/Silva119/97_18S_only/Silva_119_rep_set97_aligned_18S_only.fna FALSE
-```
+
 
 ##Combine samples
 Biom table for samples from multiple NGS runs are required.
@@ -102,47 +122,4 @@ find .. -type f -wholename "*[0-9]/fastq/G[0|O]*R2*"|awk -F"/" '{print $2"_"$4}'
 ./runme.sh
 ```
 
-## old stuff
 
-##### Split fasta into chunks 
-```shell
-cd $METAGENOMICS/data/$RUN/ITS/fasta
-for f in *.fa;
-do
-  S=$(echo $f|awk -F"." '{print $1}')
-    mkdir $S
-    split -l 2000 $f -a 3 -d ${S}/$f.
-done
-```
-##### Create lists of file paths to chunks
-
-```shell
-cd $METAGENOMICS/data/$RUN/ITS/fasta
-for d in */
-do
-	cd $d
-	find $PWD -name '*.fa.*' >split_files.txt
-	cd ..
-done
-```
-##### Identify SSU, 5.8S  and LSU regions
-
-This will create a large number of array jobs on the cluster
-```shell
-cd $METAGENOMICS/data/$RUN/ITS/fasta
-counter=0
-for d in */
-do counter=$((counter+1))
-	cd $d
-	TASKS=$(wc -l split_files.txt|awk -F" " '{print $1}')
-	if (( $counter % 2 == 0 ))
-	then
-		qsub -t 1-$TASKS:1 $METAGENOMICS/scripts/submit_nscan.sh lsu 20 $METAGENOMICS/hmm/lsu_start.hmm
-		qsub -t 1-$TASKS:1 $METAGENOMICS/scripts/submit_nscan.sh 58se 20 $METAGENOMICS/hmm/58s_end.hmm
-	else
-		qsub -t 1-$TASKS:1 $METAGENOMICS/scripts/submit_nscan.sh ssu 20 $METAGENOMICS/hmm/ssu_end.hmm
-		qsub -t 1-$TASKS:1 $METAGENOMICS/scripts/submit_nscan.sh 58ss 20 $METAGENOMICS/hmm/58s_start.hmm
-	fi
-	cd ..
-done
-```
