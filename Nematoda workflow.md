@@ -1,5 +1,27 @@
 # Nematode workflow
 
+## Conditions
+SSU determines the file location
+FPL is forward primer length
+RPL is reverse primer length
+
+```shell
+#bacteria
+SSU=16S
+FPL=17 
+RPL=21 
+
+# nematodes
+SSU=NEM 
+FPL=23
+RPL=18
+
+# all
+MINL=200
+MAXL=300
+QUAL=1
+
+```
 
 ## Pre-processing
 Script will:<br>
@@ -10,10 +32,10 @@ Script will:<br>
 
 ```shell
 $METAGENOMICS/scripts/ARDERI.sh -c ITSpre \ 
- $METAGENOMICS/data/$RUN/ITS/fastq/*R1*.fastq \ 
- $METAGENOMICS/data/$RUN/ITS/fasta \
+ $METAGENOMICS/data/$RUN/$SSU/fastq/*R1*.fastq \ 
+ $METAGENOMICS/data/$RUN/$SSU/fasta \
  $METAGENOMICS/primers/primers.db \
- 200 200 1; 
+ $MINL $MAXL $QUAL; 
 ```
 
 #### Return ITS1 where fasta header matches ITS2, unique ITS1 and unique ITS2
@@ -38,25 +60,19 @@ mv *r2* R2/.
 ```
 
 ## UPARSE
-FPL=23 
-RPL=21
 
 ### Cluster 
-This is mostly a UPARSE pipeline, but usearch (free version) runs out of memory for dereplication and subsequent steps. I've written my own scripts to do the dereplication and sorting 
 
 ```shell
 $METAGENOMICS/scripts/ARDERI.sh -c UPARSE \ $METAGENOMICS $RUN $SSU 0 0
 ```
 ### Assign taxonomy
-NOTE:- I still need to build nematode utax taxonomy database from Silva_SSU.
 
 ```shell
 $METAGENOMICS/scripts/ARDERI.sh -c tax_assign \ $METAGENOMICS $RUN $SSU 
 ```
 
 ### Create OTU tables
-
-Concatenates unfiltered reads, then assigns forward reads to OTUs. For any non-hits, attemps to assign reverse read (ITS2) to an OTU. 
 
 ```shell
 $METAGENOMICS/scripts/ARDERI.sh -c OTU \ $METAGENOMICS $RUN $SSU $FPL $RPL true
