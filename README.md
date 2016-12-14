@@ -56,6 +56,10 @@ Oomycota database was created from a subset of the silva_ssu (stamenopiles) data
 awk -F";" 'NR==FNR{a[$1]=$0;next;}a[$1]{$0=a[$1]}1' Oomycota.txt Oomycota.fasta > Oomycota_new.fasta
 
 usearch9 -makeudb_sintax Oomycota_new.fasta -output Oomycota.udp
+
+# convert multiline to single line fasta
+awk '/^>/ {printf("\n%s\n",$0);next; } { printf("%s",$0);}  END {printf("\n");}' < oomycetes.ITS1.fa | tail -n +2 > out.fasta
+
 ```
 
 
