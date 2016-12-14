@@ -26,11 +26,11 @@ Script will:<br>
 4. Convert FASTQ to single line FASTA
 
 ```shell
-$METAGENOMICS/scripts/ARDERI.sh -c ITSpre \ 
- $METAGENOMICS/data/$RUN/$SSU/fastq/*R1*.fastq \ 
+$METAGENOMICS/scripts/ARDERI.sh -c ITSpre \
+ $METAGENOMICS/data/$RUN/$SSU/fastq/*R1*.fastq \
  $METAGENOMICS/data/$RUN/$SSU/fasta \
  $METAGENOMICS/primers/primers_nem.db \
- $MINL $MAXL $QUAL; 
+ $MINL $MAXL $QUAL
 ```
 
 #### Return ITS1 where fasta header matches ITS2, unique ITS1 and unique ITS2
