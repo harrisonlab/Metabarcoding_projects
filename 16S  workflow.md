@@ -31,7 +31,7 @@ Unfiltered joined reads are saved to unfiltered folder, filtered reads are saved
 
 ```shell
 $METAGENOMICS/scripts/ARDERI.sh -c 16Spre \
-	$METAGENOMICS/data/$RUN/$SSU/fastq/*R1*.fastq \
+	"$METAGENOMICS/data/$RUN/$SSU/fastq/*R1*.fastq" \
 	$METAGENOMICS/data/$RUN/$SSU/filtered \
 	$METAGENOMICS/primers/adapters.db \
 	$MINL $MINOVER $QUAL
