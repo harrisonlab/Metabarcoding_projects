@@ -55,7 +55,7 @@ Oomycota database was created from a subset of the silva_ssu (stamenopiles) data
 #combine and replace fasta headers with headers including full taxonomy
 awk -F";" 'NR==FNR{a[$1]=$0;next;}a[$1]{$0=a[$1]}1' Oomycota.txt Oomycota.fasta > Oomycota_new.fasta
 
-usearch9 -makeudb_sintax Oomycota_new.fasta Oomycota.udp
+usearch9 -makeudb_sintax Oomycota_new.fasta -output Oomycota.udp
 ```
 
 
