@@ -14,7 +14,7 @@ RPL=21
 # nematodes
 SSU=NEM 
 FPL=23
-RPL=18
+RPL=17
 
 # all
 MINL=300
