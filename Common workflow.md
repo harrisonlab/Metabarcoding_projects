@@ -39,7 +39,7 @@ Any sequence which has too many mismatches, or none mathching primers is removed
 demultiplex can accept any number of primer pairs (though for this project only 2 primer pairs are multiplexed)
 
 <table>
-<tr>Primer<td><td>Forward<td>Reverse</tr>
+<tr><td>Primer<td>Forward<td>Reverse</tr>
 <tr><td>16S<td>CCTACGGGNGGCWGCAG<td>GACTACHVGGGTATCTAATCC</tr>
 <tr><td>ITS<td>CTTGGTCATTTAGAGGAAGTAA<td>ATATGCTTAAGTTCAGCGGG</tr>
 <tr><td>OO<td>GAAGGTGAAGTCGTAACAAGG<td>AGCGTTCTTCATCGATGTGC</tr>
