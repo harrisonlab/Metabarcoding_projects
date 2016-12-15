@@ -30,11 +30,11 @@ Run demulti.pl to demultiplex these into fungal and bacterial fastq files. Ambig
 
 Running something like the below should give a good indication of what index_1 and index_2 should be - this is useful if you don't knwo what the primer sequences are and to get a feel of how many mismatches (if necesary) to use. 
 ```shell
-grep -x "[ATCG]\+" $(ls|head -n1)| cut -c-16|sort|uniq > zzexpressions.txt
-grep -x "[ATCG]\+" $(ls|head -n1)| cut -c-16|sort|uniq|xargs -I r grep -c ^r $(ls|head -n1) >zzcounts.txt
+sed -n '2~4p' $(ls|head -n1)|grep -x "[ATCG]\+"|cut -c-16|sort|uniq| /
+tee zzexpressions.txt|xargs -I%  grep -c "^%" $(ls|head -n1) >zzcounts.txt
 ```
 
-I typically use the first 8 nucleotides of the primer and allow 0 mismatches (the final parameter). Any sequence which has too many mismatches, or none mathching primers is removed to a file x.ambigous.fq
+I typically use the first 16 nucleotides of the primer and allow 0 mismatches (the final parameter). Any sequence which has too many mismatches, or none mathching primers is removed to a file x.ambigous.fq
 
 demultiplex can accept any number of primer pairs (though for this project only 2 primer pairs are multiplexed)
 
@@ -48,12 +48,13 @@ $METAGENOMICS/scripts/ARDERI.sh -c demultiplex /
 	'$METAGENOMICS/data/$RUN/fastq/*_R1_*' 0/
 	$P1F $P1R $P2F $P2R
 ```
-	Type	F	R
-	16S	CCTACGGG	GACTACHV
-	ITS	CTTGGTCA	ATATGCTT
-	ITS4-6	GAAGGTGA	TCCTCCGC
-	ITS7-6	GAAGGTGA	AGCGTTCT
-	Nem	CGCGAATR	GGCGGTAT
+<table>
+<tr>type	F	R</tr>
+<tr>16S	CCTACGGGNGGCWGCAG	GACTACHVGGGTATCTAATCC</tr>
+<tr>ITS	CTTGGTCATTTAGAGGAAGTAA	ATATGCTTAAGTTCAGCGGG</tr>
+<tr>OO	GAAGGTGAAGTCGTAACAAGG	AGCGTTCTTCATCGATGTGC</tr>
+<tr>Nem	CGCGAATRGCTCATTACAACAGC	GGCGGTATCTGATCGCC</tr>
+</table>
 
 ```shell
 mkdir -p $METAGENOMICS/data/$RUN/16S/fastq
