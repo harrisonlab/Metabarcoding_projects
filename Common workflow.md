@@ -34,27 +34,30 @@ sed -n '2~4p' $(ls|head -n1)|grep -x "[ATCG]\+"|cut -c-16|sort|uniq| /
 tee zzexpressions.txt|xargs -I%  grep -c "^%" $(ls|head -n1) >zzcounts.txt
 ```
 
-I typically use the first 16 nucleotides of the primer and allow 0 mismatches (the final parameter). Any sequence which has too many mismatches, or none mathching primers is removed to a file x.ambigous.fq
+Any sequence which has too many mismatches, or none mathching primers is removed to a file x.ambigous.fq
 
 demultiplex can accept any number of primer pairs (though for this project only 2 primer pairs are multiplexed)
 
-```shell
-P1F=CCTACGGG # bacteria
-P1R=GACTACHV 
-P2F=CTTGGTCA # fungi
-P2R=ATATGCTT
-
-$METAGENOMICS/scripts/ARDERI.sh -c demultiplex /
-	'$METAGENOMICS/data/$RUN/fastq/*_R1_*' 0/
-	$P1F $P1R $P2F $P2R
-```
 <table>
-<tr><td><td>F<td>R</tr>
+<tr>Primer<td><td>Forward<td>Reverse</tr>
 <tr><td>16S<td>CCTACGGGNGGCWGCAG<td>GACTACHVGGGTATCTAATCC</tr>
 <tr><td>ITS<td>CTTGGTCATTTAGAGGAAGTAA<td>ATATGCTTAAGTTCAGCGGG</tr>
 <tr><td>OO<td>GAAGGTGAAGTCGTAACAAGG<td>AGCGTTCTTCATCGATGTGC</tr>
 <tr><td>Nem<td>CGCGAATRGCTCATTACAACAGC<td>GGCGGTATCTGATCGCC</tr>
 </table>
+
+
+
+```shell
+P1F=CCTACGGGNGGCWGCAG # bacteria
+P1R=GACTACHVGGGTATCTAATCC 
+P2F=CTTGGTCATTTAGAGGAAGTAA # fungi
+P2R=AGCGTTCTTCATCGATGTGC
+
+$METAGENOMICS/scripts/ARDERI.sh -c demultiplex /
+	'$METAGENOMICS/data/$RUN/fastq/*_R1_*' 0/
+	$P1F $P1R $P2F $P2R
+```
 
 ```shell
 mkdir -p $METAGENOMICS/data/$RUN/16S/fastq
