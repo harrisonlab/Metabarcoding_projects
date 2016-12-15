@@ -49,7 +49,7 @@ $METAGENOMICS/scripts/ARDERI.sh -c demultiplex /
 	$P1F $P1R $P2F $P2R
 ```
 <table>
-<tr><td>type<td>F<td>R</tr>
+<tr><td><td>F<td>R</tr>
 <tr><td>16S<td>CCTACGGGNGGCWGCAG<td>GACTACHVGGGTATCTAATCC</tr>
 <tr><td>ITS<td>CTTGGTCATTTAGAGGAAGTAA<td>ATATGCTTAAGTTCAGCGGG</tr>
 <tr><td>OO<td>GAAGGTGAAGTCGTAACAAGG<td>AGCGTTCTTCATCGATGTGC</tr>
