@@ -29,9 +29,8 @@ Script will:<br>
 $METAGENOMICS/scripts/ARDERI.sh -c ITSpre \
  "$METAGENOMICS/data/$RUN/$SSU/fastq/*R1*.fastq" \
  $METAGENOMICS/data/$RUN/$SSU/fasta \
- $METAGENOMICS/primers/primers_nem.db \
+ $METAGENOMICS/primers/nematode.db \
  $MINL $MAXL $QUAL \
- $RUN $SSU
 ```
 
 #### Return ITS1 where fasta header matches ITS2, unique ITS1 and unique ITS2
