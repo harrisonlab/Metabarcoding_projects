@@ -57,9 +57,7 @@ P2R=AGCGTTCTTCATCGATGTGC
 $METAGENOMICS/scripts/ARDERI.sh -c demultiplex /
 	'$METAGENOMICS/data/$RUN/fastq/*_R1_*' 0/
 	$P1F $P1R $P2F $P2R
-```
 
-```shell
 mkdir -p $METAGENOMICS/data/$RUN/16S/fastq
 mkdir -p $METAGENOMICS/data/$RUN/ITS/fastq
 mkdir -p $METAGENOMICS/data/$RUN/ambiguous
