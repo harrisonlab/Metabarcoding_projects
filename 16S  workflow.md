@@ -58,9 +58,6 @@ $METAGENOMICS/scripts/ARDERI.sh -c tax_assign $METAGENOMICS $RUN $SSU
 $METAGENOMICS/scripts/ARDERI.sh -c OTU $METAGENOMICS $RUN $SSU $FPL $RPL
 ```
 
-usearch_global may run out of memory as well. 16S.unfiltered.fa can be split into chunks (reads from a single sample must not be split across chunks) and seperate OTU tables created for each chunk. It is trivial to recombine these in R. The above script will retain the catted unfiltered reads if the call to usearch global fails.
-
-
 Occasionally, due to v.poor reverse read quality, joining of f+r reads fails for the vast majority. The following will cluster f+r reads separately and then merge read counts which align to the same OTU. I've dropped the clustering down to 0.95 similarity - both reads aligning to the same OTU at this similarity, I'd suggest is pretty good evidence they're the same. 
 I've also added a rev compliment routine to fq2fa_v2.pl, means the reverse reads can be called as plus strand by usearch_global.
 
