@@ -1,7 +1,8 @@
 #Statistical analysis
 
-## Combine biom and taxa
-biom_make.pl will take a hacked rdp taxonomy file (mod_taxa.pl) and UPARSE biom and output a combined taxa and biom file to standard out
+## Combine biome and taxa
+biom_make.pl will take a hacked rdp taxonomy file (mod_taxa.pl) and UPARSE biome and output a combined taxa and biome file to standard out.
+
 
 e.g. for 16S
 ```shell
@@ -16,9 +17,10 @@ Set stringAsFactor to false - apparently this can be set in .Rprofile, but this 
 ```{r}
 options(stringsAsFactors = FALSE)
 ```
-There are several R functions throughout this module which are found in functions.R
+There are several R functions throughout this module which are in the myfunctions package
 ```{r}
-source("../../scripts/functions.R")
+library(devtools)
+load_all("../../scripts/myfunctions")
 ```
 
 ### phyloseq
