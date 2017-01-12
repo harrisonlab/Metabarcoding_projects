@@ -1,27 +1,36 @@
 # Common workflow
 
+Set ARDERI to project folder.
+
+RUN should be set to location where files are to be stored.
+
 ```shell
 #run for each analysis
-mkdir -p $METAGENOMICS/analysis/$RUN/16S
-mkdir $METAGENOMICS/analysis/$RUN/ITS	
-mkdir -p $METAGENOMICS/data/$RUN/fastq
-mkdir -p $METAGENOMICS/data/$RUN/16S/fastq
-mkdir $METAGENOMICS/data/$RUN/16S/filtered
-mkdir $METAGENOMICS/data/$RUN/16S/unfiltered
-mkdir -p $METAGENOMICS/data/$RUN/ITS/fastq
-mkdir $METAGENOMICS/data/$RUN/ITS/filtered
-mkdir $METAGENOMICS/data/$RUN/ITS/unfilterd
-
+mkdir -p $ARDERI/data/$RUN/fastq
+mkdir $ARDERI/data/$RUN/quality
+mkdir $ARDERI/data/$RUN/ambiguous
+mkdir -p $ARDERI/data/$RUN/16S/fastq
+mkdir $ARDERI/data/$RUN/16S/filtered
+mkdir $ARDERI/data/$RUN/16S/unfiltered
+mkdir -p $ARDERI/data/$RUN/ITS/fastq
+mkdir $ARDERI/data/$RUN/ITS/filtered
+mkdir $ARDERI/data/$RUN/ITS/unfilterd
 ```	
-The $METAGENOMICS directory should be set to something appropriate (e.g. /home/bob/metagenomics) and $RUN to the name of the NGS run. The realtive path is used in the scripts below - depending on your config you may have to specify full paths.	
-
-
+## Decompress files
+```shell
+for FILE in $ARDERI/data/$RUN/16S/fastq; do 
+	$ARDERI/metabarcoding_pipeline/scripts/PIPELINE.sh -c unzip $FILE
+done
+```
 ## QC
 Qualtiy checking was performed with fastQC (http://www.bioinformatics.babraham.ac.uk/projects/fastqc/)
 
 From same folder containing fastq files ran:
-
-	fastqc *
+```shell
+for FILE in $ARDERI/data/$RUN/16S/fastq; do 
+	$ARDERI/metabarcoding_pipeline/scripts/PIPELINE.sh -c qcheck $FILE $ARDERI/data/$RUN/quality
+done
+```
 
 ## Demultiplexing
 
@@ -54,17 +63,14 @@ P1R=GACTACHVGGGTATCTAATCC
 P2F=CTTGGTCATTTAGAGGAAGTAA # fungi
 P2R=AGCGTTCTTCATCGATGTGC
 
-$METAGENOMICS/scripts/ARDERI.sh -c demultiplex /
-	'$METAGENOMICS/data/$RUN/fastq/*_R1_*' 0/
+$ARDERI/metabarcoding_pipeline/scripts/PIPELINE.sh -c demultiplex /
+	'$ARDERI/data/$RUN/fastq/*_R1_*' 0/
 	$P1F $P1R $P2F $P2R
 
-mkdir -p $METAGENOMICS/data/$RUN/16S/fastq
-mkdir -p $METAGENOMICS/data/$RUN/ITS/fastq
-mkdir -p $METAGENOMICS/data/$RUN/ambiguous
 
-mv $METAGENOMICS/data/$RUN/fastq/*bacterial* $METAGENOMICS/data/$RUN/16S/fastq/.
-mv $METAGENOMICS/data/$RUN/fastq/*fungal* $METAGENOMICS/data/$RUN/ITS/fastq/.
-mv $METAGENOMICS/data/$RUN/fastq/*ambig* $METAGENOMICS/data/$RUN/ambiguous/.
+mv $ARDERI/data/$RUN/fastq/*bacterial* $ARDERI/data/$RUN/16S/fastq/.
+mv $ARDERI/data/$RUN/fastq/*fungal* $ARDERI/data/$RUN/ITS/fastq/.
+mv $ARDERI/data/$RUN/fastq/*ambig* $ARDERI/data/$RUN/ambiguous/.
 ```
 
 ###[16S workflow](../master/16S%20%20workflow.md)
