@@ -6,8 +6,8 @@ biom_make.pl will take a hacked rdp taxonomy file (mod_taxa.pl) and UPARSE biome
 
 e.g. for 16S
 ```shell
-cat 16S.rdp|$METAGENOMICS/scripts/mod_taxa.pl >16S.taxa
-$METAGENOMICS/scripts/biom_maker.pl 16S.taxa 16S.otu_table.biom >16S.taxa.biom
+cat 16S.rdp|$ARDERI/metabarcoding_pipeline/scripts/mod_taxa.pl >16S.taxa
+$ARDERI/metabarcoding_pipeline/scripts/biom_maker.pl 16S.taxa 16S.otu_table.biom >16S.taxa.biom
 ```
 
 ## R analysis
