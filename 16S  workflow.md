@@ -30,10 +30,10 @@ Unfiltered joined reads are saved to unfiltered folder, filtered reads are saved
 16Spre.sh forward_read reverse_read output_file_name output_directory adapters min_size percent_diff max_errrors 
 
 ```shell
-$METAGENOMICS/scripts/ARDERI.sh -c 16Spre \
-	"$METAGENOMICS/data/$RUN/$SSU/fastq/*R1*.fastq" \
-	$METAGENOMICS/data/$RUN/$SSU/filtered \
-	$METAGENOMICS/primers/adapters.db \
+$PIPELINE/scripts/PIPELINE.sh -c 16Spre \
+	"$ARDERI/data/$RUN/$SSU/fastq/*R1*.fastq" \
+	$ARDERI/data/$RUN/$SSU/filtered \
+	$ARDERI/primers/adapters.db \
 	$MINL $MINOVER $QUAL
 ```
 ## UPARSE
@@ -42,26 +42,26 @@ $METAGENOMICS/scripts/ARDERI.sh -c 16Spre \
 This is mostly a UPARSE pipeline, but usearch (free version) runs out of memory for dereplication and subsequent steps. I've written my own scripts to do the dereplication and sorting 
 
 ```shell
-$METAGENOMICS/scripts/ARDERI.sh -c UPARSE $METAGENOMICS $RUN $SSU $FPL $RPL
+$PIPELINE/scripts/PIPELINE.sh -c UPARSE $ARDERI $RUN $SSU $FPL $RPL
 ```
 
 ### Assign taxonomy
 NOTE:- I still need to build nematode utax taxonomy database from Silva_SSU.
 
 ```shell
-$METAGENOMICS/scripts/ARDERI.sh -c tax_assign $METAGENOMICS $RUN $SSU 
+$PIPELINE/scripts/PIPELINE.sh -c tax_assign $ARDERI $RUN $SSU 
 ```
 
 ### Create OTU table 
 
 ```shell
-$METAGENOMICS/scripts/ARDERI.sh -c OTU $METAGENOMICS $RUN $SSU $FPL $RPL
+$PIPELINE/scripts/PIPELINE.sh -c OTU $ARDERI $RUN $SSU $FPL $RPL
 ```
 
 If unfiltered data is too much for usearch(32) to handle :
 
 ```shell
-$METAGENOMICS/scripts/ARDERI.sh -c OTUS $METAGENOMICS $RUN $SSU $FPL $RPL
+$PIPELINE/scripts/PIPELINE.sh -c OTUS $ARDERI $RUN $SSU $FPL $RPL
 ```
 (this may actually be quicker than OTU, need to check)
 
@@ -70,18 +70,18 @@ Occasionally, due to v.poor reverse read quality, joining of f+r reads fails for
 I've also added a rev compliment routine to fq2fa_v2.pl, means the reverse reads can be called as plus strand by usearch_global.
 
 ```shell
-for f in $METAGENOMICS/data/$RUN/16S/fastq/*R1*
+for f in $ARDERI/data/$RUN/16S/fastq/*R1*
 do
 	R1=$f
 	R2=$(echo $R1|sed 's/\_R1_/\_R2_/')
 	S=$(echo $f|awk -F"." '{print $1}'|awk -F"/" '{print $NF}')
-	$METAGENOMICS/scripts/fq2fa_v2.pl $R1 $METAGENOMICS/data/$RUN/16S.r1.unfiltered.fa $S $fpl 0
-	$METAGENOMICS/scripts/fq2fa_v2.pl $R2 $METAGENOMICS/data/$RUN/16S.r2.unfiltered.fa $S $rpl 30 rev
+	$PIPELINE/scripts/fq2fa_v2.pl $R1 $ARDERI/data/$RUN/16S.r1.unfiltered.fa $S $fpl 0
+	$PIPELINE/scripts/fq2fa_v2.pl $R2 $ARDERI/data/$RUN/16S.r2.unfiltered.fa $S $rpl 30 rev
 done
 usearch9 -usearch_global 16S.r1.unfiltered.fa -db 16S.otus.fa -strand plus -id 0.95 -userout hits.r1.txt -userfields query+target+id
 usearch9 -usearch_global 16S.r2.unfiltered.fa -db 16S.otus.fa -strand plus -id 0.95 -userout hits.r2.txt -userfields query+target+id
-$METAGENOMICS/scripts/ARDERI.sh -c merge_hits $METAGENOMICS/scripts/merge_hits.R hits.r1.txt hits.r2.txt 16S.otu_table.txt
-$METAGENOMICS/scripts/otu_to_biom.pl row_biom col_biom data_biom >16S.otu_table.biom
+$PIPELINE/scripts/PIPELINE.sh -c merge_hits $PIPELINE/scripts/merge_hits.R hits.r1.txt hits.r2.txt 16S.otu_table.txt
+$PIPELINE/scripts/otu_to_biom.pl row_biom col_biom data_biom >16S.otu_table.biom
 rm row_biom col_biom data_biom
 ```
 
