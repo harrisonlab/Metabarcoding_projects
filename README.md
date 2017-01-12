@@ -16,8 +16,8 @@ Using HHMMER v 3.1b2 (http://hmmer.janelia.org/)
 Used HMM files from ITSx (http://microbiology.se/software/itsx/)
 
 ```shell
-perl $METAGENOMICS/scripts/cut_hmm v.3.1 $METAGENOMICS/hmm/chopped_hmm fungi
-cd $METAGENOMICS/hmm/chopped_hmm
+perl $ARDERI/metabarcoding_pipeline/scripts/cut_hmm v.3.1 $ARDERI/metabarcoding_pipeline/hmm/chopped_hmm fungi
+cd $ARDERI/metabarcoding_pipeline/hmm/chopped_hmm
 cat *SSU*> t1
 cat *58S_start* > t2
 cat *58S_end* > t3
@@ -85,18 +85,6 @@ cat nem_tax.fasta nonem_tax.fasta > Eumetazoa_tax.fasta
 
 usearch9 -makeudb_sintax nem_tax.fasta -output nematode.udp
 usearch9 -makeudb_sintax Eumetazoa_tax.fasta -output nematode2.udp
-```
-
-## Set directories
-The following directories should be created prior to starting the workflow:
-```shell
-#run once
-mkdir $METAGENOMICS
-mkdir $METAGENOMICS/analysis
-mkdir $METAGENOMICS/data
-mkdir $METAGENOMICS/hmm
-mkdir $METAGENOMICS/scripts
-mkdir $METAGENOMICS/taxonomies
 ```
 
 ___
