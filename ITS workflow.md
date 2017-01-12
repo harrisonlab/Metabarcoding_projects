@@ -10,10 +10,10 @@ Script will:<br>
 
 ```shell
 
-$METAGENOMICS/scripts/ARDERI.sh -c ITSpre \ 
- $METAGENOMICS/data/$RUN/ITS/fastq/*R1*.fastq \ 
- $METAGENOMICS/data/$RUN/ITS/fasta \
- $METAGENOMICS/primers/primers.db \
+$ARDERI/metabarcoding_pipeline/scripts/ARDERI.sh -c ITSpre \ 
+ $ARDERI/data/$RUN/ITS/fastq/*R1*.fastq \ 
+ $ARDERI/data/$RUN/ITS/fasta \
+ $ARDERI/metabarcoding_pipeline/primers/primers.db \
  200 200 1; 
 ```
 
@@ -25,18 +25,18 @@ This will create a large number of array jobs on the cluster
 
 Fungi
 ```shell
-$METAGENOMICS/scripts/ARDERI.sh -c procends \
- $METAGENOMICS/data/$RUN/$SSU/fasta \
+$ARDERI/metabarcoding_pipeline/scripts/ARDERI.sh -c procends \
+ $ARDERI/data/$RUN/$SSU/fasta \
  R1 \
- $METAGENOMICS/hmm/ssu_end.hmm 	\
- $METAGENOMICS/hmm/58s_start.hmm \
+ $ARDERI/metabarcoding_pipeline/hmm/ssu_end.hmm 	\
+ $ARDERI/metabarcoding_pipeline/hmm/58s_start.hmm \
  ssu 58ss 20
 
-$METAGENOMICS/scripts/ARDERI.sh -c procends \
- $METAGENOMICS/data/$RUN/$SSU/fasta \
+$ARDERI/metabarcoding_pipeline/scripts/ARDERI.sh -c procends \
+ $ARDERI/data/$RUN/$SSU/fasta \
  R2 \
- $METAGENOMICS/hmm/lsu_start.hmm \
- $METAGENOMICS/hmm/58s_end.hmm \
+ $ARDERI/metabarcoding_pipeline/hmm/lsu_start.hmm \
+ $ARDERI/metabarcoding_pipeline/hmm/58s_end.hmm \
  lsu 58se 20
 
 
@@ -44,11 +44,11 @@ $METAGENOMICS/scripts/ARDERI.sh -c procends \
 
 Oomycetes
 ```shell
-$METAGENOMICS/scripts/ARDERI.sh -c procends \
- $METAGENOMICS/data/$RUN/$SSU/filtered \
+$ARDERI/metabarcoding_pipeline/scripts/ARDERI.sh -c procends \
+ $ARDERI/data/$RUN/$SSU/filtered \
  "" \
- $METAGENOMICS/hmm/others/Oomycota/ssu_end.hmm \
- $METAGENOMICS/hmm/others/Oomycota/58s_start.hmm \
+ $ARDERI/metabarcoding_pipeline/hmm/others/Oomycota/ssu_end.hmm \
+ $ARDERI/metabarcoding_pipeline/hmm/others/Oomycota/58s_start.hmm \
  ssu 58ss 20
 ```
 
@@ -60,16 +60,16 @@ LOWQUAL keeps reads which lack 5.8S homology - this is necessary as trimming wil
 
 Fungi
 ```shell
-$METAGENOMICS/scripts/ARDERI.sh -c ITS \
- "$METAGENOMICS/data/$RUN/$SSU/fasta/*R1" \
- $METAGENOMICS/scripts/rm_SSU_58Ss.R \
+$ARDERI/metabarcoding_pipeline/scripts/ARDERI.sh -c ITS \
+ "$ARDERI/data/$RUN/$SSU/fasta/*R1" \
+ $ARDERI/metabarcoding_pipeline/scripts/rm_SSU_58Ss.R \
  "*.\\.ssu" \
  "*.\\.58"
 
 LOWQUAL=FALSE   
-$METAGENOMICS/scripts/ARDERI.sh -c ITS \
- "$METAGENOMICS/data/$RUN/$SSU/fasta/*R2" \
- $METAGENOMICS/scripts/rm_58Se_LSU_v2.R \
+$ARDERI/metabarcoding_pipeline/scripts/ARDERI.sh -c ITS \
+ "$ARDERI/data/$RUN/$SSU/fasta/*R2" \
+ $ARDERI/metabarcoding_pipeline/scripts/rm_58Se_LSU_v2.R \
  "*.\\.58" \
  "*.\\.lsu" \
  $LOWQUAL
@@ -77,7 +77,11 @@ $METAGENOMICS/scripts/ARDERI.sh -c ITS \
 
 Oomycetes
 ```shell
-$METAGENOMICS/scripts/ARDERI.sh -c ITS "$METAGENOMICS/data/$RUN/$SSU/filtered/*D" $METAGENOMICS/scripts/rm_SSU_58Ss.R "*.\\.ssu" "*.\\.58"
+$ARDERI/metabarcoding_pipeline/scripts/ARDERI.sh -c ITS \
+ "$ARDERI/data/$RUN/$SSU/filtered/*D" \
+ $ARDERI/metabarcoding_pipeline/scripts/rm_SSU_58Ss.R \
+ "*.\\.ssu" \
+ "*.\\.58"
 ```
 
 There's a slight problem with one of the scripts and the fasta names...
@@ -92,16 +96,16 @@ done
 #### Return ITS1 where fasta header matches ITS2, unique ITS1 and unique ITS2
 
 ```shell
-mkdir -p $METAGENOMICS/data/$RUN/$SSU/filtered
-find $METAGENOMICS/data/$RUN/$SSU/fasta -type f -name *.r*|xargs -I myfile mv myfile $METAGENOMICS/data/$RUN/$SSU/filtered/.
+mkdir -p $ARDERI/data/$RUN/$SSU/filtered
+find $ARDERI/data/$RUN/$SSU/fasta -type f -name *.r*|xargs -I myfile mv myfile $ARDERI/data/$RUN/$SSU/filtered/.
 
-cd $METAGENOMICS/data/$RUN/$SSU/filtered
-for f in $METAGENOMICS/data/$RUN/$SSU/filtered/*r1.fa
+cd $ARDERI/data/$RUN/$SSU/filtered
+for f in $ARDERI/data/$RUN/$SSU/filtered/*r1.fa
 do
     R1=$f
     R2=$(echo $R1|sed 's/\.r1\.fa/\.r2\.fa/')
     S=$(echo $f|awk -F"." '{print $1}'|awk -F"/" '{print $NF}')
-    $METAGENOMICS/scripts/catfiles_v2.pl $R1 $R2 $S;
+    $ARDERI/metabarcoding_pipeline/scripts/catfiles_v2.pl $R1 $R2 $S;
 done
 
 mkdir R1
@@ -118,13 +122,13 @@ RPL=21
 This is mostly a UPARSE pipeline, but usearch (free version) runs out of memory for dereplication and subsequent steps. I've written my own scripts to do the dereplication and sorting 
 
 ```shell
-$METAGENOMICS/scripts/ARDERI.sh -c UPARSE \ $METAGENOMICS $RUN $SSU 0 0
+$ARDERI/metabarcoding_pipeline/scripts/PIPELINE.sh -c UPARSE $ARDERI $RUN $SSU 0 0
 ```
 ### Assign taxonomy
 NOTE:- I still need to build nematode utax taxonomy database from Silva_SSU.
 
 ```shell
-$METAGENOMICS/scripts/ARDERI.sh -c tax_assign \ $METAGENOMICS $RUN $SSU 
+$ARDERI/metabarcoding_pipeline/scripts/PIPELINE.sh -c tax_assign $ARDERI $RUN $SSU 
 ```
 
 ### Create OTU tables
@@ -132,7 +136,7 @@ $METAGENOMICS/scripts/ARDERI.sh -c tax_assign \ $METAGENOMICS $RUN $SSU
 Concatenates unfiltered reads, then assigns forward reads to OTUs. For any non-hits, attemps to assign reverse read (ITS2) to an OTU. 
 
 ```shell
-$METAGENOMICS/scripts/ARDERI.sh -c OTU \ $METAGENOMICS $RUN $SSU $FPL $RPL true
+$ARDERI/metabarcoding_pipeline/scripts/PIPELINE.sh -c OTU $ARDERI $RUN $SSU $FPL $RPL true
 ```
 
 
