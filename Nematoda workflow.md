@@ -26,26 +26,26 @@ Script will:<br>
 4. Convert FASTQ to single line FASTA
 
 ```shell
-$METAGENOMICS/scripts/ARDERI.sh -c ITSpre \
- "$METAGENOMICS/data/$RUN/$SSU/fastq/*R1*.fastq" \
- $METAGENOMICS/data/$RUN/$SSU/fasta \
- $METAGENOMICS/primers/nematode.db \
+$ARDERI/metabarcoding_pipeline/scripts/ARDERI.sh -c ITSpre \
+ "$ARDERI/data/$RUN/$SSU/fastq/*R1*.fastq" \
+ $ARDERI/data/$RUN/$SSU/fasta \
+ $ARDERI/metabarcoding_pipeline/primers/nematode.db \
  $MINL $MAXL $QUAL \
 ```
 
 #### Return ITS1 where fasta header matches ITS2, unique ITS1 and unique ITS2
 
 ```shell
-mkdir -p $METAGENOMICS/data/$RUN/$SSU/filtered
-find $METAGENOMICS/data/$RUN/$SSU/fasta -type f -name *.r*|xargs -I myfile mv myfile $METAGENOMICS/data/$RUN/$SSU/filtered/.
+mkdir -p $ARDERI/data/$RUN/$SSU/filtered
+find $ARDERI/data/$RUN/$SSU/fasta -type f -name *.r*|xargs -I myfile mv myfile $ARDERI/data/$RUN/$SSU/filtered/.
 
-cd $METAGENOMICS/data/$RUN/$SSU/filtered
-for f in $METAGENOMICS/data/$RUN/$SSU/filtered/*r1.fa
+cd $ARDERI/data/$RUN/$SSU/filtered
+for f in $ARDERI/data/$RUN/$SSU/filtered/*r1.fa
 do
     R1=$f
     R2=$(echo $R1|sed 's/\.r1\.fa/\.r2\.fa/')
     S=$(echo $f|awk -F"." '{print $1}'|awk -F"/" '{print $NF}')
-    $METAGENOMICS/scripts/catfiles_v2.pl $R1 $R2 $S;
+    $ARDERI/metabarcoding_pipeline/scripts/catfiles_v2.pl $R1 $R2 $S;
 done
 
 mkdir R1
@@ -59,18 +59,18 @@ mv *r2* R2/.
 ### Cluster 
 
 ```shell
-$METAGENOMICS/scripts/ARDERI.sh -c UPARSE \ $METAGENOMICS $RUN $SSU 0 0
+$ARDERI/metabarcoding_pipeline/scripts/ARDERI.sh -c UPARSE \ $ARDERI $RUN $SSU 0 0
 ```
 ### Assign taxonomy
 
 ```shell
-$METAGENOMICS/scripts/ARDERI.sh -c tax_assign \ $METAGENOMICS $RUN $SSU 
+$ARDERI/metabarcoding_pipeline/scripts/ARDERI.sh -c tax_assign \ $ARDERI $RUN $SSU 
 ```
 
 ### Create OTU tables
 
 ```shell
-$METAGENOMICS/scripts/ARDERI.sh -c OTU \ $METAGENOMICS $RUN $SSU $FPL $RPL true
+$ARDERI/metabarcoding_pipeline/scripts/ARDERI.sh -c OTU \ $ARDERI $RUN $SSU $FPL $RPL true
 ```
 
 
