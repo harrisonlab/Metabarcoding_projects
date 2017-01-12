@@ -57,13 +57,12 @@ demulti|demultiplex)
 ITSpre)
 	LOC=$1
 	shift
-	RUN=$1
-	shift
 	for f in $LOC
 	do     
 		R1=$f;     
-		R2=$(echo $R1|sed 's/_R1_/_R2_/');     
-		S=$(echo $f|awk -F"_" -v D=$RUN '{print $2"D"D}');
+		R2=$(echo $R1|sed 's/_R1_/_R2_/');
+		S=$(echo $f|awk -F"_" -v D=$(echo $LOC|awk -F"/" '{print($(NF-3))}') '{print $2"D"D}');
+		SSU=$(echo $LOC|awk -F"/" '{print($(NF-2))}')
 		qsub $SCRIPT_DIR/submit_ITSpre.sh $R1 $R2 $S $@ $SCRIPT_DIR
 	done
 	exit 1
@@ -150,7 +149,6 @@ OTU|otu)
 	TASKS=$(wc -l $dir/files.txt|awk -F" " '{print $1}')
 	qsub -N ${JOBNAME}_1 -t 1-$TASKS:1 $SCRIPT_DIR/submit_fastq_fasta.sh $dir/files.txt $dir $SL $SR $SCRIPT_DIR
 	qsub -hold_jid ${JOBNAME}_1 -N ${JOBNAME}_2 $SCRIPT_DIR/submit_cat_files.sh $dir $SCRIPT_DIR
-
 	qsub -hold_jid ${JOBNAME}_2 -N ${JOBNAME}_3 $SCRIPT_DIR/submit_global_search.sh $dir/t1.fa $OUTDIR $PREFIX
 	
 	if $R2; then
@@ -163,6 +161,25 @@ OTU|otu)
 		qsub -hold_jid ${JOBNAME}_3 $SCRIPT_DIR/submit_tidy.sh $dir $PREFIX.hits.out OTU_*_1.*
 	fi  
 
+	exit 1
+	;;
+OTUS)
+	OUTDIR=$1/data/$2
+	PREFIX=$3
+	UNFILTDIR=$OUTDIR/$PREFIX/unfiltered
+	SL=$4
+	SR=$5
+	R2=${6:-false}
+	JOBNAME=OTU_$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 8 | head -n 1)
+
+	cd $OUTDIR
+	dir=`mktemp -d -p $OUTDIR`
+	find $UNFILTDIR -name '*.fastq' >$dir/files.txt
+	TASKS=$(wc -l $dir/files.txt|awk -F" " '{print $1}')
+	qsub -N ${JOBNAME}_1 -t 1-$TASKS:1 $SCRIPT_DIR/submit_fq-fa_global.sh $dir/files.txt $dir $SL $SR $OUTDIR/${PREFIX}.otus.fa $SCRIPT_DIR
+	qsub -hold_jid ${JOBNAME}_1 -N ${JOBNAME}_2 $SCRIPT_DIR/submit_cat_global.sh $dir $OUTDIR $PREFIX $SCRIPT_DIR
+	qsub -hold_jid ${JOBNAME}_2 -N ${JOBNAME}_3 $SCRIPT_DIR/submit_otu_biome.sh $dir $OUTDIR $PREFIX $SCRIPT_DIR
+	qsub -hold_jid ${JOBNAME}_3 $SCRIPT_DIR/submit_tidy.sh $dir OTU_*_1.*
 	exit 1
 	;;
 tax_assign)
@@ -182,9 +199,22 @@ qcheck)
 	exit 1
 	;;
 TEST)
-	X=$1
-	shift
-	echo $program $@ $X $SCRIPT_DIR
+	OUTDIR=$1/data/$2
+	PREFIX=$3
+	UNFILTDIR=$OUTDIR/$PREFIX/unfiltered
+	SL=$4
+	SR=$5
+	R2=${6:-false}
+	JOBNAME=OTU_$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 8 | head -n 1)
+
+	cd $OUTDIR
+	dir=`mktemp -d -p $OUTDIR`
+	find $UNFILTDIR -name '*.fastq' >$dir/files.txt
+	TASKS=$(wc -l $dir/files.txt|awk -F" " '{print $1}')
+	qsub -N ${JOBNAME}_1 -t 1-$TASKS:1 $SCRIPT_DIR/submit_fq-fa_global.sh $dir/files.txt $dir $SL $SR $OUTDIR/${PREFIX}.otus.fa $SCRIPT_DIR
+	qsub -hold_jid ${JOBNAME}_1 -N ${JOBNAME}_2 $SCRIPT_DIR/submit_cat_global.sh $dir $OUTDIR $PREFIX $SCRIPT_DIR
+	qsub -hold_jid ${JOBNAME}_2 -N ${JOBNAME}_3 $SCRIPT_DIR/submit_otu_biome.sh $dir $OUTDIR $PREFIX $SCRIPT_DIR
+	qsub -hold_jid ${JOBNAME}_3 $SCRIPT_DIR/submit_tidy.sh $dir OTU_*_1.*
 	exit 1
 	;;
 *)
