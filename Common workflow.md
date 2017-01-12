@@ -15,17 +15,17 @@ mkdir $ARDERI/data/$RUN/16S/unfiltered
 mkdir -p $ARDERI/data/$RUN/ITS/fastq
 mkdir $ARDERI/data/$RUN/ITS/filtered
 mkdir $ARDERI/data/$RUN/ITS/unfilterd
-```	
+```
+
 ## Decompress files
 ```shell
 for FILE in $ARDERI/data/$RUN/16S/fastq; do 
 	$ARDERI/metabarcoding_pipeline/scripts/PIPELINE.sh -c unzip $FILE
 done
 ```
-## QC
-Qualtiy checking was performed with fastQC (http://www.bioinformatics.babraham.ac.uk/projects/fastqc/)
 
-From same folder containing fastq files ran:
+## QC
+Qualtiy checking with fastQC (http://www.bioinformatics.babraham.ac.uk/projects/fastqc/)
 ```shell
 for FILE in $ARDERI/data/$RUN/16S/fastq; do 
 	$ARDERI/metabarcoding_pipeline/scripts/PIPELINE.sh -c qcheck $FILE $ARDERI/data/$RUN/quality
