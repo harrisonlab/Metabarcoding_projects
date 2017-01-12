@@ -24,10 +24,10 @@ Unfiltered joined reads are saved to unfiltered folder, filtered reads are saved
 16Spre.sh forward_read reverse_read output_file_name output_directory adapters min_size min_join_overlap max_errrors 
 
 ```shell
-$METAGENOMICS/scripts/ARDERI.sh -c 16Spre \
-	$METAGENOMICS/data/$RUN/$SSU/fastq/*R1*.fastq \
-	$METAGENOMICS/data/$RUN/$SSU/filtered \
-	$METAGENOMICS/primers/adapters.db \
+$ARDERI/metabarcoding/scripts/ARDERI.sh -c 16Spre \
+	$ARDERI/data/$RUN/$SSU/fastq/*R1*.fastq \
+	$ARDERI/data/$RUN/$SSU/filtered \
+	$ARDERI/metabarcoding/primers/adapters.db \
 	$MINL $MINOVER $QUAL
 ```
 ### SSU and 5.8S removal 
@@ -37,20 +37,20 @@ $METAGENOMICS/scripts/ARDERI.sh -c 16Spre \
 This will create a large number of array jobs on the cluster
 
 ```shell
-$METAGENOMICS/scripts/ARDERI.sh -c procends \
- $METAGENOMICS/data/$RUN/$SSU/filtered \
+$ARDERI/metabarcoding/scripts/ARDERI.sh -c procends \
+ $ARDERI/data/$RUN/$SSU/filtered \
  "" \
- $METAGENOMICS/hmm/others/Oomycota/ssu_end.hmm \
- $METAGENOMICS/hmm/others/Oomycota/58s_start.hmm \
+ $ARDERI/metabarcoding/hmm/others/Oomycota/ssu_end.hmm \
+ $ARDERI/metabarcoding/hmm/others/Oomycota/58s_start.hmm \
  ssu 58ss 20
 ```
 
 #### Remove identified SSU and 5.8S regions
 
 ```shell
-$METAGENOMICS/scripts/ARDERI.sh -c ITS \
-	"$METAGENOMICS/data/$RUN/$SSU/filtered/*D" \
-	$METAGENOMICS/scripts/rm_SSU_58Ss.R \
+$ARDERI/metabarcoding/scripts/ARDERI.sh -c ITS \
+	"$ARDERI/data/$RUN/$SSU/filtered/*D" \
+	$ARDERI/metabarcoding/scripts/rm_SSU_58Ss.R \
 	"*.\\.ssu" "*.\\.58"
 ```
 
@@ -66,20 +66,21 @@ This is mostly a UPARSE pipeline, but usearch (free version) runs out of memory 
 
 ### Cluster 
 ```shell
-$METAGENOMICS/scripts/ARDERI.sh -c UPARSE $METAGENOMICS $RUN $SSU 0 0
+$ARDERI/metabarcoding/scripts/PIPELINE.sh -c UPARSE $ARDERI $RUN $SSU 0 0
 ```
 ### Assign taxonomy
 ```shell
-$METAGENOMICS/scripts/ARDERI.sh -c tax_assign $METAGENOMICS $RUN $SSU 
+$ARDERI/metabarcoding/scripts/PIPELINE.sh -c tax_assign $ARDERI $RUN $SSU 
 cp $SSU.otus.fa $SSU_v2.otus.fa
-$METAGENOMICS/scripts/ARDERI.sh -c tax_assign $METAGENOMICS $RUN $SSU_v2
+$ARDERI/metabarcoding/scripts/PIPELINE.sh -c tax_assign $ARDERI $RUN $SSU_v2
 rm $SSU_v2.otus.fa
 ```
 
 ### Create OTU tables
 ```shell
-$METAGENOMICS/scripts/ARDERI.sh -c OTU $METAGENOMICS $RUN $SSU $FPL $RPL
+$ARDERI/metabarcoding/scripts/PIPELINE.sh -c OTU $ARDERI $RUN $SSU $FPL $RPL
 ```
+
 ###[16S workflow](../master/16S%20%20workflow.md)
 ###[ITS workflow](../master//ITS%20workflow.md)
 ###[Nematode workflow](../master/Nematoda%20workflow.md)
