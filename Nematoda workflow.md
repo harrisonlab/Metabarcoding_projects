@@ -26,7 +26,7 @@ Script will:<br>
 4. Convert FASTQ to single line FASTA
 
 ```shell
-$ARDERI/metabarcoding_pipeline/scripts/ARDERI.sh -c ITSpre \
+$ARDERI/metabarcoding_pipeline/scripts/PIPELINE.sh -c ITSpre \
  "$ARDERI/data/$RUN/$SSU/fastq/*R1*.fastq" \
  $ARDERI/data/$RUN/$SSU/fasta \
  $ARDERI/metabarcoding_pipeline/primers/nematode.db \
@@ -59,18 +59,18 @@ mv *r2* R2/.
 ### Cluster 
 
 ```shell
-$ARDERI/metabarcoding_pipeline/scripts/ARDERI.sh -c UPARSE \ $ARDERI $RUN $SSU 0 0
+$ARDERI/metabarcoding_pipeline/scripts/PIPELINE.sh -c UPARSE \ $ARDERI $RUN $SSU 0 0
 ```
 ### Assign taxonomy
 
 ```shell
-$ARDERI/metabarcoding_pipeline/scripts/ARDERI.sh -c tax_assign \ $ARDERI $RUN $SSU 
+$ARDERI/metabarcoding_pipeline/scripts/PIPELINE.sh -c tax_assign \ $ARDERI $RUN $SSU 
 ```
 
 ### Create OTU tables
 
 ```shell
-$ARDERI/metabarcoding_pipeline/scripts/ARDERI.sh -c OTU \ $ARDERI $RUN $SSU $FPL $RPL true
+$ARDERI/metabarcoding_pipeline/scripts/PIPELINE.sh -c OTU \ $ARDERI $RUN $SSU $FPL $RPL true
 ```
 
 
