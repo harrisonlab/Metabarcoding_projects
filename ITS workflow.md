@@ -1,5 +1,12 @@
 # ITS workflow
+```shell
+SSU=ITS
+FPL=23 
+RPL=21
 
+MAXL=200
+MINL=200
+```
 
 ## Pre-processing
 Script will:<br>
