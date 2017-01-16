@@ -63,8 +63,8 @@ P1R=GACTACHVGGGTATCTAATCC
 P2F=CTTGGTCATTTAGAGGAAGTAA # fungi
 P2R=AGCGTTCTTCATCGATGTGC
 
-$ARDERI/metabarcoding_pipeline/scripts/PIPELINE.sh -c demultiplex /
-	'$ARDERI/data/$RUN/fastq/*_R1_*' 0/
+$ARDERI/metabarcoding_pipeline/scripts/PIPELINE.sh -c demultiplex \
+	'$ARDERI/data/$RUN/fastq/*_R1_*' 0 \
 	$P1F $P1R $P2F $P2R
 
 
