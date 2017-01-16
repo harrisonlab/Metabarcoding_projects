@@ -19,8 +19,8 @@ Script will:<br>
 ```shell
 
 $ARDERI/metabarcoding_pipeline/scripts/PIPELINE.sh -c ITSpre \
- $ARDERI/data/$RUN/ITS/fastq/*R1*.fastq \
- $ARDERI/data/$RUN/ITS/fasta \
+ $ARDERI/data/$RUN/$SSU/fastq/*R1*.fastq \
+ $ARDERI/data/$RUN/$SSU/fasta \
  $ARDERI/metabarcoding_pipeline/primers/primers.db \
  $MINL $MAXR2 $QUAL; 
 ```
