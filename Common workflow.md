@@ -39,7 +39,7 @@ Run demulti.pl to demultiplex these into fungal and bacterial fastq files. Ambig
 
 Running something like the below should give a good indication of what index_1 and index_2 should be - this is useful if you don't knwo what the primer sequences are and to get a feel of how many mismatches (if necesary) to use. 
 ```shell
-sed -n '2~4p' $(ls|head -n1)|grep -x "[ATCG]\+"|cut -c-16|sort|uniq| /
+sed -n '2~4p' $(ls|head -n1)|grep -x "[ATCG]\+"|cut -c-16|sort|uniq| \
 tee zzexpressions.txt|xargs -I%  grep -c "^%" $(ls|head -n1) >zzcounts.txt
 ```
 
@@ -64,7 +64,7 @@ P2F=CTTGGTCATTTAGAGGAAGTAA # fungi
 P2R=AGCGTTCTTCATCGATGTGC
 
 $ARDERI/metabarcoding_pipeline/scripts/PIPELINE.sh -c demultiplex \
-	'$ARDERI/data/$RUN/fastq/*_R1_*' 0 \
+	"$ARDERI/data/$RUN/fastq/*_R1_*" 0 \
 	$P1F $P1R $P2F $P2R
 
 
