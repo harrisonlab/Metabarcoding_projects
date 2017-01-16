@@ -4,8 +4,9 @@ SSU=ITS
 FPL=23 
 RPL=21
 
-MAXL=200
 MINL=200
+MAXR2=250
+QUAL=1
 ```
 
 ## Pre-processing
@@ -21,7 +22,7 @@ $ARDERI/metabarcoding_pipeline/scripts/ARDERI.sh -c ITSpre \
  $ARDERI/data/$RUN/ITS/fastq/*R1*.fastq \ 
  $ARDERI/data/$RUN/ITS/fasta \
  $ARDERI/metabarcoding_pipeline/primers/primers.db \
- 200 200 1; 
+ $MINL $MAXR2 $QUAL; 
 ```
 
 ### SSU/58S/LSU removal 
