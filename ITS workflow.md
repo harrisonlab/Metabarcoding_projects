@@ -18,7 +18,7 @@ Script will:<br>
 
 ```shell
 
-$ARDERI/metabarcoding_pipeline/scripts/ARDERI.sh -c ITSpre \
+$ARDERI/metabarcoding_pipeline/scripts/PIPELINE.sh -c ITSpre \
  $ARDERI/data/$RUN/ITS/fastq/*R1*.fastq \
  $ARDERI/data/$RUN/ITS/fasta \
  $ARDERI/metabarcoding_pipeline/primers/primers.db \
@@ -33,14 +33,14 @@ This will create a large number of array jobs on the cluster
 
 Fungi
 ```shell
-$ARDERI/metabarcoding_pipeline/scripts/ARDERI.sh -c procends \
+$ARDERI/metabarcoding_pipeline/scripts/PIPELINE.sh -c procends \
  $ARDERI/data/$RUN/$SSU/fasta \
  R1 \
  $ARDERI/metabarcoding_pipeline/hmm/ssu_end.hmm 	\
  $ARDERI/metabarcoding_pipeline/hmm/58s_start.hmm \
  ssu 58ss 20
 
-$ARDERI/metabarcoding_pipeline/scripts/ARDERI.sh -c procends \
+$ARDERI/metabarcoding_pipeline/scripts/PIPELINE.sh -c procends \
  $ARDERI/data/$RUN/$SSU/fasta \
  R2 \
  $ARDERI/metabarcoding_pipeline/hmm/lsu_start.hmm \
@@ -52,7 +52,7 @@ $ARDERI/metabarcoding_pipeline/scripts/ARDERI.sh -c procends \
 
 Oomycetes
 ```shell
-$ARDERI/metabarcoding_pipeline/scripts/ARDERI.sh -c procends \
+$ARDERI/metabarcoding_pipeline/scripts/PIPELINE.sh -c procends \
  $ARDERI/data/$RUN/$SSU/filtered \
  "" \
  $ARDERI/metabarcoding_pipeline/hmm/others/Oomycota/ssu_end.hmm \
@@ -68,14 +68,14 @@ LOWQUAL keeps reads which lack 5.8S homology - this is necessary as trimming wil
 
 Fungi
 ```shell
-$ARDERI/metabarcoding_pipeline/scripts/ARDERI.sh -c ITS \
+$ARDERI/metabarcoding_pipeline/scripts/PIPELINE.sh -c ITS \
  "$ARDERI/data/$RUN/$SSU/fasta/*R1" \
  $ARDERI/metabarcoding_pipeline/scripts/rm_SSU_58Ss.R \
  "*.\\.ssu" \
  "*.\\.58"
 
 LOWQUAL=FALSE   
-$ARDERI/metabarcoding_pipeline/scripts/ARDERI.sh -c ITS \
+$ARDERI/metabarcoding_pipeline/scripts/PIPELINE.sh -c ITS \
  "$ARDERI/data/$RUN/$SSU/fasta/*R2" \
  $ARDERI/metabarcoding_pipeline/scripts/rm_58Se_LSU_v2.R \
  "*.\\.58" \
@@ -85,7 +85,7 @@ $ARDERI/metabarcoding_pipeline/scripts/ARDERI.sh -c ITS \
 
 Oomycetes
 ```shell
-$ARDERI/metabarcoding_pipeline/scripts/ARDERI.sh -c ITS \
+$ARDERI/metabarcoding_pipeline/scripts/PIPELINE.sh -c ITS \
  "$ARDERI/data/$RUN/$SSU/filtered/*D" \
  $ARDERI/metabarcoding_pipeline/scripts/rm_SSU_58Ss.R \
  "*.\\.ssu" \
