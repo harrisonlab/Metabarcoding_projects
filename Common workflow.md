@@ -19,7 +19,7 @@ mkdir $ARDERI/data/$RUN/ITS/unfilterd
 
 ## Decompress files
 ```shell
-for FILE in $ARDERI/data/$RUN/16S/fastq; do 
+for FILE in $ARDERI/data/$RUN/fastq; do 
 	$ARDERI/metabarcoding_pipeline/scripts/PIPELINE.sh -c unzip $FILE
 done
 ```
