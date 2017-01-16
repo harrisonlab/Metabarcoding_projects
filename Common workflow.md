@@ -68,8 +68,8 @@ $ARDERI/metabarcoding_pipeline/scripts/PIPELINE.sh -c demultiplex \
 	$P1F $P1R $P2F $P2R
 
 
-mv $ARDERI/data/$RUN/fastq/*bacterial* $ARDERI/data/$RUN/16S/fastq/.
-mv $ARDERI/data/$RUN/fastq/*fungal* $ARDERI/data/$RUN/ITS/fastq/.
+mv $ARDERI/data/$RUN/fastq/*ps1* $ARDERI/data/$RUN/16S/fastq/.
+mv $ARDERI/data/$RUN/fastq/*ps2* $ARDERI/data/$RUN/ITS/fastq/.
 mv $ARDERI/data/$RUN/fastq/*ambig* $ARDERI/data/$RUN/ambiguous/.
 ```
 
