@@ -66,6 +66,15 @@ If reverse read quality was poor and it was necessary to truncate reads to get m
 
 LOWQUAL keeps reads which lack 5.8S homology - this is necessary as trimming will in most instances have removed the homologous region
 
+
+There's a slight problem with one of the scripts and the fasta names...
+```shell
+for f in *.fa; do
+	sed -i -e 's/ .*//' $f
+done
+```
+Note to self - fix this in preprocessing step
+
 Fungi
 ```shell
 $ARDERI/metabarcoding_pipeline/scripts/PIPELINE.sh -c ITS \
@@ -91,14 +100,6 @@ $ARDERI/metabarcoding_pipeline/scripts/PIPELINE.sh -c ITS \
  "*.\\.ssu" \
  "*.\\.58"
 ```
-
-There's a slight problem with one of the scripts and the fasta names...
-```shell
-for f in *.fa; do
-	sed -i -e 's/ .*//' $f
-done
-```
-
 
 
 #### Return ITS1 where fasta header matches ITS2, unique ITS1 and unique ITS2
