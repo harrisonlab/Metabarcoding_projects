@@ -14,7 +14,7 @@ mkdir $ARDERI/data/$RUN/16S/filtered
 mkdir $ARDERI/data/$RUN/16S/unfiltered
 mkdir -p $ARDERI/data/$RUN/ITS/fastq
 mkdir $ARDERI/data/$RUN/ITS/filtered
-mkdir $ARDERI/data/$RUN/ITS/unfilterd
+mkdir $ARDERI/data/$RUN/ITS/unfiltered
 ```
 
 ## Decompress files
