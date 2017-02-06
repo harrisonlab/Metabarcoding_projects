@@ -94,6 +94,9 @@ $ARDERI/metabarcoding_pipeline/scripts/PIPELINE.sh -c ITS \
 
 
 #### Return ITS1 where fasta header matches ITS2, unique ITS1 and unique ITS2
+NOTE: this has been edited to uppercase R and _ rather than r and . in file name.
+no idea what I changed to make this necessary (it will be in preprocessing step)
+
 
 ```shell
 mkdir -p $ARDERI/data/$RUN/$SSU/filtered
@@ -104,7 +107,7 @@ for f in $ARDERI/data/$RUN/$SSU/filtered/*R1.fa
 do
     R1=$f
     R2=$(echo $R1|sed 's/_R1\.fa/_R2\.fa/')
-    S=$(echo $f|awk -F"." '{print $1}'|awk -F"/" '{print $NF}')
+    S=$(echo $f|awk -F"_" '{print $1}'|awk -F"/" '{print $NF}')
     $ARDERI/metabarcoding_pipeline/scripts/catfiles_v2.pl $R1 $R2 $S;
 done
 
