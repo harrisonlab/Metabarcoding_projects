@@ -97,7 +97,7 @@ $ARDERI/metabarcoding_pipeline/scripts/PIPELINE.sh -c ITS \
 
 ```shell
 mkdir -p $ARDERI/data/$RUN/$SSU/filtered
-find $ARDERI/data/$RUN/$SSU/fasta -type f -name *.r*|xargs -I myfile mv myfile $ARDERI/data/$RUN/$SSU/filtered/.
+find $ARDERI/data/$RUN/$SSU/fasta -type f -name *.R*|xargs -I myfile mv myfile $ARDERI/data/$RUN/$SSU/filtered/.
 
 cd $ARDERI/data/$RUN/$SSU/filtered
 for f in $ARDERI/data/$RUN/$SSU/filtered/*r1.fa
