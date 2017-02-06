@@ -113,8 +113,8 @@ done
 
 mkdir R1
 mkdir R2
-mv *r1* R1/.
-mv *r2* R2/.
+mv *_R1* R1/.
+mv *_R2* R2/.
 ```
 
 ## UPARSE
