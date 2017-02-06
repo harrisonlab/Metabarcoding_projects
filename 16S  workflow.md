@@ -6,21 +6,20 @@ FPL is forward primer length
 RPL is reverse primer length
 
 ```shell
-#bacteria
-SSU=16S
-FPL=17 
-RPL=21 
-
-# nematodes
-SSU=NEM 
-FPL=23
-RPL=17
-
 # all
 MINL=300
 MINOVER=5
 QUAL=0.5
 
+#bacteria
+SSU=16S
+FPL=17
+RPL=21
+
+# nematodes
+SSU=NEM
+FPL=23
+RPL=17
 ```
 
 ## Pre-processing
