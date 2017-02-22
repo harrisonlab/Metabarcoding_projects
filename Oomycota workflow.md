@@ -24,7 +24,7 @@ Unfiltered joined reads are saved to unfiltered folder, filtered reads are saved
 16Spre.sh forward_read reverse_read output_file_name output_directory adapters min_size min_join_overlap max_errrors 
 
 ```shell
-$ARDERI/metabarcoding_pipeline/scripts/PIPELINE.sh -c 16Spre \
+$ARDERI/metabarcoding_pipeline/scripts/PIPELINE.sh -c OOpre \
 	"$ARDERI/data/$RUN/$SSU/fastq/*R1*.fastq" \
 	$ARDERI/data/$RUN/$SSU/filtered \
 	$ARDERI/metabarcoding_pipeline/primers/adapters.db \
