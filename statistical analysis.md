@@ -20,7 +20,7 @@ options(stringsAsFactors = FALSE)
 There are several R functions throughout this module which are in the myfunctions package
 ```{r}
 library(devtools)
-load_all("../../scripts/myfunctions")
+load_all("../..//metabarcoding_pipeline/scripts/myfunctions")
 ```
 
 ### phyloseq
