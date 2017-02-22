@@ -60,7 +60,7 @@ Primers:
 
 
 ```shell
-#e.g. bacteria and fungi
+#bacteria and fungi
 P1F=CCTACGGGNGGCWGCAG
 P1R=GACTACHVGGGTATCTAATCC
 P2F=CTTGGTCATTTAGAGGAAGTAA
@@ -73,6 +73,22 @@ $ARDERI/metabarcoding_pipeline/scripts/PIPELINE.sh -c demultiplex \
 
 mv $ARDERI/data/$RUN/fastq/*ps1* $ARDERI/data/$RUN/16S/fastq/.
 mv $ARDERI/data/$RUN/fastq/*ps2* $ARDERI/data/$RUN/ITS/fastq/.
+mv $ARDERI/data/$RUN/fastq/*ambig* $ARDERI/data/$RUN/ambiguous/.
+
+
+#nematode and oomycete
+P1F=CGCGAATRGCTCATTACAACAGC
+P1R=GGCGGTATCTGATCGCC
+P2F=GAAGGTGAAGTCGTAACAAGG
+P2R=AGCGTTCTTCATCGATGTGC
+
+$ARDERI/metabarcoding_pipeline/scripts/PIPELINE.sh -c demultiplex \
+	"$ARDERI/data/$RUN/fastq/*NEM*_R1_*" 0 \
+	$P1F $P1R $P2F $P2R
+
+
+mv $ARDERI/data/$RUN/fastq/*ps1* $ARDERI/data/$RUN/NEM/fastq/.
+mv $ARDERI/data/$RUN/fastq/*ps2* $ARDERI/data/$RUN/OO/fastq/.
 mv $ARDERI/data/$RUN/fastq/*ambig* $ARDERI/data/$RUN/ambiguous/.
 ```
 
