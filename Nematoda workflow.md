@@ -26,7 +26,7 @@ Script will:<br>
 4. Convert FASTQ to single line FASTA
 
 ```shell
-$ARDERI/metabarcoding_pipeline/scripts/PIPELINE.sh -c ITSpre \
+$ARDERI/metabarcoding_pipeline/scripts/PIPELINE.sh -c NEMpre \
  "$ARDERI/data/$RUN/$SSU/fastq/*R1*.fastq" \
  $ARDERI/data/$RUN/$SSU/fasta \
  $ARDERI/metabarcoding_pipeline/primers/nematode.db \
