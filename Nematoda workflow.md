@@ -30,7 +30,7 @@ $ARDERI/metabarcoding_pipeline/scripts/PIPELINE.sh -c NEMpre \
  "$ARDERI/data/$RUN/$SSU/fastq/*R1*.fastq" \
  $ARDERI/data/$RUN/$SSU/fasta \
  $ARDERI/metabarcoding_pipeline/primers/nematode.db \
- $MINL $MAXL $QUAL \
+ $MINL $MAXL $QUAL
 ```
 
 #### Return ITS1 where fasta header matches ITS2, unique ITS1 and unique ITS2
