@@ -100,7 +100,7 @@ no idea what I changed to make this necessary (it will be in preprocessing step)
 
 ```shell
 mkdir -p $ARDERI/data/$RUN/$SSU/filtered
-find $ARDERI/data/$RUN/$SSU/fasta -type f -name *_R*.fa|xargs -I myfile mv myfile $ARDERI/data/$RUN/$SSU/filtered/.
+find $ARDERI/data/$RUN/$SSU/fasta -type f -name *.r*.fa|xargs -I myfile mv myfile $ARDERI/data/$RUN/$SSU/filtered/.
 
 cd $ARDERI/data/$RUN/$SSU/filtered
 for f in $ARDERI/data/$RUN/$SSU/filtered/*R1.fa
