@@ -104,7 +104,7 @@ for f in $ARDERI/data/$RUN/$SSU/filtered/*r1.fa
 do
     R1=$f
     R2=$(echo $R1|sed 's/\.r1\.fa/\.r2\.fa/')
-    S=$(echo $f|awk -F"_" '{print $1}'|awk -F"/" '{print $NF}')
+    S=$(echo $f|awk -F"." '{print $1}'|awk -F"/" '{print $NF}')
     $ARDERI/metabarcoding_pipeline/scripts/catfiles_v2.pl $R1 $R2 $S;
 done
 
