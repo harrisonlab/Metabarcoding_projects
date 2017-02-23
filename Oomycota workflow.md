@@ -50,7 +50,7 @@ $ARDERI/metabarcoding_pipeline/scripts/PIPELINE.sh -c procends \
 ```shell
 $ARDERI/metabarcoding_pipeline/scripts/PIPELINE.sh -c ITS \
 	"$ARDERI/data/$RUN/$SSU/filtered/*D*" \
-	$ARDERI/metabarcoding/scripts/rm_SSU_58Ss.R \
+	$ARDERI/metabarcoding_pipeline/scripts/rm_SSU_58Ss.R \
 	"*.\\.ssu" "*.\\.58"
 ```
 
