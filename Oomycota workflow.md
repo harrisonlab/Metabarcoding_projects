@@ -52,10 +52,13 @@ $ARDERI/metabarcoding_pipeline/scripts/PIPELINE.sh -c ITS \
 	"$ARDERI/data/$RUN/$SSU/filtered/*D*" \
 	$ARDERI/metabarcoding_pipeline/scripts/rm_SSU_58Ss.R \
 	"*.\\.ssu" "*.\\.58" 1
+
 ```
 
 There's a slight problem with one of the scripts and the fasta names...
 ```shell
+find $ARDERI/data/$RUN/$SSU/filtered -type f -name *_R*.fa|xargs -I myfile mv myfile $ARDERI/data/$RUN/$SSU/filtered/.
+
 for f in *.fa; do
 	sed -i -e 's/ .*//' $f
 done
