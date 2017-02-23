@@ -57,11 +57,16 @@ $ARDERI/metabarcoding_pipeline/scripts/PIPELINE.sh -c ITS \
 
 There's a slight problem with one of the scripts and the fasta names...
 ```shell
-find $ARDERI/data/$RUN/$SSU/filtered -type f -name *_R*.fa|xargs -I myfile mv myfile $ARDERI/data/$RUN/$SSU/filtered/.
+find $ARDERI/data/$RUN/$SSU/filtered -type f -name *r1.fa|xargs -I myfile mv myfile $ARDERI/data/$RUN/$SSU/filtered/.
 
-for f in *.fa; do
-	sed -i -e 's/ .*//' $f
-done
+mkdir $ARDERI/data/$RUN/$SSU/filtered/intermediate
+mv *filtered* $ARDERI/data/$RUN/$SSU/filtered/intermediate/.
+find . -maxdepth 1 -type d -name "S*" -exec mv '{}' intermediate \;
+rename 's/\.r1//' *.fa
+
+#for f in *.fa; do
+#	sed -i -e 's/ .*//' $f
+#done
 ```
 
 ## OTU assignment 
