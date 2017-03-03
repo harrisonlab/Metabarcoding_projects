@@ -36,7 +36,11 @@ $ARDERI/metabarcoding_pipeline/scripts/PIPELINE.sh -c 16Spre \
 This is mostly a UPARSE pipeline, but usearch (free version) runs out of memory for dereplication and subsequent steps. I've written my own scripts to do the dereplication and sorting 
 
 ```shell
+#denoise
 $ARDERI/metabarcoding_pipeline/scripts/PIPELINE.sh -c UPARSE $ARDERI $RUN $SSU $FPL $RPL
+
+#clustering
+#$ARDERI/metabarcoding_pipeline/scripts/PIPELINE.sh -c UPARSE $ARDERI $RUN $SSU $FPL $RPL
 ```
 
 ### Assign taxonomy
