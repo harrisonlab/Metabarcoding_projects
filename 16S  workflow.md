@@ -16,12 +16,6 @@ SSU=16S
 FPL=17
 RPL=21
 
-# nematodes
-SSU=NEM
-FPL=23
-RPL=17
-```
-
 ## Pre-processing
 Script will join PE reads (with a maximum % difference in overlap) remove adapter contamination and filter on minimum size and quality threshold.
 Unfiltered joined reads are saved to unfiltered folder, filtered reads are saved to filtered folder.
