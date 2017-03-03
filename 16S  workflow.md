@@ -15,6 +15,7 @@ QUAL=0.5
 SSU=16S
 FPL=17
 RPL=21
+```
 
 ## Pre-processing
 Script will join PE reads (with a maximum % difference in overlap) remove adapter contamination and filter on minimum size and quality threshold.
