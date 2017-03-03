@@ -31,7 +31,6 @@ $ARDERI/metabarcoding_pipeline/scripts/PIPELINE.sh -c ITSpre \
 
 This will create a large number of array jobs on the cluster
 
-Fungi
 ```shell
 $ARDERI/metabarcoding_pipeline/scripts/PIPELINE.sh -c procends \
  $ARDERI/data/$RUN/$SSU/fasta \
@@ -50,23 +49,12 @@ $ARDERI/metabarcoding_pipeline/scripts/PIPELINE.sh -c procends \
 
 ```
 
-Oomycetes
-```shell
-$ARDERI/metabarcoding_pipeline/scripts/PIPELINE.sh -c procends \
- $ARDERI/data/$RUN/$SSU/filtered \
- "" \
- $ARDERI/metabarcoding_pipeline/hmm/others/Oomycota/ssu_end.hmm \
- $ARDERI/metabarcoding_pipeline/hmm/others/Oomycota/58s_start.hmm \
- ssu 58ss 20
-```
-
 #### Remove SSU, 5.8S  and LSU regions and merge output
 
 If reverse read quality was poor and it was necessary to truncate reads to get more than a couple of reads past set LOWQUAL to TRUE
 
 LOWQUAL keeps reads which lack 5.8S homology - this is necessary as trimming will in most instances have removed the homologous region
 
-Fungi
 ```shell
 $ARDERI/metabarcoding_pipeline/scripts/PIPELINE.sh -c ITS \
  "$ARDERI/data/$RUN/$SSU/fasta/*R1" \
@@ -81,15 +69,6 @@ $ARDERI/metabarcoding_pipeline/scripts/PIPELINE.sh -c ITS \
  "*.\\.58" \
  "*.\\.lsu" \
  $LOWQUAL
-```
-
-Oomycetes
-```shell
-$ARDERI/metabarcoding_pipeline/scripts/PIPELINE.sh -c ITS \
- "$ARDERI/data/$RUN/$SSU/filtered/*D" \
- $ARDERI/metabarcoding_pipeline/scripts/rm_SSU_58Ss.R \
- "*.\\.ssu" \
- "*.\\.58"
 ```
 
 
