@@ -1,0 +1,23 @@
+```R
+pdf("NEM.pdf")
+myfiltbiom <- prune_samples((sample_data(mybiom)[[1]]!="C"),mybiom)
+myfiltbiom <- prune_samples((sample_data(myfiltbiom)[[2]]!="A"),myfiltbiom)
+myfiltbiom <- prune_taxa(rowSums(otu_table(myfiltbiom))>5,myfiltbiom)
+myfiltbiom@sam_data$location <- as.numeric(levels(myfiltbiom@sam_data$pair))[myfiltbiom@sam_data$pair]
+mypca <- plotPCA(myfiltbiom,design="1",ntop= nrow(myfiltbiom@otu_table),returnData=T,fitType="local",blind=T,calcFactors=geoMeans)
+df <- data.frame(mypca$x[,1]*mypca$percentVar[1],mypca$x[,2]*mypca$percentVar[2])
+plotOrd(df,sample_data(myfiltbiom),design="type",xlabel="PC1", ylab="PC2")
+plotOrd(df,sample_data(myfiltbiom),design="pair",shape="type",xlabel="PC1", ylab="PC2")
+plotOrd(df,sample_data(myfiltbiom),shape="type",design="location",continuous=T,xlabel="PC1", ylab="PC2")
+dev.off()
+
+myfiltbiom <- prune_samples((sample_data(mybiom)[[1]]!="C"),mybiom)
+dds <- phylo_to_des(myfiltbiom,fit=T, fitType="local",design=~pair+type,parallel=T,calcFactors=geoMeans)
+alpha <- 0.05
+res = results(dds, alpha=alpha,cooksCutoff=T,parallel=T)
+res.merge <- merge(as.data.frame(res),tax_table(myfiltbiom),by="row.names",all.x=TRUE)
+rownames(res.merge) <- res.merge$Row.names
+res.merge <- res.merge[-1]
+sig.res <- subset(res.merge,padj<=alpha)
+write.table(sig.res,"NEM.res.tsv",quote=F,na="",sep="\t")
+```
