@@ -67,7 +67,7 @@ P2F=CTTGGTCATTTAGAGGAAGTAA
 P2R=ATATGCTTAAGTTCAGCGGG
 
 $ARDERI/metabarcoding_pipeline/scripts/PIPELINE.sh -c demultiplex \
-	"$ARDERI/data/$RUN/fastq/*ITS*_R1_*" 0 \
+	"$ARDERI/data/$RUN/fastq/*_R1_*" 0 \
 	$P1F $P1R $P2F $P2R
 
 
