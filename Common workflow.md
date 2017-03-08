@@ -91,6 +91,10 @@ mv $ARDERI/data/$RUN/fastq/*ps1* $ARDERI/data/$RUN/NEM/fastq/.
 mv $ARDERI/data/$RUN/fastq/*ps2* $ARDERI/data/$RUN/OO/fastq/.
 mv $ARDERI/data/$RUN/fastq/*ambig* $ARDERI/data/$RUN/ambiguous/.
 ```
+### Ambiguous data
+Ambiguous data should not be used for OTU clustering/denoising, but it can be counted in the OTU tables.
+Requires converting to FASTA with approprite labels
+
 
 ###[16S workflow](../master/16S%20%20workflow.md)
 ###[ITS workflow](../master//ITS%20workflow.md)
