@@ -39,8 +39,8 @@ This is mostly a UPARSE pipeline, but usearch (free version) runs out of memory 
 #denoise
 $ARDERI/metabarcoding_pipeline/scripts/PIPELINE.sh -c UPARSE $ARDERI $RUN $SSU $FPL $RPL
 
-#clustering
-#$ARDERI/metabarcoding_pipeline/scripts/PIPELINE.sh -c UPARSE $ARDERI $RUN $SSU $FPL $RPL
+#clustering with cluser_otu
+#$ARDERI/metabarcoding_pipeline/scripts/PIPELINE.sh -c UCLUS $ARDERI $RUN $SSU $FPL $RPL
 ```
 
 ### Assign taxonomy
