@@ -113,6 +113,21 @@ myfiltbiom@sam_data$location <- as.factor(myfiltbiom@sam_data$meters)
 # plotPCA will return a prcomp object if returnData is set to TRUE
 mypca <- plotPCA(myfiltbiom,design="1",ntop= nrow(myfiltbiom@otu_table),returnData=T,fitType="local",blind=T)
 
+# for data from multiple sequencer runs (control samples named "control" in column 11 of colData)
+ mypca <- plotPCA(
+                  myfiltbiom,
+                  design="1",
+                  ntop= nrow(myfiltbiom@otu_table),
+                  returnData=T,
+                  fitType="local",
+                  blind=T,
+                  calcFactors=function(d,o){
+                    obj<-des_to_phylo(d);
+                    control_samples<-rownames(colData(d)[colData(d)[[11]]=="control",]);
+                    normHTS(obj,control_samples)
+                  }
+)
+
 # get the sum of squares for tree/aisle, location and residual
 sum_squares <- t(apply(mypca$x,2,function(x) t(summary(aov(x~sample_data(myfiltbiom)$condition+sample_data(myfiltbiom)$location))[[1]][2])))
 colnames(sum_squares) <- c("condition","location","residual")
