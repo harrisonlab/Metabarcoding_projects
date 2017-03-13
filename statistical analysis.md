@@ -149,10 +149,17 @@ mypca$y <- t(t(mypca$x)*mypca$percentVar)
 plotOrd(mypca$y,sample_data(myfiltbiom),dimx=1,dimy=2)
 
 ```
-Manova of first couple of pca with tree/aisle
+Manova/Anova of first couple of pca with tree/aisle
 ```{r}
-fit <- manova(mypca$x[,1:4]~condition,as.data.frame(as.matrix(sample_data(myfiltbiom))))
+fit <- manova(mypca$x[,1:3]~condition,as.data.frame(as.matrix(sample_data(myfiltbiom))))
 summary(fit, test="Pillai") # could just call summary directly 
+
+
+summary(aov(mypca$x[,1]~(condition*field)+location,as.data.frame(as.matrix(sample_data(myfiltbiom)))))
+summary(aov(mypca$x[,2]~(condition*field)+location,as.data.frame(as.matrix(sample_data(myfiltbiom)))))
+summary(aov(mypca$x[,3]~(condition*field)+location,as.data.frame(as.matrix(sample_data(myfiltbiom)))))
+
+
 ```
 
 #### Auto correlation
