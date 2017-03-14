@@ -128,7 +128,7 @@ mypca <- plotPCA(
    returnData=T,
    fitType="local",
    blind=T,
-   filteFun=function(o,f){
+   filterFun=function(o,f){
     m <- prune_samples((sample_data(o)[[10]]=="experiment"),o);
     m <- prune_taxa(rowSums(otu_table(m))>5,m)
     return(m)
