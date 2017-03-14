@@ -120,7 +120,7 @@ myfiltbiom@sam_data$location <- as.factor(myfiltbiom@sam_data$meters)
 myfiltbiom <- prune_taxa(rowSums(otu_table(myfiltbiom))>5,myfiltbiom)
 mypca <- plotPCA(myfiltbiom,design="1",ntop= nrow(myfiltbiom@otu_table),returnData=T,fitType="local",blind=T)
 
-# for data from multiple sequencer runs (control samples named "control" in column 11 of colData)
+# for data from multiple sequencer runs (control samples named "internal" in column 10 of colData)
 mypca <- plotPCA(
    myfiltbiom,
    design="1",
@@ -135,7 +135,7 @@ mypca <- plotPCA(
    },
    calcFactors=function(d,o){
      obj<-des_to_phylo(d);
-     control_samples<-rownames(colData(d)[colData(d)[[11]]=="control",]);
+     control_samples<-rownames(colData(d)[colData(d)[[10]]=="internal",]);
      normHTS(obj,control_samples)
    }
 )
