@@ -139,7 +139,7 @@ mypca <- plotPCA(
      normHTS(obj,control_samples)
    }
 )
-myfiltbiom <- prune_samples(sample_data(myfiltbiom)[[1]]=="C",myfiltbiom)
+myfiltbiom <- prune_samples(sample_data(myfiltbiom)[[1]]!="C",myfiltbiom)
 myfiltbiom <- prune_taxa(rowSums(otu_table(myfiltbiom))>5,myfiltbiom)
 
 
