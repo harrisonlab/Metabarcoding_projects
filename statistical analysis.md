@@ -132,7 +132,7 @@ mypca <- plotPCA(
     m <- prune_samples((sample_data(o)[[10]]=="experiment"),o);
     m <- prune_taxa(rowSums(otu_table(m))>5,m)
     return(m)
-   }
+   },
    calcFactors=function(d,o){
      obj<-des_to_phylo(d);
      control_samples<-rownames(colData(d)[colData(d)[[11]]=="control",]);
