@@ -113,28 +113,35 @@ plotTaxa(mycorebiom,"genus","condition",type=2, others=F,fitType="local",ordered
 
 ```{r}
 # filter out OTUs with less than 6 counts (and remove "extra samples")
-myfiltbiom <- prune_samples((sample_data(mybiom)[[10]]=="experiment")&(sample_data(mybiom)[[1]]!="C"),mybiom)
-myfiltbiom <- prune_taxa(rowSums(otu_table(myfiltbiom))>5,myfiltbiom)
-# meters is correct (location is incorrect in my original data, should change it maybe)
+myfiltbiom <- prune_samples(sample_data(mybiom)[[10]]!="duplicate",mybiom)
 myfiltbiom@sam_data$location <- as.factor(myfiltbiom@sam_data$meters)
 
 # plotPCA will return a prcomp object if returnData is set to TRUE
+myfiltbiom <- prune_taxa(rowSums(otu_table(myfiltbiom))>5,myfiltbiom)
 mypca <- plotPCA(myfiltbiom,design="1",ntop= nrow(myfiltbiom@otu_table),returnData=T,fitType="local",blind=T)
 
 # for data from multiple sequencer runs (control samples named "control" in column 11 of colData)
- mypca <- plotPCA(
-                  myfiltbiom,
-                  design="1",
-                  ntop= nrow(myfiltbiom@otu_table),
-                  returnData=T,
-                  fitType="local",
-                  blind=T,
-                  calcFactors=function(d,o){
-                    obj<-des_to_phylo(d);
-                    control_samples<-rownames(colData(d)[colData(d)[[11]]=="control",]);
-                    normHTS(obj,control_samples)
-                  }
+mypca <- plotPCA(
+   myfiltbiom,
+   design="1",
+   ntop= nrow(myfiltbiom@otu_table),
+   returnData=T,
+   fitType="local",
+   blind=T,
+   filteFun=function(o,f){
+    m <- prune_samples((sample_data(o)[[10]]=="experiment"),o);
+    m <- prune_taxa(rowSums(otu_table(m))>5,m)
+    return(m)
+   }
+   calcFactors=function(d,o){
+     obj<-des_to_phylo(d);
+     control_samples<-rownames(colData(d)[colData(d)[[11]]=="control",]);
+     normHTS(obj,control_samples)
+   }
 )
+myfiltbiom <- prune_samples(sample_data(myfiltbiom)[[10]]=="experiment",myfiltbiom)
+myfiltbiom <- prune_taxa(rowSums(otu_table(myfiltbiom))>5,myfiltbiom)
+
 
 # get the sum of squares for tree/aisle, location and residual
 sum_squares <- t(apply(mypca$x,2,function(x) t(summary(aov(x~sample_data(myfiltbiom)$condition+sample_data(myfiltbiom)$location))[[1]][2])))
