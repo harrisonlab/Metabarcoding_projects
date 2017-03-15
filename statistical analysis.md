@@ -150,7 +150,7 @@ myfiltbiom <- prune_taxa(rowSums(otu_table(myfiltbiom))>5,myfiltbiom)
 
 
 # get the sum of squares for tree/aisle, location and residual
-sum_squares <- t(apply(mypca$x,2,function(x) t(summary(aov(x~sample_data(myfiltbiom)$condition+sample_data(myfiltbiom)$location))[[1]][2])))
+sum_squares <- t(apply(mypca$x,2,function(x) t(summary(aov(x~condition+location,sample_data(myfiltbiom)))[[1]][2])))
 colnames(sum_squares) <- c("condition","location","residual")
 perVar <- sum_squares * mypca$percentVar
 colSums(perVar)
@@ -183,6 +183,15 @@ summary(aov(mypca$x[,3]~(condition*field)+location,as.data.frame(as.matrix(sampl
 
 ```
 
+#### Alpha diversity measures
+```R
+myfiltbiom <- prune_samples(sample_data(mybiom)[[10]]!="duplicate",mybiom)
+myfiltbiom<-prune_samples(sample_data(myfiltbiom)[[1]]!="C",myfiltbiom)
+all_alpha <- plot_richness(myfiltbiom,returnData=T)
+summary(aov(Chao1~condition*orchard+location,all_alpha))[[1]][2]
+summary(aov(Shannon~condition*orchard+location,all_alpha))[[1]][2]
+summary(aov(Simpson~condition*orchard+location,all_alpha))[[1]][2]
+```
 #### Auto correlation
 
 ```{r}
