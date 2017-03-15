@@ -11,13 +11,15 @@ $ARDERI/metabarcoding_pipeline/scripts/biom_maker.pl 16S.taxa 16S.otu_table.biom
 ```
 
 ## R analysis
-R will import table with character columns as factors. This might be prefereable if your doing lots of linear modeling, but for any data manipulation it is a disaster and will lead to unexpected (or worse unnoticed) errors.
+R will import table with character columns as factors. This might be prefereable if your doing lots of linear modeling, but for any data manipulation it is a disaster and can lead to unexpected (or worse unnoticed) errors.
 
 Set stringAsFactor to false - apparently this can be set in .Rprofile, but this doesn't work on my production cluster environment
 ```{r}
 options(stringsAsFactors = FALSE)
 ```
-## Load libraris
+Changed my mind on this - it's not so difficult to work with factors (they're still a bit of a pain though)
+
+### Load libraris
 ```{r}
 library(DESeq2)
 library(phyloseq)
@@ -50,6 +52,10 @@ tax_table(mybiom) <- phyloTaxaTidy(tax_table(mybiom))
 # This will filter based on OTU present in the first column "condition" of colData 
 t1 <- aggregate(t(otu_table(mybiom)),by=list(sample_data(mybiom)[[1]]),FUN=sum)[-1]
 myfiltbiom <- prune_taxa(apply(t1,2,prod)>0,mybiom)
+```
+### Modify coldata factor levels
+```R
+levels(mybiom@sam_data$condition)[levels(mybiom@sam_data$condition)=="something"] <- "something_else"
 ```
 
 ##### Merge ITS1 and ITS2
