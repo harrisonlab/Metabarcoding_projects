@@ -80,8 +80,11 @@ g <- ggplot_gtable(ggplot_build(g))
 g$layout$clip[g$layout$name == "panel"] <- "off"
 ml <- list(g,l1,l2)
 grid.arrange(grobs=ml,nrow=3)
+```
 
-
+Filled clusters at 95% with continuous distance scale in greyscale
+```R
+plotOrd(df,sample_data(myfiltbiom),shapes=c("Orchard","Sample"),cluster=0.95,design="Distance",xlabel="PC1",ylabel="PC2",continuous=T,pallete="greyscale",ylims=c(-3,3),xlims=c(-8,10),labels=F,centers=1)
 ```
 
 
