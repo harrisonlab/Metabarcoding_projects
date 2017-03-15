@@ -29,9 +29,9 @@ B <- plotTaxa(mytransbiom2,"class","condition",type=1, others=T,trans=F,ordered=
 mylist <- list(A,B)
 ml <- mylist
 for (i in 1:length(ml)) {
-ml[[i]] <- ml[[i]] + geom_text(aes(label = LETTERS[i], x = 8, y = 11), hjust = -1, size=7)+theme(text = element_text(size=14))
-ml[[i]] <- ggplot_gtable(ggplot_build(ml[[i]]))
-ml[[i]]$layout$clip[ml[[i]]$layout$name == "panel"] <- "off"
+  ml[[i]] <- ml[[i]] + geom_text(aes(label = LETTERS[i], x = 8, y = 11), hjust = -1, size=7)+theme(text = element_text(size=14))
+  ml[[i]] <- ggplot_gtable(ggplot_build(ml[[i]]))
+  ml[[i]]$layout$clip[ml[[i]]$layout$name == "panel"] <- "off"
 }
 pdf("test.pdf",height=10,width=9)
 grid.arrange(grobs=ml,ncol=1,nrow=2)
@@ -43,17 +43,17 @@ A <- A + theme(legend.position="none")
 B <- B + theme(legend.position="none")
 ml<-list(A,B)
 for (i in 1:length(ml)) {
-ml[[i]] <- ml[[i]] + geom_text(aes(label = LETTERS[i], x = 5, y = 100), hjust = -1, size=5)
-ml[[i]] <- ggplot_gtable(ggplot_build(ml[[i]]))
-ml[[i]]$layout$clip[ml[[i]]$layout$name == "panel"] <- "off"
+  ml[[i]] <- ml[[i]] + geom_text(aes(label = LETTERS[i], x = 5, y = 100), hjust = -1, size=5)
+  ml[[i]] <- ggplot_gtable(ggplot_build(ml[[i]]))
+  ml[[i]]$layout$clip[ml[[i]]$layout$name == "panel"] <- "off"
 }
 grid.arrange(grobs=ml)
 dev.off()
 ml <- list(mylegendA,mylegendB)
 for (i in 1:length(ml)) {
-ml[[i]] <- ml[[i]] + geom_text(aes(label = LETTERS[i], x = 5, y = 100), hjust = -1, size=5)
-ml[[i]] <- ggplot_gtable(ggplot_build(ml[[i]]))
-ml[[i]]$layout$clip[ml[[i]]$layout$name == "panel"] <- "off"
+  ml[[i]] <- ml[[i]] + geom_text(aes(label = LETTERS[i], x = 5, y = 100), hjust = -1, size=5)
+  ml[[i]] <- ggplot_gtable(ggplot_build(ml[[i]]))
+  ml[[i]]$layout$clip[ml[[i]]$layout$name == "panel"] <- "off"
 }
 grid.arrange(grobs=ml)
 dev.off()
