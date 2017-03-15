@@ -298,6 +298,17 @@ vld <- vld+abs(min(vld)) # add constant (min) to bring all values to 0 or above
 adonis(t(vld)~condition,as.data.frame(as.matrix(sample_data(myfiltbiom))),method='bray') # bray is non-parametric
 ```
 
+###### UniFrac
+phyloseq object needs a tree adding (code is above)
+```R
+library("BiocParallel")
+register(MulticoreParam(8))
+myfiltbiom <- prune_samples(sample_data(mybiom)[[10]]!="duplicate",mybiom)
+myfiltbiom<-prune_samples(sample_data(myfiltbiom)[[1]]!="C",myfiltbiom)
+myfiltbiom <- prune_taxa(rowSums(otu_table(myfiltbiom))>5,myfiltbiom)
+uni <- UniFrac(myfiltbiom, weighted=T, normalized=T, parallel=T, fast=T)
+adonis(uni~condition,as.data.frame(as.matrix(sample_data(myfiltbiom))),parallel=12,permutations=9999) 
+```
 
 ### Spatial analyses not implemented
 
