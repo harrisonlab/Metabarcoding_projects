@@ -1,4 +1,6 @@
 library(ggplot2)
+library(gridExtra)
+library(grid)
 library(phyloseq)
 
 
