@@ -61,6 +61,30 @@ lapply(seq(1:20),function(x) plotOrd(pc.res.var,as.data.frame(t(mytaxa[,-1])),de
 ```
 plotOrd has several other features - need to write about them at sometime.
 
+Grid plot example (using combined Heineken and Goatham bioms)
+This requires 2 legends one horizonatal and one vertical:
+make legened free
+get legend 1
+get legenend 2
+stick them together
+```R
+library(gridExtra)
+library(grid)
+g <-plotOrd(df,sample_data(myfiltbiom),shapes=c("Orchard","Sample"),design="Distance" ,xlabel="PC1",ylabel="PC2",continuous=T,ylims=c(-3,3),xlims=c(-6,10)) + theme(legend.position="None")
+t <- plotOrd(df,sample_data(myfiltbiom),design="Distance") + theme(legend.direction="horizontal")
+l1 <- ggplot_legend(t)
+t <- plotOrd(df,sample_data(myfiltbiom),shapes=c("Orchard","Sample")) + theme(legend.direction="vertical")
+l2 <- ggplot_legend(t)
+#g <- g + geom_text(aes(label = LETTERS[i], x = 8, y = 11), hjust = -1, size=7)+theme(text = element_text(size=14))
+g <- ggplot_gtable(ggplot_build(g))
+g$layout$clip[g$layout$name == "panel"] <- "off"
+ml <- list(g,l1,l2)
+grid.arrange(grobs=ml,nrow=3)
+
+
+```
+
+
 #### plotPCA
 
 plotPCA is a modified version of the DESeq2 version. 
