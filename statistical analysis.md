@@ -269,6 +269,9 @@ dds <- phylo_to_des(myfiltbiom,fit=T, fitType="local",..)
 dds <- phylo_to_des(myfiltbiom,fit=T, fitType="local",design=~location+condition,parallel=T)
 # for dds error all genes contain at least one zero
 dds <- phylo_to_des(myfiltbiom,fit=T, fitType="local",design=~location+condition,parallel=T,calcFactors=geoMeans)
+# complex design
+dds <- phylo_to_des(myfiltbiom,design=~orchard + condition + orchard:location + orchard:condition)
+res <- results(dds,contrast=list(c("conditiongrass", "conditiontree" )))
 ```
 #### Differential OTU abundance
 Using DESeq2 it's possible to calculate the probability of OTUs having different abundances between condtions. The default will use the the condition column of the dds object's colData table, and take the first two conditions. To specify a different column or use different "condtions use the contrast=c("column_name","condition_1","condition_2") construct when calling the results method.
