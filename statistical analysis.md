@@ -253,7 +253,9 @@ dev.off()
 ```
 
 
-### DESeq2
+### DESeq2 differential OTU abundance
+Using DESeq2 it's possible to calculate the probability of OTUs having different abundances between condtions. The default will use the the condition column of the dds object's colData table, and take the first two conditions. To specify a different column or use different "condtions use the contrast=c("column_name","condition_1","condition_2") construct when calling the results method.
+
 It's possible to convert a phyloseq object to a DESeq datamatrix with the wrapper function phylo_to_des.
 phylo_to_des has the option to specify the size factor calculation using the option calcFactors (see plotTaxa for examples of how to use this option). Set fit=T to fit a GLM model to the data. Further arguments will be passed to DESeq.
 ```{r}
@@ -269,18 +271,18 @@ dds <- phylo_to_des(myfiltbiom,fit=T, fitType="local",..)
 dds <- phylo_to_des(myfiltbiom,fit=T, fitType="local",design=~location+condition,parallel=T)
 # for dds error all genes contain at least one zero
 dds <- phylo_to_des(myfiltbiom,fit=T, fitType="local",design=~location+condition,parallel=T,calcFactors=geoMeans)
-# complex design
-dds <- phylo_to_des(myfiltbiom,design=~orchard + condition + orchard:location + orchard:condition)
-res <- results(dds,contrast=list(c("conditiongrass", "conditiontree" )))
+# complex design (cider + dessert orchards)
+# This will give the difference in tree aisle controling for blocks and orchard (I think)
+dds <- phylo_to_des(myfiltbiom,design=~orchard + orchard:location + condition,parallel=T,fit=T)
+# This will give the difference in tree aisle controling for blocks at each orchard (I think)
+dds2 <- phylo_to_des(myfiltbiom,design=~orchard + orchard:location + orchard:condition)
 ```
-#### Differential OTU abundance
-Using DESeq2 it's possible to calculate the probability of OTUs having different abundances between condtions. The default will use the the condition column of the dds object's colData table, and take the first two conditions. To specify a different column or use different "condtions use the contrast=c("column_name","condition_1","condition_2") construct when calling the results method.
-
-This code will merge the phyloseq taxonomy object to the results.
+This code calculates the result object and mergse the phyloseq taxonomy object with the results.
 
 ```{r}
 alpha <- 0.05 # significance level
 res = results(dds, alpha=alpha,cooksCutoff=T,parallel=T)
+#res <- results(dds,contrast=list(c("conditiongrass", "conditiontree" )),alpha=alpha,cooksCutoff=T,parallel=T)
 #res = results(dds, alpha=alpha,contrast=c("condition","N","K"))	## specify different contrasts to make
 res.merge <- merge(as.data.frame(res),tax_table(myfiltbiom),by="row.names",all.x=TRUE)
 rownames(res.merge) <- res.merge$Row.names
