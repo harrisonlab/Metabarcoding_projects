@@ -11,9 +11,16 @@
 #  cider=plotPCA(myfiltbiom$cider,design="1",ntop= nrow(myfiltbiom$cider@otu_table),returnData=T,fitType="local",blind=T)
 #)
 
-myfiltbiom <- 
+myfiltbiom <- prune_samples(sample_data(mybiom)[[10]]!="duplicate",mybiom)
 
-myfiltbiom$dessert@sam_data$location <- as.factor(myfiltbiom$dessert@sam_data$meters)
+myfiltbiom@sam_data$location <- as.factor(myfiltbiom@sam_data$meters)
+
+temp <- plotPCA(myfiltbiom,design="1",ntop=nrow(myfiltbiom@otu_table),returnData=T,fitType="local",blind=T)
+
+mypca <- list(
+ dessert=temp
+ cider=
+)
 
 myfiltbiom <- prune_samples(sample_data(myfiltbiom)[[1]]!="C",myfiltbiom)
 myfiltbiom <- prune_taxa(rowSums(otu_table(myfiltbiom))>5,myfiltbiom)
