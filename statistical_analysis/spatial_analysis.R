@@ -9,6 +9,8 @@ load_all("../..//metabarcoding_pipeline/scripts/myfunctions")
 
 myfiltbiom <- prune_samples(sample_data(mybiom)[[10]]!="duplicate",mybiom)
 myfiltbiom@sam_data$location <- as.factor(myfiltbiom@sam_data$meters)
+colnames(sample_data(myfiltbiom))[c(1,6)] <- c("Sample","Distance")
+levels(sample_data(myfiltbiom)[[1]]) <- c("C","Aisle","Grass")
 
 tempiom <- myfiltbiom
 tempiom@otu_table@.Data <-  assay(varianceStabilizingTransformation(phylo_to_des(tempiom)))
@@ -25,7 +27,6 @@ rm(tempiom)
 
 myfiltbiom <- prune_samples(sample_data(myfiltbiom)[[1]]!="C",myfiltbiom)
 myfiltbiom <- prune_taxa(rowSums(otu_table(myfiltbiom))>5,myfiltbiom)
-
 
 myfiltbiom <- list( 
   dessert=filterFun(myfiltbiom,"Dessert"),
@@ -58,21 +59,21 @@ df <- lapply(mypca,function(x) {t(data.frame(t(x$x)*x$percentVar))})
 pc.res <- lapply(seq(1,2),function(x) resid(aov(mypca[[x]]$x~sample_data(myfiltbiom[[x]])$location)))
 d <- lapply(seq(1,2),function(x) {t(data.frame(t(pc.res[[x]])*mypca[[x]]$percentVar))})
     
-lapply(seq(1,2),function(x)    
+mygplots <- lapply(seq(1,2),function(x)    
   {g1<-plotOrd(df[[x]][,1:2],sample_data(myfiltbiom[[x]]),
-          design="distance",shapes="condition",continuous=T,colourScale=c("black","lightblue"),
+          design="Distance",shapes="Sample",continuous=T,colourScale=c("black","lightblue"),
           xlabel="PC1",ylabel="PC2"
   )
   g2<-plotOrd(d[[x]][,1:2],sample_data(myfiltbiom[[x]]),
-          design="distance",shapes="condition",continuous=T,colourScale=c("black","lightblue"),
+          design="Distance",shapes="Sample",continuous=T,colourScale=c("black","lightblue"),
           xlabel="PC1",ylabel="PC2"
   )
   g3<-plotOrd(df[[x]][,2:3],sample_data(myfiltbiom[[x]]),
-          design="distance",shapes="condition",continuous=T,colourScale=c("black","lightblue"),
+          design="Distance",shapes="Sample",continuous=T,colourScale=c("black","lightblue"),
           xlabel="PC2",ylabel="PC3"
   )
   g4<-plotOrd(d[[x]][,2:3],sample_data(myfiltbiom[[x]]),
-          design="distance",shapes="condition",continuous=T,colourScale=c("black","lightblue"),
+          design="Distance",shapes="Sample",continuous=T,colourScale=c("black","lightblue"),
           xlabel="PC2",ylabel="PC3"
   )
   return(list(g1,g2,g3,g4))
@@ -80,11 +81,9 @@ lapply(seq(1,2),function(x)
 )
 
 #Manova/Anova of first couple of pca with tree/aisle
-
-fit <- manova(mypca$x[,1:3]~condition,as.data.frame(as.matrix(sample_data(myfiltbiom))))
-summary(fit, test="Pillai") # could just call summary directly 
-
-summary(aov(mypca$x[,1]~(condition*field)+location,as.data.frame(as.matrix(sample_data(myfiltbiom)))))
-summary(aov(mypca$x[,2]~(condition*field)+location,as.data.frame(as.matrix(sample_data(myfiltbiom)))))
-summary(aov(mypca$x[,3]~(condition*field)+location,as.data.frame(as.matrix(sample_data(myfiltbiom)))))    
+#fit <- manova(mypca$x[,1:3]~condition,as.data.frame(as.matrix(sample_data(myfiltbiom))))
+#summary(fit, test="Pillai") # could just call summary directly 
+#summary(aov(mypca$x[,1]~(condition*field)+location,as.data.frame(as.matrix(sample_data(myfiltbiom)))))
+#summary(aov(mypca$x[,2]~(condition*field)+location,as.data.frame(as.matrix(sample_data(myfiltbiom)))))
+#summary(aov(mypca$x[,3]~(condition*field)+location,as.data.frame(as.matrix(sample_data(myfiltbiom)))))    
     
