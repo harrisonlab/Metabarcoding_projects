@@ -6,21 +6,17 @@
 #myfiltbiom$dessert@sam_data$location <- as.factor(myfiltbiom$dessert@sam_data$meters)
 #myfiltbiom$cider@sam_data$location <- as.factor(myfiltbiom$cider@sam_data$meters)
 
-#mypca <- list(
-#  dessert=plotPCA(myfiltbiom$dessert,design="1",ntop= nrow(myfiltbiom$dessert@otu_table),returnData=T,fitType="local",blind=T)
-#  cider=plotPCA(myfiltbiom$cider,design="1",ntop= nrow(myfiltbiom$cider@otu_table),returnData=T,fitType="local",blind=T)
-#)
-
 myfiltbiom <- prune_samples(sample_data(mybiom)[[10]]!="duplicate",mybiom)
-
 myfiltbiom@sam_data$location <- as.factor(myfiltbiom@sam_data$meters)
 
-temp <- plotPCA(myfiltbiom,design="1",ntop=nrow(myfiltbiom@otu_table),returnData=T,fitType="local",blind=T)
+tempiom <- myfiltbiom
+tempiom@otu_table@.Data <-  assay(varianceStabilizingTransformation(phylo_to_des(tempiom)))
 
 mypca <- list(
- dessert=temp
- cider=
+  dessert=plotPCA(tempiom,returnData=T,trans=f,filterFun=function(o,f){prune_samples(sample_data(o)[[11]]=="Dessert"&sample_data(o)[[1]]!="C",o)})
+  cider=plotPCA(tempiom,returnData=T,trans=f,filterFun=function(o,f){prune_samples(sample_data(o)[[11]]=="Cider"&sample_data(o)[[1]]!="C",o)})
 )
+rm(tempiom)
 
 myfiltbiom <- prune_samples(sample_data(myfiltbiom)[[1]]!="C",myfiltbiom)
 myfiltbiom <- prune_taxa(rowSums(otu_table(myfiltbiom))>5,myfiltbiom)
