@@ -33,13 +33,21 @@ myfiltbiom <- list(
 
 # get the sum of squares for tree/aisle, location and residual
 sum_squares <- list(
-  dessert=(apply(mypca$dessert$x,2,function(x) 
+  dessert=t(apply(mypca$dessert$x,2,function(x) 
     t(summary(aov(x~condition+location,data.frame(as.matrix(sample_data(myfiltbiom$dessert)))))[[1]][2]))),
-  cider=(apply(mypca$cider$x,2,function(x) 
+  cider=t(apply(mypca$cider$x,2,function(x) 
     t(summary(aov(x~condition+location,data.frame(as.matrix(sample_data(myfiltbiom$cider)))))[[1]][2])))
 )
+
+sum_squares <- lapply(sum_squares,function(x) {colnames(x) <- c("condition","location","residual");x})    
     
-colnames(sum_squares) <- c("condition","location","residual")
-perVar <- sum_squares * mypca$percentVar
-colSums(perVar)
-colSums(perVar)/sum(colSums(perVar))*100 
+perVar <- list(
+  dessert=sum_squares$dessert * mypca$dessert$percentVar,
+  cider=sum_squares$cider * mypca$cider$percentVar
+)
+x1 <- lapply(perVar,colSums)
+x2 <- lapply(lapply(perVar,colSums),sum)
+x1[[1]] <- rbind(t(data.frame(sum_sqr=x1[[1]])),"%"=x1[[1]]/x2[[1]]*100) 
+x1[[2]] <- rbind(t(data.frame(sum_sqr=x1[[2]])),"%"=x1[[2]]/x2[[2]]*100)    
+x1
+    
