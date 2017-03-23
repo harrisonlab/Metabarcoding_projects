@@ -59,82 +59,47 @@ df <- lapply(mypca,function(x) {t(data.frame(t(x$x)*x$percentVar))})
 # spatial removed
 pc.res <- lapply(seq(1,2),function(x) resid(aov(mypca[[x]]$x~sample_data(myfiltbiom[[x]])$location)))
 d <- lapply(seq(1,2),function(x) {t(data.frame(t(pc.res[[x]])*mypca[[x]]$percentVar))})
-    
-mygplots <- lapply(seq(1,2),function(x)    
-  {g1<-plotOrd(df[[x]][,1:2],sample_data(myfiltbiom[[x]]),
-          design="Distance",shapes="Sample",continuous=T,colourScale=c("black","lightblue"),
-          xlabel="PC1",ylabel="PC2"
-  )
-  g2<-plotOrd(d[[x]][,1:2],sample_data(myfiltbiom[[x]]),
-          design="Distance",shapes="Sample",continuous=T,colourScale=c("black","lightblue"),
-          xlabel="PC1",ylabel="PC2"
-  )
-  #g3<-plotOrd(df[[x]][,2:3],sample_data(myfiltbiom[[x]]),
-  #        design="Distance",shapes="Sample",continuous=T,colourScale=c("black","lightblue"),
-  #        xlabel="PC2",ylabel="PC3"
-  #)
-  #g4<-plotOrd(d[[x]][,2:3],sample_data(myfiltbiom[[x]]),
-  #        design="Distance",shapes="Sample",continuous=T,colourScale=c("black","lightblue"),
-  #        xlabel="PC2",ylabel="PC3"
-  #)
-  #return(list(g1,g2,g3,g4))
-  return(list(g1,g2)) 
-  }    
+
+### ITS specific plots  
+g1<-plotOrd(df[[1]][,1:2],sample_data(myfiltbiom[[1]]),
+	design="Distance",shapes="Sample",continuous=T,colourScale=c("black","lightblue"),
+	xlabel="PC1",ylabel="PC2",ylims=c(-4,6.5),legend=F
+)
+g2<-plotOrd(d[[1]][,1:2],sample_data(myfiltbiom[[1]]),
+	design="Distance",shapes="Sample",continuous=T,colourScale=c("black","lightblue"),
+	xlabel="PC1",ylabel="PC2",ylims=c(-4,6),legend=F
 )
 
-mylegend <- ggplot_legend(mygplots[[1]][[1]]+theme(legend.direction="horizontal",legend.box="horizontal"))
+g3<-plotOrd(df[[2]][,1:2],sample_data(myfiltbiom[[2]]),
+	design="Distance",shapes="Sample",continuous=T,colourScale=c("black","lightblue"),
+	xlabel="PC1",ylabel="PC2",legend=F
+)
+g4<-plotOrd(d[[2]][,1:2],sample_data(myfiltbiom[[2]]),
+	design="Distance",shapes="Sample",continuous=T,colourScale=c("black","lightblue"),
+	xlabel="PC1",ylabel="PC2",ylims=c(-2,6),legend=F
+)
+mygplots <-list(list(g1,g2),list(g3,g4))
+
+mylegend <- ggplot_legend(
+  plotOrd(df[[2]][,1:2],sample_data(myfiltbiom[[2]]),
+	  design="Distance",shapes="Sample",continuous=T,colourScale=c("black","lightblue"),
+    )	+theme(legend.direction="horizontal",legend.box="horizontal")
+)
 mylegend$layout$clip[mylegend$layout$name == "panel"] <- "off"  
   
-mx <- mygplots
-counter <- 0
-mx <- lapply(mx,function(x) 
-  lapply(x,function(y) {
-    counter <<- counter + 1
-    y <- y+theme(legend.position="none",
-                 axis.line.x = element_line(size=0.5,colour = "black"),
-                 axis.line.y = element_line(size=0.5,colour = "black"),
-                 axis.text = element_text(colour = "black"))
-                 #+geom_text(aes(label = LETTERS[counter], x = 6, y = 7), hjust = -1,color="black")
-    #y <- ggplot_gtable(ggplot_build(y))
-    #y$layout$clip[y$layout$name == "panel"] <- "off"
-    return(y)
-  }
-))  
-  
-pdf("test.pdf",width=8,height=6)
+lay=rbind(c(1,2),c(1,2),c(3,4),c(3,4),c(5,5))
+ 
+pdf("PCA.pdf",width=6,height=6)
 grid.arrange(
-  mx[[1]][[1]]+geom_text(aes(label = LETTERS[counter], x = 6, y = 7), hjust = -1,color="black"),
-  mx[[2]][[1]],
-  mx[[1]][[2]],
-  mx[[2]][[2]],
-  mylegend,
-ncol=2,nrow=3
+	g1+geom_text(aes(label = "A", x = 8, y = 6.5), color="black",size=3),
+	g3+geom_text(aes(label = "C", x = 3, y = 3.5),color="black",size=3),
+	g2+geom_text(aes(label = "B", x = 6.2, y = 6),color="black",size=3),
+	g4+geom_text(aes(label = "D", x = 3, y = 6),color="black",size=3),
+	mylegend, layout_matrix=lay
 )
 dev.off()
+
   
-  ,
-layout_matrix = rbind(c(1,2),c(3,4),c(5,5)),widths = c(2.7, 2.7), heights = c(2.5,2.5, 0.2)            
-)  
-dev.off()
-
-pdf("test.pdf",width=8,height=6)
-grid.arrange(
-mygplots[[1]][[1]] + theme(legend.position="none", axis.line.x = element_line(size=0.5,colour = "black"),axis.line.y = element_line(size=0.5,colour = "black"),axis.text = element_text(colour = "black")),
-mygplots[[2]][[1]] + theme(legend.position="none", axis.line.x = element_line(size=0.5,colour = "black"),axis.line.y = element_line(size=0.5,colour = "black"),axis.text = element_text(colour = "black")),
-mygplots[[1]][[2]] + theme(legend.position="none", axis.line.x = element_line(size=0.5,colour = "black"),axis.line.y = element_line(size=0.5,colour = "black"),axis.text = element_text(colour = "black")),
-mygplots[[2]][[2]] + theme(legend.position="none", axis.line.x = element_line(size=0.5,colour = "black"),axis.line.y = element_line(size=0.5,colour = "black"),axis.text = element_text(colour = "black")),
-mylegend, nrow=2,ncol=2,
-layout_matrix = rbind(c(1,2),c(3,4),c(5,5)),widths = c(2.7, 2.7), heights = c(2.5,2.5, 0.2)
-)  
-mylegend<-g_legend(g5)
-mx[[5]]<-mylegend
-
-pdf("dge_reordered.pdf",height=10,width=9)
-# grid.arrange(g1,g2,g3,g4,mylegend,ncol=2,nrow=3,layout_matrix = rbind(c(1,2),c(3,4), c(5,5)),widths = c(2.7, 2.7), heights = c(2.5,2.5, 0.2))
-
-grid.arrange(grobs=mx,ncol=2,nrow=3,layout_matrix = rbind(c(1,2),c(3,4), c(5,5)),widths = c(2.7, 2.7), heights = c(2.5,2.5, 0.2))
-dev.off()
-
   
 #Manova/Anova of first couple of pca with tree/aisle
 #fit <- manova(mypca$x[,1:3]~condition,as.data.frame(as.matrix(sample_data(myfiltbiom))))
