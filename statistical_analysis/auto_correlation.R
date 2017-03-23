@@ -6,7 +6,6 @@ myfiltbiom[[2]]@sam_data$gap <- 0
 
 #  Pearson Correlogram
 cutoff <- 17
-
 ### For cider samples - c_fix corrects a slight issue
 c_fix <- function(p,o,pn){
   t1 <- plotCorrelog(p,prune_samples(sample_data(o)$block!=3,o),pn,na.add=c(9),returnCD=T)
@@ -20,8 +19,6 @@ c_fix <- function(p,o,pn){
   d$V3 <- as.numeric(t1[[3]])
   return(d)  
 }
-
-pc<-"PC1"
                               
 g1<-plotCorrelog(mypca[[1]],myfiltbiom[[1]],"PC1",cutoff,xlim=NULL,ylim=c(-1,1),na.add=c(9,17),cols=c("blue","orange"),legend=F)
 g2<-plotCorrelog(data=c_fix(mypca[[2]],myfiltbiom[[2]],"PC1"),
