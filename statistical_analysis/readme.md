@@ -70,7 +70,8 @@ tax_table(mybiom) <- phyloTaxaTidy(tax_table(mybiom))
 
 ##### Create and add phylogentic tree to mybiom - need to add step for creating phy object
 ```shell
-usearch9 -calc_distmx 16S.otus.fa -distmxout 16S.phy  -threads 12 -format phylip_square
+# doesn't work in usearch9...
+usearch8 -calc_distmx 16S.otus.fa -distmxout 16S.phy  -threads 12 -format phylip_square
 ```
 
 
