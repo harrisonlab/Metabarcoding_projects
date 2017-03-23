@@ -6,11 +6,14 @@ library(data.table)
 myfiltbiom[[1]]@sam_data$gap <- 0
 myfiltbiom[[2]]@sam_data$gap <- 0
 
-cond <- "tree"
+cond <- "Tree"
 pc.x <- lapply(seq(1,2),function(x) scores(mypca[[x]])[sample_data(myfiltbiom[[x]])$Sample==cond,])
-pc.x <- scores(mypca)[sample_data(myfiltbiom)$condition==cond,]
-col.x <- sample_data(myfiltbiom)[sample_data(myfiltbiom)$condition==cond,]
-pc.dt<- data.table(merge(pc.x,col.x,by="row.names"))
+col.x <-lapply(myfiltbiom,function(obj) sample_data(obj)[sample_data(obj)$Sample==cond,])
+pc.dt <-lapply(seq(1,2),function(x) data.table(merge(pc.x[[x]],col.x[[x]],by="row.names")))
+
+pc.reshape <- lapply(pc.dt,function(obj)  
+  dcast(obj,distance~.,fun.aggregate=function(x) mean(x,na.rm=T),value.var=c(names(obj)[grep("PC",names(obj))]))
+) 
 pc.reshape <- dcast(pc.dt,distance~.,fun.aggregate=function(x) mean(x,na.rm=T),value.var=c(names(pc.dt)[grep("PC",names(pc.dt))]))
 names(pc.reshape)[grep("PC",names(pc.reshape))] <- sub("_.*","",names(pc.reshape)[grep("PC",names(pc.reshape))])
 col.reshape <- sample_data(col.x)[sample_data(col.x)$replicate=="a"]
