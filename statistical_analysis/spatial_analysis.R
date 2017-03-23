@@ -69,15 +69,16 @@ mygplots <- lapply(seq(1,2),function(x)
           design="Distance",shapes="Sample",continuous=T,colourScale=c("black","lightblue"),
           xlabel="PC1",ylabel="PC2"
   )
-  g3<-plotOrd(df[[x]][,2:3],sample_data(myfiltbiom[[x]]),
-          design="Distance",shapes="Sample",continuous=T,colourScale=c("black","lightblue"),
-          xlabel="PC2",ylabel="PC3"
-  )
-  g4<-plotOrd(d[[x]][,2:3],sample_data(myfiltbiom[[x]]),
-          design="Distance",shapes="Sample",continuous=T,colourScale=c("black","lightblue"),
-          xlabel="PC2",ylabel="PC3"
-  )
-  return(list(g1,g2,g3,g4))
+  #g3<-plotOrd(df[[x]][,2:3],sample_data(myfiltbiom[[x]]),
+  #        design="Distance",shapes="Sample",continuous=T,colourScale=c("black","lightblue"),
+  #        xlabel="PC2",ylabel="PC3"
+  #)
+  #g4<-plotOrd(d[[x]][,2:3],sample_data(myfiltbiom[[x]]),
+  #        design="Distance",shapes="Sample",continuous=T,colourScale=c("black","lightblue"),
+  #        xlabel="PC2",ylabel="PC3"
+  #)
+  #return(list(g1,g2,g3,g4))
+  return(list(g1,g2)) 
   }    
 )
 
@@ -92,8 +93,8 @@ mx <- lapply(mx,function(x)
     y <- y+theme(legend.position="none",
                  axis.line.x = element_line(size=0.5,colour = "black"),
                  axis.line.y = element_line(size=0.5,colour = "black"),
-                 axis.text = element_text(colour = "black"))+ 
-    geom_text(aes(label = LETTERS[counter], x = 5, y = 7), hjust = 1,color="black")
+                 axis.text = element_text(colour = "black"))
+                 #+geom_text(aes(label = LETTERS[counter], x = 6, y = 7), hjust = -1,color="black")
     #y <- ggplot_gtable(ggplot_build(y))
     #y$layout$clip[y$layout$name == "panel"] <- "off"
     return(y)
@@ -102,22 +103,27 @@ mx <- lapply(mx,function(x)
   
 pdf("test.pdf",width=8,height=6)
 grid.arrange(
-  mx[[1]][1],
-  mx[[2]][1],
-  mx[[1]][2],
-  mx[[2]][2],
+  mx[[1]][[1]]+geom_text(aes(label = LETTERS[counter], x = 6, y = 7), hjust = -1,color="black"),
+  mx[[2]][[1]],
+  mx[[1]][[2]],
+  mx[[2]][[2]],
   mylegend,
-ncol=2,nrow=3),
+ncol=2,nrow=3
+)
+dev.off()
+  
+  ,
 layout_matrix = rbind(c(1,2),c(3,4),c(5,5)),widths = c(2.7, 2.7), heights = c(2.5,2.5, 0.2)            
 )  
 dev.off()
 
+pdf("test.pdf",width=8,height=6)
 grid.arrange(
-mygplots[[1]][[1]] + theme(legend.position="none"),
-mygplots[[1]][[1]] + theme(legend.position="none"),
-mygplots[[1]][[1]] + theme(legend.position="none"),
-mygplots[[1]][[1]] + theme(legend.position="none"),
-mylegend, nrow=3,ncol=2,
+mygplots[[1]][[1]] + theme(legend.position="none", axis.line.x = element_line(size=0.5,colour = "black"),axis.line.y = element_line(size=0.5,colour = "black"),axis.text = element_text(colour = "black")),
+mygplots[[2]][[1]] + theme(legend.position="none", axis.line.x = element_line(size=0.5,colour = "black"),axis.line.y = element_line(size=0.5,colour = "black"),axis.text = element_text(colour = "black")),
+mygplots[[1]][[2]] + theme(legend.position="none", axis.line.x = element_line(size=0.5,colour = "black"),axis.line.y = element_line(size=0.5,colour = "black"),axis.text = element_text(colour = "black")),
+mygplots[[2]][[2]] + theme(legend.position="none", axis.line.x = element_line(size=0.5,colour = "black"),axis.line.y = element_line(size=0.5,colour = "black"),axis.text = element_text(colour = "black")),
+mylegend, nrow=2,ncol=2,
 layout_matrix = rbind(c(1,2),c(3,4),c(5,5)),widths = c(2.7, 2.7), heights = c(2.5,2.5, 0.2)
 )  
 mylegend<-g_legend(g5)
