@@ -1,6 +1,3 @@
-library(ape)
-library(vegan)
-library(ncf)
 library(data.table)
 load_all("../..//metabarcoding_pipeline/scripts/myfunctions")
 
@@ -27,7 +24,8 @@ c_fix <- function(p,o,pn){
 pc<-"PC1"
                               
 g1<-plotCorrelog(mypca[[1]],myfiltbiom[[1]],"PC1",cutoff,xlim=NULL,ylim=c(-1,1),na.add=c(9,17),cols=c("blue","orange"),legend=F)
-g2<-plotCorrelog(data=c_fix(mypca[[2]],myfiltbiom[[2]],"PC1"),cutoff,pc="PC1",ylim=c(-1,1),cols=c("blue","orange"),legend=T,lpos=c(0.3,0.2))
+g2<-plotCorrelog(data=c_fix(mypca[[2]],myfiltbiom[[2]],"PC1"),
+		 cutoff,pc="PC1",ylim=c(-1,1),cols=c("blue","orange"),legend=T,lpos=c(0.3,0.2))
 g3<-plotCorrelog(mypca[[1]],myfiltbiom[[1]],"PC2",cutoff,xlim=NULL,ylim=c(-1,1),na.add=c(9,17),cols=c("blue","orange"),legend=F)
 g4<-plotCorrelog(data=c_fix(mypca[[2]],myfiltbiom[[2]],"PC2"),cutoff,pc="PC2",ylim=c(-1,1),cols=c("blue","orange"),legend=F)
 
