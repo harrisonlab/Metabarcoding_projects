@@ -26,11 +26,12 @@ c_fix <- function(p,o){
 
 pc<-"PC1"
                               
-g1<-plotCorrelog(mypca[[1]],myfiltbiom[[1]],"PC1",cutoff=cutoff,xlim=NULL,ylim=c(-1,1),na.add=c(9,17),cols=c("blue","orange"))
-g2<-plotCorrelog(data=c_fix(mypca[[2]],myfiltbiom[[2]]),cutoff=cutoff,pc="PC1",ylim=c(-1,1),cols=c("blue","orange"))
-g3<-plotCorrelog(mypca[[1]],myfiltbiom[[1]],"PC2",cutoff=cutoff,xlim=NULL,ylim=c(-1,1),na.add=c(9,17),cols=c("blue","orange"))
-g4<-plotCorrelog(data=c_fix(mypca[[2]],myfiltbiom[[2]]),cutoff=cutoff,pc="PC2",ylim=c(-1,1),cols=c("blue","orange"))
+g1<-plotCorrelog(mypca[[1]],myfiltbiom[[1]],"PC1",cutoff,xlim=NULL,ylim=c(-1,1),na.add=c(9,17),cols=c("blue","orange"),legend=F)
+g2<-plotCorrelog(data=c_fix(mypca[[2]],myfiltbiom[[2]]),cutoff,pc="PC1",ylim=c(-1,1),cols=c("blue","orange"),legend=F)
+g3<-plotCorrelog(mypca[[1]],myfiltbiom[[1]],"PC2",cutoff,xlim=NULL,ylim=c(-1,1),na.add=c(9,17),cols=c("blue","orange"),legend=F)
+g4<-plotCorrelog(data=c_fix(mypca[[2]],myfiltbiom[[2]]),cutoff,pc="PC2",ylim=c(-1,1),cols=c("blue","orange"),legend=F)
 
+mylegend <- plotCorrelog(mypca[[1]],myfiltbiom[[1]],cols=c("blue","orange"),legend=T)
 mylegend$layout$clip[mylegend$layout$name == "panel"] <- "off"  
   
 lay=rbind(c(1,2),c(1,2),c(3,4),c(3,4),c(5,5))
