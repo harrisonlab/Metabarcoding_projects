@@ -1,8 +1,5 @@
 library(DESeq2)
 library(phyloseq)
-#library(ape)
-#library(vegan)
-#library(ncf)
 library(data.table)
 library(gridExtra)
 library(devtools)
@@ -98,13 +95,5 @@ grid.arrange(
 	mylegend, layout_matrix=lay
 )
 dev.off()
-
-  
-  
-#Manova/Anova of first couple of pca with tree/aisle
-#fit <- manova(mypca$x[,1:3]~condition,as.data.frame(as.matrix(sample_data(myfiltbiom))))
-#summary(fit, test="Pillai") # could just call summary directly 
-#summary(aov(mypca$x[,1]~(condition*field)+location,as.data.frame(as.matrix(sample_data(myfiltbiom)))))
-#summary(aov(mypca$x[,2]~(condition*field)+location,as.data.frame(as.matrix(sample_data(myfiltbiom)))))
-#summary(aov(mypca$x[,3]~(condition*field)+location,as.data.frame(as.matrix(sample_data(myfiltbiom)))))    
+ 
     
