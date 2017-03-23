@@ -11,7 +11,7 @@ load_all("../..//metabarcoding_pipeline/scripts/myfunctions")
 myfiltbiom <- prune_samples(sample_data(mybiom)[[10]]!="duplicate",mybiom)
 myfiltbiom@sam_data$location <- as.factor(myfiltbiom@sam_data$meters)
 colnames(sample_data(myfiltbiom))[c(1,6)] <- c("Sample","Distance")
-levels(sample_data(myfiltbiom)[[1]]) <- c("C","Aisle","Grass")
+levels(sample_data(myfiltbiom)[[1]]) <- c("C","Aisle","Tree")
 
 tempiom <- myfiltbiom
 tempiom@otu_table@.Data <-  assay(varianceStabilizingTransformation(phylo_to_des(tempiom)))
