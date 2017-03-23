@@ -11,9 +11,9 @@ myfiltbiom[[2]]@sam_data$gap <- 0
 cutoff <- 17
 
 ### For cider samples - c_fix corrects a slight issue
-c_fix <- function(p,o){
-  t1 <- plotCorrelog(p,prune_samples(sample_data(o)$block!=3,o),pc,na.add=c(9),returnCD=T)
-  t2 <- plotCorrelog(p,prune_samples(sample_data(o)$block==3,o),pc,returnCD=T)
+c_fix <- function(p,o,pn){
+  t1 <- plotCorrelog(p,prune_samples(sample_data(o)$block!=3,o),pn,na.add=c(9),returnCD=T)
+  t2 <- plotCorrelog(p,prune_samples(sample_data(o)$block==3,o),pn,returnCD=T)
   t3 <- sapply(1:nrow(t1),function(i) 
     if(i<=nrow(t2)){cbind(rbind(t1[[i,1]],t2[[i,1]]),rbind(t1[[i,2]],t2[[i,2]]))}else{cbind(t1[[i,1]],t1[[i,2]])}
   )
@@ -27,21 +27,20 @@ c_fix <- function(p,o){
 pc<-"PC1"
                               
 g1<-plotCorrelog(mypca[[1]],myfiltbiom[[1]],"PC1",cutoff,xlim=NULL,ylim=c(-1,1),na.add=c(9,17),cols=c("blue","orange"),legend=F)
-g2<-plotCorrelog(data=c_fix(mypca[[2]],myfiltbiom[[2]]),cutoff,pc="PC1",ylim=c(-1,1),cols=c("blue","orange"),legend=F)
+g2<-plotCorrelog(data=c_fix(mypca[[2]],myfiltbiom[[2]],"PC1"),cutoff,pc="PC1",ylim=c(-1,1),cols=c("blue","orange"),legend=T,lpos=c(0.3,0.2))
 g3<-plotCorrelog(mypca[[1]],myfiltbiom[[1]],"PC2",cutoff,xlim=NULL,ylim=c(-1,1),na.add=c(9,17),cols=c("blue","orange"),legend=F)
-g4<-plotCorrelog(data=c_fix(mypca[[2]],myfiltbiom[[2]]),cutoff,pc="PC2",ylim=c(-1,1),cols=c("blue","orange"),legend=F)
+g4<-plotCorrelog(data=c_fix(mypca[[2]],myfiltbiom[[2]],"PC2"),cutoff,pc="PC2",ylim=c(-1,1),cols=c("blue","orange"),legend=F)
 
-mylegend <- plotCorrelog(mypca[[1]],myfiltbiom[[1]],cols=c("blue","orange"),legend=T)
-mylegend$layout$clip[mylegend$layout$name == "panel"] <- "off"  
-  
-lay=rbind(c(1,2),c(1,2),c(3,4),c(3,4),c(5,5))
- 
-pdf("PCA.pdf",width=6,height=6)
+pdf("correlog.pdf",width=6,height=6)
 grid.arrange(
-	g1+geom_text(aes(label = "A", x = 8, y = 6.5), color="black",size=3),
-	g3+geom_text(aes(label = "C", x = 3, y = 3.5),color="black",size=3),
-	g2+geom_text(aes(label = "B", x = 6.2, y = 6),color="black",size=3),
-	g4+geom_text(aes(label = "D", x = 3, y = 6),color="black",size=3),
-	mylegend, layout_matrix=lay
+	g1+geom_text(aes(label = "A", x = 15, y = 1), color="black",size=3),
+	g3+geom_text(aes(label = "C",  x = 15, y = 1),color="black",size=3),
+	g2+geom_text(aes(label = "B",  x = 15, y = 1),color="black",size=3),
+	g4+geom_text(aes(label = "D",  x = 15, y = 1),color="black",size=3)
 )
 dev.off()
+
+#gt <- gtable(widths = unit(c(1, 2,3,4), "null"), heights = unit(c(1, 2, 3,4), "null"))
+#gt <- gtable_add_grob(gt, ga, t = 1, b = 4, l = 4, r = 1)
+#gt <- gtable_add_grob(gt, mylegend, t = 4, r = 4,l=1)
+#grid.draw(gt)
