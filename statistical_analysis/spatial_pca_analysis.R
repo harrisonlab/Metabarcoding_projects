@@ -34,9 +34,9 @@ myfiltbiom <- list(
 # get the sum of squares for tree/aisle, location and residual
 sum_squares <- list(
   dessert=t(apply(mypca$dessert$x,2,function(x) 
-    t(summary(aov(x~condition+location,data.frame(as.matrix(sample_data(myfiltbiom$dessert)))))[[1]][2]))),
+    t(summary(aov(x~Sample+location,data.frame(as.matrix(sample_data(myfiltbiom$dessert)))))[[1]][2]))),
   cider=t(apply(mypca$cider$x,2,function(x) 
-    t(summary(aov(x~condition+location,data.frame(as.matrix(sample_data(myfiltbiom$cider)))))[[1]][2])))
+    t(summary(aov(x~Sample+location,data.frame(as.matrix(sample_data(myfiltbiom$cider)))))[[1]][2])))
 )
 
 sum_squares <- lapply(sum_squares,function(x) {colnames(x) <- c("condition","location","residual");x})    
