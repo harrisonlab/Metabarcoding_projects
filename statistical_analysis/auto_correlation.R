@@ -11,13 +11,19 @@ pc.x <- lapply(seq(1,2),function(x) scores(mypca[[x]])[sample_data(myfiltbiom[[x
 col.x <-lapply(myfiltbiom,function(obj) sample_data(obj)[sample_data(obj)$Sample==cond,])
 pc.dt <-lapply(seq(1,2),function(x) data.table(merge(pc.x[[x]],col.x[[x]],by="row.names")))
 
-pc.reshape <- lapply(pc.dt,function(obj)  
-  dcast(obj,distance~.,fun.aggregate=function(x) mean(x,na.rm=T),value.var=c(names(obj)[grep("PC",names(obj))]))
-) 
-pc.reshape <- dcast(pc.dt,distance~.,fun.aggregate=function(x) mean(x,na.rm=T),value.var=c(names(pc.dt)[grep("PC",names(pc.dt))]))
-names(pc.reshape)[grep("PC",names(pc.reshape))] <- sub("_.*","",names(pc.reshape)[grep("PC",names(pc.reshape))])
-col.reshape <- sample_data(col.x)[sample_data(col.x)$replicate=="a"]
-col.reshape <- col.reshape[order(col.reshape$meters)]
+pc.reshape <- lapply(pc.dt,function(obj) {  
+  y <- dcast(obj,Distance~.,fun.aggregate=function(x) mean(x,na.rm=T),value.var=c(names(obj)[grep("PC",names(obj))]))
+  names(y)[grep("PC",names(y))] <- sub("_.*","",names(y)[grep("PC",names(y))])
+  return(y)
+})    
+
+
+# prepare merger for biological replicates  
+col.reshape <- lapply(col.x, function(obj) {
+  y<-sample_data(obj)[sample_data(obj)$replicate=="a"]
+  y<-y[order(y$meters)]
+  return(y)
+})
 
 # Moran I test
 
@@ -45,8 +51,9 @@ dev.off()
 #  Pearson Correlogram
 cutoff <- 17
 pc<-"PC1"
-plotCorrelog(mypca,myfiltbiom,pc,cutoff=cutoff,xlim=NULL,ylim=c(-1,1),na.add=c(9,17))
+plotCorrelog(mypca[[1]],myfiltbiom[[1]],pc,cutoff=cutoff,xlim=NULL,ylim=c(-1,1),na.add=c(9,17))
 dev.off()
+d <- calcCorrelog(mypca[[1]],myfiltbiom[[1]],"PC1",c(9,17),c("Tree","Aisle"),1,F,F)
 
 ### For H samples - due to experimental design
 t1 <- plotCorrelog(mypca,prune_samples(sample_data(myfiltbiom)$block!=3,myfiltbiom),pc,na.add=c(9),returnCD=T)
