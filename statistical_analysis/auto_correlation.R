@@ -3,10 +3,11 @@ library(vegan)
 library(ncf)
 library(data.table)
 
-myfiltbiom@sam_data$gap <- 0
+myfiltbiom[[1]]@sam_data$gap <- 0
+myfiltbiom[[2]]@sam_data$gap <- 0
 
-cond <- "Y"
-
+cond <- "tree"
+pc.x <- lapply(seq(1,2),function(x) scores(mypca[[x]])[sample_data(myfiltbiom[[x]])$Sample==cond,])
 pc.x <- scores(mypca)[sample_data(myfiltbiom)$condition==cond,]
 col.x <- sample_data(myfiltbiom)[sample_data(myfiltbiom)$condition==cond,]
 pc.dt<- data.table(merge(pc.x,col.x,by="row.names"))
