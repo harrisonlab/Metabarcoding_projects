@@ -57,14 +57,14 @@ df <- lapply(mypca,function(x) {t(data.frame(t(x$x)*x$percentVar))})
 pc.res <- lapply(seq(1,2),function(x) resid(aov(mypca[[x]]$x~sample_data(myfiltbiom[[x]])$location)))
 d <- lapply(seq(1,2),function(x) {t(data.frame(t(pc.res[[x]])*mypca[[x]]$percentVar))})
 
-### ITS specific plots  
+
 g1<-plotOrd(df[[1]][,1:2],sample_data(myfiltbiom[[1]]),
 	design="Distance",shapes="Sample",continuous=T,colourScale=c("black","lightblue"),
-	xlabel="PC1",ylabel="PC2",legend=F,ylims=c(-4,6.5)
+	xlabel="PC1",ylabel="PC2",legend=F
 )
 g2<-plotOrd(d[[1]][,1:2],sample_data(myfiltbiom[[1]]),
 	design="Distance",shapes="Sample",continuous=T,colourScale=c("black","lightblue"),
-	xlabel="PC1",ylabel="PC2",legend=F,ylims=c(-4,6)
+	xlabel="PC1",ylabel="PC2",legend=F
 )
 
 g3<-plotOrd(df[[2]][,1:2],sample_data(myfiltbiom[[2]]),
@@ -73,10 +73,11 @@ g3<-plotOrd(df[[2]][,1:2],sample_data(myfiltbiom[[2]]),
 )
 g4<-plotOrd(d[[2]][,1:2],sample_data(myfiltbiom[[2]]),
 	design="Distance",shapes="Sample",continuous=T,colourScale=c("black","lightblue"),
-	xlabel="PC1",ylabel="PC2",legend=F,ylims=c(-2,6)
+	xlabel="PC1",ylabel="PC2",legend=F
 )
-mygplots <-list(list(g1,g2),list(g3,g4))
 
+#mygplots <-list(list(g1,g2),list(g3,g4))
+	
 mylegend <- ggplot_legend(
   plotOrd(df[[2]][,1:2],sample_data(myfiltbiom[[2]]),
 	  design="Distance",shapes="Sample",continuous=T,colourScale=c("black","lightblue"),
@@ -86,14 +87,24 @@ mylegend$layout$clip[mylegend$layout$name == "panel"] <- "off"
   
 lay=rbind(c(1,2),c(1,2),c(3,4),c(3,4),c(5,5))
  
-pdf("PCA.pdf",width=6,height=6)
+pdf("ITS_PCA.pdf",width=6,height=6)
 grid.arrange(
-	g1+geom_text(aes(label = "A", x = 8, y = 6.5), color="black",size=3),
+	g1+geom_text(aes(label = "A", x = 8, y = 6.5), color="black",size=3)+coord_fixed(ylims=c(-4,6.5)),
 	g3+geom_text(aes(label = "C", x = 3, y = 3.5),color="black",size=3),
-	g2+geom_text(aes(label = "B", x = 6.2, y = 6),color="black",size=3),
-	g4+geom_text(aes(label = "D", x = 3, y = 6),color="black",size=3),
+	g2+geom_text(aes(label = "B", x = 6.2, y = 6),color="black",size=3)+coord_fixed(ylims=c(-4,6)),
+	g4+geom_text(aes(label = "D", x = 3, y = 6),color="black",size=3)+coord_fixed(ylims=c(-2,6)),
 	mylegend, layout_matrix=lay
 )
 dev.off()
- 
+
+pdf("16S_PCA.pdf",width=6,height=6)	
+grid.arrange(
+	g1+geom_text(aes(label = "A", x = 8, y = 6.5), color="black",size=3),
+	g3+geom_text(aes(label = "C", x = 14, y = 8),color="black",size=3),
+	g2+geom_text(aes(label = "B", x =6, y=6), color="black",size=3),
+	g4+geom_text(aes(label = "D", x =6, y = 6),color="black",size=3),
+ 	mylegend, layout_matrix=lay
+)
+	
+dev.off()	
     
