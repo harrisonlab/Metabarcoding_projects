@@ -5,11 +5,15 @@ library(gridExtra)
 library(devtools)
 load_all("../..//metabarcoding_pipeline/scripts/myfunctions")
 
+# Combined data
 myfiltbiom <- prune_samples(sample_data(mybiom)[[10]]!="duplicate",mybiom)
 myfiltbiom@sam_data$location <- as.factor(myfiltbiom@sam_data$meters)
 colnames(sample_data(myfiltbiom))[c(1,6)] <- c("Sample","Distance")
 levels(sample_data(myfiltbiom)[[1]]) <- c("C","Aisle","Tree")
 
+
+
+# Orchard specific
 tempiom <- myfiltbiom
 tempiom@otu_table@.Data <-  assay(varianceStabilizingTransformation(phylo_to_des(tempiom)))
 
@@ -56,7 +60,6 @@ df <- lapply(mypca,function(x) {t(data.frame(t(x$x)*x$percentVar))})
 # spatial removed
 pc.res <- lapply(seq(1,2),function(x) resid(aov(mypca[[x]]$x~sample_data(myfiltbiom[[x]])$location)))
 d <- lapply(seq(1,2),function(x) {t(data.frame(t(pc.res[[x]])*mypca[[x]]$percentVar))})
-
 
 g1<-plotOrd(df[[1]][,1:2],sample_data(myfiltbiom[[1]]),
 	design="Distance",shapes="Sample",continuous=T,colourScale=c("black","lightblue"),
