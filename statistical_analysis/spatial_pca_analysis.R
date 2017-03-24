@@ -1,3 +1,4 @@
+### load libraries ###
 library(DESeq2)
 library(phyloseq)
 library(data.table)
@@ -5,21 +6,67 @@ library(gridExtra)
 library(devtools)
 load_all("../..//metabarcoding_pipeline/scripts/myfunctions")
 
-# Combined data
+### "Tidy" samples and names (specific to this project - could be done outside R) ###
 myfiltbiom <- prune_samples(sample_data(mybiom)[[10]]!="duplicate",mybiom)
 myfiltbiom@sam_data$location <- as.factor(myfiltbiom@sam_data$meters)
 colnames(sample_data(myfiltbiom))[c(1,6)] <- c("Sample","Distance")
 levels(sample_data(myfiltbiom)[[1]]) <- c("C","Aisle","Tree")
 
+### Combined data ####
 
+# Filter function for plotPCA
+filterFun=function(o,f){
+  o<-prune_samples(sample_data(o)[[1]]!="C",o)
+  prune_taxa(rowSums(otu_table(o))>5,o)	
+}
+# Uses DESeq2 to variance stabelise counts on whole dataset then calcultes PCA scores 
+# on filtered data
+mypca <- plotPCA(myfiltbiom,design="1",returnData=T,filterFun=filterFun)
+# Remove control samples
+myfiltbiom <- prune_samples(sample_data(myfiltbiom)[[1]]!="C",myfiltbiom)
+# Remove low count OTUs
+myfiltbiom <- prune_taxa(rowSums(otu_table(myfiltbiom))>5,myfiltbiom)
+sample_data(myfiltbiom)$orchloc <- paste(sample_data(myfiltbiom)$orchard,sample_data(myfiltbiom)$location,sep="_")
 
-# Orchard specific
+# Calculate ANOVA for first 4 PCs (the design is unbalanced for this data as we are missing 2 samples)
+lapply(seq(1:4),function(x) 
+	summary(aov(mypca$x[,x]~(orchard*location)+(orchard*Sample),data.frame(as.matrix(sample_data(myfiltbiom)))))
+)
+
+# Calcultae sum of squares
+sum_squares <- t(apply(mypca$x,2,function(x) 
+  t(summary(aov(x~(orchard*location)+(orchard*Sample),data.frame(as.matrix(sample_data(myfiltbiom)))))[[1]][2]))
+)
+colnames(sum_squares) <- c("orchard","location","condition","orchard:location", "orchard:Sample","residual")
+perVar <- sum_squares * mypca$percentVar
+colSums(perVar)
+colSums(perVar)/sum(colSums(perVar))*100
+
+# PCA plots
+	
+# uncorrected
+df <- t(data.frame(t(mypca$x)*mypca$percentVar))	
+plotOrd(df,sample_data(myfiltbiom))
+# spatial removed
+#pc.res <- resid(aov(mypca$x~sample_data(myfiltbiom)$location))
+#d <- t(data.frame(t(pc.res)*mypca$percentVar))
+#plotOrd(d,sample_data(myfiltbiom))
+
+g2<-plotOrd(df[,1:2],sample_data(myfiltbiom),
+	design="Distance",shapes="Orchard",continuous=T,colourScale=c("black","lightblue"),
+	xlabel="PC1",ylabel="PC2",legend=T,cluster=1
+)	
+	
+df <- lapply(mypca,function(x) {t(data.frame(t(x$x)*x$percentVar))})	
+#### Orchard specific ###
+
+	
 tempiom <- myfiltbiom
 tempiom@otu_table@.Data <-  assay(varianceStabilizingTransformation(phylo_to_des(tempiom)))
 
 filterFun=function(o,f){
   prune_samples(sample_data(o)[[11]]==f&sample_data(o)[[1]]!="C",o)
-}
+}	
 
 mypca <- list(
   dessert=plotPCA(tempiom,returnData=T,trans=F,filterFun=filterFun,filter="Dessert"),
