@@ -4,7 +4,7 @@ load_all("../..//metabarcoding_pipeline/scripts/myfunctions")
 myfiltbiom[[1]]@sam_data$gap <- 0
 myfiltbiom[[2]]@sam_data$gap <- 0
 
-#  Pearson Correlogram
+# Pearson Correlogram
 cutoff <- 17
 ### For cider samples - c_fix corrects a slight issue
 c_fix <- function(p,o,pn){
@@ -20,12 +20,35 @@ c_fix <- function(p,o,pn){
   return(d)  
 }
                               
-g1<-plotCorrelog(mypca[[1]],myfiltbiom[[1]],"PC1",cutoff,xlim=NULL,ylim=c(-1,1),na.add=c(9,17),cols=c("blue","orange"),legend=F)
+g1<-plotCorrelog(mypca[[1]],myfiltbiom[[1]],"PC1",cutoff,xlim=NULL,ylim=c(-1,1),na.add=c(9,17),cols=c("black","lightblue"),legend=F)
 g2<-plotCorrelog(data=c_fix(mypca[[2]],myfiltbiom[[2]],"PC1"),
-		 cutoff,pc="PC1",ylim=c(-1,1),cols=c("blue","orange"),legend=T,lpos=c(0.3,0.2))
-g3<-plotCorrelog(mypca[[1]],myfiltbiom[[1]],"PC2",cutoff,xlim=NULL,ylim=c(-1,1),na.add=c(9,17),cols=c("blue","orange"),legend=F)
-g4<-plotCorrelog(data=c_fix(mypca[[2]],myfiltbiom[[2]],"PC2"),cutoff,pc="PC2",ylim=c(-1,1),cols=c("blue","orange"),legend=F)
+		 cutoff,pc="PC1",ylim=c(-1,1),cols=c("black","lightblue"),legend=F)
+g3<-plotCorrelog(mypca[[1]],myfiltbiom[[1]],"PC2",cutoff,xlim=NULL,ylim=c(-1,1),na.add=c(9,17),cols=c("black","lightblue"),legend=F)
+g4<-plotCorrelog(data=c_fix(mypca[[2]],myfiltbiom[[2]],"PC2"),cutoff,pc="PC2",ylim=c(-1,1),cols=c("black","lightblue"),legend=F)
 
+
+g11<-plotCorrelog(ITS_pca[[1]],ITS_filtbiom[[1]],"PC1",cutoff,xlim=NULL,ylim=c(-1,1),na.add=c(9,17),cols=c("black","lightblue"),legend=F)
+g12<-plotCorrelog(data=c_fix(ITS_pca[[2]],ITS_filtbiom[[2]],"PC1"),
+		 cutoff,pc="PC1",ylim=c(-1,1),cols=c("black","lightblue"),legend=T,lpos=c(0.3,0.3))
+g13<-plotCorrelog(ITS_pca[[1]],ITS_filtbiom[[1]],"PC2",cutoff,xlim=NULL,ylim=c(-1,1),na.add=c(9,17),cols=c("black","lightblue"),legend=F)
+g14<-plotCorrelog(data=c_fix(ITS_pca[[2]],ITS_filtbiom[[2]],"PC2"),cutoff,pc="PC2",ylim=c(-1,1),cols=c("black","lightblue"),legend=F)			      
+		      
+lay=cbind(c(1,3),c(2,4),c(5,7),c(6,8))			      
+pdf("all_correlog_bb.pdf",width=8,height=5)
+grid.arrange(
+	g11+geom_text(aes(label = "A", x = 15, y = 1), color="black",size=3),
+	g13+geom_text(aes(label = "C",  x = 15, y = 1),color="black",size=3),
+	g12+geom_text(aes(label = "B",  x = 15, y = 1),color="black",size=3),
+	g14+geom_text(aes(label = "D",  x = 15, y = 1),color="black",size=3),
+	g1+geom_text(aes(label = "E", x = 15, y = 1), color="black",size=3),
+	g3+geom_text(aes(label = "G",  x = 15, y = 1),color="black",size=3),
+	g2+geom_text(aes(label = "F",  x = 15, y = 1),color="black",size=3),
+	g4+geom_text(aes(label = "H",  x = 15, y = 1),color="black",size=3),
+	layout_matrix=lay
+)
+dev.off()			      
+
+			      
 pdf("correlog.pdf",width=6,height=6)
 grid.arrange(
 	g1+geom_text(aes(label = "A", x = 15, y = 1), color="black",size=3),
@@ -34,24 +57,6 @@ grid.arrange(
 	g4+geom_text(aes(label = "D",  x = 15, y = 1),color="black",size=3)
 )
 dev.off()
-
-g27<-plotCorrelog(data=c_fix(ITS_mypca[[2]],ITS_myfiltbiom[[2]],"PC1"),
-		 cutoff,pc="PC1",ylim=c(-1,1),cols=c("blue","orange"),legend=T,lpos=c(0.3,0.3))			      
-			      
-lay=cbind(c(1,3),c(2,4),c(5,7),c(6,8))			      
-pdf("all_correlog.pdf",width=8,height=5)
-grid.arrange(
-	gall[[1]]+geom_text(aes(label = "A", x = 15, y = 1), color="black",size=3),
-	gall[[3]]+geom_text(aes(label = "C",  x = 15, y = 1),color="black",size=3),
-	g27+geom_text(aes(label = "B",  x = 15, y = 1),color="black",size=3),
-	gall[[4]]+geom_text(aes(label = "D",  x = 15, y = 1),color="black",size=3),
-	g1+geom_text(aes(label = "E", x = 15, y = 1), color="black",size=3),
-	g3+geom_text(aes(label = "G",  x = 15, y = 1),color="black",size=3),
-	g2+geom_text(aes(label = "F",  x = 15, y = 1),color="black",size=3),
-	g4+geom_text(aes(label = "H",  x = 15, y = 1),color="black",size=3),
-	layout_matrix=lay
-)
-dev.off()			      
 			      
 #gt <- gtable(widths = unit(c(1, 2,3,4), "null"), heights = unit(c(1, 2, 3,4), "null"))
 #gt <- gtable_add_grob(gt, ga, t = 1, b = 4, l = 4, r = 1)
