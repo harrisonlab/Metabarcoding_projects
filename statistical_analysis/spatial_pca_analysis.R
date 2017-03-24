@@ -51,7 +51,8 @@ d <- t(data.frame(t(pc.res)*mypca$percentVar))
 # all spatial effect removed...
 pc.res <- resid(aov(mypca$x~sample_data(myfiltbiom)$orchloc))
 d2 <- t(data.frame(t(pc.res)*mypca$percentVar))
-	
+
+# plotting function with clusters at 95% confidence	
 myglist <- lapply(list(df,d,d2),function(x)
   plotOrd(x,sample_data(myfiltbiom),
 	shapes=c("Orchard","Sample"),
@@ -66,9 +67,11 @@ myglist <- lapply(list(df,d,d2),function(x)
 	legend=F
 ))	
 
+# get the two legends
 l1 <- ggplot_legend(plotOrd(df,sample_data(myfiltbiom),design="Distance",continuous=T,colourScale=c("black","lightblue"))+ theme(legend.direction="horizontal"))
 l2 <- ggplot_legend(plotOrd(df,sample_data(myfiltbiom),shapes=c("Orchard","Sample")) + theme(legend.direction="vertical"))
 
+# print the 3 graphs using grid.arrange	
 lay=rbind(c(1,1),c(1,1),c(2,2),c(2,2),c(3,3),c(3,3),c(4,5))  
 pdf("16S_all_PCA.pdf",width=6,height=7)	
 grid.arrange(
