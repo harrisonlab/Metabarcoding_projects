@@ -35,6 +35,24 @@ grid.arrange(
 )
 dev.off()
 
+g27<-plotCorrelog(data=c_fix(ITS_mypca[[2]],ITS_myfiltbiom[[2]],"PC1"),
+		 cutoff,pc="PC1",ylim=c(-1,1),cols=c("blue","orange"),legend=T,lpos=c(0.3,0.3))			      
+			      
+lay=cbind(c(1,3),c(2,4),c(5,7),c(6,8))			      
+pdf("all_correlog.pdf",width=8,height=5)
+grid.arrange(
+	gall[[1]]+geom_text(aes(label = "A", x = 15, y = 1), color="black",size=3),
+	gall[[3]]+geom_text(aes(label = "C",  x = 15, y = 1),color="black",size=3),
+	g27+geom_text(aes(label = "B",  x = 15, y = 1),color="black",size=3),
+	gall[[4]]+geom_text(aes(label = "D",  x = 15, y = 1),color="black",size=3),
+	g1+geom_text(aes(label = "E", x = 15, y = 1), color="black",size=3),
+	g3+geom_text(aes(label = "G",  x = 15, y = 1),color="black",size=3),
+	g2+geom_text(aes(label = "F",  x = 15, y = 1),color="black",size=3),
+	g4+geom_text(aes(label = "H",  x = 15, y = 1),color="black",size=3),
+	layout_matrix=lay
+)
+dev.off()			      
+			      
 #gt <- gtable(widths = unit(c(1, 2,3,4), "null"), heights = unit(c(1, 2, 3,4), "null"))
 #gt <- gtable_add_grob(gt, ga, t = 1, b = 4, l = 4, r = 1)
 #gt <- gtable_add_grob(gt, mylegend, t = 4, r = 4,l=1)
