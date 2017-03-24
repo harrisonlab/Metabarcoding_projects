@@ -60,11 +60,11 @@ d <- lapply(seq(1,2),function(x) {t(data.frame(t(pc.res[[x]])*mypca[[x]]$percent
 ### ITS specific plots  
 g1<-plotOrd(df[[1]][,1:2],sample_data(myfiltbiom[[1]]),
 	design="Distance",shapes="Sample",continuous=T,colourScale=c("black","lightblue"),
-	xlabel="PC1",ylabel="PC2",ylims=c(-4,6.5),legend=F
+	xlabel="PC1",ylabel="PC2",legend=F,ylims=c(-4,6.5)
 )
 g2<-plotOrd(d[[1]][,1:2],sample_data(myfiltbiom[[1]]),
 	design="Distance",shapes="Sample",continuous=T,colourScale=c("black","lightblue"),
-	xlabel="PC1",ylabel="PC2",ylims=c(-4,6),legend=F
+	xlabel="PC1",ylabel="PC2",legend=F,ylims=c(-4,6)
 )
 
 g3<-plotOrd(df[[2]][,1:2],sample_data(myfiltbiom[[2]]),
@@ -73,7 +73,7 @@ g3<-plotOrd(df[[2]][,1:2],sample_data(myfiltbiom[[2]]),
 )
 g4<-plotOrd(d[[2]][,1:2],sample_data(myfiltbiom[[2]]),
 	design="Distance",shapes="Sample",continuous=T,colourScale=c("black","lightblue"),
-	xlabel="PC1",ylabel="PC2",ylims=c(-2,6),legend=F
+	xlabel="PC1",ylabel="PC2",legend=F,ylims=c(-2,6)
 )
 mygplots <-list(list(g1,g2),list(g3,g4))
 
