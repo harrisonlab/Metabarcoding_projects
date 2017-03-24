@@ -1,9 +1,9 @@
-#Statistical analysis
+# Statistical analysis
 
 ## Combine biome and taxa
 biom_make.pl will take a hacked rdp taxonomy file (mod_taxa.pl) and UPARSE biome and output a combined taxa and biome file to standard out.
 (../Beta_diversity.R)
-
+### [16S workflow](../../master/statistical_analysis/readme.md)
 e.g. for 16S
 ```shell
 # $ARDERI/metabarcoding_pipeline/scripts/mod_taxa.pl 16S.rdp>16S.taxa # no longer required
