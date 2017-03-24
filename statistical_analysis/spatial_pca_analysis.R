@@ -43,24 +43,32 @@ colSums(perVar)
 colSums(perVar)/sum(colSums(perVar))*100
 
 # PCA plots
-	
 # uncorrected
 df <- t(data.frame(t(mypca$x)*mypca$percentVar))	
-plotOrd(df,sample_data(myfiltbiom))
-# spatial removed
-#pc.res <- resid(aov(mypca$x~sample_data(myfiltbiom)$location))
-#d <- t(data.frame(t(pc.res)*mypca$percentVar))
-#plotOrd(d,sample_data(myfiltbiom))
-
-g2<-plotOrd(df[,1:2],sample_data(myfiltbiom),
-	design="Distance",shapes="Orchard",continuous=T,colourScale=c("black","lightblue"),
-	xlabel="PC1",ylabel="PC2",legend=T,cluster=1
-)	
+# orchard effect removed...
+pc.res <- resid(aov(mypca$x~sample_data(myfiltbiom)$orchard))
+d <- t(data.frame(t(pc.res)*mypca$percentVar))
+# all spatial effect removed...
+pc.res <- resid(aov(mypca$x~sample_data(myfiltbiom)$orchloc))
+d2 <- t(data.frame(t(pc.res)*mypca$percentVar))
 	
-df <- lapply(mypca,function(x) {t(data.frame(t(x$x)*x$percentVar))})	
+myglist <- lapply(list(df,d,d2),function(x)
+  plotOrd(x,sample_data(myfiltbiom),
+	shapes=c("Orchard","Sample"),
+	cluster=0.95,
+	design="Distance",
+	xlabel="PC1",
+	ylabel="PC2",
+	continuous=T,
+	colourScale=c("black","lightblue"),
+	centers=1,
+	ylims=c(-4,4)
+))	
+
+
+	
 #### Orchard specific ###
 
-	
 tempiom <- myfiltbiom
 tempiom@otu_table@.Data <-  assay(varianceStabilizingTransformation(phylo_to_des(tempiom)))
 
