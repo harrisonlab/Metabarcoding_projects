@@ -75,13 +75,12 @@ l2 <- ggplot_legend(plotOrd(df,sample_data(myfiltbiom),shapes=c("Orchard","Sampl
 lay=rbind(c(1,1),c(1,1),c(2,2),c(2,2),c(3,3),c(3,3),c(4,5))  
 pdf("16S_all_PCA.pdf",width=6,height=7)	
 grid.arrange(
-	myglist[[1]]+geom_text(aes(label = "A", x = 50, y = 3), color="black",size=3),
-	myglist[[2]]+geom_text(aes(label = "B", x = 25, y = 3), color="black",size=3),
-	myglist[[3]]+geom_text(aes(label = "C", x = 25,y = 3), color="black",size=3),
+	myglist[[1]]+annotate("text",label=paste("A"), x=50, y=3,size=3),
+	myglist[[2]]+annotate("text",label=paste("B"), x=25, y=3,size=3),
+	myglist[[3]]+annotate("text",label=paste("C"), x=25, y=3,size=3),
 	l1,l2, layout_matrix=lay
 )
 	
-
 #### Orchard specific ###
 tempiom <- myfiltbiom
 tempiom@otu_table@.Data <-  assay(varianceStabilizingTransformation(phylo_to_des(tempiom)))
