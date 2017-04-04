@@ -9,7 +9,7 @@ load_all("../..//metabarcoding_pipeline/scripts/myfunctions")
 ### "Tidy" samples and names (specific to this project - could be done outside R) ###
 myfiltbiom <- prune_samples(sample_data(mybiom)[[10]]!="duplicate",mybiom)
 myfiltbiom@sam_data$location <- as.factor(myfiltbiom@sam_data$meters)
-colnames(sample_data(myfiltbiom))[c(1,6)] <- c("Sample","Distance")
+colnames(sample_data(myfiltbiom))[c(1,6,11)] <- c("Sample","Distance","Orchard")
 levels(sample_data(myfiltbiom)[[1]]) <- c("C","Aisle","Tree")
 
 ### Combined data ####
@@ -68,19 +68,36 @@ myglist <- lapply(list(df,d,d2),function(x)
 ))	
 
 # get the two legends
-l1 <- ggplot_legend(plotOrd(df,sample_data(myfiltbiom),design="Distance",continuous=T,colourScale=c("black","lightblue"))+ theme(legend.direction="horizontal"))
-l2 <- ggplot_legend(plotOrd(df,sample_data(myfiltbiom),shapes=c("Orchard","Sample")) + theme(legend.direction="vertical"))
+l1 <- ggplot_legend(plotOrd(df,sample_data(myfiltbiom),design="Distance",continuous=T,colourScale=c("black","lightblue"))+ theme(legend.direction="vertical"))
+l2 <- ggplot_legend(plotOrd(df,sample_data(myfiltbiom),shapes=c("Orchard","Sample")) + theme(legend.direction="horizontal"))
 
 # print the 3 graphs using grid.arrange	
 lay=rbind(c(1,1),c(1,1),c(2,2),c(2,2),c(3,3),c(3,3),c(4,5))  
-pdf("16S_all_PCA.pdf",width=6,height=7)	
+pdf("16S_all_PCA.pdf",width=7,height=7)	
 grid.arrange(
 	myglist[[1]]+annotate("text",label=paste("A"), x=50, y=3,size=3),
 	myglist[[2]]+annotate("text",label=paste("B"), x=25, y=3,size=3),
 	myglist[[3]]+annotate("text",label=paste("C"), x=25, y=3,size=3),
 	l1,l2, layout_matrix=lay
 )
-	
+
+myglist <- append(myglist,myglist16S)
+	,c(7,7,7,7)
+lay=rbind(c(1,1,2,2),c(1,1,2,2),c(1,1,2,2),
+	  c(3,3,4,4),c(3,3,4,4),c(3,3,4,4),
+	  c(5,5,6,6),c(5,5,6,6),c(5,5,6,6),
+	  c(7,8,8,NA),c(7,8,8,NA),c(9,NA,NA,NA)) 
+pdf("all_all_PCA.pdf",width=8,height=9)	
+grid.arrange(
+	myglist[[1]]+annotate("text",label=paste("A"), x=20, y=3,size=3),
+	myglist[[4]]+annotate("text",label=paste("D"), x=50, y=3,size=3)+scale_y_continuous(breaks=c(-4, 0, 4)),
+	myglist[[2]]+annotate("text",label=paste("B"), x=20, y=3,size=3),
+	myglist[[5]]+annotate("text",label=paste("E"), x=25, y=3,size=3),
+	myglist[[3]]+annotate("text",label=paste("C"), x=20, y=3,size=3),
+	myglist[[6]]+annotate("text",label=paste("F"), x=25, y=3,size=3),
+	l1,l2, gblank, layout_matrix=lay
+)	
+dev.off()	
 #### Orchard specific ###
 tempiom <- myfiltbiom
 tempiom@otu_table@.Data <-  assay(varianceStabilizingTransformation(phylo_to_des(tempiom)))
