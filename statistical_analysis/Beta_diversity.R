@@ -28,24 +28,31 @@ row.names(sample_data(myfiltbiom)[with(sample_data(myfiltbiom),order(orchard,con
 plotHeatmap(du_16)
 
 g <- plotHeatmap(dw_16)
-g <-g+theme(axis.title=element_blank())
+g <- g +theme(axis.title=element_blank())
 g <- g + theme(plot.margin = unit(c(1,1,2,2), "lines"))
-g <- g + annotation_custom(textGrob("Grass"),xmin=35.75,xmax=35.75,ymin=-4,ymax=-4)
-g <- g + annotation_custom(textGrob("Tree"),xmin=107.25,xmax=107.25,ymin=-4,ymax=-4)
-g <- g + annotation_custom(textGrob("Grass"),xmin=178.75,xmax=178.75,ymin=-4,ymax=-4)
-g <- g + annotation_custom(textGrob("Tree"),xmin=250.25,xmax=250.25,ymin=-4,ymax=-4)
 
+g <- g + annotation_custom(textGrob("Aisle"),xmin=35.75,xmax=35.75,ymin=-4,ymax=-4)
+g <- g + annotation_custom(textGrob("Tree"),xmin=107.25,xmax=107.25,ymin=-4,ymax=-4)
+g <- g + annotation_custom(textGrob("Aisle"),xmin=178.75,xmax=178.75,ymin=-4,ymax=-4)
+g <- g + annotation_custom(textGrob("Tree"),xmin=250.25,xmax=250.25,ymin=-4,ymax=-4)
 g <- g + annotation_custom(textGrob("\nCider"),xmin=71.5,xmax=71.5,ymin=-4,ymax=-4)
 g <- g + annotation_custom(textGrob("\nDessert"),xmin=214.25,xmax=214.25,ymin=-4,ymax=-4)
 
-
-g <- g + annotation_custom(textGrob("\nGrass",rot=90),ymin=35.75,ymax=35.75,xmin=-12,xmax=-12)
+g <- g + annotation_custom(textGrob("\nAisle",rot=90),ymin=35.75,ymax=35.75,xmin=-12,xmax=-12)
 g <- g + annotation_custom(textGrob("\nTree",rot=90),ymin=107.25,ymax=107.25,xmin=-12,xmax=-12)
-g <- g + annotation_custom(textGrob("\nGrass",rot=90),ymin=178.75,ymax=178.75,xmin=-12,xmax=-12)
+g <- g + annotation_custom(textGrob("\nAisle",rot=90),ymin=178.75,ymax=178.75,xmin=-12,xmax=-12)
 g <- g + annotation_custom(textGrob("\nTree",rot=90),ymin=250.25,ymax=250.25,xmin=-12,xmax=-12)
-
 g <- g + annotation_custom(textGrob("Cider",rot=90),ymin=71.5,ymax=71.5,xmin=-12,xmax=-12)
 g <- g + annotation_custom(textGrob("Dessert",rot=90),ymin=214.25,ymax=214.25,xmin=-12,xmax=-12)
+
+g <- g + annotation_custom(linesGrob(), xmin = 71.5, xmax = 71.5, ymin = 0, ymax = -2)
+g <- g + annotation_custom(linesGrob(), xmin = 143.25, xmax = 143.25, ymin = 0, ymax = -8)
+g <- g + annotation_custom(linesGrob(), xmin = 214.25, xmax = 214.25, ymin = 0, ymax = -2)
+
+g <- g + annotation_custom(linesGrob(), ymin = 71.5, ymax = 71.5, xmin = 0, xmax = -2)
+g <- g + annotation_custom(linesGrob(), ymin = 143.25, ymax = 143.25, xmin = 0, xmax = -8)
+g <- g + annotation_custom(linesGrob(), ymin = 214.25, ymax = 214.25, xmin = 0, xmax = -2)
+
 gt <- ggplot_gtable(ggplot_build(g))
 gt$layout$clip[gt$layout$name == "panel"] <- "off"
 grid.draw(gt)
