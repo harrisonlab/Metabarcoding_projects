@@ -30,12 +30,12 @@ sample_data(myfiltbiom)$orchloc <- paste(sample_data(myfiltbiom)$orchard,sample_
 
 # Calculate ANOVA for first 4 PCs (the design is unbalanced for this data as we are missing 2 samples)
 lapply(seq(1:4),function(x) 
-	summary(aov(mypca$x[,x]~(orchard*location)+(orchard*Sample),data.frame(as.matrix(sample_data(myfiltbiom)))))
+	summary(aov(mypca$x[,x]~(Orchard*location)+(Orchard*Sample),data.frame(as.matrix(sample_data(myfiltbiom)))))
 )
 
 # Calcultae sum of squares
 sum_squares <- t(apply(mypca$x,2,function(x) 
-  t(summary(aov(x~(orchard*location)+(orchard*Sample),data.frame(as.matrix(sample_data(myfiltbiom)))))[[1]][2]))
+  t(summary(aov(x~(Orchard*location)+(Orchard*Sample),data.frame(as.matrix(sample_data(myfiltbiom)))))[[1]][2]))
 )
 colnames(sum_squares) <- c("orchard","location","condition","orchard:location", "orchard:Sample","residual")
 perVar <- sum_squares * mypca$percentVar
