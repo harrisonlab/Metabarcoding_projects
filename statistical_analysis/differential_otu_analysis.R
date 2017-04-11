@@ -6,15 +6,14 @@ register(MulticoreParam(8))
 myfiltbiom <- prune_samples(sample_data(mybiom)[[10]]!="duplicate",mybiom)
 myfiltbiom <- prune_samples(sample_data(myfiltbiom)[[1]]!="C",myfiltbiom)
 myfiltbiom@sam_data$location <- as.factor(myfiltbiom@sam_data$meters)
-#colnames(sample_data(myfiltbiom))[c(1,6,11)] <- c("Sample","Distance","Orchard")
-#levels(sample_data(myfiltbiom)[[1]]) <- c("C","Aisle","Tree")
+colnames(sample_data(myfiltbiom))[c(1,6,11)] <- c("Sample","Distance","Orchard")
+levels(sample_data(myfiltbiom)[[1]]) <- c("C","Aisle","Tree")
 
-design=~orchard + condition + orchard:location + orchard:condition
+design=~Orchard + Sample + Orchard:location + Orchard:Sample
 dds <- phylo_to_des(myfiltbiom,design=design,parallel=T,fit=T)
-
-contrast=list(c("conditiongrass", "conditiontree" )) # main effect
-contrast=list( "orchardCider.conditiongrass","orchardCider.conditiontree") # Grass:Tree effect (cider)
-contrast=list( "orchardDessert.conditiongrass","orchardDessert.conditiontree") # Grass:Tree (Dessert)
+contrast=c("Sample","Aisle", "Tree" ) # main effect
+contrast=list( "OrchardCider.SampleAisle","OrchardCider.SampleTree") # Grass:Tree effect (cider)
+contrast=list( "OrchardDessert.SampleAisle","OrchardDessert.SampleTree") # Grass:Tree (Dessert)
 
 alpha <- 0.05
 res <- results(dds,contrast=contrast,alpha=alpha,parallel=T)
