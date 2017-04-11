@@ -59,20 +59,20 @@ colnames(lfamily)[4] <- "main_down"
 
 sig.res <- sig_res(res_cider_bac)
 #write.table(res.merge,"main.txt", sep="\t", quote=F,na="",row.names=F)
-lclass <- countTaxa(taxaConf(sig.res[7:21],0.65,3),"rank")
+lclass <- full_join(lclass,countTaxa(taxaConf(sig.res[7:21],0.65,3),"rank"))
 colnames(lclass)[5] <- "cider"
-lorder <- countTaxa(taxaConf(sig.res[7:21],0.65,4),"rank")
+lorder <- full_join(lorder,countTaxa(taxaConf(sig.res[7:21],0.65,4),"rank"))
 colnames(lorder)[5] <- "cider"
-lfamily <- countTaxa(taxaConf(sig.res[7:21],0.65,5),"rank") 
+lfamily <- full_join(lfamily,countTaxa(taxaConf(sig.res[7:21],0.65,5),"rank")) 
 colnames(lfamily)[5] <- "cider"
 
 sig.res <- sig_res(res_dessert_bac)
 #write.table(res.merge,"main.txt", sep="\t", quote=F,na="",row.names=F)
-lclass <- countTaxa(taxaConf(sig.res[7:21],0.65,3),"rank")
+lclass <- full_join(lclass,countTaxa(taxaConf(sig.res[7:21],0.65,3),"rank"))
 colnames(lclass)[6] <- "dessert"
-lorder <- countTaxa(taxaConf(sig.res[7:21],0.65,4),"rank")
+lorder <- full_join(lorder,countTaxa(taxaConf(sig.res[7:21],0.65,4),"rank"))
 colnames(lorder)[6] <- "dessert"
-lfamily <- countTaxa(taxaConf(sig.res[7:21],0.65,5),"rank") 
+lfamily <- full_join(lfamily,countTaxa(taxaConf(sig.res[7:21],0.65,5),"rank")) 
 colnames(lfamily)[6] <- "dessert"
 
 write.table(lclass,"sig.class.count.txt", sep="\t", quote=F,na="0",row.names=F)
