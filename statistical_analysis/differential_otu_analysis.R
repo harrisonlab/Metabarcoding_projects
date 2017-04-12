@@ -45,7 +45,7 @@ sig_res <- function(res) {
   return(subset(res.merge,padj<=alpha))
 }  
 
-sig.res <- sig_res(res_orchard_bac)
+sig.res <- sig_res(res_orchard_fun)
 lclass <- countTaxa(taxaConf(sig.res[,7:21],0.65,3),"rank")
 colnames(lclass)[2] <- "orchard"
 lorder <- countTaxa(taxaConf(sig.res[7:21],0.65,4),"rank")
@@ -53,7 +53,7 @@ colnames(lorder)[2] <- "orchard"
 lfamily <- countTaxa(taxaConf(sig.res[7:21],0.65,5),"rank") 
 colnames(lfamily)[2] <- "orchard"
 
-sig.res <- sig_res(res_main_bac)
+sig.res <- sig_res(res_main_fun)
 lclass <- full_join(lclass,countTaxa(taxaConf(sig.res[sig.res$log2FoldChange>0,7:21],0.65,3),"rank"),by="Taxa")
 colnames(lclass)[3] <- "main_up"
 lclass <- full_join(lclass,countTaxa(taxaConf(sig.res[sig.res$log2FoldChange<0,7:21],0.65,3),"rank"),by="Taxa") 
@@ -67,7 +67,7 @@ colnames(lfamily)[3] <- "main_up"
 lfamily <- full_join(lfamily,countTaxa(taxaConf(sig.res[sig.res$log2FoldChange<0,7:21],0.65,5),"rank"),by="Taxa")
 colnames(lfamily)[4] <- "main_down"
 
-sig.res <- sig_res(res_cider_bac)
+sig.res <- sig_res(res_cider_fun)
 lclass <- full_join(lclass,countTaxa(taxaConf(sig.res[7:21],0.65,3),"rank"))
 colnames(lclass)[5] <- "cider"
 lorder <- full_join(lorder,countTaxa(taxaConf(sig.res[7:21],0.65,4),"rank"))
@@ -75,7 +75,7 @@ colnames(lorder)[5] <- "cider"
 lfamily <- full_join(lfamily,countTaxa(taxaConf(sig.res[7:21],0.65,5),"rank")) 
 colnames(lfamily)[5] <- "cider"
 
-sig.res <- sig_res(res_dessert_bac)
+sig.res <- sig_res(res_dessert_fun)
 lclass <- full_join(lclass,countTaxa(taxaConf(sig.res[7:21],0.65,3),"rank"))
 colnames(lclass)[6] <- "dessert"
 lorder <- full_join(lorder,countTaxa(taxaConf(sig.res[7:21],0.65,4),"rank"))
