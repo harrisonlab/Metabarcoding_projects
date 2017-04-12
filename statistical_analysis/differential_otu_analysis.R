@@ -1,4 +1,7 @@
+libray(phyloseq)
 library(DESeq2)
+library(devtools)
+load_all("../..//metabarcoding_pipeline/scripts/myfunctions")
 library("BiocParallel")
 register(MulticoreParam(8))
 
