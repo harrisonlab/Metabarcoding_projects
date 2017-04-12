@@ -15,7 +15,8 @@ levels(sample_data(myfiltbiom)[[1]]) <- c("C","Aisle","Tree")
 design=~Orchard + Sample + Orchard:location + Orchard:Sample
 dds <- phylo_to_des(myfiltbiom,design=design,parallel=T,fit=T)
 contrast=c("Sample","Aisle", "Tree" ) # main effect
-# contrast=list(c("conditionN","orchardCider.conditionN","orchardDessert.conditionN"),c("conditionY","orchardCider.conditionY","orchardDessert.conditionY"))
+# contrast=list(c("conditionN","orchardCider.conditionN","orchardDessert.conditionN"),
+# c("conditionY","orchardCider.conditionY","orchardDessert.conditionY"))
 contrast=c("Orchard","Cider","Dessert") # orchard effect
 contrast=list( "OrchardCider.SampleAisle","OrchardCider.SampleTree") # Grass:Tree (cider)
 contrast=list( "OrchardDessert.SampleAisle","OrchardDessert.SampleTree") # Grass:Tree (Dessert)
@@ -27,8 +28,16 @@ rownames(res.merge) <- res.merge$Row.names
 res.merge <- res.merge[-1]
 sig.res <- subset(res.merge,padj<=alpha)
 
-# gets combined counts at 0.65 conf for given level (1=kingdom,2=phylum,3=class,4=order,5=family,6=genus,7=species)
+write.table(merge(as.data.frame(res_orchard),tax_table(myfiltbiom),by="row.names",all.x=TRUE),
+"orchard.txt", sep="\t", quote=F,na="",row.names=F)
+write.table(merge(as.data.frame(res_main),tax_table(myfiltbiom),by="row.names",all.x=TRUE),
+"main.txt", sep="\t", quote=F,na="",row.names=F)
+write.table(merge(as.data.frame(res_cider),tax_table(myfiltbiom),by="row.names",all.x=TRUE),
+"cider.txt", sep="\t", quote=F,na="",row.names=F)
+write.table(merge(as.data.frame(res_dessert),tax_table(myfiltbiom),by="row.names",all.x=TRUE),
+"dessert.txt", sep="\t", quote=F,na="",row.names=F)
 
+# gets combined counts at 0.65 conf for given level (1=kingdom,2=phylum,3=class,4=order,5=family,6=genus,7=species)
 sig_res <- function(res) {
   res.merge <- merge(as.data.frame(res),tax_table(myfiltbiom),by="row.names",all.x=TRUE)
   rownames(res.merge) <- res.merge$Row.names
@@ -37,7 +46,6 @@ sig_res <- function(res) {
 }  
 
 sig.res <- sig_res(res_orchard_bac)
-#write.table(res.merge,"main.txt", sep="\t", quote=F,na="",row.names=F)
 lclass <- countTaxa(taxaConf(sig.res[,7:21],0.65,3),"rank")
 colnames(lclass)[2] <- "orchard"
 lorder <- countTaxa(taxaConf(sig.res[7:21],0.65,4),"rank")
@@ -46,7 +54,6 @@ lfamily <- countTaxa(taxaConf(sig.res[7:21],0.65,5),"rank")
 colnames(lfamily)[2] <- "orchard"
 
 sig.res <- sig_res(res_main_bac)
-#write.table(res.merge,"cider.txt", sep="\t", quote=F,na="",row.names=F)
 lclass <- full_join(lclass,countTaxa(taxaConf(sig.res[sig.res$log2FoldChange>0,7:21],0.65,3),"rank"),by="Taxa")
 colnames(lclass)[3] <- "main_up"
 lclass <- full_join(lclass,countTaxa(taxaConf(sig.res[sig.res$log2FoldChange<0,7:21],0.65,3),"rank"),by="Taxa") 
@@ -61,7 +68,6 @@ lfamily <- full_join(lfamily,countTaxa(taxaConf(sig.res[sig.res$log2FoldChange<0
 colnames(lfamily)[4] <- "main_down"
 
 sig.res <- sig_res(res_cider_bac)
-#write.table(res.merge,"main.txt", sep="\t", quote=F,na="",row.names=F)
 lclass <- full_join(lclass,countTaxa(taxaConf(sig.res[7:21],0.65,3),"rank"))
 colnames(lclass)[5] <- "cider"
 lorder <- full_join(lorder,countTaxa(taxaConf(sig.res[7:21],0.65,4),"rank"))
@@ -70,7 +76,6 @@ lfamily <- full_join(lfamily,countTaxa(taxaConf(sig.res[7:21],0.65,5),"rank"))
 colnames(lfamily)[5] <- "cider"
 
 sig.res <- sig_res(res_dessert_bac)
-#write.table(res.merge,"main.txt", sep="\t", quote=F,na="",row.names=F)
 lclass <- full_join(lclass,countTaxa(taxaConf(sig.res[7:21],0.65,3),"rank"))
 colnames(lclass)[6] <- "dessert"
 lorder <- full_join(lorder,countTaxa(taxaConf(sig.res[7:21],0.65,4),"rank"))
