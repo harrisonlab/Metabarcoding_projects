@@ -8,8 +8,15 @@ myfiltbiom<-prune_samples(sample_data(myfiltbiom)[[1]]!="C",myfiltbiom)
 all_alpha <- plot_richness(myfiltbiom,returnData=T)
 
 # ANOVA of alpha data
+data.frame(prop.table(summary(aov(Chao1~location+(Sample*Orchard),all_alpha))[[1]][c(2)])*100,
+           summary(aov(Chao1~location+(Sample*Orchard),all_alpha))[[1]][5])
+data.frame(prop.table(summary(aov(Shannon~location+(Sample*Orchard),all_alpha))[[1]][c(2)])*100,
+           summary(aov(Shannon~location+(Sample*Orchard),all_alpha))[[1]][5])
+data.frame(prop.table(summary(aov(Simpson~location+(Sample*Orchard),all_alpha))[[1]][c(2)])*100,
+           summary(aov(Simpson~location+(Sample*Orchard),all_alpha))[[1]][5])
+
 summary(aov(Chao1~location+(Sample*Orchard),all_alpha))[[1]][2]
-summary(aov(Shannon~location+(Sample*Orchard)),all_alpha))[[1]][2]
+summary(aov(Shannon~location+(Sample*Orchard),all_alpha))[[1]][2]
 summary(aov(Simpson~location+(Sample*Orchard),all_alpha))[[1]][2]
 #~condition*orchard+location
 
