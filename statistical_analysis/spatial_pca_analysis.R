@@ -45,11 +45,11 @@ colSums(perVar)/sum(colSums(perVar))*100
 # PCA plots
 # uncorrected
 df <- t(data.frame(t(mypca$x)*mypca$percentVar))	
-# orchard effect removed...
-pc.res <- resid(aov(mypca$x~sample_data(myfiltbiom)$orchard))
+# location effect removed...
+pc.res <- resid(aov(mypca$x~sample_data(myfiltbiom)$location))
 d <- t(data.frame(t(pc.res)*mypca$percentVar))
 # all spatial effect removed...
-pc.res <- resid(aov(mypca$x~sample_data(myfiltbiom)$orchloc))
+pc.res <- resid(aov(mypca$x~sample_data(myfiltbiom)$Orchard+sample_data(myfiltbiom)$location))
 d2 <- t(data.frame(t(pc.res)*mypca$percentVar))
 
 # plotting function with clusters at 95% confidence	
@@ -61,6 +61,8 @@ myglist <- lapply(list(df,d,d2),function(x)
 	xlabel="PC1",
 	ylabel="PC2",
 	continuous=T,
+	dimx=1,
+	dimy=2,
 	colourScale=c("black","lightblue"),
 	centers=1,
 	ylims=c(-4,4),
@@ -68,19 +70,42 @@ myglist <- lapply(list(df,d,d2),function(x)
 ))	
 
 # get the two legends
-l1 <- ggplot_legend(plotOrd(df,sample_data(myfiltbiom),design="Distance",continuous=T,colourScale=c("black","lightblue"))+ theme(legend.direction="vertical"))
+l1 <- ggplot_legend(plotOrd(df,sample_data(myfiltbiom),design="Distance",continuous=T,colourScale=c("black","lightblue"))+ theme(legend.direction="horizontal"))
 l2 <- ggplot_legend(plotOrd(df,sample_data(myfiltbiom),shapes=c("Orchard","Sample")) + theme(legend.direction="horizontal"))
 
+	
 # print the 3 graphs using grid.arrange	
 lay=rbind(c(1,1),c(1,1),c(2,2),c(2,2),c(3,3),c(3,3),c(4,5))  
-pdf("16S_all_PCA.pdf",width=7,height=7)	
+pdf("ITS_all_PCA.pdf",width=8,height=6)	
 grid.arrange(
-	myglist[[1]]+annotate("text",label=paste("A"), x=50, y=3,size=3),
-	myglist[[2]]+annotate("text",label=paste("B"), x=25, y=3,size=3),
-	myglist[[3]]+annotate("text",label=paste("C"), x=25, y=3,size=3),
-	l1,l2, layout_matrix=lay
+	myglist[[1]]+annotate("text",label=paste("A"), x=50, y=3,size=5),
+	myglist[[2]]+annotate("text",label=paste("B"), x=50, y=3,size=5),
+	myglist[[3]]+annotate("text",label=paste("C"), x=20, y=3,size=5),
+	layout_matrix=lay
 )
+	
+g2 <- plotOrd(df,...)
+	
+g2 <- g2 + theme(legend.direction="horizontal", 
+		 legend.position="bottom",
+		 legend.justification=c(0,0),
+		 legend.box="vertical",
+		 legend.box.just="left",
+		 axis.line.x = element_line(size=0.3,colour = "black"),
+		 axis.line.y = element_line(size=0.3,colour = "black"),
+		 axis.text = element_text(colour = "black"),
+		 plot.margin=unit(c(2.5,1,0.5,0.5), "lines")
+)	
 
+pdf("ITS_16S_orchards.pdf",width=7,height=6.5)	
+g3 <- ggplotGrob(myglist_its[[1]]+annotate("text",label=paste("A"), x=20, y=3,size=5))
+g4<-  ggplotGrob(g2+annotate("text",label=paste("B"), x=50, y=3,size=5))
+g <- rbind(g3, g4, size="first")
+grid.newpage()
+grid.draw(g)
+dev.off()	
+
+	
 myglist <- append(myglist,myglist16S)
 	,c(7,7,7,7)
 lay=rbind(c(1,1,2,2),c(1,1,2,2),c(1,1,2,2),
@@ -89,12 +114,12 @@ lay=rbind(c(1,1,2,2),c(1,1,2,2),c(1,1,2,2),
 	  c(7,8,8,NA),c(7,8,8,NA),c(9,NA,NA,NA)) 
 pdf("all_all_PCA.pdf",width=8,height=9)	
 grid.arrange(
-	myglist[[1]]+annotate("text",label=paste("A"), x=20, y=3,size=3),
-	myglist[[4]]+annotate("text",label=paste("D"), x=50, y=3,size=3)+scale_y_continuous(breaks=c(-4, 0, 4)),
-	myglist[[2]]+annotate("text",label=paste("B"), x=20, y=3,size=3),
-	myglist[[5]]+annotate("text",label=paste("E"), x=25, y=3,size=3),
-	myglist[[3]]+annotate("text",label=paste("C"), x=20, y=3,size=3),
-	myglist[[6]]+annotate("text",label=paste("F"), x=25, y=3,size=3),
+	myglist[[1]]+annotate("text",label=paste("A"), x=20, y=3,size=5),
+	myglist[[4]]+annotate("text",label=paste("D"), x=50, y=3,size=5)+scale_y_continuous(breaks=c(-4, 0, 4)),
+	myglist[[2]]+annotate("text",label=paste("B"), x=20, y=3,size=5),
+	myglist[[5]]+annotate("text",label=paste("E"), x=25, y=3,size=5),
+	myglist[[3]]+annotate("text",label=paste("C"), x=20, y=3,size=5),
+	myglist[[6]]+annotate("text",label=paste("F"), x=25, y=3,size=5),
 	l1,l2, gblank, layout_matrix=lay
 )	
 dev.off()	
