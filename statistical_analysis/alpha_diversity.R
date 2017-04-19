@@ -1,8 +1,18 @@
+library(phyloseq)
+library(gtable)
+library(gridExtra)
+library(devtools)
+load_all("../..//metabarcoding_pipeline/scripts/myfunctions")
+
 # filter out duplicates and control samples
+mybiom<-biomITS
+mybiom<-biom16
+
 myfiltbiom <- prune_samples(sample_data(mybiom)[[10]]!="duplicate",mybiom)
 colnames(sample_data(myfiltbiom))[c(1,6,11)] <- c("Sample","Distance","Orchard")
 levels(sample_data(myfiltbiom)[[1]]) <- c("C","Aisle","Tree")
 myfiltbiom<-prune_samples(sample_data(myfiltbiom)[[1]]!="C",myfiltbiom)
+sample_data(myfiltbiom)$Class <- paste(sample_data(myfiltbiom)$Orchard,sample_data(myfiltbiom)$Sample,sep=" ")
 
 # Get alpha data
 all_alpha <- plot_richness(myfiltbiom,returnData=T)
@@ -20,8 +30,46 @@ summary(aov(Shannon~location+(Sample*Orchard),all_alpha))[[1]][2]
 summary(aov(Simpson~location+(Sample*Orchard),all_alpha))[[1]][2]
 #~condition*orchard+location
 
-sample_data(myfiltbiom)$Class <- paste(sample_data(myfiltbiom)$Orchard,sample_data(myfiltbiom)$Sample,sep=" ")
+g1 <- plot_richness(myfiltbiom,x="Class",color="Distance",measures=c("Chao1", "Shannon", "Simpson"))
+g2 <- plot_richness(myfiltbiom,x="Class",color="Distance",measures=c("Chao1", "Shannon", "Simpson"))
+
+#dev.off()
+g1 <- g1 + theme(legend.position="none",
+                 axis.title.x=element_blank(),
+                 axis.title.y=element_blank(),
+                 plot.margin=unit(c(1,1,1.5,0.5), "lines"),
+                 plot.title = element_text(hjust=-0.1)
+                )
+g2 <- g2 + theme(legend.direction="horizontal",
+                 legend.position="bottom",
+                 legend.justification=c(0,0),
+                 legend.box="vertical",
+                 legend.box.just="left",
+                 axis.title.x=element_blank(),
+                 axis.title.y=element_blank(),
+                 plot.margin=unit(c(-1.0,1,0.5,0.5), "lines"),
+                 plot.title = element_text(hjust=-2)
+                )
+
+title.A <- textGrob(
+    label = "A",
+    x = unit(0, "lines"), 
+    y = unit(0, "lines"),
+    hjust = 0, vjust = 0,
+    gp = gpar(fontsize = 16))
+
+title.B <- textGrob(
+    label = "B",
+    x = unit(0, "lines"), 
+    y = unit(0, "lines"),
+    hjust = 0, vjust = 0,
+    gp = gpar(fontsize = 16))
+
+p1 <- arrangeGrob(p, top = title.grob)
+grid.arrange(p1)
+
 
 pdf("Alpha.pdf", height=8,width=8)
-plot_richness(myfiltbiom,x="Class",color="Distance",measures=c("Chao1", "Shannon", "Simpson"))
+lay=rbind(c(1,1),c(2,2))
+grid.arrange(g1,g2,layout_matrix=lay)
 dev.off()
