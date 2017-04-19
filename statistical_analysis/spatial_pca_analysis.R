@@ -2,6 +2,7 @@
 library(DESeq2)
 library(phyloseq)
 library(data.table)
+library(gtable)
 library(gridExtra)
 library(devtools)
 load_all("../..//metabarcoding_pipeline/scripts/myfunctions")
@@ -30,15 +31,17 @@ sample_data(myfiltbiom)$orchloc <- paste(sample_data(myfiltbiom)$orchard,sample_
 
 # Calculate ANOVA for first 4 PCs (the design is unbalanced for this data as we are missing 2 samples)
 lapply(seq(1:4),function(x) 
-	summary(aov(mypca$x[,x]~(Orchard*location)+(Orchard*Sample),data.frame(as.matrix(sample_data(myfiltbiom)))))
+	summary(aov(mypca$x[,x]~location+(Orchard*Sample),data.frame(as.matrix(sample_data(myfiltbiom)))))
 )
 
 # Calcultae sum of squares
 sum_squares <- t(apply(mypca$x,2,function(x) 
-  t(summary(aov(x~(Orchard*location)+(Orchard*Sample),data.frame(as.matrix(sample_data(myfiltbiom)))))[[1]][2]))
+  t(summary(aov(x~location+(Orchard*Sample),data.frame(as.matrix(sample_data(myfiltbiom)))))[[1]][2]))
 )
-colnames(sum_squares) <- c("orchard","location","condition","orchard:location", "orchard:Sample","residual")
-perVar <- sum_squares * mypca$percentVar
+colnames(sum_squares) <- c("location","orchard","condition","orchard:sample","residual")
+x<-t(apply(sum_squares,1,prop.table))
+perVar <- x * mypca$percentVar
+#perVar <- sum_squares * mypca$percentVar
 colSums(perVar)
 colSums(perVar)/sum(colSums(perVar))*100
 
@@ -122,7 +125,8 @@ grid.arrange(
 	myglist[[6]]+annotate("text",label=paste("F"), x=25, y=3,size=5),
 	l1,l2, gblank, layout_matrix=lay
 )	
-dev.off()	
+dev.off()
+	
 #### Orchard specific ###
 tempiom <- myfiltbiom
 tempiom@otu_table@.Data <-  assay(varianceStabilizingTransformation(phylo_to_des(tempiom)))
@@ -154,10 +158,11 @@ sum_squares <- list(
 )
 
 sum_squares <- lapply(sum_squares,function(x) {colnames(x) <- c("condition","location","residual");x})    
-    
+
+x<-lapply(sum_squares,function(x) t(apply(x,1,prop.table)))
 perVar <- list(
-  dessert=sum_squares$dessert * mypca$dessert$percentVar,
-  cider=sum_squares$cider * mypca$cider$percentVar
+  dessert=x$dessert * mypca$dessert$percentVar,
+  cider=x$cider * mypca$cider$percentVar
 )
 x1 <- lapply(perVar,colSums)
 x2 <- lapply(lapply(perVar,colSums),sum)
@@ -171,24 +176,42 @@ df <- lapply(mypca,function(x) {t(data.frame(t(x$x)*x$percentVar))})
 pc.res <- lapply(seq(1,2),function(x) resid(aov(mypca[[x]]$x~sample_data(myfiltbiom[[x]])$location)))
 d <- lapply(seq(1,2),function(x) {t(data.frame(t(pc.res[[x]])*mypca[[x]]$percentVar))})
 
+### 16S	
 g1<-plotOrd(df[[1]][,1:2],sample_data(myfiltbiom[[1]]),
 	design="Distance",shapes="Sample",continuous=T,colourScale=c("black","lightblue"),
-	xlabel="PC1",ylabel="PC2",legend=F
+	cluster=0.95,centers=1,xlabel="PC1",ylabel="PC2",legend=F,xlim=c(-6,6),ylim=c(-6,8),textSize=16
 )
 g2<-plotOrd(d[[1]][,1:2],sample_data(myfiltbiom[[1]]),
 	design="Distance",shapes="Sample",continuous=T,colourScale=c("black","lightblue"),
-	xlabel="PC1",ylabel="PC2",legend=F
+	cluster=0.95,centers=1,xlabel="PC1",ylabel="PC2",legend=F,xlim=c(-6,6),ylim=c(-6,8),textSize=16
 )
 
 g3<-plotOrd(df[[2]][,1:2],sample_data(myfiltbiom[[2]]),
 	design="Distance",shapes="Sample",continuous=T,colourScale=c("black","lightblue"),
-	xlabel="PC1",ylabel="PC2",legend=F
+	cluster=0.95,centers=1,xlabel="PC1",ylabel="PC2",legend=F,xlim=c(-8,15),ylim=c(-8,6),textSize=16
 )
 g4<-plotOrd(d[[2]][,1:2],sample_data(myfiltbiom[[2]]),
 	design="Distance",shapes="Sample",continuous=T,colourScale=c("black","lightblue"),
-	xlabel="PC1",ylabel="PC2",legend=F
+	cluster=0.95,centers=1,xlabel="PC1",ylabel="PC2",legend=F,xlim=c(-8,15),ylim=c(-8,6),textSize=16
 )
 
+### ITS	
+g1<-plotOrd(df[[1]][,1:2],sample_data(myfiltbiom[[1]]),
+	design="Distance",shapes="Sample",continuous=T,colourScale=c("black","lightblue"),
+	cluster=0.95,centers=1,xlabel="PC1",ylabel="PC2",legend=F,xlim=c(-8,8),ylims=c(-2.5,2.5),textSize=16
+)
+g2<-plotOrd(d[[1]][,1:2],sample_data(myfiltbiom[[1]]),
+	design="Distance",shapes="Sample",continuous=T,colourScale=c("black","lightblue"),
+	cluster=0.95,centers=1,xlabel="PC1",ylabel="PC2",legend=F,xlim=c(-8,8),ylims=c(-2.5,2.5),textSize=16
+)
+g3<-plotOrd(df[[2]][,1:2],sample_data(myfiltbiom[[2]]),
+	design="Distance",shapes="Sample",continuous=T,colourScale=c("black","lightblue"),
+	cluster=0.95,centers=1,xlabel="PC1",ylabel="PC2",legend=F,xlim=c(-5,5),ylims=c(-5,5),textSize=16
+)
+g4<-plotOrd(d[[2]][,1:2],sample_data(myfiltbiom[[2]]),
+	design="Distance",shapes="Sample",continuous=T,colourScale=c("black","lightblue"),
+	cluster=0.95,centers=1,xlabel="PC1",ylabel="PC2",legend=F,xlim=c(-5,5),ylims=c(-5,5),textSize=16
+)	
 #mygplots <-list(list(g1,g2),list(g3,g4))
 	
 mylegend <- ggplot_legend(
