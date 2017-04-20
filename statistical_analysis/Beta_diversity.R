@@ -27,23 +27,29 @@ du_16 <- du_16[row.names(sample_data(myfiltbiom)[with(sample_data(myfiltbiom),or
 row.names(sample_data(myfiltbiom)[with(sample_data(myfiltbiom),order(orchard,condition)),])]
 plotHeatmap(du_16)
 
-g <- plotHeatmap(dw_16)
-g <- g +theme(axis.title=element_blank())
-g <- g + theme(plot.margin = unit(c(1,1,2,2), "lines"))
+g <- plotHeatmap(dw_16,textSize=12)
+g <- g +theme(axis.title=element_blank(),
+              #legend.direction="horizontal",
+              #legend.position="bottom",
+              #legend.justification=c(0,0),
+              #legend.box="vertical",
+              #legend.box.just="left",
+              plot.margin = unit(c(1,1,2,2), "lines")
+)
 
-g <- g + annotation_custom(textGrob("Aisle"),xmin=35.75,xmax=35.75,ymin=-4,ymax=-4)
-g <- g + annotation_custom(textGrob("Tree"),xmin=107.25,xmax=107.25,ymin=-4,ymax=-4)
-g <- g + annotation_custom(textGrob("Aisle"),xmin=178.75,xmax=178.75,ymin=-4,ymax=-4)
-g <- g + annotation_custom(textGrob("Tree"),xmin=250.25,xmax=250.25,ymin=-4,ymax=-4)
-g <- g + annotation_custom(textGrob("\nCider"),xmin=71.5,xmax=71.5,ymin=-4,ymax=-4)
-g <- g + annotation_custom(textGrob("\nDessert"),xmin=214.25,xmax=214.25,ymin=-4,ymax=-4)
+g <- g + annotation_custom(textGrob("Aisle",gp = gpar(fontsize = 16)),xmin=35.75,xmax=35.75,ymin=-4,ymax=-4)
+g <- g + annotation_custom(textGrob("Tree",gp = gpar(fontsize = 16)),xmin=107.25,xmax=107.25,ymin=-4,ymax=-4)
+g <- g + annotation_custom(textGrob("Aisle",gp = gpar(fontsize = 16)),xmin=178.75,xmax=178.75,ymin=-4,ymax=-4)
+g <- g + annotation_custom(textGrob("Tree",gp = gpar(fontsize = 16)),xmin=250.25,xmax=250.25,ymin=-4,ymax=-4)
+g <- g + annotation_custom(textGrob("\nCider",gp = gpar(fontsize = 16)),xmin=71.5,xmax=71.5,ymin=-4,ymax=-4)
+g <- g + annotation_custom(textGrob("\nDessert",gp = gpar(fontsize = 16)),xmin=214.25,xmax=214.25,ymin=-4,ymax=-4)
 
-g <- g + annotation_custom(textGrob("\nAisle",rot=90),ymin=35.75,ymax=35.75,xmin=-12,xmax=-12)
-g <- g + annotation_custom(textGrob("\nTree",rot=90),ymin=107.25,ymax=107.25,xmin=-12,xmax=-12)
-g <- g + annotation_custom(textGrob("\nAisle",rot=90),ymin=178.75,ymax=178.75,xmin=-12,xmax=-12)
-g <- g + annotation_custom(textGrob("\nTree",rot=90),ymin=250.25,ymax=250.25,xmin=-12,xmax=-12)
-g <- g + annotation_custom(textGrob("Cider",rot=90),ymin=71.5,ymax=71.5,xmin=-12,xmax=-12)
-g <- g + annotation_custom(textGrob("Dessert",rot=90),ymin=214.25,ymax=214.25,xmin=-12,xmax=-12)
+g <- g + annotation_custom(textGrob("\nAisle",rot=90,gp = gpar(fontsize = 16)),ymin=35.75,ymax=35.75,xmin=-12,xmax=-12)
+g <- g + annotation_custom(textGrob("\nTree",rot=90,gp = gpar(fontsize = 16)),ymin=107.25,ymax=107.25,xmin=-12,xmax=-12)
+g <- g + annotation_custom(textGrob("\nAisle",rot=90,gp = gpar(fontsize = 16)),ymin=178.75,ymax=178.75,xmin=-12,xmax=-12)
+g <- g + annotation_custom(textGrob("\nTree",rot=90,gp = gpar(fontsize = 16)),ymin=250.25,ymax=250.25,xmin=-12,xmax=-12)
+g <- g + annotation_custom(textGrob("Cider",rot=90,gp = gpar(fontsize = 16)),ymin=71.5,ymax=71.5,xmin=-12,xmax=-12)
+g <- g + annotation_custom(textGrob("Dessert",rot=90,gp = gpar(fontsize = 16)),ymin=214.25,ymax=214.25,xmin=-12,xmax=-12)
 
 g <- g + annotation_custom(linesGrob(), xmin = 71.5, xmax = 71.5, ymin = 0, ymax = -2)
 g <- g + annotation_custom(linesGrob(), xmin = 143.25, xmax = 143.25, ymin = 0, ymax = -8)
