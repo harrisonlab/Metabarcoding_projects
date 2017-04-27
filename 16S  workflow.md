@@ -26,7 +26,7 @@ Unfiltered joined reads are saved to unfiltered folder, filtered reads are saved
 ```shell
 $ARDERI/metabarcoding_pipeline/scripts/PIPELINE.sh -c 16Spre \
 	"$ARDERI/data/$RUN/$SSU/fastq/*R1*.fastq" \
-	$ARDERI/data/$RUN/$SSU/filtered \
+	$ARDERI/data/$RUN/$SSU \
 	$ARDERI/metabarcoding_pipeline/primers/adapters.db \
 	$MINL $MINOVER $QUAL
 ```
