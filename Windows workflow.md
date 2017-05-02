@@ -13,10 +13,53 @@ $ARDERI/metabarcoding_pipeline/scripts/PIPELINE.sh -c demultiplex \
 $P1F $P1R $P2F $P2R
 ```
 ## Preprocessing
+``` #16S
+$ARDERI/metabarcoding_pipeline/scripts/PIPELINE.sh -c 16Spre \
+"$ARDERI/data/$RUN/$SSU/fastq/*R1*.fastq" \
+$ARDERI/data/$RUN/$SSU \
+$ARDERI/metabarcoding_pipeline/primers/adapters.db \
+$MINL $MINOVER $QUAL
+```
 
+``` #ITS
+$ARDERI/metabarcoding_pipeline/scripts/PIPELINE.sh -c ITSpre \
+"$ARDERI/data/$RUN/$SSU/fastq/*R1*.fastq" \
+$ARDERI/data/$RUN/$SSU/fasta \
+$ARDERI/metabarcoding_pipeline/primers/primers.db \
+$MINL $MAXR2 $QUAL; 
+```
 
-## ITS specific (if wanted)
-
+## ITS specific (if wanted - R1 only)
+Find ssu/5.8s/lsu
+```
+$ARDERI/metabarcoding_pipeline/scripts/PIPELINE.sh -c procends \
+$ARDERI/data/$RUN/$SSU/fasta \
+R1 \
+$ARDERI/metabarcoding_pipeline/hmm/ssu_end.hmm 	\
+$ARDERI/metabarcoding_pipeline/hmm/58s_start.hmm \
+ssu 58ss 20
+``` 
+Remove ssu/5.8s/lsu
+```
+$ARDERI/metabarcoding_pipeline/scripts/PIPELINE.sh -c ITS \
+ "$ARDERI/data/$RUN/$SSU/fasta/*R1" \
+ $ARDERI/metabarcoding_pipeline/scripts/rm_SSU_58Ss.R \
+ "*.\\.ssu" \
+ "*.\\.58"
+ ```
+ 
+ correct names 
+ (obviously this is not going to work under windows as it is using awk 
+ 
+ maybe could do the same with powershell - been a long time since I used it)
+  ```
+ for f in /home/deakig/projects/Oak_decline/data/run/ITS/unfiltered/*r1*; do
+F=$(echo $f|awk -F"/" '{print $NF}'|awk -F"_" '{print $1".r1.fa"}')
+L=$(echo $f|awk -F"/" '{print $NF}'|awk -F"." '{print $1}' OFS=".") 
+awk -v L=$L '/>/{sub(".*",">"L"."(++i))}1' $F > $F.tmp && mv $F.tmp $F
+done
+```
+ 
 ## UPARSE pipeline
 
 ### Cluster
