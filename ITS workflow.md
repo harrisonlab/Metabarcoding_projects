@@ -71,6 +71,14 @@ $ARDERI/metabarcoding_pipeline/scripts/PIPELINE.sh -c ITS \
  $LOWQUAL
 ```
 
+Correct fasta if just R1 is to be used
+```
+for f in /home/deakig/projects/Oak_decline/data/run/ITS/unfiltered/*r1*; do
+F=$(echo $f|awk -F"/" '{print $NF}'|awk -F"_" '{print $1".r1.fa"}')
+L=$(echo $f|awk -F"/" '{print $NF}'|awk -F"." '{print $1}' OFS=".") 
+awk -v L=$L '/>/{sub(".*",">"L"."(++i))}1' $F > $F.tmp && mv $F.tmp $F
+done
+```
 
 #### Return ITS1 where fasta header matches ITS2, unique ITS1 and unique ITS2
 
