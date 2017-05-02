@@ -3,15 +3,22 @@ Because I've been asked...
 
 ## Demultiplexing
 ```
-P1F=CCTACGGGNGGCWGCAG
+P1F=CCTACGGGNGGCWGCAG # Bacteria
 P1R=GACTACHVGGGTATCTAATCC
-P2F=CTTGGTCATTTAGAGGAAGTAA
+P2F=CTTGGTCATTTAGAGGAAGTAA # Fungi
 P2R=ATATGCTTAAGTTCAGCGGG
 
-$ARDERI/metabarcoding_pipeline/scripts/PIPELINE.sh -c demultiplex \
-"$ARDERI/data/$RUN/fastq/*_R1_*" 0 \
-$P1F $P1R $P2F $P2R
+demulti_v2.pl forward_read reverse_read mismatches $P1F $P1R $P2F $P2R
+# set mismatches to number of allowed mismatches in index
+# Outputs three sets of files (F and R), primer pair1, primer pair2 and unassigned 
 ```
+usearch version:
+```
+usearch -fastx_demux reads.fq -index index.fq -barcodes bar.fa -filename_suffix .fq
+```
+I don't like this at all  - requires an index and barcode file and is not read pair aware
+My version is far simpler (it's in Perl, so can run on Windows)
+
 ## Preprocessing
 ``` #16S
 $ARDERI/metabarcoding_pipeline/scripts/PIPELINE.sh -c 16Spre \
