@@ -3,7 +3,6 @@
 ## Combine biome and taxa
 biom_make.pl will take a hacked rdp taxonomy file (mod_taxa.pl) and UPARSE biome and output a combined taxa and biome file to standard out.
 (../Beta_diversity.R)
-### [16S workflow](./readme.md)
 e.g. for 16S
 ```shell
 # $ARDERI/metabarcoding_pipeline/scripts/mod_taxa.pl 16S.rdp>16S.taxa # no longer required
@@ -40,7 +39,6 @@ Create phyloseq object in R
 The taxonomy imported from UPARSE doesn't include rank names and adds extra stuff to the taxa names (k__,p__ and etc.)
 phyloTaxaTidy will fix this and change "unknown" to the lowest known rank (and append a character indicating rank)
 ```{r}
-library("phyloseq")
 biom_file = "16S.taxa.biom"
 otu_file = "16S.otus.fa" # might be useful at some stage
 colData = "colData"
