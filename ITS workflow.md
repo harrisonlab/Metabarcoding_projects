@@ -118,6 +118,14 @@ NOTE:- I still need to build nematode utax taxonomy database from Silva_SSU.
 $ARDERI/metabarcoding_pipeline/scripts/PIPELINE.sh -c tax_assign $ARDERI $RUN $SSU 
 ```
 
+### OTU evolutionary distance
+
+Output a phylogentic tree in phylip format (both upper and lower triangles)
+(usearch9 doesn't work)
+```shell
+usearch8.1 -calc_distmx 16S.otus.fa -distmxout 16S.phy -distmo fractdiff -format phylip_square
+```
+
 ### Create OTU tables
 
 Concatenates unfiltered reads, then assigns forward reads to OTUs. For any non-hits, attemps to assign reverse read (ITS2) to an OTU. 
