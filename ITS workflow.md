@@ -123,7 +123,7 @@ $ARDERI/metabarcoding_pipeline/scripts/PIPELINE.sh -c tax_assign $ARDERI $RUN $S
 Output a phylogentic tree in phylip format (both upper and lower triangles)
 (usearch9 doesn't work)
 ```shell
-usearch8.1 -calc_distmx 16S.otus.fa -distmxout 16S.phy -distmo fractdiff -format phylip_square
+usearch8.1 -calc_distmx ITS.otus.fa -distmxout ITS.phy -distmo fractdiff -format phylip_square
 ```
 
 ### Create OTU tables
