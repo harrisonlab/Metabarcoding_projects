@@ -18,7 +18,7 @@ options(stringsAsFactors = FALSE)
 ```
 Changed my mind on this - it's not so difficult to work with factors (they're still a bit of a pain though)
 
-### Load libraris
+### Load libraries
 ```{r}
 library(DESeq2)
 library(phyloseq)
