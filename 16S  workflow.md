@@ -50,6 +50,14 @@ NOTE:- I still need to build nematode utax taxonomy database from Silva_SSU.
 $ARDERI/metabarcoding_pipeline/scripts/PIPELINE.sh -c tax_assign $ARDERI $RUN $SSU 
 ```
 
+### OTU evolutionary distance
+
+Output a phylogentic tree in phylip format (both upper and lower triangles)
+(usearch9 doesn't work)
+```shell
+usearch8.1 -calc_distmx 16S.otus.fa -distmxout 16S.phy -distmo fractdiff -format phylip_square
+```
+
 ### Create OTU table 
 
 ```shell
@@ -81,13 +89,6 @@ usearch9 -usearch_global 16S.r2.unfiltered.fa -db 16S.otus.fa -strand plus -id 0
 $ARDERI/metabarcoding_pipeline/scripts/PIPELINE.sh -c merge_hits $ARDERI/metabarcoding_pipeline/scripts/merge_hits.R hits.r1.txt hits.r2.txt 16S.otu_table.txt
 $ARDERI/metabarcoding_pipeline/scripts/otu_to_biom.pl row_biom col_biom data_biom >16S.otu_table.biom
 rm row_biom col_biom data_biom
-```
-
-### OTU evolutionary distance
-
-Output a phylogentic tree in phylip format (both upper and lower triangles)
-```shell
-usearch9 -calc_distmx 16S.otus.fa -distmxout 16S.phy -distmo fractdiff -format phylip_square
 ```
 
 ### usearch V9 testing
