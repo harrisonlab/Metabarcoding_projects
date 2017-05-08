@@ -86,3 +86,8 @@ colnames(lfamily)[6] <- "dessert"
 write.table(lclass,"sig.class.count.txt", sep="\t", quote=F,na="0",row.names=F)
 write.table(lorder,"sig.order.count.txt", sep="\t", quote=F,na="0",row.names=F)
 write.table(lfamily,"sig.family.count.txt", sep="\t", quote=F,na="0",row.names=F)
+
+#### PLOTS
+
+# base means vs log fold change
+
