@@ -2,7 +2,6 @@
 #       Load libraries
 #===============================================================================
 
-library(DESeq2)
 library(phyloseq)
 library(devtools)
 library(data.table)
@@ -10,6 +9,10 @@ library(dplyr)
 load_all("../../metabarcoding_pipeline/scripts/myfunctions") # this is a set of scipts to do various things (plotOrd, plotPCA, geoSet)
 library("BiocParallel")
 register(MulticoreParam(12))
+library(future)
+plan(multiprocess)
+library(EcoSimR)
+library(vegan)
 
 
 #===============================================================================
@@ -39,10 +42,6 @@ mybioms <- list(bacteria=biom16,fungi=biomITS)
 #===============================================================================
 #       network analysis
 #===============================================================================
-library(EcoSimR)
-library(future)
-plan(multiprocess)
-
 
 myfiltbiom <- prune_samples(sample_data(biomITS)$site=="Chestnuts",biomITS)
 cotable <- matrix(otu_table(myfiltbiom))
@@ -55,7 +54,6 @@ cotable_s <- cotable[,row.names(sample_data(prune_samples(sample_data(myfiltbiom
 
 cotable_h <- cotable_h[rowSums(cotable_h)!=0,colSums(cotable_h)!=0]
 cotable_s <- cotable_s[rowSums(cotable_s)!=0,colSums(cotable_s)!=0]
-
 
 fth <- future({cooc_null_model(cotable_h,nReps=10000,burn_in = 1000,suppressProg=T)})
 fts <- future({cooc_null_model(cotable_s,nReps=10000,burn_in = 1000,suppressProg=T)})
@@ -77,8 +75,6 @@ plot(mySModel,type="burn_in")
 
 dev.off()
 
-
-
 weights <- rowMeans(cotable_H)
 weights <- rowMeans(otu_table)
 weights
@@ -94,3 +90,20 @@ head(weights)
 tail(weights)
 
 
+
+
+
+
+#===============================================================================
+#       installing gmp (for cooccur)
+#===============================================================================
+```shell
+./configure --prefix=~/usr/local/ --disable-shared --enable-fat
+make
+make check
+make install
+```
+```R
+### I haven't checked this - I set the CPPFLAGS and LDFLAGS, PKG_CPPFLAGS and PKG_LIBS flags manually by hacking the configure script in the package
+install.packages("gmp",lib.loc="~/usr/local")
+```
