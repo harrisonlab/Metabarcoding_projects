@@ -4,16 +4,14 @@
 
 library(phyloseq)
 library(devtools)
+load_all("../../metabarcoding_pipeline/scripts/myfunctions") # this is a set of scipts to do various things (plotOrd, plotPCA, geoSet)
 library(data.table)
 library(dplyr)
-load_all("../../metabarcoding_pipeline/scripts/myfunctions") # this is a set of scipts to do various things (plotOrd, plotPCA, geoSet)
-library("BiocParallel")
-register(MulticoreParam(12))
 library(future)
 plan(multiprocess)
 library(EcoSimR)
 library(vegan)
-
+library(cooccur)
 
 #===============================================================================
 #       Load data 
@@ -40,14 +38,11 @@ biomITS<-mybiom
 mybioms <- list(bacteria=biom16,fungi=biomITS)
 
 #===============================================================================
-#       network analysis
+#       co-oocurance analysis (EcoSimR)
 #===============================================================================
 
 myfiltbiom <- prune_samples(sample_data(biomITS)$site=="Chestnuts",biomITS)
-cotable <- matrix(otu_table(myfiltbiom))
-
-as.data.frame(as.matrix(otu_table(myfiltbiom)))
-cotable[cotable>0]<-1
+cotable <- as.data.frame(as.matrix(otu_table(myfiltbiom)))
 
 cotable_h <- cotable[,row.names(sample_data(prune_samples(sample_data(myfiltbiom)$condition=="Healthy",myfiltbiom)))]
 cotable_s <- cotable[,row.names(sample_data(prune_samples(sample_data(myfiltbiom)$condition=="Symptom",myfiltbiom)))]
@@ -75,29 +70,29 @@ plot(mySModel,type="burn_in")
 
 dev.off()
 
-weights <- rowMeans(cotable_H)
-weights <- rowMeans(otu_table)
-weights
-mean(weights)
-max(weights)
-?rowMeans
-head(cotable_h)
-sum(otu_table(mybiom))
-weights<- rowMeans(otu_table(mybiom))/sum(otu_table(mybiom))
-head(weights)
-weights<- rowSums(otu_table(mybiom))/sum(otu_table(mybiom))
-head(weights)
-tail(weights)
+# weights<- rowMeans(otu_table(mybiom))/sum(otu_table(mybiom))
+# weights<- rowSums(otu_table(mybiom))/sum(otu_table(mybiom))
 
+#===============================================================================
+#       co-oocurance analysis (cooccur)
+#===============================================================================
 
+fth1 <- invisible(future({cooccur(cotable_h,type = "spp_site",spp_names = T,thresh = T)}))
+fts1 <- invisible(future({cooccur(cotable_s,type = "spp_site",spp_names = T,thresh = T)}))
+#ftsh2 <- future({cooccur(cotable_h,type = "spp_site",spp_names = T,thresh = F)})
 
-
-
+coHmodel <- value(fth1)
+coSmodel <- value(fts1)
 
 #===============================================================================
 #       installing gmp (for cooccur)
 #===============================================================================
 ```shell
+mkdir gmp_build
+cd gmp_build
+wget https://gmplib.org/download/gmp/gmp-6.1.2.tar.bz2
+tar --bzlib2 -xvf gmp-6.1.2.tar.bz2
+cd gmp-6.1.2.tar.bz2
 ./configure --prefix=~/usr/local/ --disable-shared --enable-fat
 make
 make check
