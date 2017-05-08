@@ -1,0 +1,96 @@
+#===============================================================================
+#       Load libraries
+#===============================================================================
+
+library(DESeq2)
+library(phyloseq)
+library(devtools)
+library(data.table)
+library(dplyr)
+load_all("../../metabarcoding_pipeline/scripts/myfunctions") # this is a set of scipts to do various things (plotOrd, plotPCA, geoSet)
+library("BiocParallel")
+register(MulticoreParam(12))
+
+
+#===============================================================================
+#       Load data 
+#===============================================================================
+
+##### 16S #####
+
+biom_file = "16S.taxa.biom"
+colData = "colData"
+mybiom <- import_biom(biom_file) 
+sample_data(mybiom) <- read.table(colData,header=T,sep="\t",row.names=1)
+tax_table(mybiom) <- phyloTaxaTidy(tax_table(mybiom),0.65)
+biom16<-mybiom
+
+##### ITS #####
+
+biom_file = "ITS.taxa.biom"
+colData = "colData"
+mybiom <- import_biom(biom_file) 
+sample_data(mybiom) <- read.table(colData,header=T,sep="\t",row.names=1)
+tax_table(mybiom) <- phyloTaxaTidy(tax_table(mybiom),0.65)
+biomITS<-mybiom
+
+mybioms <- list(bacteria=biom16,fungi=biomITS)
+
+#===============================================================================
+#       network analysis
+#===============================================================================
+library(EcoSimR)
+library(future)
+plan(multiprocess)
+
+
+myfiltbiom <- prune_samples(sample_data(biomITS)$site=="Chestnuts",biomITS)
+cotable <- matrix(otu_table(myfiltbiom))
+
+as.data.frame(as.matrix(otu_table(myfiltbiom)))
+cotable[cotable>0]<-1
+
+cotable_h <- cotable[,row.names(sample_data(prune_samples(sample_data(myfiltbiom)$condition=="Healthy",myfiltbiom)))]
+cotable_s <- cotable[,row.names(sample_data(prune_samples(sample_data(myfiltbiom)$condition=="Symptom",myfiltbiom)))]
+
+cotable_h <- cotable_h[rowSums(cotable_h)!=0,colSums(cotable_h)!=0]
+cotable_s <- cotable_s[rowSums(cotable_s)!=0,colSums(cotable_s)!=0]
+
+
+fth <- future({cooc_null_model(cotable_h,nReps=10000,burn_in = 1000,suppressProg=T)})
+fts <- future({cooc_null_model(cotable_s,nReps=10000,burn_in = 1000,suppressProg=T)})
+
+myHModel <- value(fth)
+mySModel <- value(fts)
+
+summary(myHModel)
+summary(mySModel)
+
+plot(myHModel,type="hist")
+plot(mySModel,type="hist")
+
+plot(myHModel,type="cooc")
+plot(mySModel,type="cooc")
+
+plot(myHModel,type="burn_in")
+plot(mySModel,type="burn_in")
+
+dev.off()
+
+
+
+weights <- rowMeans(cotable_H)
+weights <- rowMeans(otu_table)
+weights
+mean(weights)
+max(weights)
+?rowMeans
+head(cotable_h)
+sum(otu_table(mybiom))
+weights<- rowMeans(otu_table(mybiom))/sum(otu_table(mybiom))
+head(weights)
+weights<- rowSums(otu_table(mybiom))/sum(otu_table(mybiom))
+head(weights)
+tail(weights)
+
+
