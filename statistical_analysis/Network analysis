@@ -44,11 +44,13 @@ mybioms <- list(bacteria=biom16,fungi=biomITS)
 myfiltbiom <- prune_samples(sample_data(biomITS)$site=="Chestnuts",biomITS)
 cotable <- as.data.frame(as.matrix(otu_table(myfiltbiom)))
 
+cotable[cotable>0] <- 1
+
 cotable_h <- cotable[,row.names(sample_data(prune_samples(sample_data(myfiltbiom)$condition=="Healthy",myfiltbiom)))]
 cotable_s <- cotable[,row.names(sample_data(prune_samples(sample_data(myfiltbiom)$condition=="Symptom",myfiltbiom)))]
 
-cotable_h <- cotable_h[rowSums(cotable_h)!=0,colSums(cotable_h)!=0]
-cotable_s <- cotable_s[rowSums(cotable_s)!=0,colSums(cotable_s)!=0]
+cotable_h <- cotable_h[rowSums(cotable_h)>5,colSums(cotable_h)>5]
+cotable_s <- cotable_s[rowSums(cotable_s)>5,colSums(cotable_s)>5]
 
 fth <- future({cooc_null_model(cotable_h,nReps=10000,burn_in = 1000,suppressProg=T)})
 fts <- future({cooc_null_model(cotable_s,nReps=10000,burn_in = 1000,suppressProg=T)})
