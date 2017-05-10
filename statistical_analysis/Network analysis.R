@@ -4,7 +4,7 @@
 
 library(phyloseq)
 library(devtools)
-load_all("../../metabarcoding_pipeline/scripts/myfunctions") # this is a set of scipts to do various things (plotOrd, plotPCA, geoSet)
+load_all("metabarcoding_pipeline/scripts/myfunctions") # this is a set of scipts to do various things (plotOrd, plotPCA, geoSet)
 library(data.table)
 library(dplyr)
 library(future)
@@ -37,10 +37,10 @@ biomITS<-mybiom
 
 mybioms <- list(bacteria=biom16,fungi=biomITS)
 
-#===============================================================================
-#       co-oocurance analysis (EcoSimR)
-#===============================================================================
 
+#===============================================================================
+#       co-oocurance analysis (cooccur v2) - I've hacked cooccur to run a bit faster
+#===============================================================================
 myfiltbiom <- prune_samples(sample_data(biomITS)$site=="Chestnuts",biomITS)
 cotable <- as.data.frame(as.matrix(otu_table(myfiltbiom)))
 
@@ -51,6 +51,50 @@ cotable_s <- cotable[,row.names(sample_data(prune_samples(sample_data(myfiltbiom
 
 cotable_h <- cotable_h[rowSums(cotable_h)>5,colSums(cotable_h)>5]
 cotable_s <- cotable_s[rowSums(cotable_s)>5,colSums(cotable_s)>5]
+
+fth1 <- invisible(future({cooccur(cotable_h,type = "spp_site",spp_names = T,thresh = T)}))
+fts1 <- invisible(future({cooccur(cotable_s,type = "spp_site",spp_names = T,thresh = T)}))
+#ftsh2 <- future({cooccur(cotable_h,type = "spp_site",spp_names = T,thresh = F)})
+
+coHmodel <- cooccur2(cotable_h,type = "spp_site",spp_names = T,thresh = T) #value(fth1)
+coSmodel <- cooccur2(cotable_s,type = "spp_site",spp_names = T,thresh = T) #value(fts1)
+
+# multiple testing correction
+coHmodel$results$padj <- p.adjust(apply(coHmodel$results[,8:9],1, min),"BH")
+coSmodel$results$padj <- p.adjust(apply(coSmodel$results[,8:9],1, min),"BH")
+#coHmodel$results$padj_lt <-  p.adjust(coHmodel$results$p_lt,"BH")
+#coHmodel$results$padj_gt <-  p.adjust(coHmodel$results$p_gt,"BH")
+#coSmodel$results$padj_lt <-  p.adjust(coSmodel$results$p_lt,"BH")
+#coSmodel$results$padj_gt <-  p.adjust(coSmodel$results$p_gt,"BH")
+
+myfiltbiom <- prune_samples(sample_data(biomITS)$site=="Bigwood",biomITS)
+cotable <- as.data.frame(as.matrix(otu_table(myfiltbiom)))
+
+cotable[cotable>0] <- 1
+
+cotable_h <- cotable[,row.names(sample_data(prune_samples(sample_data(myfiltbiom)$condition=="Control",myfiltbiom)))]
+cotable_s <- cotable[,row.names(sample_data(prune_samples(sample_data(myfiltbiom)$condition=="Symptom",myfiltbiom)))]
+
+cotable_h <- cotable_h[rowSums(cotable_h)>5,colSums(cotable_h)>5]
+cotable_s <- cotable_s[rowSums(cotable_s)>5,colSums(cotable_s)>5]
+
+cotable_all <- cotable[rowSums(cotable)>5,colSums(cotable)>5]
+BWft <- <- future({cooccur(cotable_all,type = "spp_site",spp_names = T,thresh = T)})
+BWcomodel <- value(BWft)
+
+BWfth1 <- future({cooccur(cotable_h,type = "spp_site",spp_names = T,thresh = T)})
+BWfts1 <- future({cooccur(cotable_s,type = "spp_site",spp_names = T,thresh = T)})
+
+BWcoHmodel <- cooccur2(cotable_h,type = "spp_site",spp_names = T,thresh = T) #value(BWfth1)
+BWcoSmodel <- cooccur2(cotable_s,type = "spp_site",spp_names = T,thresh = T) #value(BWfts1)
+
+BWcoHmodel$results$padj <- p.adjust(apply(BWcoHmodel$results[,8:9],1, min),"BH")
+BWcoSmodel$results$padj <- p.adjust(apply(BWcoSmodel$results[,8:9],1, min),"BH")
+#===============================================================================
+#       co-oocurance analysis (EcoSimR)
+#===============================================================================
+
+
 
 fth <- future({cooc_null_model(cotable_h,nReps=10000,burn_in = 1000,suppressProg=T)})
 fts <- future({cooc_null_model(cotable_s,nReps=10000,burn_in = 1000,suppressProg=T)})
@@ -75,16 +119,8 @@ dev.off()
 # weights<- rowMeans(otu_table(mybiom))/sum(otu_table(mybiom))
 # weights<- rowSums(otu_table(mybiom))/sum(otu_table(mybiom))
 
-#===============================================================================
-#       co-oocurance analysis (cooccur)
-#===============================================================================
 
-fth1 <- invisible(future({cooccur(cotable_h,type = "spp_site",spp_names = T,thresh = T)}))
-fts1 <- invisible(future({cooccur(cotable_s,type = "spp_site",spp_names = T,thresh = T)}))
-#ftsh2 <- future({cooccur(cotable_h,type = "spp_site",spp_names = T,thresh = F)})
-
-coHmodel <- value(fth1)
-coSmodel <- value(fts1)
+ 
 
 #===============================================================================
 #       installing gmp (for cooccur)
