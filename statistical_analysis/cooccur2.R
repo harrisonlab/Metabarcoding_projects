@@ -54,8 +54,8 @@ function (mat, type = "spp_site", thresh = TRUE, spp_names = FALSE,
     row <- 0
 
 	sapply(seq(1,(nspp-1)),function(spp) {
-	## This bit has been kept as is (just replaced the for loops with a couple of applies),
-  ## but, along with the for loop below could be optimised
+	## This bit has been kept as is (just replaced the for loops with a couple of applies - pointless really),
+  	## but, along with the for loop below could be optimised
 		sapply(seq((spp+1),nspp),function(spp_next) {
 			row <<- row+1
 			obs_cooccur[row, 1] <<- spp
