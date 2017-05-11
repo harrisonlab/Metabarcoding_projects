@@ -19,8 +19,8 @@ library(cooccur)
 
 ##### 16S #####
 
-biom_file = "16S.taxa.biom"
-colData = "colData"
+biom_file = "analysis/16S.taxa.biom"
+colData = "analysis/colData"
 mybiom <- import_biom(biom_file) 
 sample_data(mybiom) <- read.table(colData,header=T,sep="\t",row.names=1)
 tax_table(mybiom) <- phyloTaxaTidy(tax_table(mybiom),0.65)
@@ -28,8 +28,8 @@ biom16<-mybiom
 
 ##### ITS #####
 
-biom_file = "ITS.taxa.biom"
-colData = "colData"
+biom_file = "analysis/ITS.taxa.biom"
+colData = "analysis/colData"
 mybiom <- import_biom(biom_file) 
 sample_data(mybiom) <- read.table(colData,header=T,sep="\t",row.names=1)
 tax_table(mybiom) <- phyloTaxaTidy(tax_table(mybiom),0.65)
@@ -41,6 +41,7 @@ mybioms <- list(bacteria=biom16,fungi=biomITS)
 #===============================================================================
 #       co-oocurance analysis (cooccur v2) - I've hacked cooccur to run a bit faster
 #===============================================================================
+
 myfiltbiom <- prune_samples(sample_data(biomITS)$site=="Chestnuts",biomITS)
 cotable <- as.data.frame(as.matrix(otu_table(myfiltbiom)))
 
@@ -49,23 +50,13 @@ cotable[cotable>0] <- 1
 cotable_h <- cotable[,row.names(sample_data(prune_samples(sample_data(myfiltbiom)$condition=="Healthy",myfiltbiom)))]
 cotable_s <- cotable[,row.names(sample_data(prune_samples(sample_data(myfiltbiom)$condition=="Symptom",myfiltbiom)))]
 
-cotable_h <- cotable_h[rowSums(cotable_h)>5,colSums(cotable_h)>5]
-cotable_s <- cotable_s[rowSums(cotable_s)>5,colSums(cotable_s)>5]
+CHcoHmodel <- cooccur2(cotable_h,type = "spp_site",spp_names = T,thresh = T) #value(fth1)
+CHcoSmodel <- cooccur2(cotable_s,type = "spp_site",spp_names = T,thresh = T) #value(fts1)
+CHcomodel <-  cooccur2(cotable,type = "spp_site",spp_names = T,thresh = T)
 
-fth1 <- invisible(future({cooccur(cotable_h,type = "spp_site",spp_names = T,thresh = T)}))
-fts1 <- invisible(future({cooccur(cotable_s,type = "spp_site",spp_names = T,thresh = T)}))
-#ftsh2 <- future({cooccur(cotable_h,type = "spp_site",spp_names = T,thresh = F)})
-
-coHmodel <- cooccur2(cotable_h,type = "spp_site",spp_names = T,thresh = T) #value(fth1)
-coSmodel <- cooccur2(cotable_s,type = "spp_site",spp_names = T,thresh = T) #value(fts1)
-
-# multiple testing correction
-coHmodel$results$padj <- p.adjust(apply(coHmodel$results[,8:9],1, min),"BH")
-coSmodel$results$padj <- p.adjust(apply(coSmodel$results[,8:9],1, min),"BH")
-#coHmodel$results$padj_lt <-  p.adjust(coHmodel$results$p_lt,"BH")
-#coHmodel$results$padj_gt <-  p.adjust(coHmodel$results$p_gt,"BH")
-#coSmodel$results$padj_lt <-  p.adjust(coSmodel$results$p_lt,"BH")
-#coSmodel$results$padj_gt <-  p.adjust(coSmodel$results$p_gt,"BH")
+CHcoHmodel$results$padj <- p.adjust(apply(CHcoHmodel$results[,8:9],1, min),"BH")
+CHcoSmodel$results$padj <- p.adjust(apply(CHcoSmodel$results[,8:9],1, min),"BH")
+CHcomodel$results$padj <- p.adjust(apply(CHcomodel$results[,8:9],1, min),"BH")
 
 myfiltbiom <- prune_samples(sample_data(biomITS)$site=="Bigwood",biomITS)
 cotable <- as.data.frame(as.matrix(otu_table(myfiltbiom)))
@@ -74,6 +65,34 @@ cotable[cotable>0] <- 1
 
 cotable_h <- cotable[,row.names(sample_data(prune_samples(sample_data(myfiltbiom)$condition=="Control",myfiltbiom)))]
 cotable_s <- cotable[,row.names(sample_data(prune_samples(sample_data(myfiltbiom)$condition=="Symptom",myfiltbiom)))]
+
+BWcoHmodel <- cooccur2(cotable_h,type = "spp_site",spp_names = T,thresh = T) #value(BWfth1)
+BWcoSmodel <- cooccur2(cotable_s,type = "spp_site",spp_names = T,thresh = T) #value(BWfts1)
+BWcomodel <-  cooccur2(cotable,type = "spp_site",spp_names = T,thresh = T)
+
+BWcoHmodel$results$padj <- p.adjust(apply(BWcoHmodel$results[,8:9],1, min),"BH")
+BWcoSmodel$results$padj <- p.adjust(apply(BWcoSmodel$results[,8:9],1, min),"BH")
+BWcomodel$results$padj <- p.adjust(apply(BWcomodel$results[,8:9],1, min),"BH")
+
+
+
+
+# cotable_h <- cotable_h[rowSums(cotable_h)>5,colSums(cotable_h)>5]
+# cotable_s <- cotable_s[rowSums(cotable_s)>5,colSums(cotable_s)>5]
+
+#fth1 <- invisible(future({cooccur(cotable_h,type = "spp_site",spp_names = T,thresh = T)}))
+#fts1 <- invisible(future({cooccur(cotable_s,type = "spp_site",spp_names = T,thresh = T)}))
+#ftsh2 <- future({cooccur(cotable_h,type = "spp_site",spp_names = T,thresh = F)})
+
+
+
+# multiple testing correction
+
+#coHmodel$results$padj_lt <-  p.adjust(coHmodel$results$p_lt,"BH")
+#coHmodel$results$padj_gt <-  p.adjust(coHmodel$results$p_gt,"BH")
+#coSmodel$results$padj_lt <-  p.adjust(coSmodel$results$p_lt,"BH")
+#coSmodel$results$padj_gt <-  p.adjust(coSmodel$results$p_gt,"BH")
+
 
 cotable_h <- cotable_h[rowSums(cotable_h)>5,colSums(cotable_h)>5]
 cotable_s <- cotable_s[rowSums(cotable_s)>5,colSums(cotable_s)>5]
@@ -85,11 +104,7 @@ BWcomodel <- value(BWft)
 BWfth1 <- future({cooccur(cotable_h,type = "spp_site",spp_names = T,thresh = T)})
 BWfts1 <- future({cooccur(cotable_s,type = "spp_site",spp_names = T,thresh = T)})
 
-BWcoHmodel <- cooccur2(cotable_h,type = "spp_site",spp_names = T,thresh = T) #value(BWfth1)
-BWcoSmodel <- cooccur2(cotable_s,type = "spp_site",spp_names = T,thresh = T) #value(BWfts1)
 
-BWcoHmodel$results$padj <- p.adjust(apply(BWcoHmodel$results[,8:9],1, min),"BH")
-BWcoSmodel$results$padj <- p.adjust(apply(BWcoSmodel$results[,8:9],1, min),"BH")
 #===============================================================================
 #       co-oocurance analysis (EcoSimR)
 #===============================================================================
