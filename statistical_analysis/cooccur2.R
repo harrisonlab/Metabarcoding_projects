@@ -4,8 +4,10 @@
 # i.e. large numbers of OTUs (1000s) and sites (100s)
 # 5000 OTUs and 30 sites takes about 10mins (single processor <32G memory)
 #
-# only hyper is available for prob calculation (at the moment)
-# 
+# There are afew bugs and limitations at the moment
+# 1. BUG: If using thershold the numbers of removed species is not reported correctly
+# 2. Combinations model is not implemented (needs some work to implement with site mask)
+# 3. Only effects isn't implemented at the moment (this should be easy to add back in)
 #############################################################################################
 
 coprob2 <-
@@ -78,7 +80,8 @@ function (mat, type = "spp_site", thresh = TRUE, spp_names = FALSE,
 	min_inc <- pmin(sp1_inc, sp2_inc)
 	nsite <- N_matrix
 	psite <- nsite + 1
-
+	only_effects <- FALSE
+	prob <- "hyper"		
 	if (only_effects == FALSE) {
 		arr <- array(c(min_inc,nsite,max_inc),c(nrow(nsite),ncol(nsite),3))
 		if (prob == "hyper") {
