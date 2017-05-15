@@ -39,35 +39,47 @@ mybioms <- list(bacteria=biom16,fungi=biomITS)
 
 
 #===============================================================================
-#       co-oocurance analysis (cooccur v2) - I've hacked cooccur to run a bit faster
+#       co-oocurance analysis with cooccur2- I've hacked cooccur to run a bit faster
 #===============================================================================
 
 myfiltbiom <- prune_samples(sample_data(biomITS)$site=="Chestnuts",biomITS)
 cotable <- as.data.frame(as.matrix(otu_table(myfiltbiom)))
 
-cotable[cotable>0] <- 1
-
 cotable_h <- cotable[,row.names(sample_data(prune_samples(sample_data(myfiltbiom)$condition=="Healthy",myfiltbiom)))]
-cotable_s <- cotable[,row.names(sample_data(prune_samples(sample_data(myfiltbiom)$condition=="Symptom",myfiltbiom)))]
+cotable_h <- cotable_h[rowSums(cotable_h)>5,colSums(cotable_h)>5]
+cotable_h[cotable_h>0] <- 1  
+CHcoHmodel <- cooccur2(cotable_h,type = "spp_site",spp_names = T,thresh = T)
 
-CHcoHmodel <- cooccur2(cotable_h,type = "spp_site",spp_names = T,thresh = T) #value(fth1)
-CHcoSmodel <- cooccur2(cotable_s,type = "spp_site",spp_names = T,thresh = T) #value(fts1)
+cotable_s <- cotable[,row.names(sample_data(prune_samples(sample_data(myfiltbiom)$condition=="Symptom",myfiltbiom)))]
+cotable_s <- cotable_s[rowSums(cotable_s)>5,colSums(cotable_s)>5]
+cotable_s[cotable_s>0] <- 1 
+CHcoSmodel <- cooccur2(cotable_s,type = "spp_site",spp_names = T,thresh = T)
+
+cotable <- cotable[rowSums(cotable)>5,colSums(cotable)>5]
+cotable[cotable>0] <- 1
 CHcomodel <-  cooccur2(cotable,type = "spp_site",spp_names = T,thresh = T)
 
 CHcoHmodel$results$padj <- p.adjust(apply(CHcoHmodel$results[,8:9],1, min),"BH")
 CHcoSmodel$results$padj <- p.adjust(apply(CHcoSmodel$results[,8:9],1, min),"BH")
 CHcomodel$results$padj <- p.adjust(apply(CHcomodel$results[,8:9],1, min),"BH")
 
+
+
 myfiltbiom <- prune_samples(sample_data(biomITS)$site=="Bigwood",biomITS)
 cotable <- as.data.frame(as.matrix(otu_table(myfiltbiom)))
 
-cotable[cotable>0] <- 1
-
 cotable_h <- cotable[,row.names(sample_data(prune_samples(sample_data(myfiltbiom)$condition=="Control",myfiltbiom)))]
-cotable_s <- cotable[,row.names(sample_data(prune_samples(sample_data(myfiltbiom)$condition=="Symptom",myfiltbiom)))]
+cotable_h <- cotable_h[rowSums(cotable_h)>5,colSums(cotable_h)>5]
+cotable_h[cotable_h>0] <- 1  
+BWcoHmodel <- cooccur2(cotable_h,type = "spp_site",spp_names = T,thresh = T)
 
-BWcoHmodel <- cooccur2(cotable_h,type = "spp_site",spp_names = T,thresh = T) #value(BWfth1)
-BWcoSmodel <- cooccur2(cotable_s,type = "spp_site",spp_names = T,thresh = T) #value(BWfts1)
+cotable_s <- cotable[,row.names(sample_data(prune_samples(sample_data(myfiltbiom)$condition=="Symptom",myfiltbiom)))]
+cotable_s <- cotable_s[rowSums(cotable_s)>5,colSums(cotable_s)>5]
+cotable_s[cotable_s>0] <- 1 
+BWcoSmodel <- cooccur2(cotable_s,type = "spp_site",spp_names = T,thresh = T)
+
+cotable <- cotable[rowSums(cotable)>5,colSums(cotable)>5]
+cotable[cotable>0] <- 1
 BWcomodel <-  cooccur2(cotable,type = "spp_site",spp_names = T,thresh = T)
 
 BWcoHmodel$results$padj <- p.adjust(apply(BWcoHmodel$results[,8:9],1, min),"BH")
