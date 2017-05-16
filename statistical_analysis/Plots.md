@@ -1,4 +1,4 @@
-##### DEOTU plots
+##### Differential dispersion graphs plots
 ```{r}
 with(res.merge,plot(log2FoldChange,log10(baseMean),pch=20, main="Volano like plot", xlim=c(-2.5,2)))
 with(subset(res.merge, padj<.01 ), points(log2FoldChange, log10(baseMean), pch=20, col="red"))
