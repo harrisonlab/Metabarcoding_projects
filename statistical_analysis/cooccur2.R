@@ -2,7 +2,7 @@
 #
 # This is a modified version of the CRAN package cooccur for metabarcoding projects
 # i.e. large numbers of OTUs (1000s) and sites (100s)
-# 5000 OTUs and 30 sites takes about 10mins (single processor <32G memory)
+# 5000 OTUs and 60 sites takes about 30 mins (single processor, uses <32G memory)
 #
 # There are afew bugs and limitations at the moment
 # 1. BUG: If using thershold the numbers of removed species is not reported correctly
