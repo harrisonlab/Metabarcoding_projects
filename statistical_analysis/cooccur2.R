@@ -99,27 +99,37 @@ function (mat, type = "spp_site", thresh = TRUE, spp_names = FALSE,
 	sp1_inc<- sp1_inc[which(lower.tri(sp1_inc))]
 	sp2_inc<- sp2_inc[which(lower.tri(sp2_inc))]
 		
-	if (!only_effects) {
-		arr <- array(c(min_inc,nsite,max_inc),c(nrow(nsite),ncol(nsite),3))
+	if (only_effects) {
+		arr <- array(c(min_inc,(sp1_inc + sp2_inc)),c(nrow(nsite),ncol(nsite),3))
+		prob_share_site <- apply(arr,1:2, function(x) {
+			i <- x[1]-((x[2]-x[3])*(-1)+abs((x[2]-x[3])*(-1)))/2
+			ii <- (i+abs(i))/2
+			ii[is.na(ii)]<-0
+			y<-rep(1,ii)
+			return(y)
+		})
+	} else {
 		if (prob == "hyper") {
+			arr <- array(c(min_inc,nsite,max_inc),c(nrow(nsite),ncol(nsite),3))
 			prob_share_site <- apply( arr , 1:2 , function(x) {
 				x[is.na(x)]<-0
 				y<-phyper(0:x[1],x[1],x[2]-x[1],x[3])
 				y<-c(y[1],(y[-1]-y[-length(y)]))
 				return(y)
 			})
+		} else if (prob == "comb") {		
+			arr <- array(c(min_inc,nsite,(sp1_inc + sp2_inc),max_inc),c(nrow(nsite),ncol(nsite),4))
+			prob_share_site <- apply(arr,1:2, function(x) {
+				i <- x[1]-((x[2]-x[3])*(-1)+abs((x[2]-x[3])*(-1)))/2
+				ii <- (i+abs(i))/2
+				ii[is.na(ii)]<-0
+				js <- sapply(ii,function(i)seq(1,i))
+				y<-coprob(x[4],js,x[1],x[2])
+				return(y)
+			})			
 		}
-	} else {
-		sp_inc <- sp1_inc + sp2_inc
-		arr <- array(c(min_inc,nsite,sp_inc),,c(nrow(nsite),ncol(nsite),3))
-		for (j in 0:nsite) {
-			if ((sp1_inc + sp2_inc) <= (nsite + j)) {
-				if (j <= min_inc) {
-					prob_share_site[(j + 1)] <- 1
-				}
-			}
-		}
-	}		
+
+    	}		
 
 	prob_share_site<- prob_share_site[which(lower.tri(prob_share_site))]
 
