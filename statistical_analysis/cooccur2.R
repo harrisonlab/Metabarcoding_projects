@@ -66,12 +66,12 @@ function (mat, type = "spp_site", thresh = TRUE, spp_names = FALSE,
 	exp_cooccur <- prob_cooccur*N_matrix
 
 	if (thresh == TRUE) {
-	n_pairs <- sum(prob_cooccur>=0,na.rm=T)/2
-	t_table <- exp_cooccur>=1
-	prob_cooccur <- prob_cooccur*t_table
-	obs_cooccur <- obs_cooccur*t_table
-	exp_cooccur <- exp_cooccur*t_table
-	n_omitted <- n_pairs - sum(t_table,na.rm=T)
+		n_pairs <- sum(prob_cooccur>=0,na.rm=T)/2
+		t_table <- exp_cooccur>=1
+		prob_cooccur <- prob_cooccur*t_table
+		obs_cooccur <- obs_cooccur*t_table
+		exp_cooccur <- exp_cooccur*t_table
+		n_omitted <- n_pairs - sum(t_table,na.rm=T)
 	}
 
 	sp1_inc=incidence
@@ -81,20 +81,8 @@ function (mat, type = "spp_site", thresh = TRUE, spp_names = FALSE,
 	nsite <- N_matrix
 	psite <- nsite + 1
 	only_effects <- FALSE
-	prob <- "hyper"		
-	if (only_effects == FALSE) {
-		arr <- array(c(min_inc,nsite,max_inc),c(nrow(nsite),ncol(nsite),3))
-		if (prob == "hyper") {
-			prob_share_site <- apply( arr , 1:2 , function(x) {
-				x[is.na(x)]<-0
-				y<-phyper(0:x[1],x[1],x[2]-x[1],x[3])
-				y<-c(y[1],(y[-1]-y[-length(y)]))
-				return(y)
-			})
-		}
-	}
+	prob <- "hyper"	
 
-	prob_share_site<- prob_share_site[which(lower.tri(prob_share_site))]
 	obs_cooccur<- obs_cooccur[which(lower.tri(obs_cooccur))]
 	prob_cooccur<- prob_cooccur[which(lower.tri(prob_cooccur))]
 	exp_cooccur<- exp_cooccur[which(lower.tri(exp_cooccur))]
@@ -110,6 +98,30 @@ function (mat, type = "spp_site", thresh = TRUE, spp_names = FALSE,
 
 	sp1_inc<- sp1_inc[which(lower.tri(sp1_inc))]
 	sp2_inc<- sp2_inc[which(lower.tri(sp2_inc))]
+		
+	if (!only_effects) {
+		arr <- array(c(min_inc,nsite,max_inc),c(nrow(nsite),ncol(nsite),3))
+		if (prob == "hyper") {
+			prob_share_site <- apply( arr , 1:2 , function(x) {
+				x[is.na(x)]<-0
+				y<-phyper(0:x[1],x[1],x[2]-x[1],x[3])
+				y<-c(y[1],(y[-1]-y[-length(y)]))
+				return(y)
+			})
+		}
+	} else {
+		sp_inc <- sp1_inc + sp2_inc
+		arr <- array(c(min_inc,nsite,sp_inc),,c(nrow(nsite),ncol(nsite),3))
+		for (j in 0:nsite) {
+			if ((sp1_inc + sp2_inc) <= (nsite + j)) {
+				if (j <= min_inc) {
+					prob_share_site[(j + 1)] <- 1
+				}
+			}
+		}
+	}		
+
+	prob_share_site<- prob_share_site[which(lower.tri(prob_share_site))]
 
 	p_lt <- sapply(seq(1,length(prob_share_site)),function(i) sum(unlist(prob_share_site[i])[1:(obs_cooccur[i]+1)]))
 	p_gt <- sapply(seq(1,length(prob_share_site)),function(i) sum(unlist(prob_share_site[i])[(obs_cooccur[i]+1):length(unlist(prob_share_site[i]))]))
