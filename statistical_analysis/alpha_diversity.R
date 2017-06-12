@@ -12,10 +12,12 @@ myfiltbiom <- prune_samples(sample_data(mybiom)[[10]]!="duplicate",mybiom)
 colnames(sample_data(myfiltbiom))[c(1,6,11)] <- c("Sample","Distance","Orchard")
 levels(sample_data(myfiltbiom)[[1]]) <- c("C","Aisle","Tree")
 myfiltbiom<-prune_samples(sample_data(myfiltbiom)[[1]]!="C",myfiltbiom)
+myfiltbiom<-prune_samples(colSums(otu_table(myfiltbiom))>999,myfiltbiom)
+myfiltbiom@otu_table@.Data <- round(counts(phylo_to_des(myfiltbiom),normalize=T),0)
 sample_data(myfiltbiom)$Class <- paste(sample_data(myfiltbiom)$Orchard,sample_data(myfiltbiom)$Sample,sep=" ")
-sample_data(myfiltbiom)$Class[sample_data(myfiltbiom)$Class=="Cider Aisle"] <- "C-A"
+sample_data(myfiltbiom)$Class[sample_data(myfiltbiom)$Class=="Cider Aisle"] <- "C-G"
 sample_data(myfiltbiom)$Class[sample_data(myfiltbiom)$Class=="Cider Tree"] <- "C-T"
-sample_data(myfiltbiom)$Class[sample_data(myfiltbiom)$Class=="Dessert Aisle"] <- "D-A"
+sample_data(myfiltbiom)$Class[sample_data(myfiltbiom)$Class=="Dessert Aisle"] <- "D-G"
 sample_data(myfiltbiom)$Class[sample_data(myfiltbiom)$Class=="Dessert Tree"] <- "D-T"
 
 
