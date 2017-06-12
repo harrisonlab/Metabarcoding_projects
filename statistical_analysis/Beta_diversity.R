@@ -37,16 +37,16 @@ g <- g +theme(axis.title=element_blank(),
               plot.margin = unit(c(1,1,2,2), "lines")
 )
 
-g <- g + annotation_custom(textGrob("Aisle",gp = gpar(fontsize = 16)),xmin=35.75,xmax=35.75,ymin=-4,ymax=-4)
+g <- g + annotation_custom(textGrob("Grass",gp = gpar(fontsize = 16)),xmin=35.75,xmax=35.75,ymin=-4,ymax=-4)
 g <- g + annotation_custom(textGrob("Tree",gp = gpar(fontsize = 16)),xmin=107.25,xmax=107.25,ymin=-4,ymax=-4)
-g <- g + annotation_custom(textGrob("Aisle",gp = gpar(fontsize = 16)),xmin=178.75,xmax=178.75,ymin=-4,ymax=-4)
+g <- g + annotation_custom(textGrob("Grass",gp = gpar(fontsize = 16)),xmin=178.75,xmax=178.75,ymin=-4,ymax=-4)
 g <- g + annotation_custom(textGrob("Tree",gp = gpar(fontsize = 16)),xmin=250.25,xmax=250.25,ymin=-4,ymax=-4)
 g <- g + annotation_custom(textGrob("\nCider",gp = gpar(fontsize = 16)),xmin=71.5,xmax=71.5,ymin=-4,ymax=-4)
 g <- g + annotation_custom(textGrob("\nDessert",gp = gpar(fontsize = 16)),xmin=214.25,xmax=214.25,ymin=-4,ymax=-4)
 
-g <- g + annotation_custom(textGrob("\nAisle",rot=90,gp = gpar(fontsize = 16)),ymin=35.75,ymax=35.75,xmin=-12,xmax=-12)
+g <- g + annotation_custom(textGrob("\nGrass",rot=90,gp = gpar(fontsize = 16)),ymin=35.75,ymax=35.75,xmin=-12,xmax=-12)
 g <- g + annotation_custom(textGrob("\nTree",rot=90,gp = gpar(fontsize = 16)),ymin=107.25,ymax=107.25,xmin=-12,xmax=-12)
-g <- g + annotation_custom(textGrob("\nAisle",rot=90,gp = gpar(fontsize = 16)),ymin=178.75,ymax=178.75,xmin=-12,xmax=-12)
+g <- g + annotation_custom(textGrob("\nGrass",rot=90,gp = gpar(fontsize = 16)),ymin=178.75,ymax=178.75,xmin=-12,xmax=-12)
 g <- g + annotation_custom(textGrob("\nTree",rot=90,gp = gpar(fontsize = 16)),ymin=250.25,ymax=250.25,xmin=-12,xmax=-12)
 g <- g + annotation_custom(textGrob("Cider",rot=90,gp = gpar(fontsize = 16)),ymin=71.5,ymax=71.5,xmin=-12,xmax=-12)
 g <- g + annotation_custom(textGrob("Dessert",rot=90,gp = gpar(fontsize = 16)),ymin=214.25,ymax=214.25,xmin=-12,xmax=-12)
@@ -59,8 +59,17 @@ g <- g + annotation_custom(linesGrob(), ymin = 71.5, ymax = 71.5, xmin = 0, xmax
 g <- g + annotation_custom(linesGrob(), ymin = 143.25, ymax = 143.25, xmin = 0, xmax = -8)
 g <- g + annotation_custom(linesGrob(), ymin = 214.25, ymax = 214.25, xmin = 0, xmax = -2)
 
-gt <- ggplot_gtable(ggplot_build(g))
-gt$layout$clip[gt$layout$name == "panel"] <- "off"
+g_a <- g
+
+g_a <- g_a + annotation_custom(textGrob("A",gp = gpar(fontsize = 20)),xmin=-12,xmax=-12,ymin=285,ymax=285)
+g_b <- g_b + annotation_custom(textGrob("B",gp = gpar(fontsize = 20)),xmin=-12,xmax=-12,ymin=285,ymax=285)
+g_c <- g_c + annotation_custom(textGrob("C",gp = gpar(fontsize = 20)),xmin=-12,xmax=-12,ymin=285,ymax=285)
+g_d <- g_d + annotation_custom(textGrob("D",gp = gpar(fontsize = 20)),xmin=-12,xmax=-12,ymin=285,ymax=285)
+
+gt_a <- ggplot_gtable(ggplot_build(g_a))
+gt_a$layout$clip[gt_a$layout$name == "panel"] <- "off"
+
+
 grid.draw(gt)
 dev.off()
 
