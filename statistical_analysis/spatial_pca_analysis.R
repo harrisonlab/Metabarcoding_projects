@@ -11,7 +11,8 @@ load_all("../..//metabarcoding_pipeline/scripts/myfunctions")
 myfiltbiom <- prune_samples(sample_data(mybiom)[[10]]!="duplicate",mybiom)
 myfiltbiom@sam_data$location <- as.factor(myfiltbiom@sam_data$meters)
 colnames(sample_data(myfiltbiom))[c(1,6,11)] <- c("Sample","Distance","Orchard")
-levels(sample_data(myfiltbiom)[[1]]) <- c("C","Aisle","Tree")
+levels(sample_data(myfiltbiom)[[1]]) <- c("C","Grass","Tree")
+myfiltbiom<-prune_samples(colSums(otu_table(myfiltbiom))>999,myfiltbiom)
 
 ### Combined data ####
 
@@ -72,6 +73,35 @@ myglist <- lapply(list(df,d,d2),function(x)
 	legend=F
 ))	
 
+myglist_its<- myglist
+myglist_16S<- myglist		  
+		  
+g1 <- myglist_its[[1]]
+g2 <- myglist_16S[[1]]	  		  
+		  
+#g2 <- plotOrd(df,...)
+	
+g2 <- g2 + theme(legend.direction="horizontal", 
+		 legend.position="bottom",
+		 legend.justification=c(0,0),
+		 legend.box="vertical",
+		 legend.box.just="left",
+		 axis.line.x = element_line(size=0.3,colour = "black"),
+		 axis.line.y = element_line(size=0.3,colour = "black"),
+		 axis.text = element_text(colour = "black"),
+		 plot.margin=unit(c(2.5,1,0.5,0.5), "lines")
+)	
+
+### Main figure		  
+pdf("ITS_16S_orchards2.pdf",width=7,height=6.5)	
+g3 <- ggplotGrob(g1+annotate("text",label=paste("A"), x=20, y=3,size=5))
+g4<-  ggplotGrob(g2+annotate("text",label=paste("B"), x=60, y=3,size=5))
+g <- rbind(g3, g4, size="first")
+grid.newpage()
+grid.draw(g)
+dev.off()			  
+		  
+		  
 # get the two legends
 l1 <- ggplot_legend(plotOrd(df,sample_data(myfiltbiom),design="Distance",continuous=T,colourScale=c("black","lightblue"))+ theme(legend.direction="horizontal"))
 l2 <- ggplot_legend(plotOrd(df,sample_data(myfiltbiom),shapes=c("Orchard","Sample")) + theme(legend.direction="horizontal"))
@@ -87,26 +117,7 @@ grid.arrange(
 	layout_matrix=lay
 )
 	
-g2 <- plotOrd(df,...)
-	
-g2 <- g2 + theme(legend.direction="horizontal", 
-		 legend.position="bottom",
-		 legend.justification=c(0,0),
-		 legend.box="vertical",
-		 legend.box.just="left",
-		 axis.line.x = element_line(size=0.3,colour = "black"),
-		 axis.line.y = element_line(size=0.3,colour = "black"),
-		 axis.text = element_text(colour = "black"),
-		 plot.margin=unit(c(2.5,1,0.5,0.5), "lines")
-)	
 
-pdf("ITS_16S_orchards.pdf",width=7,height=6.5)	
-g3 <- ggplotGrob(myglist_its[[1]]+annotate("text",label=paste("A"), x=20, y=3,size=5))
-g4<-  ggplotGrob(g2+annotate("text",label=paste("B"), x=50, y=3,size=5))
-g <- rbind(g3, g4, size="first")
-grid.newpage()
-grid.draw(g)
-dev.off()	
 
 	
 myglist <- append(myglist,myglist16S)
