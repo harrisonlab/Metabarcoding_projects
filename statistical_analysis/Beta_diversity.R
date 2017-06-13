@@ -27,29 +27,27 @@ du_16 <- du_16[row.names(sample_data(myfiltbiom)[with(sample_data(myfiltbiom),or
 row.names(sample_data(myfiltbiom)[with(sample_data(myfiltbiom),order(orchard,condition)),])]
 plotHeatmap(du_16)
 
-g <- plotHeatmap(dw_16,textSize=12)
+
+g <- plotHeatmap(dw_16,textSize=15)
+#g_bdw, du_16,dw_16
+
 g <- g +theme(axis.title=element_blank(),
-              #legend.direction="horizontal",
-              #legend.position="bottom",
-              #legend.justification=c(0,0),
-              #legend.box="vertical",
-              #legend.box.just="left",
               plot.margin = unit(c(1,1,2,2), "lines")
 )
 
-g <- g + annotation_custom(textGrob("Grass",gp = gpar(fontsize = 16)),xmin=35.75,xmax=35.75,ymin=-4,ymax=-4)
-g <- g + annotation_custom(textGrob("Tree",gp = gpar(fontsize = 16)),xmin=107.25,xmax=107.25,ymin=-4,ymax=-4)
-g <- g + annotation_custom(textGrob("Grass",gp = gpar(fontsize = 16)),xmin=178.75,xmax=178.75,ymin=-4,ymax=-4)
-g <- g + annotation_custom(textGrob("Tree",gp = gpar(fontsize = 16)),xmin=250.25,xmax=250.25,ymin=-4,ymax=-4)
-g <- g + annotation_custom(textGrob("\nCider",gp = gpar(fontsize = 16)),xmin=71.5,xmax=71.5,ymin=-4,ymax=-4)
-g <- g + annotation_custom(textGrob("\nDessert",gp = gpar(fontsize = 16)),xmin=214.25,xmax=214.25,ymin=-4,ymax=-4)
+g <- g + annotation_custom(textGrob("Grass",gp = gpar(fontsize = 15)),xmin=35.75,xmax=35.75,ymin=-7,ymax=-7)
+g <- g + annotation_custom(textGrob("Tree",gp = gpar(fontsize = 15)),xmin=107.25,xmax=107.25,ymin=-7,ymax=-7)
+g <- g + annotation_custom(textGrob("Grass",gp = gpar(fontsize = 15)),xmin=178.75,xmax=178.75,ymin=-7,ymax=-7)
+g <- g + annotation_custom(textGrob("Tree",gp = gpar(fontsize = 15)),xmin=250.25,xmax=250.25,ymin=-7,ymax=-7)
+g <- g + annotation_custom(textGrob("\nCider",gp = gpar(fontsize = 15)),xmin=71.5,xmax=71.5,ymin=-9,ymax=-9)
+g <- g + annotation_custom(textGrob("\nDessert",gp = gpar(fontsize = 15)),xmin=214.25,xmax=214.25,ymin=-9,ymax=-9)
 
-g <- g + annotation_custom(textGrob("\nGrass",rot=90,gp = gpar(fontsize = 16)),ymin=35.75,ymax=35.75,xmin=-12,xmax=-12)
-g <- g + annotation_custom(textGrob("\nTree",rot=90,gp = gpar(fontsize = 16)),ymin=107.25,ymax=107.25,xmin=-12,xmax=-12)
-g <- g + annotation_custom(textGrob("\nGrass",rot=90,gp = gpar(fontsize = 16)),ymin=178.75,ymax=178.75,xmin=-12,xmax=-12)
-g <- g + annotation_custom(textGrob("\nTree",rot=90,gp = gpar(fontsize = 16)),ymin=250.25,ymax=250.25,xmin=-12,xmax=-12)
-g <- g + annotation_custom(textGrob("Cider",rot=90,gp = gpar(fontsize = 16)),ymin=71.5,ymax=71.5,xmin=-12,xmax=-12)
-g <- g + annotation_custom(textGrob("Dessert",rot=90,gp = gpar(fontsize = 16)),ymin=214.25,ymax=214.25,xmin=-12,xmax=-12)
+g <- g + annotation_custom(textGrob("\nGrass",rot=90,gp = gpar(fontsize = 15)),ymin=35.75,ymax=35.75,xmin=-18,xmax=-18)
+g <- g + annotation_custom(textGrob("\nTree",rot=90,gp = gpar(fontsize = 15)),ymin=107.25,ymax=107.25,xmin=-18,xmax=-18)
+g <- g + annotation_custom(textGrob("\nGrass",rot=90,gp = gpar(fontsize = 15)),ymin=178.75,ymax=178.75,xmin=-18,xmax=-18)
+g <- g + annotation_custom(textGrob("\nTree",rot=90,gp = gpar(fontsize = 15)),ymin=250.25,ymax=250.25,xmin=-18,xmax=-18)
+g <- g + annotation_custom(textGrob("Cider",rot=90,gp = gpar(fontsize = 15)),ymin=71.5,ymax=71.5,xmin=-20,xmax=-20)
+g <- g + annotation_custom(textGrob("Dessert",rot=90,gp = gpar(fontsize = 15)),ymin=214.25,ymax=214.25,xmin=-20,xmax=-20)
 
 g <- g + annotation_custom(linesGrob(), xmin = 71.5, xmax = 71.5, ymin = 0, ymax = -2)
 g <- g + annotation_custom(linesGrob(), xmin = 143.25, xmax = 143.25, ymin = 0, ymax = -8)
@@ -59,17 +57,18 @@ g <- g + annotation_custom(linesGrob(), ymin = 71.5, ymax = 71.5, xmin = 0, xmax
 g <- g + annotation_custom(linesGrob(), ymin = 143.25, ymax = 143.25, xmin = 0, xmax = -8)
 g <- g + annotation_custom(linesGrob(), ymin = 214.25, ymax = 214.25, xmin = 0, xmax = -2)
 
-g_a <- g
+g_d <- g
 
-g_a <- g_a + annotation_custom(textGrob("A",gp = gpar(fontsize = 20)),xmin=-12,xmax=-12,ymin=285,ymax=285)
-g_b <- g_b + annotation_custom(textGrob("B",gp = gpar(fontsize = 20)),xmin=-12,xmax=-12,ymin=285,ymax=285)
-g_c <- g_c + annotation_custom(textGrob("C",gp = gpar(fontsize = 20)),xmin=-12,xmax=-12,ymin=285,ymax=285)
-g_d <- g_d + annotation_custom(textGrob("D",gp = gpar(fontsize = 20)),xmin=-12,xmax=-12,ymin=285,ymax=285)
+g_a <- g_a + annotation_custom(textGrob("A",gp = gpar(fontsize = 19)),xmin=300,xmax=300,ymin=285,ymax=285)
+g_b <- g_b + annotation_custom(textGrob("B",gp = gpar(fontsize = 19)),xmin=300,xmax=300,ymin=285,ymax=285)
+g_c <- g_c + annotation_custom(textGrob("C",gp = gpar(fontsize = 19)),xmin=300,xmax=300,ymin=285,ymax=285)
+g_d <- g_d + annotation_custom(textGrob("D",gp = gpar(fontsize = 19)),xmin=300,xmax=300,ymin=285,ymax=285)
 
-gt_a <- ggplot_gtable(ggplot_build(g_a))
-gt_a$layout$clip[gt_a$layout$name == "panel"] <- "off"
+gt_d <- ggplot_gtable(ggplot_build(g_d))
+gt_d$layout$clip[gt_d$layout$name == "panel"] <- "off"
 
-
-grid.draw(gt)
+pdf("beta3.pdf",height=9,width=11)
+grid.arrange(gt_a,gt_b,gt_c,gt_d,nrow=2,ncol=2)
+#grid.draw(gt)
 dev.off()
 
