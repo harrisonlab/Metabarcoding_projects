@@ -12,7 +12,15 @@ myfiltbiom <- prune_samples(sample_data(mybiom)[[10]]!="duplicate",mybiom)
 colnames(sample_data(myfiltbiom))[c(1,6,11)] <- c("Sample","Distance","Orchard")
 levels(sample_data(myfiltbiom)[[1]]) <- c("C","Aisle","Tree")
 myfiltbiom<-prune_samples(sample_data(myfiltbiom)[[1]]!="C",myfiltbiom)
-myfiltbiom@otu_table@.Data <- round(counts(phylo_to_des(myfiltbiom),normalize=T),0)
+
+# myfiltbiom@otu_table@.Data <- round(counts(phylo_to_des(myfiltbiom),normalize=T),0) ## this is wrong, v. bad for Chao1 index
+
+myfiltbiom@otu_table@.Data <- round(counts(dds,normalize=T),2)
+myfiltbiom@otu_table@.Data[myfiltbiom@otu_table@.Data==0] <- NA
+myfiltbiom@otu_table@.Data[myfiltbiom@otu_table@.Data<1] <- 1
+myfiltbiom@otu_table@.Data[is.na(myfiltbiom@otu_table@.Data)] <- 0
+myfiltbiom@otu_table@.Data <- round(myfiltbiom@otu_table@.Data,0)
+
 myfiltbiom<-prune_samples(colSums(otu_table(myfiltbiom))>999,myfiltbiom)
 myfiltbiom<-prune_samples(colSums(otu_table(myfiltbiom))<200001,myfiltbiom)
 sample_data(myfiltbiom)$Class <- paste(sample_data(myfiltbiom)$Orchard,sample_data(myfiltbiom)$Sample,sep=" ")
