@@ -97,5 +97,5 @@ Ambiguous data should not be used for OTU clustering/denoising, but it can be co
 Requires converting to FASTA with approprite labels
 
 
-###[16S workflow](../master/16S%20%20workflow.md)
-###[ITS workflow](../master//ITS%20workflow.md)
+### [16S workflow](../master/16S%20%20workflow.md)
+### [ITS workflow](../master//ITS%20workflow.md)
