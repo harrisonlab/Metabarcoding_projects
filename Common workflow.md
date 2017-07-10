@@ -18,12 +18,13 @@ mkdir $ARDERI/data/$RUN/ITS/unfiltered
 ```
 
 ## Decompress files
-This is no longer necessary. The demultiplexing will now accept gz files
+
+The demultiplexing step will accept gz compressed files - so this step may not be necessary
 
 ```shell
-#for FILE in $ARDERI/data/$RUN/fastq/*.gz; do 
-#	$ARDERI/metabarcoding_pipeline/scripts/PIPELINE.sh -c unzip $FILE
-#done
+for FILE in $ARDERI/data/$RUN/fastq/*.gz; do 
+	$ARDERI/metabarcoding_pipeline/scripts/PIPELINE.sh -c unzip $FILE
+done
 ```
 
 ## QC
