@@ -89,13 +89,17 @@ usearch9 -makeudb_sintax Eumetazoa_tax.fasta -output nematode2.udp
 
 ___
 ###[Common workflow](../master/Common%20workflow.md)
+
 ###[16S workflow](../master/16S%20%20workflow.md)
+
 ###[ITS workflow](../master//ITS%20workflow.md)
+
 ###[Statistical analysis](../master/statistical%20analysis.md)
 
 
 
-##Combine samples
+## Combine samples from multiple NGS runs
+
 Biom table for samples from multiple NGS runs are required.
 
 This will mean the names of each fasta will need to be made unique and the sequence lengths will need to be set to the same.
