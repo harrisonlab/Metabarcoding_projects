@@ -1,4 +1,5 @@
 library(phyloseq)
+library(DESeq2)
 library(gtable)
 library(gridExtra)
 library(devtools)
@@ -15,7 +16,7 @@ myfiltbiom<-prune_samples(sample_data(myfiltbiom)[[1]]!="C",myfiltbiom)
 
 # myfiltbiom@otu_table@.Data <- round(counts(phylo_to_des(myfiltbiom),normalize=T),0) ## this is wrong, v. bad for Chao1 index
 
-myfiltbiom@otu_table@.Data <- round(counts(dds,normalize=T),2)
+myfiltbiom@otu_table@.Data <- counts(dds,normalize=T)
 myfiltbiom@otu_table@.Data[myfiltbiom@otu_table@.Data==0] <- NA
 myfiltbiom@otu_table@.Data[myfiltbiom@otu_table@.Data<1] <- 1
 myfiltbiom@otu_table@.Data[is.na(myfiltbiom@otu_table@.Data)] <- 0
