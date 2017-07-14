@@ -18,7 +18,6 @@ library(ape)
 library(ggplot2)
 library(reshape2)
 
-
 #===============================================================================
 #       Load data 
 #===============================================================================
@@ -35,16 +34,15 @@ biomITS <- get_biom("ITS.taxa.biom","colData")
 
 mybioms <- list(Bacteria=biom16,Fungi=biomITS)
 
-
 #===============================================================================
 #       Pool Data
 #===============================================================================
+
 myfiltbioms <- lapply(mybioms,function(obj) prune_samples(	
 	(sample_data(obj)[[10]]!="duplicate")&
 	(sample_data(obj)[[1]]!="C")&
 	(colSums(otu_table(obj))>999)
 ,obj))
-
 
 myfiltbioms <- lapply(myfiltbioms,function(obj) {
 	obj@sam_data$location <- as.factor(obj@sam_data$meters)
@@ -53,14 +51,11 @@ myfiltbioms <- lapply(myfiltbioms,function(obj) {
 	return(obj)
 })
 
-
 Ldds <- lapply(myfiltbioms,function(obj) phylo_to_des(obj,fit=F,calcFactors=geoSet))
 
 Ldds$Fungi$Group <- as.factor(paste(Ldds$Fungi$Orchard,Ldds$Fungi$Sample,Ldds$Fungi$location,sep="_"))
 Ldds$Bacteria$Group <- as.factor(paste(Ldds$Bacteria$Orchard,Ldds$Bacteria$Sample,Ldds$Bacteria$location,sep="_"))
 Ldds<-lapply(Ldds,function(o) collapseReplicates2(o,groupby=o$Group))
-sizeFactors(Ldds[[1]])<-1
-sizeFactors(Ldds[[2]])<-1
 Ldds$Fungi$Orchard<- droplevels(Ldds$Fungi$Orchard)
 Ldds$Fungi$Sample<- droplevels(Ldds$Fungi$Sample)
 Ldds$Fungi$location<- droplevels(Ldds$Fungi$location)
@@ -71,7 +66,6 @@ Ldds$Bacteria$location<- droplevels(Ldds$Bacteria$location)
 levels(Ldds$Fungi$Sample)<-c("Grass","Tree")
 levels(Ldds$Bacteria$Sample)<-c("Grass","Tree")
 
-#countData <- lapply(Ldds,function(o) assay(o))
 countData <- lapply(Ldds,function(o) counts(o,normalize=T))
 colData <- lapply(Ldds,function(o) o@colData)
 
@@ -79,62 +73,19 @@ colData <- lapply(Ldds,function(o) o@colData)
 #       Base analysis
 #===============================================================================
 
-#myfiltbioms <- lapply(mybioms,function(obj) prune_samples(	
-#	(sample_data(obj)[[10]]!="duplicate")&
-#	(sample_data(obj)[[1]]!="C")
-#,obj))
-
-
-#myfiltbioms <- lapply(myfiltbioms,function(obj) {
-#	obj@sam_data$location <- as.factor(obj@sam_data$meters)
-#	colnames(sample_data(obj))[c(1,6,11)] <- c("Sample","Distance","Orchard")
-#	levels(sample_data(obj)[[1]]) <- c("Aisle","Tree")
-#	return(obj)
-#})
-
-
-
-d<-rowSums(counts(Ldds[[1]][,Ldds[[1]]@colData$Orchard=="Dessert"&Ldds[[1]]@colData$Sample=="Tree"],normalized=T))
+i=2 # or 1
+d<-rowSums(counts(Ldds[[i]][,Ldds[[i]]@colData$Orchard=="Dessert"&Ldds[[i]]@colData$Sample=="Tree"],normalize=T))
 d<-cumsum(d[order(d,decreasing=T)])
 
-dd<-rowSums(assay(Ldds[[1]][,Ldds[[1]]@colData$Orchard=="Dessert"&Ldds[[1]]@colData$Sample=="Grass"],normalized=T))
+dd<-rowSums(counts(Ldds[[i]][,Ldds[[i]]@colData$Orchard=="Dessert"&Ldds[[i]]@colData$Sample=="Grass"],normalize=T))
 dd<-cumsum(dd[order(dd,decreasing=T)])
 
-ddd<-rowSums(counts(Ldds[[1]][,Ldds[[1]]@colData$Orchard=="Cider"&Ldds[[1]]@colData$Sample=="Tree"],normalized=T))
+ddd<-rowSums(counts(Ldds[[i]][,Ldds[[i]]@colData$Orchard=="Cider"&Ldds[[i]]@colData$Sample=="Tree"],normalize=T))
 ddd<-cumsum(ddd[order(ddd,decreasing=T)])
 
-dddd<-rowSums(assay(Ldds[[1]][,Ldds[[1]]@colData$Orchard=="Cider"&Ldds[[1]]@colData$Sample=="Grass"],normalized=T))
+dddd<-rowSums(counts(Ldds[[i]][,Ldds[[i]]@colData$Orchard=="Cider"&Ldds[[i]]@colData$Sample=="Grass"],normalize=T))
 dddd<-cumsum(dddd[order(dddd,decreasing=T)])
 
-df <- cbind(d,dd,ddd,dddd)
-colnames(df) <- c("Dessert Tree","Dessert Grass","Cider Tree", "Cider Grass")
-rownames(df) <- seq(1,nrow(df))
-myline<-apply(df,2,function(o) length(o)-length(o[o>=(max(o,na.rm=T)*0.8)]))
-df<- melt(log10(df),id=rownames)
-colnames(df)[1:2]<-c("OTUS","Location")
-
-pdf("POOLED_OTU_counts_n2.pdf")
-
-
-g <- ggplot(data=df,aes(x=OTUS,y=value,colour=Location))
-g <- g + theme_bw()
-g <- g + theme(panel.border = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank())
-g <- g + theme(axis.line.x = element_line(size=0.3,colour = "black"),axis.line.y = element_line(size=0.3,colour = "black"),axis.text = element_text(colour = "black"),text=element_text(size=16))
-cbbPalette <- c("#000000", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
-g+geom_line(size=1.5)+scale_colour_manual(values=cbbPalette)+ylab(expression("Log"[10]*" aligned sequenecs"))+xlab("OTU count")+geom_vline(xintercept=myline,colour=cbbPalette[1:4])
-
-i=2
-d<-rowSums(assay(Ldds[[i]][,Ldds[[i]]@colData$Orchard=="Dessert"&Ldds[[i]]@colData$Sample=="Tree"],normalized=T))
-d<-cumsum(d[order(d,decreasing=T)])
-
-dd<-rowSums(assay(Ldds[[i]][,Ldds[[i]]@colData$Orchard=="Dessert"&Ldds[[i]]@colData$Sample=="Grass"],normalized=T))
-dd<-cumsum(dd[order(dd,decreasing=T)])
-
-ddd<-rowSums(assay(Ldds[[i]][,Ldds[[i]]@colData$Orchard=="Cider"&Ldds[[i]]@colData$Sample=="Tree"],normalized=T))
-ddd<-cumsum(ddd[order(ddd,decreasing=T)])
-
-dddd<-rowSums(assay(Ldds[[i]][,Ldds[[i]]@colData$Orchard=="Cider"&Ldds[[i]]@colData$Sample=="Grass"],normalized=T))
-dddd<-cumsum(dddd[order(dddd,decreasing=T)])
 len<-min(sapply(list(d,dd,ddd,dddd),length))
 df <- cbind(d[1:len],dd[1:len],ddd[1:len],dddd[1:len])
 colnames(df) <- c("Dessert Tree","Dessert Grass","Cider Tree", "Cider Grass")
@@ -143,31 +94,14 @@ myline<-apply(df,2,function(o) length(o)-length(o[o>=(max(o,na.rm=T)*0.8)]))
 
 df<- melt(log10(df),id=rownames)
 colnames(df)[1:2]<-c("OTUS","Location")
-
+	      
+pdf("POOLED_OTU_counts_n2.pdf")
 g <- ggplot(data=df,aes(x=OTUS,y=value,colour=Location))
-g <- g + theme_bw()
-g <- g + theme(panel.border = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank())
-g <- g + theme(axis.line.x = element_line(size=0.3,colour = "black"),axis.line.y = element_line(size=0.3,colour = "black"),axis.text = element_text(colour = "black"),text=element_text(size=16),legend.position="none")
+g <- g + theme_classic_thin(16) %+replace% theme(legend.position="none")
 g<-g+geom_line(size=1.5)+scale_colour_manual(values=cbbPalette)+ylab(expression("Log"[10]*" aligned sequenecs"))+xlab("OTU count")+geom_vline(xintercept=myline,colour=cbbPalette[1:4])+coord_cartesian(xlim = c(0, 100)) 
-
 dev.off()
-
-
-## plots
-
-
-lapply(res.merge,function(obj) {
-	with(obj,plot(log2FoldChange,log10(baseMean),pch=20, xlim=c(-6,6),bty="n",
-	xlab=expression("Log"[2]*" Fold Change"),ylab=expression("Log"[10]*" Mean Expression")))
-	with(subset(obj, padj<0.5 ), points(log2FoldChange, log10(baseMean), pch=20, col="#E69F00"))
-	with(subset(obj, abs(log2FoldChange)>1), points(log2FoldChange, log10(baseMean), pch=20, col="#56B4E9"))
-	with(subset(obj, padj<0.05 & abs(log2FoldChange)>1), points(log2FoldChange, log10(baseMean), pch=20, col="#009E73"))
-})
-dev.off()
-
 
 ## taxonomy calculations
-
 test <- as.data.frame(as.matrix(tax_table(myfiltbioms[[1]])[,8:14]))
 test<- as.matrix(as.data.frame(lapply(test,function(i) as.numeric(levels(i)[i]))))
 apply(test,2,function(x) sum(x>=0.65)/length(x)*100)
@@ -198,8 +132,8 @@ lapply(seq(1:4),function(x)
 	sum(summary(aov(mypca[[1]]$x[,x]~location+(Orchard*Sample),colData[[1]]))[[1]][[2]])*100
 )
 lapply(seq(1:4),function(x)
-	summary(aov(mypca[[2]]$x[,x]~location+(Orchard*Sample),colData[[1]]))[[1]][[2]]/
-	sum(summary(aov(mypca[[1]]$x[,x]~location+(Orchard*Sample),colData[[1]]))[[1]][[2]])*100
+	summary(aov(mypca[[2]]$x[,x]~location+(Orchard*Sample),colData[[2]]))[[1]][[2]]/
+	sum(summary(aov(mypca[[2]]$x[,x]~location+(Orchard*Sample),colData[[2]]))[[1]][[2]])*100
 )
 
 # Calcultae sum of squares
