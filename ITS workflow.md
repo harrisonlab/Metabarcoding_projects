@@ -33,11 +33,11 @@ This will create a large number of array jobs on the cluster
 
 ```shell
 $ARDERI/metabarcoding_pipeline/scripts/PIPELINE.sh -c procends \
- $ARDERI/data/$RUN/$SSU/fasta \
- R1 \
- $ARDERI/metabarcoding_pipeline/hmm/ssu_end.hmm 	\
- $ARDERI/metabarcoding_pipeline/hmm/58s_start.hmm \
- ssu 58ss 20
+$ARDERI/data/$RUN/$SSU/fasta \
+R1 \
+$ARDERI/metabarcoding_pipeline/hmm/ssu_end.hmm \
+$ARDERI/metabarcoding_pipeline/hmm/58s_start.hmm \
+ssu 58ss 20
 
 $ARDERI/metabarcoding_pipeline/scripts/PIPELINE.sh -c procends \
  $ARDERI/data/$RUN/$SSU/fasta \
