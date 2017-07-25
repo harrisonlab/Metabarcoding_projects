@@ -111,6 +111,12 @@ This is mostly a UPARSE pipeline, but usearch (free version) runs out of memory 
 ```shell
 $ARDERI/metabarcoding_pipeline/scripts/PIPELINE.sh -c UPARSE $ARDERI $RUN $SSU 0 0
 ```
+
+Work around for usearch bug 10.1
+```shell
+sed -ie 's/Zotu/OTU/' ITS.zotus.fa
+```
+
 ### Assign taxonomy
 ```shell
 $ARDERI/metabarcoding_pipeline/scripts/PIPELINE.sh -c tax_assign $ARDERI $RUN $SSU 
