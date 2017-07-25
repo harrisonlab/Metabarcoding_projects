@@ -112,8 +112,6 @@ This is mostly a UPARSE pipeline, but usearch (free version) runs out of memory 
 $ARDERI/metabarcoding_pipeline/scripts/PIPELINE.sh -c UPARSE $ARDERI $RUN $SSU 0 0
 ```
 ### Assign taxonomy
-NOTE:- I still need to build nematode utax taxonomy database from Silva_SSU.
-
 ```shell
 $ARDERI/metabarcoding_pipeline/scripts/PIPELINE.sh -c tax_assign $ARDERI $RUN $SSU 
 ```
