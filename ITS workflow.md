@@ -139,9 +139,18 @@ $ARDERI/metabarcoding_pipeline/scripts/PIPELINE.sh -c OTU $ARDERI $RUN $SSU $FPL
 ```
 
 
-###[16S workflow](../master/16S%20%20workflow.md)
+## Combine biome and taxa
 
-###[Statistical analysis](../master/statistical%20analysis.md)
+biom_make.pl will take a hacked rdp taxonomy file (mod_taxa.pl) and UPARSE biome and output a combined taxa and biome file to standard out.
+
+```shell
+$ARDERI/metabarcoding_pipeline/scripts/biom_maker.pl ITS.taxa ITS.otu_table.biom >ITS.taxa.biom
+```
+
+
+### [16S workflow](../master/16S%20%20workflow.md)
+
+### [Statistical analysis](../master/statistical%20analysis.md)
 
 
 
