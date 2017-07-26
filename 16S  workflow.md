@@ -85,13 +85,12 @@ Occasionally, due to v.poor reverse read quality, joining of f+r reads fails for
 I've also added a rev compliment routine to fq2fa_v2.pl, means the reverse reads can be called as plus strand by usearch_global.
 
 ```shell
-for f in $ARDERI/metabarcoding_pipeline/data/$RUN/16S/fastq/*R1*
-do
-	R1=$f
-	R2=$(echo $R1|sed 's/\_R1_/\_R2_/')
-	S=$(echo $f|awk -F"." '{print $1}'|awk -F"/" '{print $NF}')
-	$ARDERI/metabarcoding_pipeline/scripts/fq2fa_v2.pl $R1 $ARDERI/data/$RUN/16S.r1.unfiltered.fa $S $fpl 0
-	$ARDERI/metabarcoding_pipeline/scripts/fq2fa_v2.pl $R2 $ARDERI/data/$RUN/16S.r2.unfiltered.fa $S $rpl 30 rev
+for f in $ARDERI/data/$RUN/16S/fastq/*R1*; do
+ R1=$f
+ R2=$(echo $R1|sed 's/\_R1_/\_R2_/')
+ S=$(echo $f|awk -F"." '{print $1}'|awk -F"/" '{print $NF}')
+ $ARDERI/metabarcoding_pipeline/scripts/fq2fa_v2.pl $R1 $ARDERI/data/$RUN/16S.r1.unfiltered.fa $S $fpl 0
+ $ARDERI/metabarcoding_pipeline/scripts/fq2fa_v2.pl $R2 $ARDERI/data/$RUN/16S.r2.unfiltered.fa $S $rpl 30 rev
 done
 usearch9 -usearch_global 16S.r1.unfiltered.fa -db 16S.otus.fa -strand plus -id 0.95 -userout hits.r1.txt -userfields query+target+id
 usearch9 -usearch_global 16S.r2.unfiltered.fa -db 16S.otus.fa -strand plus -id 0.95 -userout hits.r2.txt -userfields query+target+id
@@ -100,36 +99,9 @@ $ARDERI/metabarcoding_pipeline/scripts/otu_to_biom.pl row_biom col_biom data_bio
 rm row_biom col_biom data_biom
 ```
 
-### usearch V9 testing
 
-There's a new version of usearch (v9) which has a different approach to producing clusters (denoising). However, it is markedly slower than cluster_otus.
-There isn't a paper for this, so I don't know how it works internally - if each entry is independent there's no problem in splitting and running multiple instances as an array job (well with the free version of usearch anyway). 
-
-UPDATE there is a preprint paper available at: http://biorxiv.org/content/early/2016/10/15/081257
-It will be hard to make this into an array job (not impossible)....
-
-First attempt -  from the paper skew(M, C) ≤ β(d) is a valid member of a cluster defined by C. Where  M is the abundance of the "potential member", C is the abundance of the centroid. β(d) is defined as β(d)=1/2αd + 1
-Which for a Levenshtein distance (d) of 1 and α =2,   β(d) = 1/8. 
-Therefore using the default unoise parameters of minimum size 4, any centroid with size ≤ 31 can't have additional members. The vast majority of unique seqeunces have size ≤ 31, therefore could denoise >31 and dechime < 32 and then split the dechimed sequences and denoise in parallel (with the denoised >31 size sequences).
-
-Nice idea, but it's the dechime that is taking the time...
-
-``` shell
-usearch9 -unoise 16S.sorted.fasta -tabbedout out.txt -fastaout 16S.denoised.fa
-
-#mkdir -p temp 
-#split -l 2000 16S.sorted.fasta -a 4 -d temp/xx.
-#TASKS=`ls temp|wc -l`
-#cd temp 
-#find . $PWD -name 'xx*' >split_files.txt
-#qsub -t 1-$TASKS:1 $METAGENOMICS/scripts/submit_denoise.sh 16S.denoised  
-```
-
-
-
-
-###[ITS workflow](../master//ITS%20workflow.md)
-###[Statistical analysis](../master/statistical%20analysis.md)
+### [ITS workflow](../master//ITS%20workflow.md)
+### [Statistical analysis](../master/statistical%20analysis.md)
 
 
 
