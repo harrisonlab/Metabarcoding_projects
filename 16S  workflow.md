@@ -71,6 +71,15 @@ $ARDERI/metabarcoding_pipeline/scripts/PIPELINE.sh -c OTUS $ARDERI $RUN $SSU $FP
 ```
 (this may actually be quicker than OTU, need to check)
 
+### Combine biome and taxa
+
+biom_maker.pl will take a hacked rdp taxonomy file (mod_taxa.pl) and UPARSE biome and output a combined taxa and biome file to standard out.
+
+```shell
+$ARDERI/metabarcoding_pipeline/scripts/biom_maker.pl ITS.taxa ITS.otu_table.biom >ITS.taxa.biom
+```
+
+### Poor quality work round
 
 Occasionally, due to v.poor reverse read quality, joining of f+r reads fails for the vast majority. The following will cluster f+r reads separately and then merge read counts which align to the same OTU. I've dropped the clustering down to 0.95 similarity - both reads aligning to the same OTU at this similarity, I'd suggest is pretty good evidence they're the same. 
 I've also added a rev compliment routine to fq2fa_v2.pl, means the reverse reads can be called as plus strand by usearch_global.
