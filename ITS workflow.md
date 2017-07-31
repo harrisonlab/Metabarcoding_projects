@@ -27,6 +27,8 @@ $ARDERI/metabarcoding_pipeline/scripts/PIPELINE.sh -c ITSpre \
 
 ### SSU/58S/LSU removal 
 
+It is debatable whether this is necessary - it can take a while to run. Quick method is to trim off the first 65 or so reads (forward only) in the UPARSE Cluster step (fourth parameter). 
+
 #### Identify SSU, 5.8S  and LSU regions
 
 This will create a large number of array jobs on the cluster
