@@ -64,6 +64,11 @@ usearch8.1 -calc_distmx 16S.otus.fa -distmxout 16S.phy -distmo fractdiff -format
 $ARDERI/metabarcoding_pipeline/scripts/PIPELINE.sh -c OTU $ARDERI $RUN $SSU $FPL $RPL
 ```
 
+#### Work around for usearch bug 10.1
+```shell
+sed -i -e 's/Zotu/OTU/' 16S.zotus.fa
+```
+
 If unfiltered data is too much for usearch(32) to handle :
 
 ```shell
