@@ -43,6 +43,11 @@ $ARDERI/metabarcoding_pipeline/scripts/PIPELINE.sh -c UPARSE $ARDERI $RUN $SSU $
 #$ARDERI/metabarcoding_pipeline/scripts/PIPELINE.sh -c UCLUS $ARDERI $RUN $SSU $FPL $RPL
 ```
 
+#### Work around for usearch bug 10.1
+```shell
+sed -i -e 's/Zotu/OTU/' 16S.zotus.fa
+```
+
 ### Assign taxonomy
 NOTE:- I still need to build nematode utax taxonomy database from Silva_SSU.
 
@@ -62,11 +67,6 @@ usearch8.1 -calc_distmx 16S.otus.fa -distmxout 16S.phy -distmo fractdiff -format
 
 ```shell
 $ARDERI/metabarcoding_pipeline/scripts/PIPELINE.sh -c OTU $ARDERI $RUN $SSU $FPL $RPL
-```
-
-#### Work around for usearch bug 10.1
-```shell
-sed -i -e 's/Zotu/OTU/' 16S.zotus.fa
 ```
 
 If unfiltered data is too much for usearch(32) to handle :
