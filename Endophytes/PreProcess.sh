@@ -105,6 +105,7 @@ mkdir $PROJECT_FOLDER/data/$RUN/$s/unfiltered
 mkdir $PROJECT_FOLDER/data/$RUN/$s/fasta
 done
 
+# Symlink files to COMBINED folders
 for s in $RIB; do
 ln -s $PROJECT_FOLDER/data/2016/$s/filtered/* $PROJECT_FOLDER/data/$RUN/$s/filtered/.
 ln -s $PROJECT_FOLDER/data/2017/$s/filtered/* $PROJECT_FOLDER/data/$RUN/$s/filtered/.
