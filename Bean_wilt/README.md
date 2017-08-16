@@ -2,7 +2,9 @@
 
 ### Data description
 
-Two sequencing runs of 1) multiplexed Fungal/Bacterial amplicons and 2) Oomycete ITS amplicons
+Two sequencing runs of   
+1) multiplexed Fungal/Bacterial amplicons and   
+2) Oomycete ITS amplicons  
 colData file contains the description for each sample  
 
 ### Code
