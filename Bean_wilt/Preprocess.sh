@@ -1,6 +1,9 @@
 # folder containing project files
 PROJECT_FOLDER=~/projects/Kenya
 
+# sequencer run folder (in this instance all comparable data was in the same run)
+RUN=.
+
 # make the project folder
 mkdir -p $PROJECT_FOLDER
 
@@ -11,7 +14,7 @@ ln -s $PROJECT_FOLDER/metabarcoding_pipeline $MBPL
 mkdir -p $PROJECT_FOLDER/data/$RUN/fastq
 
 # variable to hold folder names (BAC and FUN)
-RIB="BAC FUN"
+RIB="BAC FUN OO"
 
 # loop through the RIB variable, i.e. s = BAC on first loop, S= FUN on second loop, and create the folders
 for s in $RIB; do
@@ -21,23 +24,34 @@ mkdir $PROJECT_FOLDER/data/$RUN/$s/unfiltered
 mkdir $PROJECT_FOLDER/data/$RUN/$s/fasta
 done
 
-# This data is not multiplexed so fastq files can be decompressed to BAC and FUN folders 
+# QC
+for FILE in $PROJECT_FOLDER/data/$RUN/fastq/Kenya*; do
+$PROJECT_FOLDER/metabarcoding_pipeline/scripts/PIPELINE.sh -c qcheck $FILE $PROJECT_FOLDER/data/$RUN/quality
+done
 
-for FILE in $PROJECT_FOLDER/data/$RUN/fastq/*.gz; do 
+# BAC and FUN are multiplexed. Can seperate by the primer sequences (p1 for BAC, p2 for FUN)
+P1F=CCTACGGGNGGCWGCAG
+P1R=GACTACHVGGGTATCTAATCC
+P2F=CTTGGTCATTTAGAGGAAGTAA
+P2R=ATATGCTTAAGTTCAGCGGG
+
+# demultiplex with 0 difference in primer seqeunce
+$PROJECT_FOLDER/metabarcoding_pipeline/scripts/PIPELINE.sh -c demultiplex \
+"$PROJECT_FOLDER/data/$RUN/fastq/[^Kenya]*R1*.gz" 0 \
+$P1F $P1R $P2F $P2R
+
+mv $PROJECT_FOLDER/data/$RUN/fastq/*ps1* $PROJECT_FOLDER/data/$RUN/BAC/fastq/.
+mv $PROJECT_FOLDER/data/$RUN/fastq/*ps2* $PROJECT_FOLDER/data/$RUN/FUN/fastq/.
+mv $PROJECT_FOLDER/data/$RUN/fastq/*ambig* $PROJECT_FOLDER/data/$RUN/ambiguous/.
+
+# Oomycete/pythium data is not multiplexed so fastq files can be decompressed to OO folders 
+for FILE in $PROJECT_FOLDER/data/$RUN/fastq/Kenya*; do 
 $PROJECT_FOLDER/metabarcoding_pipeline/scripts/PIPELINE.sh -c unzip $FILE 2
 done
 
-cd $PROJECT_FOLDER/data/$RUN/fastq
+mv $PROJECT_FOLDER/data/$RUN/fastq/*.fastq $PROJECT_FOLDER/data/$RUN/OO/fastq/.
 
-# move files into correct place
-mv Apple-Lady* ../BAC/fastq/.
-mv Apple-* ../FUN/fastq/.
-
-# oops move gz files back again
-mv ../BAC/fastq/*.gz .
-mv ../FUN/fastq/*.gz .
-
-# pre-process BAC files (min length 300, min overlap 5, quality 0.5)
+# pre-process BAC files (min length 300, max diffs 5, quality 0.5)
 $PROJECT_FOLDER/metabarcoding_pipeline/scripts/PIPELINE.sh -c 16Spre \
  "$PROJECT_FOLDER/data/$RUN/BAC/fastq/*R1*.fastq" \
  $PROJECT_FOLDER/data/$RUN/BAC \
@@ -51,15 +65,15 @@ $PROJECT_FOLDER/metabarcoding_pipeline/scripts/PIPELINE.sh -c ITSpre \
  $PROJECT_FOLDER/metabarcoding_pipeline/primers/primers.db \
  200 250 1
 
-# identify none ITS regions (R1 only)
+# identify none ITS (FUN) regions (R1 only)
 $PROJECT_FOLDER/metabarcoding_pipeline/scripts/PIPELINE.sh -c procends \
  $PROJECT_FOLDER/data/$RUN/FUN/fasta \
  R1 \
  $PROJECT_FOLDER/metabarcoding_pipeline/hmm/ssu_end.hmm \
  $PROJECT_FOLDER/metabarcoding_pipeline/hmm/58s_start.hmm \
  ssu 58ss 20
-
-# remove none ITS regions from sequence
+ 
+ # remove none ITS regions from sequence
 $PROJECT_FOLDER/metabarcoding_pipeline/scripts/PIPELINE.sh -c ITS \
  "$PROJECT_FOLDER/data/$RUN/FUN/fasta/*R1" \
  $PROJECT_FOLDER/metabarcoding_pipeline/scripts/rm_SSU_58Ss.R \
@@ -67,24 +81,57 @@ $PROJECT_FOLDER/metabarcoding_pipeline/scripts/PIPELINE.sh -c ITS \
  "*.\\.58"
 
 # Move merged fasta to filtered folder
-for f in $PROJECT_FOLDER/data/$RUN/$SSU/unfiltered/*r1*; do 
+for f in $PROJECT_FOLDER/data/$RUN/FUN/unfiltered/*r1*; do 
  F=$(echo $f|awk -F"/" '{print $NF}'|awk -F"_" '{print $1".r1.fa"}'); 
  L=$(echo $f|awk -F"/" '{print $NF}'|awk -F"." '{print $1}' OFS=".") ; 
  mv ../fasta/${L}_R1/$F ../filtered/$L; done
 
 
-### 2017 DATA ###
+# Pre-process OO files (min length 150, max diffs 10 (actual: (min len * max diffs)/100), quality 0.5)
+$PROJECT_FOLDER/metabarcoding_pipeline/scripts/PIPELINE.sh -c OOpre \
+ "$PROJECT_FOLDER/data/$RUN/OO/fastq/*R1*.fastq" \
+ $PROJECT_FOLDER/data/$RUN/OO \
+ $PROJECT_FOLDER/metabarcoding_pipeline/primers/adapters.db \
+ 150 10 0.1
+ 
+# move files to keep consistent with Fungal ITS workflow
+```shell
+mv $PROJECT_FOLDER/data/$RUN/$SSU/filtered/* $PROJECT_FOLDER/data/$RUN/$SSU/fasta/.
+rename 's/filtered\.//' $PROJECT_FOLDER/data/$RUN/OO/fasta/*.fa
+```
 
-# folder for specific sequencer run
-RUN=2017
+# identify none ITS (OO) regions
+$PROJECT_FOLDER/metabarcoding_pipeline/scripts/PIPELINE.sh -c procends \
+ $PROJECT_FOLDER/data/$RUN/OO/fasta \
+ "" \
+ $PROJECT_FOLDER/metabarcoding_pipeline/hmm/others/Oomycota/ssu_end.hmm \
+ $PROJECT_FOLDER/metabarcoding_pipeline/hmm/others/Oomycota/58s_start.hmm \
+ ssu 58ss 20
 
-# loop through the RIB variable, i.e. s = BAC on first loop, S= FUN on second loop, and create the folders
-for s in $RIB; do
-mkdir -p $PROJECT_FOLDER/data/$RUN/$s/fastq
-mkdir $PROJECT_FOLDER/data/$RUN/$s/filtered
-mkdir $PROJECT_FOLDER/data/$RUN/$s/unfiltered
-mkdir $PROJECT_FOLDER/data/$RUN/$s/fasta
-done
+# remove none ITS regions from sequence
+$PROJECT_FOLDER/metabarcoding_pipeline/scripts/PIPELINE.sh -c ITS \
+  "$PROJECT_FOLDER/data/$RUN/OO/fasta/*[^fa]" \
+  $PROJECT_FOLDER/metabarcoding_pipeline/scripts/rm_SSU_58Ss.R \
+  "*.\\.ssu" "*.\\.58"
+  
+# move (and rename) files to filtered folder and fix a problem with names (usearch truncates names with -)
+find $PROJECT_FOLDER/data/$RUN/OO/fasta -type f -name *r1.fa|xargs -I myfile mv myfile $PROJECT_FOLDER/data/$RUN/OO/filtered/.
+rename 's/\.r1//' $PROJECT_FOLDER/data/$RUN/OO/filtered/*.fa
+sed -i -e 's/-.*_/_/' $PROJECT_FOLDER/data/$RUN/OO/filtered/*.fa
 
-# data was already pre-processed as part of Kenyan beans project
-# manual copy of BAC/FUN data to filtered/unfiltered folders
+# UPARSE OO
+$PROJECT_FOLDER/metabarcoding_pipeline/scripts/PIPELINE.sh -c UPARSE $PROJECT_FOLDER $RUN OO 0 0
+sed -i -e 's/Zotu/OTU/' $PROJECT_FOLDER/data/$RUN/OO.zotus.fa # workaround for uparse bug
+$PROJECT_FOLDER/metabarcoding_pipeline/scripts/PIPELINE.sh -c tax_assign $PROJECT_FOLDER $RUN OO sintax
+$PROJECT_FOLDER/metabarcoding_pipeline/scripts/PIPELINE.sh -c OTU $PROJECT_FOLDER $RUN OO 21 20
+
+# UPARSE FUN
+$PROJECT_FOLDER/metabarcoding_pipeline/scripts/PIPELINE.sh -c UPARSE $PROJECT_FOLDER $RUN FUN 0 0
+sed -i -e 's/Zotu/OTU/' $PROJECT_FOLDER/data/$RUN/FUN.zotus.fa # workaround for uparse bug
+$PROJECT_FOLDER/metabarcoding_pipeline/scripts/PIPELINE.sh -c tax_assign $PROJECT_FOLDER $RUN FUN
+$PROJECT_FOLDER/metabarcoding_pipeline/scripts/PIPELINE.sh -c OTU $PROJECT_FOLDER $RUN FUN 23 21
+
+# UPARSE BAC
+$PROJECT_FOLDER/metabarcoding_pipeline/scripts/PIPELINE.sh -c UPARSE $PROJECT_FOLDER $RUN BAC 17 21
+$PROJECT_FOLDER/metabarcoding_pipeline/scripts/PIPELINE.sh -c tax_assign $PROJECT_FOLDER $RUN BAC
+$PROJECT_FOLDER/metabarcoding_pipeline/scripts/PIPELINE.sh -c OTU $PROJECT_FOLDER $RUN BAC 17 21
