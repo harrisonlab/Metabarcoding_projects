@@ -4,7 +4,8 @@
 
 Two sequencing runs of   
 1) multiplexed Fungal/Bacterial amplicons and   
-2) Oomycete ITS amplicons  
+2) Oomycete ITS amplicons
+
 colData file contains the description for each sample  
 
 ### Code
