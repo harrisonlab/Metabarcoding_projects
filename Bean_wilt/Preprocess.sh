@@ -118,3 +118,4 @@ $PROJECT_FOLDER/metabarcoding_pipeline/scripts/PIPELINE.sh -c ITS \
 find $PROJECT_FOLDER/data/$RUN/OO/fasta -type f -name *r1.fa|xargs -I myfile mv myfile $PROJECT_FOLDER/data/$RUN/OO/filtered/.
 rename 's/\.r1//' $PROJECT_FOLDER/data/$RUN/OO/filtered/*.fa
 sed -i -e 's/-.*_/_/' $PROJECT_FOLDER/data/$RUN/OO/filtered/*.fa
+rename 's/-.*_/_/' $PROJECT_FOLDER/data/$RUN/OO/unfiltered/*.fastq
