@@ -48,7 +48,7 @@ ubiom_FUN <- list(
 ubiom_OO <- list(
 	countData=read.table("OO.zotus_table.txt",header=T,sep="\t",row.names=1,comment.char = ""),
 	colData=read.table("colDataOO",header=T,sep="\t",row.names=1),
-	taxData=phyloTaxaTidy(read.table("zOO.taxa",header=T,sep=",",row.names=1)[,c(1,3,5,7,9,11,13,2,4,6,8,10,12,14)],0.65),
+	taxData=phyloTaxaTidy(read.table("zOO.taxa",header=F,sep=",",row.names=1)[,c(1,3,5,7,9,11,13,2,4,6,8,10,12,14)],0.65),
 	RHB="OO"
 ) 
 
