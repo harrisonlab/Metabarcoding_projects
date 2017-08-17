@@ -49,7 +49,7 @@ ubiom_BAC$colData$Loci <- droplevels(ubiom_BAC$colData$Loci)
 ubiom_FUN <- list(
 	countData=read.table("FUN.zotus_table.txt",header=T,sep="\t",row.names=1,comment.char = ""),
 	colData=colData[colData$Loci!="16S",],
-	taxData=phyloTaxaTidy(read.table("zFUN.taxa",header=T,sep=",",row.names=1)[,c(1,3,5,7,9,11,13,2,4,6,8,10,12,14)],0.65),
+	taxData=phyloTaxaTidy(read.table("zFUN.taxa",header=F,sep=",",row.names=1)[,c(1,3,5,7,9,11,13,2,4,6,8,10,12,14)],0.65),
 	RHB="FUN"
 ) 
 ubiom_FUN$colData$Loci <- droplevels(ubiom_FUN$colData$Loci)
@@ -147,18 +147,69 @@ res.merge <- data.table(inner_join(data.table(OTU=rownames(res),as.data.frame(re
 # write table to file
 write.table(res.merge, paste(RHB,"time_effect.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
 
-# main effect
+# main effect urea vs control
 contrast <- c("Treatment","Urea","Control")
 res <-  results(dds,alpha=alpha,parallel=T,contrast=contrast,test="Wald")
 res.merge <- data.table(inner_join(data.table(OTU=rownames(res),as.data.frame(res)),data.table(OTU=rownames(taxData),taxData)))
 write.table(res.merge, paste(RHB,"Urea_effect.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
 
+# main effect yeast vs control
+contrast <- c("Treatment","Yeast","Control")
+res <-  results(dds,alpha=alpha,parallel=T,contrast=contrast,test="Wald")
+res.merge <- data.table(inner_join(data.table(OTU=rownames(res),as.data.frame(res)),data.table(OTU=rownames(taxData),taxData)))
+write.table(res.merge, paste(RHB,"Yeast_effect.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
 
+# treatment effect at each time point
+contrast <- list("TreatmentYeast.Time.point1.week","TreatmentControl.Time.point1.week")
+res <-  results(dds,alpha=alpha,parallel=T,contrast=contrast,test="Wald")
+res.merge <- data.table(inner_join(data.table(OTU=rownames(res),as.data.frame(res)),data.table(OTU=rownames(taxData),taxData)))
+write.table(res.merge, paste(RHB,"Yeast_W1.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
 
+contrast <- list("TreatmentUrea.Time.point1.week","TreatmentControl.Time.point1.week")
+res <-  results(dds,alpha=alpha,parallel=T,contrast=contrast,test="Wald")
+res.merge <- data.table(inner_join(data.table(OTU=rownames(res),as.data.frame(res)),data.table(OTU=rownames(taxData),taxData)))
+write.table(res.merge, paste(RHB,"Urea_W1.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
 
-res <[ results(dds,contrast=contrast  
-res30 <- results(ddsTC, name="strainmut.minute30", test="Wald")
-res30[which.min(resTC$padj),]
+contrast <- list("TreatmentYeast.Time.point2.week","TreatmentControl.Time.point2.week")
+res <-  results(dds,alpha=alpha,parallel=T,contrast=contrast,test="Wald")
+res.merge <- data.table(inner_join(data.table(OTU=rownames(res),as.data.frame(res)),data.table(OTU=rownames(taxData),taxData)))
+write.table(res.merge, paste(RHB,"Yeast_W2.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
+
+contrast <- list("TreatmentUrea.Time.point2.week","TreatmentControl.Time.point2.week")
+res <-  results(dds,alpha=alpha,parallel=T,contrast=contrast,test="Wald")
+res.merge <- data.table(inner_join(data.table(OTU=rownames(res),as.data.frame(res)),data.table(OTU=rownames(taxData),taxData)))
+write.table(res.merge, paste(RHB,"Urea_W2.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
+
+contrast <- list("TreatmentYeast.Time.point4.week","TreatmentControl.Time.point4.week")
+res <-  results(dds,alpha=alpha,parallel=T,contrast=contrast,test="Wald")
+res.merge <- data.table(inner_join(data.table(OTU=rownames(res),as.data.frame(res)),data.table(OTU=rownames(taxData),taxData)))
+write.table(res.merge, paste(RHB,"Yeast_W4.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
+
+contrast <- list("TreatmentUrea.Time.point4.week","TreatmentControl.Time.point4.week")
+res <-  results(dds,alpha=alpha,parallel=T,contrast=contrast,test="Wald")
+res.merge <- data.table(inner_join(data.table(OTU=rownames(res),as.data.frame(res)),data.table(OTU=rownames(taxData),taxData)))
+write.table(res.merge, paste(RHB,"Urea_W4.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
+
+contrast <- list("TreatmentYeast.Time.point8.week","TreatmentControl.Time.point8.week")
+res <-  results(dds,alpha=alpha,parallel=T,contrast=contrast,test="Wald")
+res.merge <- data.table(inner_join(data.table(OTU=rownames(res),as.data.frame(res)),data.table(OTU=rownames(taxData),taxData)))
+write.table(res.merge, paste(RHB,"Yeast_W8.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
+
+contrast <- list("TreatmentUrea.Time.point8.week","TreatmentControl.Time.point8.week")
+res <-  results(dds,alpha=alpha,parallel=T,contrast=contrast,test="Wald")
+res.merge <- data.table(inner_join(data.table(OTU=rownames(res),as.data.frame(res)),data.table(OTU=rownames(taxData),taxData)))
+write.table(res.merge, paste(RHB,"Urea_W8.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
+
+contrast <- list("TreatmentYeast.Time.point16.week","TreatmentControl.Time.point16.week")
+res <-  results(dds,alpha=alpha,parallel=T,contrast=contrast,test="Wald")
+res.merge <- data.table(inner_join(data.table(OTU=rownames(res),as.data.frame(res)),data.table(OTU=rownames(taxData),taxData)))
+write.table(res.merge, paste(RHB,"Yeast_W8.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
+
+contrast <- list("TreatmentUrea.Time.point16.week","TreatmentControl.Time.point16.week")
+res <-  results(dds,alpha=alpha,parallel=T,contrast=contrast,test="Wald")
+res.merge <- data.table(inner_join(data.table(OTU=rownames(res),as.data.frame(res)),data.table(OTU=rownames(taxData),taxData)))
+write.table(res.merge, paste(RHB,"Urea_W8.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
+
 
 
 # contrasts to test
