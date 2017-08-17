@@ -35,32 +35,32 @@ taxData<-taxData[,c(1,3,5,7,9,11,13,2,4,6,8,10,12,14)]
 taxData<-phyloTaxaTidy(taxData,0.65)
 
 # save data into a list, then ubiom_16S$countData to access countData and etc.
-ubiom_16S <- list(
+ubiom_BAC <- list(
 	countData=countData,
 	colData=colData[colData$Loci!="18S",],
-	taxData=taxData
+	taxData=taxData,
+	RHB="BAC"
 )
 
 # remove 18S level from colData
-ubiom_16S$colData$Loci <- droplevels(ubiom_16S$colData$Loci)
+ubiom_BAC$colData$Loci <- droplevels(ubiom_BAC$colData$Loci)
 
 # or all in one
-ubiom_ITS <- list(
+ubiom_FUN <- list(
 	countData=read.table("FUN.zotus_table.txt",header=T,sep="\t",row.names=1,comment.char = ""),
 	colData=colData[colData$Loci!="16S",],
-	taxData=phyloTaxaTidy(read.table("zFUN.taxa",header=T,sep=",",row.names=1)[,c(1,3,5,7,9,11,13,2,4,6,8,10,12,14)],0.65)
+	taxData=phyloTaxaTidy(read.table("zFUN.taxa",header=T,sep=",",row.names=1)[,c(1,3,5,7,9,11,13,2,4,6,8,10,12,14)],0.65),
+	RHB="FUN"
 ) 
-ubiom_ITS$colData$Loci <- droplevels(ubiom_ITS$colData$Loci)
+ubiom_FUN$colData$Loci <- droplevels(ubiom_FUN$colData$Loci)
 
 #===============================================================================
 #       Create DEseq objects 
 #===============================================================================
 
-# "attach" the 16S verion of countData, colData and TaxData, three versions supplied - the third allows you to put the objects in their own namespace
-# attach(ubiom_16S)
-# apply(seq_along(ubiom_16S),function(i) assign(names(ubiom_16S)[i], ubiom_16S[[i]]))
- invisible(mapply(assign, names(ubiom_ITS), ubiom_ITS, MoreArgs=list(envir = globalenv())))
-
+# "attach" the required verion of countData, colData and TaxData
+invisible(mapply(assign, names(ubiom_FUN), ubiom_FUN, MoreArgs=list(envir = globalenv())))
+# invisible(mapply(assign, names(ubiom_BAC), ubiom_BAC, MoreArgs=list(envir = globalenv())))
 
 # ensure colData rows and countData columns have the same order
 colData <- colData[names(countData),]
@@ -71,8 +71,7 @@ design<-~1
 #create DES object
 dds<-DESeqDataSetFromMatrix(countData,colData,design)
 
-# calculate size factors - using geoMeans function due to DES error
-# if every gene contains at least one zero, cannot compute log geometric means
+# calculate size factors - use geoMeans function if every gene contains at least one zero
 sizeFactors(dds) <-sizeFactors(estimateSizeFactors(dds))
 # sizeFactors(dds) <-geoMeans(dds)
 
@@ -125,22 +124,39 @@ dds<-dds[rowSums(counts(dds,normalize=T))>0,]
 alpha <- 0.1
 
 # the full model 
-full_design <- ~Year + Country + Time.point + Treatment  + Treatment:Time.point
+full_design <- ~Year + Country  + Treatment + Time.point + Treatment:Time.point
 
 # the reduced model
 reduced_design <- ~Year + Country + Treatment  + Time.point
 
+# add full model to dds object
 design(dds) <- full_design
 
+# calculate model, including both full and reduced designs
 dds <-DESeq(dds, betaPrior=FALSE, test="LRT",full=full_design,reduced=reduced_design,parallel=T)
 
 # calculate fit
 dds <- DESeq(dds,parallel=T)
 
-# Calculate OTUs which respond differently over time (time points) due to the treatment
-res <- results(dds,parallel=T)
+# calculate OTUs which respond differently over time (time points) due to the treatment (this is the full vs reduced model)
+res <- results(dds,alpha=alpha,parallel=T)
 
-# 
+# merge results with taxonomy
+res.merge <- data.table(inner_join(data.table(OTU=rownames(res),as.data.frame(res)),data.table(OTU=rownames(taxData),taxData)))
+
+# write table to file
+write.table(res.merge, paste(RHB,"time_effect.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
+
+# main effect
+contrast <- c("Treatment","Urea","Control")
+res <-  results(dds,alpha=alpha,parallel=T,contrast=contrast,test="Wald")
+res.merge <- data.table(inner_join(data.table(OTU=rownames(res),as.data.frame(res)),data.table(OTU=rownames(taxData),taxData)))
+write.table(res.merge, paste(RHB,"Urea_effect.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
+
+
+
+
+res <[ results(dds,contrast=contrast  
 res30 <- results(ddsTC, name="strainmut.minute30", test="Wald")
 res30[which.min(resTC$padj),]
 
