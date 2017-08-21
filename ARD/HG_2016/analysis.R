@@ -74,7 +74,7 @@ countData <- lapply(Ldds,function(o) counts(o,normalize=T))
 colData <- lapply(Ldds,function(o) o@colData)
 
 #===============================================================================
-#       Base analysis
+#       Base analysis (Figure S1 - cumulative reads)
 #===============================================================================
 
 d<-rowSums(counts(Ldds[[1]][,Ldds[[1]]@colData$Orchard=="Dessert"&Ldds[[1]]@colData$Sample=="Tree"],normalized=T))
@@ -134,20 +134,6 @@ g <- g + theme(axis.line.x = element_line(size=0.3,colour = "black"),axis.line.y
 g<-g+geom_line(size=1.5)+scale_colour_manual(values=cbbPalette)+ylab(expression("Log"[10]*" aligned sequenecs"))+xlab("OTU count")+geom_vline(xintercept=myline,colour=cbbPalette[1:4])+coord_cartesian(xlim = c(0, 100)) 
 
 dev.off()
-
-
-## plots (figure S1)
-
-
-lapply(res.merge,function(obj) {
-	with(obj,plot(log2FoldChange,log10(baseMean),pch=20, xlim=c(-6,6),bty="n",
-	xlab=expression("Log"[2]*" Fold Change"),ylab=expression("Log"[10]*" Mean Expression")))
-	with(subset(obj, padj<0.5 ), points(log2FoldChange, log10(baseMean), pch=20, col="#E69F00"))
-	with(subset(obj, abs(log2FoldChange)>1), points(log2FoldChange, log10(baseMean), pch=20, col="#56B4E9"))
-	with(subset(obj, padj<0.05 & abs(log2FoldChange)>1), points(log2FoldChange, log10(baseMean), pch=20, col="#009E73"))
-})
-dev.off()
-
 
 ## taxonomy calculations
 
@@ -667,10 +653,7 @@ lapply(res.cider,function(o) plot_ma(o,xlims=c(-10,10),textsize=20))
 lapply(res.dessert,function(o) plot_ma(o,xlims=c(-10,10),textsize=20))
 dev.off()
 
-
-
-
- ggpairs(test,aes(colour=colour,alpha=0.4),
+ggpairs(test,aes(colour=colour,alpha=0.4),
 	upper = list(continuous = "cor", combo = "facetdensity"),
 	lower = list(continuous = "smooth", combo = "dot_no_facet"),
 	diag = list(continuous="densityDiag"))
@@ -690,3 +673,14 @@ g <- g + theme(panel.grid.major = element_blank(), panel.grid.minor = element_bl
 	with(subset(obj, padj<0.05 & abs(log2FoldChange)>1), points(log2FoldChange, log10(baseMean), pch=20, col="#009E73"))
 
 
+## plots (ma plot?)
+
+
+lapply(res.merge,function(obj) {
+	with(obj,plot(log2FoldChange,log10(baseMean),pch=20, xlim=c(-6,6),bty="n",
+	xlab=expression("Log"[2]*" Fold Change"),ylab=expression("Log"[10]*" Mean Expression")))
+	with(subset(obj, padj<0.5 ), points(log2FoldChange, log10(baseMean), pch=20, col="#E69F00"))
+	with(subset(obj, abs(log2FoldChange)>1), points(log2FoldChange, log10(baseMean), pch=20, col="#56B4E9"))
+	with(subset(obj, padj<0.05 & abs(log2FoldChange)>1), points(log2FoldChange, log10(baseMean), pch=20, col="#009E73"))
+})
+dev.off()
