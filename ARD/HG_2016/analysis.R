@@ -136,7 +136,7 @@ g<-g+geom_line(size=1.5)+scale_colour_manual(values=cbbPalette)+ylab(expression(
 dev.off()
 
 
-## plots
+## plots (figure S1)
 
 
 lapply(res.merge,function(obj) {
@@ -639,8 +639,6 @@ res.merge <- lapply(seq(1,length(Ldds)),function(i)
 
 write.table(res.merge[[1]],"Pooled_bacteria.dessert.res",sep="\t",quote=F,na="",row.names=F)
 write.table(res.merge[[2]],"Pooled_fungi.dessert.res",sep="\t",quote=F,na="",row.names=F)
-
-
 
 ## figure S5 
 
