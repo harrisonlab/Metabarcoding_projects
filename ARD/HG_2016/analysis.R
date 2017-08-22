@@ -493,12 +493,22 @@ dev.off()
 library(GUniFrac)
 library(ape)
 
+# load distnace matrix and convert to nj tree		    
+temp_connection = file("16S.phy", 'r')
+len = as.numeric(readLines(temp_connection, n=1))
+#len = as.numeric(len)
+close(temp_connection)
+phylip_data = read.table("16S.phy", fill=T, row.names=1, skip=1, col.names=1:len)
+nj.16S <- nj(as.dist(phylip_data))
+write.tree(nj.16S,"16S.tree")
+		    
 phylist <- lapply(seq(1,2),function(i) phyloseq(otu_table(counts(Ldds[[i]],normalize=T),taxa_are_rows=T),sample_data(as.data.frame(colData[[i]])),tax_table(tax_table(myfiltbiom[[i]]))))
 
+phy_tree(phylist[[2]]) <- nj.ITS
+phy_tree(phylist[[1]]) <- nj.16S
+		  
+		  
 phylist <- lapply(phylist,function(o) prune_taxa(rowSums(otu_table(o))>5,o))
-
-nj.ITS
-nj.16S
 
 mytree <- list(Bacteria=phy_tree(nj.16S),Fungi=phy_tree(nj.ITS))
 mytree <- lapply(mytree,function(o) root(o,outgroup=200,resolve.root=T))
