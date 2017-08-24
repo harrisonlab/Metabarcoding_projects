@@ -6,7 +6,6 @@ library(DESeq2)
 library("BiocParallel")
 register(MulticoreParam(12))
 library(data.table)
-library(plyr)
 library(dplyr)
 library(Biostrings)
 library(devtools)
@@ -31,7 +30,7 @@ taxData<-taxData[,c(1,3,5,7,9,11,13,2,4,6,8,10,12,14)]
 # add best "rank" at 0.65 confidence and tidy-up the table
 taxData<-phyloTaxaTidy(taxData,0.65)
 
-# save data into a list, then ubiom_BAC$countData to access countData and etc.
+# save data into a list
 ubiom_BAC <- list(
 	countData=countData,
 	colData=colData[colData,],
@@ -73,41 +72,40 @@ design<-~1
 #create DES object
 dds<-DESeqDataSetFromMatrix(countData,colData,design)
 
+# The seqeuncing run contains additional data, so subset bean data
+dds <- dds[,dds$type=="bean"]
+
 # calculate size factors - use geoMeans function if
 # every gene contains at least one zero, as cannot compute log geometric means
 sizeFactors(dds) <-sizeFactors(estimateSizeFactors(dds))
 #sizeFactors(dds) <-geoMeans(dds)
 
-# The seqeuncing run contain additional data, so subset bean data
-dds <- dds[,dds$type=="bean"]
-
 #===============================================================================
 #       PCA plot
 #===============================================================================
 
-# perform PC decompossion on DES object
+# perform PC decomposition of DES object
 mypca <- des_to_pca(dds)
 
 # to get pca plot axis into the same scale create a dataframe of PC scores multiplied by their variance
 df <-t(data.frame(t(mypca$x)*mypca$percentVar))
 
 # plot the PCA
-pdf("OO.pdf")
+pdf(paste(RHb,"pdf",sep="."))
 plotOrd(df,dds@colData,design="condition",)
 dev.off()
 
-# bean sample X45_S68 is a clear outlier 
+# Fungi sample X45_S68 is a clear outlier 
 
 #===============================================================================
 #       Differential analysis of bean data
 #===============================================================================
 
-# remove ITS outlier as identified by PCA (no 16S outliers)
+# remove FUN outlier as identified by PCA (no BAC or OO outliers)
 dds <- dds[,colnames(dds)!="X45_S68"]
 
 # filter for low counts - this can affect the FD probability and DESeq2 does apply its own filtering for genes/otus with no power 
-# dds<-dds[rowSums(counts(dds,normalize=T))>0,]
-
+dds<-dds[rowSums(counts(dds,normalize=T))>0,]
 
 # drop unused levels from condition
 dds$condition <- droplevels(dds$condition)
@@ -146,16 +144,3 @@ res.merge[padj<=0.05,]
 write.table(res.merge,paste(RHB,"main_effect.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
 write.table(res.merge,paste(RHB,"interaction.txt",sep="_"),quote=F,sep="\t",na="")
 write.table(res.merge,paste(RHB,"bean_effect.txt",sep="_"),quote=F,sep="\t",na="")
-
-#===============================================================================
-#       Differential OTUs
-#===============================================================================
-
-# read OTU fasta
-myOTUs <- readDNAStringSet("ITS.otus.fa")
-
-writeXStringSet(myOTUs[as.matrix(res.merge[padj<=0.1,1]),"main_big.fa")
-
-
-
-
