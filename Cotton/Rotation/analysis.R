@@ -259,46 +259,56 @@ dev.off()
 #       Statistical analysis
 #===============================================================================
 
+
 # ensure dds is filtered appropriately
 dds <- dds[myfilter,]
+
+# ensure Year is a factor
+if(class(dds$Year)!="factor"){dds$Year <- as.factor$dds$Year}
 
 # p value for FDR cutoff
 alpha <- 0.1
 
 # drop any unused levels in Cultivar
-dds$Rotatio <- droplevels(dds$Rotation)
+#dds$Cultivar <- droplevels(dds$)
 
-# add model to the DES object
-design(dds) <- ~Rotation
+# add model to the DES object - we're not interested at an individual site effect so don't add it to the model
+design(dds) <- ~Site + Year #+ Site:Year
 
 # calculate fit
 dds <- DESeq(dds,parallel=T)
 
 # prepare contrasts - down and dirty nested loop method, not very R
 contrast <- ""
-for (i in 1:length(levels(dds$Cultivar)[-1])){
-	for( k in (i+1):length(levels(dds$Cultivar))) {
-		x <- c("Cultivar",levels(dds$Cultivar)[i],levels(dds$Cultivar)[k])
+for (i in 1:length(levels(dds$Year)[-1])){
+	for( k in (i+1):length(levels(dds$Year))) {
+		x <- c("Year",levels(dds$Year)[i],levels(dds$Year)[k])
 		contrast<- rbind(contrast,x)
 	}
 }
 contrast <- contrast[-1,]
 
 # calculate results (this will take a while to run)
-res.1.10 <- apply(contrast[1:10,],1,function(s) results(dds,alpha=alpha,parallel=T,contrast=s))
+res <- apply(contrast,1,function(s) results(dds,alpha=alpha,parallel=T,contrast=s))
 
 # add name to each result set (A vs B)
-names(res.1.10) <- paste(contrast[1:10,2], contrast[1:10,3],sep=" vs ")
+names(res) <- paste(contrast[,2], contrast[,3],sep="_vs_")
 
-# extract 
-logfc <- sapply(res,function(obj) data.frame(names(obj)=obj[,2]))
-padj <- sapply(res,function(obj) data.frame(names(obj)=obj[,5]))
-baseMean <- res[[1]][,1,drop = FALSE]
+# change names of log FC and padj column sto reflect the contrast
+res <- Map(function(x, i) {
+	colnames(x)[2]<-paste("Year",i, colnames(x)[2],sep="_");
+	colnames(x)[6]<-paste("Year",i, colnames(x)[6],sep="_");
+	return(x)
+},res, names(res))
 
-res.merge <- data.table(inner_join(data.table(OTU=rownames(baseMean),as.data.frame(baseMean)),data.table(OTU=rownames(taxData),taxData)))
+# merge contrast into a single table
+m <- Reduce(function(...) inner_join(..., all=T),  lapply(res,function(obj) as.data.table(as.data.frame(obj[,c(1,2,6)]),keep.rownames="OTU")))
 
+# merge with taxonomy data
+res.merge <- data.table(inner_join(m,data.table(OTU=rownames(taxData),taxData)))
 
-lapply(res,function(obj) write.table(obj,paste(RHB,names(obj),"results.txt"
+# write output
+write.table(res.merge,paste(RHB,"diff_otu.txt",sep="_"),row.names=F,quote=F,na="",sep="\t")
 
 
 
