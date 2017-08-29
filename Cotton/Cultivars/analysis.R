@@ -252,7 +252,7 @@ adonis(du~Cultivar,as.data.frame(dds@colData),parallel=12,permutations=9999,meth
 adonis(d5~Cultivar,as.data.frame(dds@colData),parallel=12,permutations=9999,method="euclidean")
 sink()
 
-### Plot beta diversity
+### Plot beta diversity ###
 
 # order rows and columns
 d5 <- d5[sort(rownames(d5)),sort(colnames(d5))]
@@ -264,8 +264,25 @@ pdf(paste(RHB,"beta.pdf",sep="_"),height=7,width=7)
 plotHeatmap(d5,textSize=11,axis.labels=T)
 
 # close output file
-dev.off()
 
+## hclust ordering for heatmap ##      
+       
+# create hclust 
+h1 <- hclust(as.dist(d5))
+
+# plot hclust
+plot(h1)
+       
+# change order of d5 to cluster order       
+d5 <- d5[h1$order,h1$order]
+
+# plot heatmap
+plotHeatmap(d5,textSize=11,axis.labels=T)       
+
+# close the image file       
+dev.off()
+       
+       
 #===============================================================================
 #       Statistical analysis
 #===============================================================================
