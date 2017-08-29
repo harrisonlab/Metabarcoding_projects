@@ -51,6 +51,9 @@ ubiom_BAC_Rhiz <- list(
 	RHB="BAC_Rhiz"
 )
 
+# add dds object to ubiom list
+ubiom_BAC_Rhiz$dds <- ubiom_to_des(ubiom_BAC_Rhiz)
+
 # or all in one
 ubiom_BAC_Endo <- list(
 	countData=read.table("final_16s_Endo_otu_table.txt",header=T,sep="\t",row.names=1,comment.char = ""),
@@ -59,6 +62,7 @@ ubiom_BAC_Endo <- list(
 	mdat=fread.phylip("16S_Endo.phy",skip=1),
 	RHB="BAC_Endo"
 ) 
+ubiom_BAC_Endo$dds <- ubiom_to_des(ubiom_BAC_Endo)
 
 ubiom_FUN <- list(
 	countData=read.table("final_ITs_otu_table.txt",header=T,sep="\t",row.names=1,comment.char = ""),
@@ -79,6 +83,7 @@ ubiom_FUN_Endo <- list(
 	mdat=mdat,
 	RHB="FUN_Endo"
 )
+ubiom_FUN_Endo$dds <- ubiom_to_des(ubiom_FUN_Endo)
 
 # construct new fungal rhizoshere list
 ubiom_FUN_Rhiz <- list(
@@ -88,9 +93,10 @@ ubiom_FUN_Rhiz <- list(
 	mdat=mdat,
 	RHB="FUN_Rhiz"
 )
+ubiom_FUN_Rhiz$dds <- ubiom_to_des(ubiom_FUN_Rhiz)
 
 #===============================================================================
-#       Create DEseq object
+#       Attach objects
 #===============================================================================
 
 # attach objects - run only one
@@ -99,74 +105,22 @@ invisible(mapply(assign, names(ubiom_BAC_Endo), ubiom_BAC_Endo, MoreArgs=list(en
 invisible(mapply(assign, names(ubiom_FUN_Endo), ubiom_FUN_Endo, MoreArgs=list(envir = globalenv())))
 invisible(mapply(assign, names(ubiom_FUN_Rhiz), ubiom_FUN_Rhiz, MoreArgs=list(envir = globalenv())))
 
-# ensure colData rows and countData columns have the same order
-colData <- colData[colnames(countData),,drop = FALSE]
-
-# simple Deseq design
-design<-~1
-
-#create DES object
-dds<-DESeqDataSetFromMatrix(countData,colData,design)
-
-# calculate size factors - use geoMeans function if every gene contains at least one zero 
-sizeFactors(dds) <-sizeFactors(estimateSizeFactors(dds))
-
 #===============================================================================
 #       Read accumulation and filter
 #===============================================================================
 
-# calculate row sums from normalised read counts
-df <- as.data.table(rowSums(counts(dds,normalized=T)),keep.rownames=F)
-
-# calculate cumulative sum of ordered OTU counts 
-#df <- cumsum(df[order(-V2)])
-df <- cumsum(df[order(V1,decreasing=T)])
-
-# add column name
-colnames(df) <- RHB
-
-# set cutoffs 
-cutoffs = c(0.8,0.9,0.99,0.999)
-
-# get cutoff poisiotns
-mylines <- data.table(RHB=sapply(cutoffs,function(i) {nrow(df) - sum(df >= max(df,na.rm=T)*i)}),Cutoffs=cutoffs)
-
-# log the count values
-df <- log10(df)
-
 # output pdf file
 pdf(paste(RHB,"OTU_counts.pdf",sep="_"))
 
-# create an empty ggplot object from the data table
-g <- ggplot(data=df,aes_string(x=seq(1,nrow(df)),y=RHB))
+# plot cummulative reads
+plotCummulativeReads(counts(dds,normalize=T))
 
-# remove plot background and etc.
-g <- g + theme_classic_thin()
-
-# a colour pallete that can be descriminated by the colur blind 
-cbbPalette <- c("#000000", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
-
-# plot cumulative reads
-g <- g + geom_line(size=1.5) + scale_colour_manual(values=cbbPalette) # single line so colour scale will only use first item
-
-# add cutoff lines
-g <- g + geom_vline(data=mylines,aes(xintercept=RHB),colour=cbbPalette[2:5])
-
-# label cutoff lines
-g <- g + geom_text(data = mylines, aes(label=Cutoffs,x=RHB, y = -Inf),angle = 90, inherit.aes = F, hjust = -.5, vjust = -.5)
-
-# add axis lables
-g <- g + ylab(expression("Log"[10]*" aligned sequenecs"))+xlab("OTU count")
-
-# print the plot
-g
-
+# close pdf
 dev.off()
 
-# o.k the above loses the OTU names - this keeps them, not worth editing the above.
+#### Select filter ####
 df <- as.data.table(rowSums(counts(dds,normalize=T)),keep.rownames=T)
 df <- df[order(-V2)]
-df$V2 <- cumsum(df$V2)
 
 # for Rhiz based on the graph we want the first 500 OTUs by abundance, Endo about 50 (or less)
 myfilter <- df$V1[1:500] # bac rhiz
@@ -241,24 +195,7 @@ dds <- dds[myfilter,]
 
 #### ALPHA DIVERSITY ####
 
-# function for converting normalised counts to integers and ceiling values below 1
-alpha_counts <- function(X) {
-	X[X==0]<-NA
-	X[X<1] <- 1
-	X[is.na(X)] <- 0
-	return(round(X,0))
-}
-
-# transposed normalised read counts - converted to integers
-OTU <- t(alpha_counts(counts(dds,normalize=T)))
-
-# get alpha diversity measures with Vegan(Chao1, ACE, Shannon, Simpson)
-all_alpha <- data.table(
-	t(estimateR(OTU)),
-	shannon = diversity(OTU, index = "shannon"),
-	simpson = diversity(OTU, index = "simpson"),
-	keep.rownames="Samples"
-)
+all_alpha <- plot_alpha(counts(dds,normalize=T),returnData=T)
 
 # rename samples to Cultivar name
 all_alpha$Samples <- sub("[RE][0-9]$","",all_alpha$Samples)
@@ -277,63 +214,14 @@ sink()
 
 ### plot Alpha diversity
 
-# get column names of all_alpha
-measures = colnames(all_alpha)
-
-# get standard error columns (Chao1 and ACE)
-ses = colnames(all_alpha)[grep("^se\\.", colnames(all_alpha))]
-
-# set measures to (measures - se) columns
-measures = measures[!measures %in% ses]
-
-# melt the data table by Sample
-mdf <- melt(all_alpha,id.vars="Samples")
-
-# add a column for se values
-mdf$se <- as.double()
-
-# temp holder for se labels
-selabs = ses
-
-# rename se labels to the same as the corresponding measures column
-names(selabs) <- sub("se","S",selabs)
-
-# add se values to se column for Chao1 and ACE
-#mdf[variable %like% x]$se <- (sapply(names(selabs),function(x)mdf[variable %like% selabs[x]]$value))
-invisible(sapply(names(selabs),function(x) mdf[variable %like% x]$se <<-  mdf[variable %like% selabs[x]]$value))
-
-# remove se rows
-mdf <- mdf[as.character(mdf$variable) %in% measures,]
-
-# drop the levels (se column names) we've just removed 
-mdf$variable <- droplevels(mdf$variable)
-
-# create ggplot object
-g <- ggplot(data=mdf,aes(x=Samples,y=value,colour=Samples))
-
-# add a theme
-g <- g + theme_classic_thin() %+replace% theme(	
-	panel.border = element_rect(colour = "black", fill=NA, size=0.5),
-	axis.text.x = element_text(angle = -90, vjust = 0.5,hjust = 0)
-)
-
-# add points
-g <- g + geom_point(na.rm = TRUE,position = position_dodge(width = 0.5),size=1)
-
-# add error bars
-g <- g + geom_errorbar(aes(ymax = value + se, ymin = value -  se), width = 0.5,position = position_dodge(width = 0.5))
-
-# add y label
-g <- g + ylab("Alpha Diversity Measure")
-
-# Add heading to each graph
-g <- g + facet_wrap(~variable, nrow = 1,scales="free_y")
-
 # output file
 pdf(paste(RHB,"alpha.pdf",sep="_"))
 
+# produce graphs
+g <- plot_alpha(counts(dds,normalize=T),dds@colData,design="Site",colour="Year")
+
 # print the graphs
-sapply(levels(mdf$variable),function(lev) print(g %+% mdf[variable==lev,]) )
+sapply(levels(g$data$variable),function(lev) print(g %+% subset(g$data,variable==lev)))
 
 dev.off()
 
