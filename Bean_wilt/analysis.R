@@ -16,7 +16,7 @@ load_all("../metabarcoding_pipeline/scripts/myfunctions")
 #===============================================================================
 
 # load denoised otu count table
-countData <- read.table("BAC.zotus_table.txt",header=T,sep="\t",row.names=1, comment.char = "")
+countData <- read.table("16S.zotus_table.txt",header=T,sep="\t",row.names=1, comment.char = "")
 
 # load sample metadata
 colData <- read.table("colData",header=T,sep="\t",row.names=1)
@@ -40,9 +40,9 @@ ubiom_BAC <- list(
 
 # Fungi all in one call
 ubiom_FUN <- list(
-	countData=read.table("FUN.zotus_table.txt",header=T,sep="\t",row.names=1,comment.char = ""),
+	countData=read.table("ITS.zotus_table.txt",header=T,sep="\t",row.names=1,comment.char = ""),
 	colData=read.table("colData",header=T,sep="\t",row.names=1),
-	taxData=phyloTaxaTidy(read.table("zFUN.taxa",header=T,sep=",",row.names=1)[,c(1,3,5,7,9,11,13,2,4,6,8,10,12,14)],0.65),
+	taxData=phyloTaxaTidy(read.table("zITS.taxa",header=T,sep=",",row.names=1)[,c(1,3,5,7,9,11,13,2,4,6,8,10,12,14)],0.65),
 	RHB="FUN"
 ) 
 
