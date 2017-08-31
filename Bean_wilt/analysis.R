@@ -85,8 +85,7 @@ sizeFactors(dds) <-sizeFactors(estimateSizeFactors(dds))
 #============================================================================
 
 # Pythium specific filter to remove OTUs which are unlikely part of the SAR kingdom
-myfilter <- row.names(countData[row.names(countData) %in% 
-				row.names(taxData[(taxData$kingdom=="SAR"|as.numeric(taxData$k_conf)<=0.5),]),])
+myfilter <- row.names(countData[row.names(countData) %in% row.names(taxData[(taxData$kingdom=="SAR"|as.numeric(taxData$k_conf)<=0.5),]),])
 
 dds <- dds[myfilter,]
 
@@ -137,6 +136,11 @@ contrast=c("condition","SICK", "HEALTHY" )
 
 # bean effect
 contrast=c("bean","FRENCH","RUNNER")
+
+# diseased beans only
+dds2 <- dds[,dds$conditin=="SICK"]
+design(dds2) <- ~farm + bean #+ farm:bean
+dds2 <- DESeq(dds2,parallel=T)
 
 # interaction term (both should give roughly the same results - with FC in opposite direction)
 # contrast=list( "beanFRENCH.conditionHEALTHY","beanFrench.conditionHEALTHY") # effect of condition on french beans 
