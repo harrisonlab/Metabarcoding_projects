@@ -81,6 +81,16 @@ sizeFactors(dds) <-sizeFactors(estimateSizeFactors(dds))
 #sizeFactors(dds) <-geoMeans(dds)
 
 #===============================================================================
+#       Filter data 
+#============================================================================
+
+# Pythium specific filter to remove OTUs which are unlikely part of the SAR kingdom
+myfilter <- row.names(countData[row.names(countData) %in% 
+				row.names(taxData[(taxData$kingdom=="SAR"|as.numeric(taxData$k_conf)<=0.5),]),])
+
+dds <- dds[myfilter,]
+
+#===============================================================================
 #       PCA plot
 #===============================================================================
 
@@ -91,7 +101,7 @@ mypca <- des_to_pca(dds)
 df <-t(data.frame(t(mypca$x)*mypca$percentVar))
 
 # plot the PCA
-pdf(paste(RHb,"pdf",sep="."))
+pdf(paste(RHB,"pdf",sep="."))
 plotOrd(df,dds@colData,design="condition",)
 dev.off()
 
