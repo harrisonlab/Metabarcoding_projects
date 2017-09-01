@@ -140,7 +140,7 @@ contrast=c("condition","SICK", "HEALTHY" )
 contrast=c("bean","FRENCH","RUNNER")
 
 # diseased beans only
-dds2 <- dds[,dds$conditin=="SICK"]
+dds2 <- dds[,dds$condition=="SICK"]
 design(dds2) <- ~farm + bean #+ farm:bean
 dds2 <- DESeq(dds2,parallel=T)
 
