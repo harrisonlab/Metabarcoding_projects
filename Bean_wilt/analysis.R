@@ -158,5 +158,5 @@ res.merge <- data.table(inner_join(data.table(OTU=rownames(res),as.data.frame(re
 res.merge[padj<=0.05,]
 
 write.table(res.merge,paste(RHB,"main_effect.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
-write.table(res.merge,paste(RHB,"interaction.txt",sep="_"),quote=F,sep="\t",na="")
-write.table(res.merge,paste(RHB,"bean_effect.txt",sep="_"),quote=F,sep="\t",na="")
+write.table(res.merge,paste(RHB,"interaction.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
+write.table(res.merge,paste(RHB,"bean_effect.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
