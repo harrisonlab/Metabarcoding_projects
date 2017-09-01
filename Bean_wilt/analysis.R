@@ -79,6 +79,8 @@ dds <- dds[,dds$type=="bean"]
 # every gene contains at least one zero, as cannot compute log geometric means
 sizeFactors(dds) <-sizeFactors(estimateSizeFactors(dds))
 #sizeFactors(dds) <-geoMeans(dds)
+# calcNormFactors(counts(dds),method="RLE",lib.size=(prop.table(colSums(counts(dds)))))
+
 
 #===============================================================================
 #       Filter data 
