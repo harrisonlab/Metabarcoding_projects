@@ -33,7 +33,7 @@ taxData<-phyloTaxaTidy(taxData,0.65)
 # save data into a list
 ubiom_BAC <- list(
 	countData=countData,
-	colData=colData[colData,],
+	colData=colData,
 	taxData=taxData,
 	RHB="BAC"
 )
