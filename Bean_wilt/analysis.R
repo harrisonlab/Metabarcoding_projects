@@ -22,7 +22,7 @@ countData <- read.table("16S.zotus_table.txt",header=T,sep="\t",row.names=1, com
 colData <- read.table("colData",header=T,sep="\t",row.names=1)
 
 # load taxonomy data
-taxData <- read.table("zBAC.taxa",header=F,sep=",",row.names=1)
+taxData <- read.table("z16S.taxa",header=F,sep=",",row.names=1)
 
 # reorder columns
 taxData<-taxData[,c(1,3,5,7,9,11,13,2,4,6,8,10,12,14)]
