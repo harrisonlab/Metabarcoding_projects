@@ -389,6 +389,7 @@ output1 <- data.table(inner_join(data.table(OTU=rownames(dds2),W1=counts(dds2,no
 write.table(output1,paste(RHB,"Yx2_OTUs.txt",sep="_"),sep="\t",row.names=F,quote=F)
 vst<-varianceStabilizingTransformation(dds)
 vst <- vst[row.names(dds2),((dds$Time.point=="1 week")|(dds$Time.point=="4 week"))&dds$Country=="Germany"]
+vst <- vst[order(rowSums(assay(vst)),decreasing=T),]
 
 d <- data.frame(t(assay(vst)),vst@colData)
 d$time <- as.integer(sub(" week","",d$Time.point))
