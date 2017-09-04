@@ -80,6 +80,8 @@ dds <- dds[,(colnames(dds)!="X205_S37")&(colnames(dds)!="Y2_S56")]
 # also low for Bacteria only
 dds <- dds[,(colnames(dds)!="C16_S95")&(colnames(dds)!="U16_S40")]
 
+dds$time <- as.integer(sub(" week","",dds$Time.point))
+
 # calculate size factors - use geoMeans function if every gene contains at least one zero (check for size factor range as well)
 # sizeFactors(dds) <-sizeFactors(estimateSizeFactors(dds))
 sizeFactors(dds) <-geoMeans(dds)
@@ -306,74 +308,16 @@ rld <- rld[order(rowSums(assay(rld)),decreasing=T),]
 
 # or use vst - not so good if size factors differ markedly	    
 vst <- varianceStabilizingTransformation(dds2)		    
-vst <- vst[unique(c(AS,US,YS)),]
-vst <- vst[order(rowSums(assay(vst)),decreasing=T),]
-		    
+
 X<-unique(c(AS,US,YS))
 vst <- vst[X[X%in%row.names(dds2)],]		    
-	    
-#### test plot for first OTU
-#d <- data.frame(t(assay(rld[1,])),rld@colData)
-#d$time <- as.integer(sub(" week","",rld$Time.point))
-#g <- ggplot(data=d,aes_string(y=colnames(d)[1], x="time",colour="Treatment"))
-#g <- g + theme_classic_thin() %+replace% theme(panel.border=element_rect(colour="black",size=0.25,fill=NA),legend.position="bottom")
-#g <- g + scale_colour_viridis(discrete=TRUE)
-#g <- g + geom_point(size=2)
-#g <- g + facet_grid(.~ Year + Country)
-#g <- g + stat_smooth(method=locfit, formula=y~lp(x),se=F) 
-#g
-### end test plot
-
-# extract rld values and combine with colData
-d <- data.frame(t(assay(vst)),vst@colData)
-		    
-# add an integer time column
-d$time <- as.integer(sub(" week","",d$Time.point))
-		    
-# filter out anything we don't need		    
-# d <- d[d$Treatment!="Urea",]
-# d <- d[d$Treatment!="Yeast",]
-		    
-# convert data to "long" format (single column will contain all the OTUs rather than one column per OTU) 
-d <- melt(d,id.vars = colnames(d)[(ncol(d)-6):ncol(d)],variable.name = "OTU", value.name = "vst_counts")
-
-# zero bound rlog values (no negative values on y-axis here)
-d$vst_counts <- d$vst_counts+abs(min(d$vst_counts))
-
-# set the maximum extent of the y-axis (all graphs will be on same scale)
-ymax <- max(d$vst_counts)
-
-# number of plots per page
-noPlots <- 5
-
-# get unique OTUs
-allVars <- unique(d$OTU)
-
-# number of unique OTUs same as: noVars <- length(unique(d$OTU)) 
-noVars <- length(allVars)
-
-# plot holder
-plotSequence <- c(seq(0, noVars-1, by = noPlots), noVars)
+vst <- vst[order(rowSums(assay(vst)),decreasing=T),]
 
 # output file
 pdf(paste(RHB,"time_graphs_v2.pdf",sep="_"))
 
 # plotting function
-sapply(seq(2,length(plotSequence)),function(i) {
-	start <- plotSequence[i-1] + 1
-	end <- plotSequence[i]
-	tmp <- d[d$OTU %in% allVars[start:end],]
-	cat(unique(tmp$OTU), "\n")
-	g <- ggplot(data=tmp,aes(y=vst_counts, x=time,colour=Treatment),ylim=c(0,ymax))
-	g <- g + theme_classic_thin(base_size = 16) %+replace% theme(panel.border=element_rect(colour="black",size=0.25,fill=NA),legend.position="bottom")
-	g <- g + scale_colour_viridis(discrete=TRUE)
-	g <- g + facet_grid(Country ~ OTU,scales="free_x")
-#	g <- g + facet_grid(Year + Country ~ OTU,scales="free_x")
-	g <- g + geom_point(size=2)
-	g <- g + geom_line()
-	g <- g + stat_smooth(method=locfit, formula=y~lp(x),se=F)
-	print(g)
-})
+plotOTUs(assay(vst),vst@colData,facet=formula(Year + Country ~ OTU),line="smooth",design="time",colour="Treatment",plotsPerPage=6)
 
 dev.off()
 
@@ -385,36 +329,13 @@ dev.off()
 dds2 <- dds[,dds$Treatment=="Yeast X 2"]
 dds2 <- dds2[rowSums(counts(dds2,normalize=T))>5,]
 output1 <- data.table(inner_join(data.table(OTU=rownames(dds2),W1=counts(dds2,normalize=T)[,1],W4=counts(dds2,normalize=T)[,2]),data.table(OTU=rownames(taxData),taxData)))
-
 write.table(output1,paste(RHB,"Yx2_OTUs.txt",sep="_"),sep="\t",row.names=F,quote=F)
+
 vst<-varianceStabilizingTransformation(dds)
 vst <- vst[row.names(dds2),((dds$Time.point=="1 week")|(dds$Time.point=="4 week"))&dds$Country=="Germany"]
 vst <- vst[order(rowSums(assay(vst)),decreasing=T),]
 
-d <- data.frame(t(assay(vst)),vst@colData)
-d$time <- as.integer(sub(" week","",d$Time.point))
-d <- melt(d,id.vars = colnames(d)[(ncol(d)-6):ncol(d)],variable.name = "OTU", value.name = "vst_counts")
-d$vst_counts <- d$vst_counts+abs(min(d$vst_counts))
-ymax <- max(d$vst_counts)
-noPlots <- 5
-allVars <- unique(d$OTU)
-noVars <- length(allVars)
-plotSequence <- c(seq(0, noVars-1, by = noPlots), noVars)
-
-sapply(seq(2,length(plotSequence)),function(i) {
-	start <- plotSequence[i-1] + 1
-	end <- plotSequence[i]
-	tmp <- d[d$OTU %in% allVars[start:end],]
-	cat(unique(tmp$OTU), "\n")
-	g <- ggplot(data=tmp,aes(y=vst_counts, x=time,colour=Treatment),ylim=c(0,ymax))
-	g <- g + theme_classic_thin(base_size = 16) %+replace% theme(panel.border=element_rect(colour="black",size=0.25,fill=NA),legend.position="bottom")
-	g <- g + scale_colour_viridis(discrete=TRUE)
-	g <- g + facet_grid(~ OTU,scales="free_x")
-	g <- g + geom_point(size=2)
-	g <- g + geom_line()
-	print(g)
-})
-
+plotOTUs(assay(vst),X,facet=formula(~OTU),line="straight",design="time",colour="Treatment",plotsPerPage=4)
 dev.off()
 
 		     
