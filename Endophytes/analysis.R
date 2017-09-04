@@ -157,73 +157,36 @@ design(dds) <- full_design
 # calculate fit
 dds <- DESeq(dds,parallel=T)
 
+# a quick function to save writing the same thing a dozen times
+rescalc <- function(contrast,output,obj=dds,td=taxData) {
+	res <-  results(obj,alpha=alpha,parallel=T,contrast=contrast)
+	res.merge <- data.table(inner_join(data.table(OTU=rownames(res),as.data.frame(res)),data.table(OTU=rownames(td),td)))
+	write.table(res.merge, paste(RHB,output,sep="_"),quote=F,sep="\t",na="",row.names=F)
+}
+
 # main effect urea vs control
-contrast <- c("Treatment","Urea","Control")
-res <-  results(dds,alpha=alpha,parallel=T,contrast=contrast)
-res.merge <- data.table(inner_join(data.table(OTU=rownames(res),as.data.frame(res)),data.table(OTU=rownames(taxData),taxData)))
-write.table(res.merge, paste(RHB,"Urea_effect.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
+rescalc(c("Treatment","Urea","Control"),"Urea_effect.txt")
 
 # main effect yeast vs control
-contrast <- c("Treatment","Yeast","Control")
-res <-  results(dds,alpha=alpha,parallel=T,contrast=contrast)
-res.merge <- data.table(inner_join(data.table(OTU=rownames(res),as.data.frame(res)),data.table(OTU=rownames(taxData),taxData)))
-write.table(res.merge, paste(RHB,"Yeast_effect.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
+rescalc(c("Treatment","Yeast","Control"),"Yeast_effect.txt")
 
 # treatment effect at each time point
-contrast <- list("TreatmentYeast.Time.point1.week","TreatmentControl.Time.point1.week")
-res <-  results(dds,alpha=alpha,parallel=T,contrast=contrast)
-res.merge <- data.table(inner_join(data.table(OTU=rownames(res),as.data.frame(res)),data.table(OTU=rownames(taxData),taxData)))
-write.table(res.merge, paste(RHB,"Yeast_W1.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
+# yeast
+rescalc(list("TreatmentYeast.Time.point1.week","TreatmentControl.Time.point1.week"),"Yeast_W1.txt")
+rescalc(list("TreatmentYeast.Time.point2.week","TreatmentControl.Time.point2.week"),"Yeast_W2.txt")
+rescalc(list("TreatmentYeast.Time.point4.week","TreatmentControl.Time.point4.week"),"Yeast_W4.txt")
+rescalc(list("TreatmentYeast.Time.point8.week","TreatmentControl.Time.point8.week"),"Yeast_W8.txt")
+rescalc(list("TreatmentYeast.Time.point16.week","TreatmentControl.Time.point16.week"),"Yeast_W16.txt")
+# urea
+rescalc(list("TreatmentUrea.Time.point1.week","TreatmentControl.Time.point1.week"),"Urea_W1.txt")
+rescalc(list("TreatmentUrea.Time.point2.week","TreatmentControl.Time.point2.week"),"Urea_W2.txt")
+rescalc(list("TreatmentUrea.Time.point4.week","TreatmentControl.Time.point4.week"),"Urea_W4.txt")
+rescalc(list("TreatmentUrea.Time.point8.week","TreatmentControl.Time.point8.week"),"Urea_W8.txt")
+rescalc(list("TreatmentUrea.Time.point16.week","TreatmentControl.Time.point16.week"),"Urea_W16.txt")
 
-contrast <- list("TreatmentUrea.Time.point1.week","TreatmentControl.Time.point1.week")
-res <-  results(dds,alpha=alpha,parallel=T,contrast=contrast)
-res.merge <- data.table(inner_join(data.table(OTU=rownames(res),as.data.frame(res)),data.table(OTU=rownames(taxData),taxData)))
-write.table(res.merge, paste(RHB,"Urea_W1.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
-
-contrast <- list("TreatmentYeast.Time.point2.week","TreatmentControl.Time.point2.week")
-res <-  results(dds,alpha=alpha,parallel=T,contrast=contrast)
-res.merge <- data.table(inner_join(data.table(OTU=rownames(res),as.data.frame(res)),data.table(OTU=rownames(taxData),taxData)))
-write.table(res.merge, paste(RHB,"Yeast_W2.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
-
-contrast <- list("TreatmentUrea.Time.point2.week","TreatmentControl.Time.point2.week")
-res <-  results(dds,alpha=alpha,parallel=T,contrast=contrast)
-res.merge <- data.table(inner_join(data.table(OTU=rownames(res),as.data.frame(res)),data.table(OTU=rownames(taxData),taxData)))
-write.table(res.merge, paste(RHB,"Urea_W2.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
-
-contrast <- list("TreatmentYeast.Time.point4.week","TreatmentControl.Time.point4.week")
-res <-  results(dds,alpha=alpha,parallel=T,contrast=contrast)
-res.merge <- data.table(inner_join(data.table(OTU=rownames(res),as.data.frame(res)),data.table(OTU=rownames(taxData),taxData)))
-write.table(res.merge, paste(RHB,"Yeast_W4.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
-
-contrast <- list("TreatmentUrea.Time.point4.week","TreatmentControl.Time.point4.week")
-res <-  results(dds,alpha=alpha,parallel=T,contrast=contrast)
-res.merge <- data.table(inner_join(data.table(OTU=rownames(res),as.data.frame(res)),data.table(OTU=rownames(taxData),taxData)))
-write.table(res.merge, paste(RHB,"Urea_W4.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
-
-contrast <- list("TreatmentYeast.Time.point8.week","TreatmentControl.Time.point8.week")
-res <-  results(dds,alpha=alpha,parallel=T,contrast=contrast)
-res.merge <- data.table(inner_join(data.table(OTU=rownames(res),as.data.frame(res)),data.table(OTU=rownames(taxData),taxData)))
-write.table(res.merge, paste(RHB,"Yeast_W8.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
-
-contrast <- list("TreatmentUrea.Time.point8.week","TreatmentControl.Time.point8.week")
-res <-  results(dds,alpha=alpha,parallel=T,contrast=contrast)
-res.merge <- data.table(inner_join(data.table(OTU=rownames(res),as.data.frame(res)),data.table(OTU=rownames(taxData),taxData)))
-write.table(res.merge, paste(RHB,"Urea_W8.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
-
-contrast <- list("TreatmentYeast.Time.point16.week","TreatmentControl.Time.point16.week")
-res <-  results(dds,alpha=alpha,parallel=T,contrast=contrast)
-res.merge <- data.table(inner_join(data.table(OTU=rownames(res),as.data.frame(res)),data.table(OTU=rownames(taxData),taxData)))
-write.table(res.merge, paste(RHB,"Yeast_W16.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
-
-contrast <- list("TreatmentUrea.Time.point16.week","TreatmentControl.Time.point16.week")
-res <-  results(dds,alpha=alpha,parallel=T,contrast=contrast)
-res.merge <- data.table(inner_join(data.table(OTU=rownames(res),as.data.frame(res)),data.table(OTU=rownames(taxData),taxData)))
-write.table(res.merge, paste(RHB,"Urea_W16.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
 
 # a function for reading in and merging some/all the above files - base on a regex variable to specify which files
-
 qfun <- function(regex_path){
-
 	qq <- lapply(list.files(".",regex_path,full.names=T,recursive=F),function(x) {fread(x)}) # read in the files
 	names(qq) <- list.files(".",regex_path,full.names=F,recursive=F) # gets the name of each file
 	qq <- lapply(qq,function(l) {l[,c(-4,-5,-6)]}) # drops "lfcSE", "stat" and "pvalue" columns
