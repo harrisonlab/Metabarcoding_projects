@@ -81,8 +81,8 @@ dds <- dds[,(colnames(dds)!="X205_S37")&(colnames(dds)!="Y2_S56")]
 dds <- dds[,(colnames(dds)!="C16_S95")&(colnames(dds)!="U16_S40")]
 
 # calculate size factors - use geoMeans function if every gene contains at least one zero (check for size factor range as well)
-sizeFactors(dds) <-sizeFactors(estimateSizeFactors(dds))
-# sizeFactors(dds) <-geoMeans(dds)
+# sizeFactors(dds) <-sizeFactors(estimateSizeFactors(dds))
+sizeFactors(dds) <-geoMeans(dds)
 
 # Test size factors
 
@@ -219,19 +219,21 @@ res.merge <- data.table(inner_join(data.table(OTU=rownames(res),as.data.frame(re
 write.table(res.merge, paste(RHB,"Urea_W16.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
 
 # a function for reading in and merging some/all the above files - base on a regex variable to specify which files
+
 qfun <- function(regex_path){
-	qq <- lapply(list.files(".",regex_path,full.names=T,recursive=F),function(x) fread(x)) # read in the files
+
+	qq <- lapply(list.files(".",regex_path,full.names=T,recursive=F),function(x) {fread(x)}) # read in the files
 	names(qq) <- list.files(".",regex_path,full.names=F,recursive=F) # gets the name of each file
-	qq <- lapply(qq,function(l) l[,c(-4,-5,-6)]) # drops "lfcSE", "stat" and "pvalue" columns
+	qq <- lapply(qq,function(l) {l[,c(-4,-5,-6)]}) # drops "lfcSE", "stat" and "pvalue" columns
 	qq <- Map(function(x, i) {
 		colnames(x)[3]<-paste(i, colnames(x)[3],sep="_");
 		colnames(x)[4]<-paste(i, colnames(x)[4],sep="_");
 		return(x)
 	},qq, sub("\\.txt","",names(qq)))
-	m <- Reduce(function(...) merge(..., all = T), qq) # could use inner_join rather than merge - would save maybe a couple of milliseconds
+	m <- Reduce(function(...) {merge(..., all = T)}, qq) # could use inner_join rather than merge - would save maybe a couple of milliseconds
 	return(m)
 }
-	
+
 write.table(qfun("FUN_Urea.*.txt$"),"FUN_UREA_ALL.txt",sep="\t",row.name=F,quote=F)
 write.table(qfun("FUN_Yeast.*.txt$"),"FUN_YEAST_ALL.txt",sep="\t",row.name=F,quote=F)
 write.table(qfun("BAC_Urea.*.txt$"),"BAC_UREA_ALL.txt",sep="\t",row.name=F,quote=F)
@@ -279,8 +281,9 @@ write.table(res.merge, paste(RHB,"time_effect_urea.txt",sep="_"),quote=F,sep="\t
 		    
 # save significant OTUs to vector
 US<- res.merge[padj<=0.1,OTU]		    
-	    
+
 ### simplfied models ###
+		    
 
 # 2017 data only
 dds2 <- dds[,dds$Year==2017]
@@ -364,12 +367,53 @@ sapply(seq(2,length(plotSequence)),function(i) {
 	g <- ggplot(data=tmp,aes(y=vst_counts, x=time,colour=Treatment),ylim=c(0,ymax))
 	g <- g + theme_classic_thin(base_size = 16) %+replace% theme(panel.border=element_rect(colour="black",size=0.25,fill=NA),legend.position="bottom")
 	g <- g + scale_colour_viridis(discrete=TRUE)
-#	g <- g + facet_grid(Country ~ OTU,scales="free_x")
-	g <- g + facet_grid(Year + Country ~ OTU,scales="free_x")
+	g <- g + facet_grid(Country ~ OTU,scales="free_x")
+#	g <- g + facet_grid(Year + Country ~ OTU,scales="free_x")
 	g <- g + geom_point(size=2)
+	g <- g + geom_line()
 	g <- g + stat_smooth(method=locfit, formula=y~lp(x),se=F)
 	print(g)
 })
 
 dev.off()
 
+#===============================================================================
+#       Yeast X2 sample
+#===============================================================================
+		    
+# Only two samples, so can't do much more than descriptive statistics + graphs
+dds2 <- dds[,dds$Treatment=="Yeast X 2"]
+dds2 <- dds2[rowSums(counts(dds2,normalize=T))>5,]
+output1 <- data.table(inner_join(data.table(OTU=rownames(dds2),W1=counts(dds2,normalize=T)[,1],W4=counts(dds2,normalize=T)[,2]),data.table(OTU=rownames(taxData),taxData)))
+
+write.table(output1,paste(RHB,"Yx2_OTUs.txt",sep="_"),sep="\t",row.names=F,quote=F)
+vst<-varianceStabilizingTransformation(dds)
+vst <- vst[row.names(dds2),((dds$Time.point=="1 week")|(dds$Time.point=="4 week"))&dds$Country=="Germany"]
+
+d <- data.frame(t(assay(vst)),vst@colData)
+d$time <- as.integer(sub(" week","",d$Time.point))
+d <- melt(d,id.vars = colnames(d)[(ncol(d)-6):ncol(d)],variable.name = "OTU", value.name = "vst_counts")
+d$vst_counts <- d$vst_counts+abs(min(d$vst_counts))
+ymax <- max(d$vst_counts)
+noPlots <- 5
+allVars <- unique(d$OTU)
+noVars <- length(allVars)
+plotSequence <- c(seq(0, noVars-1, by = noPlots), noVars)
+
+sapply(seq(2,length(plotSequence)),function(i) {
+	start <- plotSequence[i-1] + 1
+	end <- plotSequence[i]
+	tmp <- d[d$OTU %in% allVars[start:end],]
+	cat(unique(tmp$OTU), "\n")
+	g <- ggplot(data=tmp,aes(y=vst_counts, x=time,colour=Treatment),ylim=c(0,ymax))
+	g <- g + theme_classic_thin(base_size = 16) %+replace% theme(panel.border=element_rect(colour="black",size=0.25,fill=NA),legend.position="bottom")
+	g <- g + scale_colour_viridis(discrete=TRUE)
+	g <- g + facet_grid(~ OTU,scales="free_x")
+	g <- g + geom_point(size=2)
+	g <- g + geom_line()
+	print(g)
+})
+
+dev.off()
+
+		     
