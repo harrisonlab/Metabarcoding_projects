@@ -74,10 +74,24 @@ design<-~1
 #create DES object
 dds<-DESeqDataSetFromMatrix(countData,colData,design)
 
-# calculate size factors - use geoMeans function if every gene contains at least one zero
+# Low counts in samples X205_S37 and Y2_S56 - remove before calculating size factors
+dds <- dds[,(colnames(dds)!="X205_S37")&(colnames(dds)!="Y2_S56")]
+
+# also low for Bacteria only
+dds <- dds[,(colnames(dds)!="C16_S95")&(colnames(dds)!="U16_S40")]
+
+# calculate size factors - use geoMeans function if every gene contains at least one zero (check for size factor range as well)
 sizeFactors(dds) <-sizeFactors(estimateSizeFactors(dds))
 # sizeFactors(dds) <-geoMeans(dds)
 
+# Test size factors
+
+X1 <- colSums(counts(dds))
+X2 <- sizeFactors(estimateSizeFactors(dds))
+X3 <- geoMeans(dds)
+max(X1)/min(X1)
+max(X2)/min(X2)
+max(X3)/min(X3)
 
 # remove batch effect with limma removeBatchEffect method (maybe useful for plotting 2016/2017 data on same graph)
 #library(limma)
@@ -104,7 +118,7 @@ pc.res <- resid(aov(mypca$x~Year+Country+Year*Country,dds@colData))
 d <- t(data.frame(t(pc.res)*mypca$percentVar))
 
 # plot the PCA
-pdf(paste(RHB,"saprophyte.pdf",sep="_"))
+pdf(paste(RHB,"saprophyte_v2.pdf",sep="_"))
 plotOrd(df,dds@colData,design="Year",shape="Country")
 plotOrd(d,dds@colData,design="Year",shape="Country")
 plotOrd(df,dds@colData,shape="Treatment",design="Time.point")
@@ -223,41 +237,52 @@ write.table(qfun("FUN_Yeast.*.txt$"),"FUN_YEAST_ALL.txt",sep="\t",row.name=F,quo
 write.table(qfun("BAC_Urea.*.txt$"),"BAC_UREA_ALL.txt",sep="\t",row.name=F,quote=F)
 write.table(qfun("BAC_Yeast.*.txt$"),"BAC_YEAST_ALL.txt",sep="\t",row.name=F,quote=F)
 
-
 ## difference over time ##
+full_design <- ~Year + Country  + Treatment + Time.point + Treatment:Time.point
 
-# the reduced model (for calculating rsponse to time)
+# the reduced model (for calculating response to time)
 reduced_design <- ~Year + Country + Treatment  + Time.point
 
 # calculate model, including both full and reduced designs
 dds <-DESeq(dds, betaPrior=FALSE, test="LRT",full=full_design,reduced=reduced_design,parallel=T)
 
-# calculate OTUs which respond differently over time (time points) due to the treatment (this is the full vs reduced model)
-res <- results(dds,alpha=alpha,parallel=T)
-
-# merge results with taxonomy
+# calculate OTUs which respond differently over time (can ignore LFC in output as it's meaningless)	
+res <- results(dds,alpha=alpha,parallel=T)		    
 res.merge <- data.table(inner_join(data.table(OTU=rownames(res),as.data.frame(res)),data.table(OTU=rownames(taxData),taxData)))
-
-# write table to file
+res.merge[,log2FoldChange:=NULL]
 write.table(res.merge, paste(RHB,"time_effect.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
-
-# this looks interesting, extract the results for each treatment?...
-res <- results(dds,alpha=alpha,parallel=T,name= "Treatment_Urea_vs_Control",test="Wald")
+		    
+# save significant OTUs to vector
+AS<- res.merge[padj<=0.1,OTU]	
+		    
+# no way to "contrast" the LRT, so to test for seperate Urea/Yeast effects over time data will need to be split
+# Yeast effect
+dds2 <- dds[,dds$Treatment!="Urea"]		    
+dds2$Treatment <- droplevels(dds2$Treatment)
+dds2 <-DESeq(dds2, betaPrior=FALSE, test="LRT",full=full_design,reduced=reduced_design,parallel=T)
+res <- results(dds2,alpha=alpha,parallel=T)		    
 res.merge <- data.table(inner_join(data.table(OTU=rownames(res),as.data.frame(res)),data.table(OTU=rownames(taxData),taxData)))
+res.merge[,log2FoldChange:=NULL]
+write.table(res.merge, paste(RHB,"time_effect_yeast.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
+
+# save significant OTUs to vector
+YS<- res.merge[padj<=0.1,OTU]	
+		    
+# Urea effect
+dds2 <- dds[,dds$Treatment!="Yeast"]		    
+dds2$Treatment <- droplevels(dds2$Treatment)
+dds2 <-DESeq(dds2, betaPrior=FALSE, test="LRT",full=full_design,reduced=reduced_design,parallel=T)
+res <- results(dds2,alpha=alpha,parallel=T)		    
+res.merge <- data.table(inner_join(data.table(OTU=rownames(res),as.data.frame(res)),data.table(OTU=rownames(taxData),taxData)))
+res.merge[,log2FoldChange:=NULL]
 write.table(res.merge, paste(RHB,"time_effect_urea.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
-
-res <- results(dds,alpha=alpha,parallel=T,name= "Treatment_Yeast_vs_Control",test="Wald")
-res.merge <- data.table(inner_join(data.table(OTU=rownames(res),as.data.frame(res)),data.table(OTU=rownames(taxData),taxData)))
-write.table(res.merge, paste(RHB,"time_effect_yeat.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
-
-
-write.table(qfun("FUN_time.*.txt$"),"FUN_TIME_ALL.txt",sep="\t",row.name=F,quote=F)
-write.table(qfun("BAC_time.*.txt$"),"BAC_TIME_ALL.txt",sep="\t",row.name=F,quote=F)
-
+		    
+# save significant OTUs to vector
+US<- res.merge[padj<=0.1,OTU]		    
+	    
 ### simplfied models ###
 
 # 2017 data only
-
 dds2 <- dds[,dds$Year==2017]
 dds2$Treatment <- droplevels(dds2$Treatment)
 
@@ -267,7 +292,7 @@ dds2$Treatment <- droplevels(dds2$Treatment)
 
 # filter out rows with mean less than 1 (could probably go higher)
 dds2 <-dds[rowMeans(counts(dds,normalize=T))>=1,]
-
+		    
 #design(dds2) <- ~farm + date + condition
 
 # calculate rld (log value)
@@ -276,6 +301,14 @@ rld <- rlog(dds2,blind=F)
 # order results by largest row sum first
 rld <- rld[order(rowSums(assay(rld)),decreasing=T),]
 
+# or use vst - not so good if size factors differ markedly	    
+vst <- varianceStabilizingTransformation(dds2)		    
+vst <- vst[unique(c(AS,US,YS)),]
+vst <- vst[order(rowSums(assay(vst)),decreasing=T),]
+		    
+X<-unique(c(AS,US,YS))
+vst <- vst[X[X%in%row.names(dds2)],]		    
+	    
 #### test plot for first OTU
 #d <- data.frame(t(assay(rld[1,])),rld@colData)
 #d$time <- as.integer(sub(" week","",rld$Time.point))
@@ -289,19 +322,23 @@ rld <- rld[order(rowSums(assay(rld)),decreasing=T),]
 ### end test plot
 
 # extract rld values and combine with colData
-d <- data.frame(t(assay(rld)),rld@colData)
-
+d <- data.frame(t(assay(vst)),vst@colData)
+		    
 # add an integer time column
-d$time <- as.integer(sub(" week","",rld$Time.point))
-
+d$time <- as.integer(sub(" week","",d$Time.point))
+		    
+# filter out anything we don't need		    
+# d <- d[d$Treatment!="Urea",]
+# d <- d[d$Treatment!="Yeast",]
+		    
 # convert data to "long" format (single column will contain all the OTUs rather than one column per OTU) 
-d <- melt(d,id.vars = colnames(d)[(ncol(d)-6):ncol(d)],variable.name = "OTU", value.name = "rlog_counts")
+d <- melt(d,id.vars = colnames(d)[(ncol(d)-6):ncol(d)],variable.name = "OTU", value.name = "vst_counts")
 
 # zero bound rlog values (no negative values on y-axis here)
-d$rlog_counts <- d$rlog_counts+abs(min(d$rlog_counts))
+d$vst_counts <- d$vst_counts+abs(min(d$vst_counts))
 
 # set the maximum extent of the y-axis (all graphs will be on same scale)
-ymax <- max(d$rlog_counts)
+ymax <- max(d$vst_counts)
 
 # number of plots per page
 noPlots <- 5
@@ -316,7 +353,7 @@ noVars <- length(allVars)
 plotSequence <- c(seq(0, noVars-1, by = noPlots), noVars)
 
 # output file
-pdf(paste(RHB,"time_graphs.pdf",sep="_"))
+pdf(paste(RHB,"time_graphs_v2.pdf",sep="_"))
 
 # plotting function
 sapply(seq(2,length(plotSequence)),function(i) {
@@ -324,9 +361,10 @@ sapply(seq(2,length(plotSequence)),function(i) {
 	end <- plotSequence[i]
 	tmp <- d[d$OTU %in% allVars[start:end],]
 	cat(unique(tmp$OTU), "\n")
-	g <- ggplot(data=tmp,aes(y=rlog_counts, x=time,colour=Treatment),ylim=c(0,ymax))
+	g <- ggplot(data=tmp,aes(y=vst_counts, x=time,colour=Treatment),ylim=c(0,ymax))
 	g <- g + theme_classic_thin(base_size = 16) %+replace% theme(panel.border=element_rect(colour="black",size=0.25,fill=NA),legend.position="bottom")
 	g <- g + scale_colour_viridis(discrete=TRUE)
+#	g <- g + facet_grid(Country ~ OTU,scales="free_x")
 	g <- g + facet_grid(Year + Country ~ OTU,scales="free_x")
 	g <- g + geom_point(size=2)
 	g <- g + stat_smooth(method=locfit, formula=y~lp(x),se=F)
