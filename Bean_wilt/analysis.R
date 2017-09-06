@@ -188,3 +188,21 @@ dds2 <- DESeq(dds2,parallel=T)
 res <-  results(dds2,alpha=alpha,parallel=T,cooksCutoff=F)
 res.merge <- data.table(inner_join(data.table(OTU=rownames(res),as.data.frame(res)),data.table(OTU=rownames(taxData),taxData)))
 write.table(res.merge,paste(RHB,"HEALTHY_merged.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
+
+# French beans only
+dds2 <- dds[,dds$bean=="FRENCH"]
+dds2$farm <- droplevels(dds2$farm)
+design(dds2) <- ~farm + condition #+ farm:bean
+dds2 <- DESeq(dds2,parallel=T)
+res <-  results(dds2,alpha=alpha,parallel=T,cooksCutoff=F)
+res.merge <- data.table(inner_join(data.table(OTU=rownames(res),as.data.frame(res)),data.table(OTU=rownames(taxData),taxData)))
+write.table(res.merge,paste(RHB,"FRENCH_main.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
+
+# Runner beans only
+dds2 <- dds[,dds$bean=="RUNNER"]
+dds2$farm <- droplevels(dds2$farm)
+design(dds2) <- ~farm + condition #+ farm:bean
+dds2 <- DESeq(dds2,parallel=T)
+res <-  results(dds2,alpha=alpha,parallel=T,cooksCutoff=F)
+res.merge <- data.table(inner_join(data.table(OTU=rownames(res),as.data.frame(res)),data.table(OTU=rownames(taxData),taxData)))
+write.table(res.merge,paste(RHB,"RUNNER_main.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
