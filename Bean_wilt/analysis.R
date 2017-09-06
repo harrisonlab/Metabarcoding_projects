@@ -92,6 +92,10 @@ dds<-DESeqDataSetFromMatrix(countData,colData,design)
 # The seqeuncing run contains additional data, so subset bean data
 dds <- dds[,dds$type=="bean"]
 
+# remove low count samples
+filter <- colSums(counts(dds))>=1000
+dds <- dds[,filter]
+
 # calculate size factors - use geoMeans function if
 # every gene contains at least one zero, as cannot compute log geometric means
 sizeFactors(dds) <-sizeFactors(estimateSizeFactors(dds))
@@ -203,6 +207,6 @@ dds2 <- dds[,dds$bean=="RUNNER"]
 dds2$farm <- droplevels(dds2$farm)
 design(dds2) <- ~farm + condition #+ farm:bean
 dds2 <- DESeq(dds2,parallel=T)
-res <-  results(dds2,alpha=alpha,parallel=T,cooksCutoff=F)
+res <-  results(dds2,alpha=alpha,parallel=T,cooksCutoff=T)
 res.merge <- data.table(inner_join(data.table(OTU=rownames(res),as.data.frame(res)),data.table(OTU=rownames(taxData),taxData)))
 write.table(res.merge,paste(RHB,"RUNNER_main.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
