@@ -61,8 +61,24 @@ ubiom_OO <- list(
 
 # attach objects (FUN, BAC or OO)
 invisible(mapply(assign, names(ubiom_FUN), ubiom_FUN, MoreArgs=list(envir = globalenv())))
-#invisible(mapply(assign, names(ubiom_BAC), ubiom_BAC, MoreArgs=list(envir = globalenv())))
-#invisible(mapply(assign, names(ubiom_OO), ubiom_OO, MoreArgs=list(envir = globalenv())))
+invisible(mapply(assign, names(ubiom_BAC), ubiom_BAC, MoreArgs=list(envir = globalenv())))
+invisible(mapply(assign, names(ubiom_OO), ubiom_OO, MoreArgs=list(envir = globalenv())))
+
+#### oomycetes only - combine species at 0.95 confidence (if they are species)
+# list of species with more than one associated OTU
+combinedTaxa <- combineTaxa("zOO.taxa")
+# show the list
+combinedTaxa[,1]
+# manual filter of list to remove none unique species
+combinedTaxa <- combinedTaxa[c(10,11,13:26,28,29,31,32),]
+# adjust countData for combined taxa
+countData <- combCounts(combinedTaxa,countData)
+# adjust taxData for combined taxa
+taxData <- combTaxa(combinedTaxa,taxData)
+
+ubiom_OO$countData <- countData
+ubiom_OO$taxData <- taxData
+
 
 # ensure colData rows and countData columns have the same order
 colData <- colData[names(countData),]
@@ -140,17 +156,12 @@ contrast=c("condition","SICK", "HEALTHY" )
 # bean effect
 contrast=c("bean","FRENCH","RUNNER")
 
-# diseased beans only
-dds2 <- dds[,dds$condition=="SICK"]
-design(dds2) <- ~farm + bean #+ farm:bean
-dds2 <- DESeq(dds2,parallel=T)
-
 # interaction term (both should give roughly the same results - with FC in opposite direction)
 # contrast=list( "beanFRENCH.conditionHEALTHY","beanFrench.conditionHEALTHY") # effect of condition on french beans 
 contrast=list( "beanRUNNER.conditionHEALTHY","beanRUNNER.conditionSICK") # effect of condition on runner beans
 
 # calculate results
-res <-  results(dds,alpha=alpha,parallel=T,contrast=contrast)
+res <-  results(dds,alpha=alpha,parallel=T,contrast=contrast,cooksCutoff=F)
 
 # merge results with taxonomy table
 res.merge <- data.table(inner_join(data.table(OTU=rownames(res),as.data.frame(res)),data.table(OTU=rownames(taxData),taxData)))
@@ -161,3 +172,19 @@ res.merge[padj<=0.05,]
 write.table(res.merge,paste(RHB,"main_effect.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
 write.table(res.merge,paste(RHB,"interaction.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
 write.table(res.merge,paste(RHB,"bean_effect.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
+
+# diseased beans only
+dds2 <- dds[,dds$condition=="SICK"]
+design(dds2) <- ~farm + bean #+ farm:bean
+dds2 <- DESeq(dds2,parallel=T)
+res <-  results(dds2,alpha=alpha,parallel=T,cooksCutoff=F)
+res.merge <- data.table(inner_join(data.table(OTU=rownames(res),as.data.frame(res)),data.table(OTU=rownames(taxData),taxData)))
+write.table(res.merge,paste(RHB,"SICK_merged.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
+
+# healthy beans only
+dds2 <- dds[,dds$condition=="HEALTHY"]
+design(dds2) <- ~farm + bean #+ farm:bean
+dds2 <- DESeq(dds2,parallel=T)
+res <-  results(dds2,alpha=alpha,parallel=T,cooksCutoff=F)
+res.merge <- data.table(inner_join(data.table(OTU=rownames(res),as.data.frame(res)),data.table(OTU=rownames(taxData),taxData)))
+write.table(res.merge,paste(RHB,"HEALTHY_merged.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
