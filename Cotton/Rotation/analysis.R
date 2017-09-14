@@ -151,7 +151,7 @@ pc.res <- resid(aov(mypca$x~Site,dds@colData))
 d <- t(data.frame(t(pc.res)*mypca$percentVar))
 		       
 # plot PC1 vs PC2
-plotOrd(df,dds@colData,design="Year",shape="Site",xlabel="PC1",ylabel="PC2",labels=F,textSize=8)
+plotOrd(d,dds@colData,design="Year",shape="Site",xlabel="PC1",ylabel="PC2",labels=F,textSize=8)
 		       
 # Bacteria has huge differences in year for PC1 for Sh site - obscures the same for the Ak site - worth splitting the data into two
 
