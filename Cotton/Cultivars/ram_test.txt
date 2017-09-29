@@ -1,0 +1,30 @@
+RAM needs the taxonomy in a certain format (I've seen this format previously, but can't remeber what generates it - old versions of USEARCH were able to outout in this format..)
+To convert from UTAX to the required format  
+(note, cutoff will need to be set when running UTAX - I find this a bit limiting so if testing proves useful, I'll write an R script to convert between formats using any cutoff specified in R)
+
+```shell
+awk -F"\t" '{print $1,$3}' OFS="\t" ITS_reads.utax |sed 's/,/; /g'|sed 's/d:/k__/'|sed 's/:/__/g'|sed 's/\*/k__unknown/'  > ITS.ram.taxa
+```
+
+```R
+mytaxa <- fread("ITS.ram.taxa",header=F)
+test <- merge(countData,mytaxa,by.x="row.names",by.y="V1")
+rownames(test) <- test[,1]
+test <- test[,-1]
+colnames(test)[46] <- "taxonomy"
+
+data <- list(test=test)
+group.top.number(data, top=10, ranks=c("p","c","o","f","g","s"), drop.unclassified=FALSE, cex.x=NULL, main=NULL,file=NULL, ext=NULL, height=8,  width=16, bw=FALSE, ggplo
+group.top.percent(data, top=10, ranks=c("p","c","o","f","g","s"), drop.unclassified=FALSE, cex.x=NULL, main=NULL,file=NULL, ext=NULL, height=8,  width=16, bw=FALSE, ggplo
+
+# group.heatmap doesn't work
+# group.heatmap(test, is.OTU=TRUE, meta=colData, rank="f", factors="Cultivar", top=25, remove.unclassified=TRUE, stand.method=NULL, 
+# dist.method="bray", hclust.method="average", dendro.row.status="yes", dendro.col.status="hidden", 
+# row.labels=TRUE, row.cex=1, cut=NULL, file=NULL, ext=NULL, width=9, height=9)
+
+
+# phylo_taxonomy doesn't work
+# phylo_taxonomy(test, rank="f",  meta=colData, factors="Cultivar", plot.type="phylogram", 
+# edge.width=1, cex=0.7, font = 1, x.lim = NULL, tip.offset=0, tip.cex=0.5, thermo=FALSE, thermo.horiz=TRUE, 
+# thermo.width=0.5, thermo.height=1, node.frame="r", node.bg="white", node.col="black", node.width=0.5, 
+# node.height=0.6, node.cex=0.6, node.font=1)
