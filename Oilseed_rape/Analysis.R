@@ -88,7 +88,7 @@ mypca <- des_to_pca(dds)
 df <-t(data.frame(t(mypca$x)*mypca$percentVar))
 
 # plot the PCA
-pdf(paste(RHB,"rape.pdf",sep="."))
+pdf(paste(RHB,"oilseedrape.pdf",sep="."))
 plotOrd(df,dds@colData,design="condition")
 dev.off()
 
@@ -126,5 +126,5 @@ res.merge <- data.table(inner_join(data.table(OTU=rownames(res),as.data.frame(re
 # show those with BH p <= 0.05
 res.merge[padj<=0.05,]
 
-write.table(res.merge,paste(RHB,"rape_main_effect.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
+write.table(res.merge,paste(RHB,"oilseedrape_main_effect.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
 
