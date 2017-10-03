@@ -51,7 +51,7 @@ ubiom_FUN <- list(
 #       Create DEseq objects 
 #===============================================================================
 
-# attach objects (FUN, BAC or OO)
+# attach objects (FUN or BAC)
 invisible(mapply(assign, names(ubiom_FUN), ubiom_FUN, MoreArgs=list(envir = globalenv())))
 invisible(mapply(assign, names(ubiom_BAC), ubiom_BAC, MoreArgs=list(envir = globalenv())))
 
@@ -64,7 +64,7 @@ design<-~1
 #create DES object
 dds<-DESeqDataSetFromMatrix(countData,colData,design)
 
-# The seqeuncing run contains additional data, so subset bean data
+# The seqeuncing run contains additional data, so subset rape data
 dds <- dds[,dds$type=="rape"]
 
 # remove low count samples
@@ -93,7 +93,7 @@ plotOrd(df,dds@colData,design="condition")
 dev.off()
 
 #===============================================================================
-#       Differential analysis of bean data
+#       Differential analysis of rape data
 #===============================================================================
 
 # filter for low counts - this can affect the FD probability and DESeq2 does apply its own filtering for genes/otus with no power 
