@@ -67,6 +67,9 @@ dds<-DESeqDataSetFromMatrix(countData,colData,design)
 # The seqeuncing run contains additional data, so subset rape data
 dds <- dds[,dds$type=="rape"]
 
+# farm is actually block for this experiment
+dds$block <- dds$farm
+
 # remove low count samples
 filter <- colSums(counts(dds))>=1000
 dds <- dds[,filter]
@@ -89,7 +92,7 @@ df <-t(data.frame(t(mypca$x)*mypca$percentVar))
 
 # plot the PCA
 pdf(paste(RHB,"oilseedrape.pdf",sep="."))
-plotOrd(df,dds@colData,design="condition")
+plotOrd(df,dds@colData,design="condition",shape="block")
 dev.off()
 
 #===============================================================================
@@ -101,15 +104,13 @@ dds<-dds[rowSums(counts(dds,normalize=T))>0,]
 
 # drop unused levels from condition
 dds$condition <- droplevels(dds$condition)
-dds$farm <- droplevels(dds$farm)
-dds$field <- droplevels(dds$field)
-dds$bean <- droplevels(dds$bean)
+dds$block <- droplevels(dds$block)
 
 # p value for FDR cutoff
 alpha <- 0.1
 
 # add model to the DES object
-design(dds) <- ~condition
+design(dds) <- ~block+condition
 
 # calculate fit
 dds <- DESeq(dds,parallel=T)
@@ -118,7 +119,7 @@ dds <- DESeq(dds,parallel=T)
 contrast=c("condition","low_till", "cultivated" )
 
 # calculate results
-res <-  results(dds,alpha=alpha,parallel=T,contrast=contrast,cooksCutoff=F)
+res <-  results(dds,alpha=alpha,parallel=T,contrast=contrast,cooksCutoff=T)
 
 # merge results with taxonomy table
 res.merge <- data.table(inner_join(data.table(OTU=rownames(res),as.data.frame(res)),data.table(OTU=rownames(taxData),taxData)))
