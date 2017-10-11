@@ -66,6 +66,40 @@ ubiom_NEM <- list(
 ) 
 
 #===============================================================================
+#       Combine species 
+#===============================================================================
+
+#### combine species at 0.95 (default) confidence (if they are species). Works well for Oomycetes and Fungi
+
+# attach OO objects
+invisible(mapply(assign, names(ubiom_OO), ubiom_OO, MoreArgs=list(envir = globalenv())))
+# list of species with more than one associated OTU
+combinedTaxa <- combineTaxa("zOO.taxa")
+# show the list
+combinedTaxa[,1]
+# manual filter list to remove none species (e.g. unknown, Pythium aff)
+combinedTaxa <- combinedTaxa[c(-2,-8,-9,-17,-20,-25),]
+# adjust countData for combined taxa
+countData <- combCounts(combinedTaxa,countData)
+# adjust taxData for combined taxa
+taxData <- combTaxa(combinedTaxa,taxData)
+# copy back to object
+ubiom_OO$countData <- countData
+ubiom_OO$taxData <- taxData
+
+# list of species with more than one associated OTU
+invisible(mapply(assign, names(ubiom_FUN), ubiom_FUN, MoreArgs=list(envir = globalenv())))
+combinedTaxa <- combineTaxa("zFUN.taxa")
+combinedTaxa[,1]
+combinedTaxa <- combinedTaxa
+countData <- combCounts(combinedTaxa,countData)
+taxData <- combTaxa(combinedTaxa,taxData)
+ubiom_FUN$countData <- countData
+ubiom_FUN$taxData <- taxData
+
+
+
+#===============================================================================
 #       Attach objects
 #===============================================================================
 
@@ -76,43 +110,22 @@ invisible(mapply(assign, names(ubiom_OO), ubiom_OO, MoreArgs=list(envir = global
 invisible(mapply(assign, names(ubiom_NEM), ubiom_NEM, MoreArgs=list(envir = globalenv())))
 
 #===============================================================================
-#       Combine species 
-#===============================================================================
-
-#### combine species at 0.95 (default) confidence (if they are species). Works well for Oomycetes and Fungi
-
-# list of species with more than one associated OTU
-combinedTaxa <- combineTaxa("zOO.taxa")
-# show the list
-combinedTaxa[,1]
-# manual filter list to remove none species (e.g. unknown, Pythium aff)
-combinedTaxa <- combinedTaxa[c(1,2,3,5,7,8),]
-# adjust countData for combined taxa
-countData <- combCounts(combinedTaxa,countData)
-# adjust taxData for combined taxa
-taxData <- combTaxa(combinedTaxa,taxData)
-
-# copy back to object
-ubiom_OO$countData <- countData
-ubiom_OO$taxData <- taxData
-
-#===============================================================================
 #       Create DEseq objects 
 #===============================================================================
 
 # ensure colData rows and countData columns have the same order
 colData <- colData[names(countData),]
 
+# remove low count samples and control samples (not needed here)
+filter <- (colSums(counts(dds))>=1000) & (colData$pair!="C")
+colData <- droplevels(colData[filter,])
+countData <- countData[,filter]
+
 # simple Deseq design
 design<-~1
 
 #create DES object
 dds<-DESeqDataSetFromMatrix(countData,colData,design)
-
-# remove low count samples and control samples (not needed here)
-filter <- (colSums(counts(dds))>=1000) & (colData$pair!="C")
-dds <- dds[,filter]
-dds$pair <- drop.levels(dds$pair)
 
 # calculate size factors - use geoMeans function if
 # every gene contains at least one zero, as cannot compute log geometric means
@@ -141,46 +154,18 @@ mypca <- des_to_pca(dds)
 df <-t(data.frame(t(mypca$x)*mypca$percentVar))
 
 # Add spatial information as a numeric and plot 
-dds$location<-as.numeric(dds$pair)
-
+colData$location<-as.number(colData$pair)
 
 # plot the PCA
-pdf(paste(RHB,"pdf",sep="."))
-plotOrd(df,dds@colData,design="condition",)
-dev.off()
-
-
-#===============================================================================
-#       PCA analysis
-#===============================================================================
-
-##### pca all sites #####
-
-myfiltbioms <- lapply(mybioms,function(obj) prune_samples(sample_data(obj)$condition!="C",obj))
-myfiltbioms <- lapply(myfiltbioms,function(obj) prune_taxa(rowSums(otu_table(obj))>5,obj))
-myfiltbioms[[4]] <- prune_samples(colSums(otu_table(myfiltbioms[[4]]))!=0,myfiltbioms[[4]])
-
-mypcas <-  lapply(myfiltbioms, function(obj) plotPCA(obj,design="1",returnData=T,calcFactors=geoSet))
-
-dfs <-lapply(seq(1,length(myfiltbioms)), function(i) t(data.frame(t(mypcas[[i]]$x)*mypcas[[i]]$percentVar)))
-
-pdf("ND_all_pcas_VA.pdf")
-lapply(seq(1,length(myfiltbioms)),function(i) plotOrd(dfs[[i]],sample_data(myfiltbioms[[i]]),design=c("condition"),dimx=1,dimy=2,xlabel="PC1",ylabel="PC2",pointSize=1.5,cbPallete=T)+ ggtitle(names(myfiltbioms)[i]))
-lapply(seq(1,length(myfiltbioms)),function(i) plotOrd(dfs[[i]],sample_data(myfiltbioms[[i]]),design=c("condition"),dimx=2,dimy=3,xlabel="PC2",ylabel="PC3",pointSize=1.5,cbPallete=T)+ ggtitle(names(myfiltbioms)[i]))
-dev.off()
-
-### Add spatial information as a numeric and plot 
-sapply(seq(1,length(myfiltbioms)),function(i) sample_data(myfiltbioms[[i]])$location<<-as.numeric(levels(sample_data(myfiltbioms[[i]])$pair))[sample_data(myfiltbioms[[i]])$pair])
-
-pdf("ND_all_pcas_pairs.pdf")
-lapply(seq(1,length(myfiltbioms)),function(i) plotOrd(dfs[[i]],sample_data(myfiltbioms[[i]]),shape="condition",design="location",continuous=T,dimx=1,dimy=2,xlabel="PC1",ylabel="PC2",pointSize=1.5,cbPallete=T)+ ggtitle(names(myfiltbioms)[i]))
-lapply(seq(1,length(myfiltbioms)),function(i) plotOrd(dfs[[i]],sample_data(myfiltbioms[[i]]),shape="condition",design="location",continuous=T,dimx=2,dimy=3,xlabel="PC2",ylabel="PC3",pointSize=1.5,cbPallete=T)+ ggtitle(names(myfiltbioms)[i]))
+pdf(paste(RHB,"VA.pdf",sep="_"))
+plotOrd(df,colData,design="condition",xlabel="PC1",ylabel="PC2")
+plotOrd(df,colData,shape="condition",design="location",continuous=T,xlabel="PC1",ylabel="PC2")
 dev.off()
 
 
 ### remove spatial information (this uses the factor "pair" not the numeric "location") and plot
 
-pc.res <- lapply(seq(1,length(myfiltbioms)),function(i) resid(aov(mypcas[[i]]$x~sample_data(myfiltbioms[[i]])$pair+)))
+pc.res <- resid(aov(mypca$x~colData$pair))
 ds <- lapply(seq(1,length(pc.res)), function(i) t(data.frame(t(pc.res[[i]])*mypcas[[i]]$percentVar)))
 
 
