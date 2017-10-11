@@ -2,7 +2,7 @@
 #       Load libraries
 #===============================================================================
 
-library(phyloseq)
+# library(phyloseq)
 library(DESeq2)
 library("BiocParallel")
 register(MulticoreParam(12))
