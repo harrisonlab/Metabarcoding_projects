@@ -18,22 +18,137 @@ load_all("~/pipelines/metabarcoding/scripts/myfunctions")
 #       Load data 
 #===============================================================================
 
-get_biom <- function(biom,colData) {
-	X<-import_biom(biom)
-	sample_data(X) <- read.table(colData,header=T,sep="\t",row.names=1)
-	tax_table(X) <- phyloTaxaTidy(tax_table(X),0.65)
-	return(X)
-}
+# load denoised otu count table
+countData <- read.table("BAC.zotus_table.txt",header=T,sep="\t",row.names=1, comment.char = "")
 
-biom16 <- get_biom("16S.taxa.biom","colData")
-biomITS <- get_biom("ITS.taxa.biom","colData")
-biomOO <- get_biom("OO.taxa.biom","colData2")
-biomNEM <- get_biom("NEM.taxa.biom","colData2")
+# load sample metadata
+colData <- read.table("colData",header=T,sep="\t",row.names=1)
 
-biomNEM <- prune_taxa(rownames(tax_table(biomNEM)[as.numeric(tax_table(biomNEM)[,9])>=0.5,]),biomNEM)
-#biomNEM <- prune_samples(colSums(otu_table(biomNEM))>=5,biomNEM)
-	
-mybioms <- list(Bacteria=biom16,Fungi=biomITS,Oomycota=biomOO,Nematode=biomNEM)
+# load taxonomy data
+taxData <- read.table("zBAC.taxa",header=F,sep=",",row.names=1)
+
+# reorder columns
+taxData<-taxData[,c(1,3,5,7,9,11,13,2,4,6,8,10,12,14)]
+
+# add best "rank" at 0.65 confidence and tidy-up the table
+taxData<-phyloTaxaTidy(taxData,0.65)
+
+# save data into a list
+ubiom_BAC <- list(
+	countData=countData,
+	colData=colData,
+	taxData=taxData,
+	RHB="BAC"
+)
+
+# Fungi all in one call
+ubiom_FUN <- list(
+	countData=read.table("FUN.zotus_table.txt",header=T,sep="\t",row.names=1,comment.char = ""),
+	colData=read.table("colData",header=T,sep="\t",row.names=1),
+	taxData=phyloTaxaTidy(read.table("zFUN.taxa",header=T,sep=",",row.names=1)[,c(1,3,5,7,9,11,13,2,4,6,8,10,12,14)],0.65),
+	RHB="FUN"
+) 
+
+# Oomycetes
+ubiom_OO <- list(
+	countData=read.table("OO.zotus_table.txt",header=T,sep="\t",row.names=1,comment.char = ""),
+	colData=read.table("colData2",header=T,sep="\t",row.names=1),
+	taxData=phyloTaxaTidy(read.table("zOO.taxa",header=F,sep=",",row.names=1)[,c(1,3,5,7,9,11,13,2,4,6,8,10,12,14)],0.65),
+	RHB="OO"
+) 
+
+# Nematodes 
+ubiom_NEM <- list(
+	countData=read.table("NEM.zotus_table.txt",header=T,sep="\t",row.names=1,comment.char = ""),
+	colData=read.table("colData2",header=T,sep="\t",row.names=1),
+	taxData=phyloTaxaTidy(read.table("zNEM.taxa",header=F,sep=",",row.names=1)[,c(1,3,5,7,9,11,13,2,4,6,8,10,12,14)],0.65),
+	RHB="OO"
+) 
+
+#===============================================================================
+#       Attach objects
+#===============================================================================
+
+# attach objects (FUN, BAC,OO or NEM)
+invisible(mapply(assign, names(ubiom_FUN), ubiom_FUN, MoreArgs=list(envir = globalenv())))
+invisible(mapply(assign, names(ubiom_BAC), ubiom_BAC, MoreArgs=list(envir = globalenv())))
+invisible(mapply(assign, names(ubiom_OO), ubiom_OO, MoreArgs=list(envir = globalenv())))
+invisible(mapply(assign, names(ubiom_NEM), ubiom_NEM, MoreArgs=list(envir = globalenv())))
+
+#===============================================================================
+#       Combine species 
+#===============================================================================
+
+#### combine species at 0.95 (default) confidence (if they are species). Works well for Oomycetes and Fungi
+
+# list of species with more than one associated OTU
+combinedTaxa <- combineTaxa("zOO.taxa")
+# show the list
+combinedTaxa[,1]
+# manual filter list to remove none species (e.g. unknown, Pythium aff)
+combinedTaxa <- combinedTaxa[c(1,2,3,5,7,8),]
+# adjust countData for combined taxa
+countData <- combCounts(combinedTaxa,countData)
+# adjust taxData for combined taxa
+taxData <- combTaxa(combinedTaxa,taxData)
+
+# copy back to object
+ubiom_OO$countData <- countData
+ubiom_OO$taxData <- taxData
+
+#===============================================================================
+#       Create DEseq objects 
+#===============================================================================
+
+# ensure colData rows and countData columns have the same order
+colData <- colData[names(countData),]
+
+# simple Deseq design
+design<-~1
+
+#create DES object
+dds<-DESeqDataSetFromMatrix(countData,colData,design)
+
+# remove low count samples and control samples (not needed here)
+filter <- (colSums(counts(dds))>=1000) & (colData$pair!="C")
+dds <- dds[,filter]
+dds$pair <- drop.levels(dds$pair)
+
+# calculate size factors - use geoMeans function if
+# every gene contains at least one zero, as cannot compute log geometric means
+sizeFactors(dds) <-sizeFactors(estimateSizeFactors(dds))
+#sizeFactors(dds) <-geoMeans(dds)
+# calcNormFactors(counts(dds),method="RLE",lib.size=(prop.table(colSums(counts(dds)))))
+
+
+#===============================================================================
+#       Filter data 
+#============================================================================
+
+# Pythium specific filter to remove OTUs which are unlikely part of the SAR kingdom
+myfilter <- row.names(countData[row.names(countData) %in% row.names(taxData[(taxData$kingdom=="SAR"|as.numeric(taxData$k_conf)<=0.5),]),])
+
+dds <- dds[myfilter,]
+
+#===============================================================================
+#       PCA plot
+#===============================================================================
+
+# perform PC decomposition of DES object
+mypca <- des_to_pca(dds)
+
+# to get pca plot axis into the same scale create a dataframe of PC scores multiplied by their variance
+df <-t(data.frame(t(mypca$x)*mypca$percentVar))
+
+# Add spatial information as a numeric and plot 
+dds$location<-as.numeric(dds$pair)
+
+
+# plot the PCA
+pdf(paste(RHB,"pdf",sep="."))
+plotOrd(df,dds@colData,design="condition",)
+dev.off()
+
 
 #===============================================================================
 #       PCA analysis
