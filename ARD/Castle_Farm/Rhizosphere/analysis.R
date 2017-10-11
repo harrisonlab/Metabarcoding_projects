@@ -7,12 +7,12 @@ library(DESeq2)
 library("BiocParallel")
 register(MulticoreParam(12))
 library(data.table)
-library(dplyr)
 library(plyr)
+library(dplyr)
 library(devtools)
 load_all("~/pipelines/metabarcoding/scripts/myfunctions")
-library(cooccur)
-library(parallel)
+# library(cooccur)
+# library(parallel)
 
 #===============================================================================
 #       Load data 
