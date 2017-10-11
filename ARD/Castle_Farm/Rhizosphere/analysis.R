@@ -62,7 +62,7 @@ ubiom_NEM <- list(
 	countData=read.table("NEM.zotus_table.txt",header=T,sep="\t",row.names=1,comment.char = ""),
 	colData=read.table("colData2",header=T,sep="\t",row.names=1),
 	taxData=phyloTaxaTidy(read.table("zNEM.taxa",header=F,sep=",",row.names=1)[,c(1,3,5,7,9,11,13,2,4,6,8,10,12,14)],0.65),
-	RHB="OO"
+	RHB="NEM"
 ) 
 
 #===============================================================================
@@ -90,14 +90,11 @@ ubiom_OO$taxData <- taxData
 # list of species with more than one associated OTU
 invisible(mapply(assign, names(ubiom_FUN), ubiom_FUN, MoreArgs=list(envir = globalenv())))
 combinedTaxa <- combineTaxa("zFUN.taxa")
-combinedTaxa[,1]
-combinedTaxa <- combinedTaxa
+# all species in combinedTaxa are combinable
 countData <- combCounts(combinedTaxa,countData)
 taxData <- combTaxa(combinedTaxa,taxData)
 ubiom_FUN$countData <- countData
 ubiom_FUN$taxData <- taxData
-
-
 
 #===============================================================================
 #       Attach objects
@@ -117,7 +114,7 @@ invisible(mapply(assign, names(ubiom_NEM), ubiom_NEM, MoreArgs=list(envir = glob
 colData <- colData[names(countData),]
 
 # remove low count samples and control samples (not needed here)
-filter <- (colSums(counts(dds))>=1000) & (colData$pair!="C")
+filter <- (colSums(countData)>=1000) & (colData$pair!="C")
 colData <- droplevels(colData[filter,])
 countData <- countData[,filter]
 
@@ -162,63 +159,44 @@ plotOrd(df,colData,design="condition",xlabel="PC1",ylabel="PC2")
 plotOrd(df,colData,shape="condition",design="location",continuous=T,xlabel="PC1",ylabel="PC2")
 dev.off()
 
-
 ### remove spatial information (this uses the factor "pair" not the numeric "location") and plot
+pc.res <- resid(aov(mypca$x~colData$pair,colData))
+df <- t(data.frame(t(pc.res*mypca$percentVar)))
 
-pc.res <- resid(aov(mypca$x~colData$pair))
-ds <- lapply(seq(1,length(pc.res)), function(i) t(data.frame(t(pc.res[[i]])*mypcas[[i]]$percentVar)))
-
-
-pdf("ND_all_pcas_pairs_noloc.pdf")
-lapply(seq(1,length(myfiltbioms)),function(i) plotOrd(ds[[i]],sample_data(myfiltbioms[[i]]),shape="condition",design="location",continuous=T,dimx=1,dimy=2,xlabel="PC1",ylabel="PC2",pointSize=1.5,cbPallete=T)+ ggtitle(names(myfiltbioms)[i]))
-lapply(seq(1,length(myfiltbioms)),function(i) plotOrd(ds[[i]],sample_data(myfiltbioms[[i]]),shape="condition",design="location",continuous=T,dimx=2,dimy=3,xlabel="PC2",ylabel="PC3",pointSize=1.5,cbPallete=T)+ ggtitle(names(myfiltbioms)[i]))
+pdf(paste(RHB,"VA_deloc.pdf",sep="_"))
+plotOrd(df,colData,shape="condition",design="location",continuous=T,xlabel="PC1",ylabel="PC2")
 dev.off()
 
 #===============================================================================
 #       differential analysis
 #===============================================================================
+ 
+# filter for low counts - this can affect the FD probability and DESeq2 does apply its own filtering for genes/otus with no power 
+# but, no point keeping OTUs with 0 count
+dds<-dds[rowSums(counts(dds,normalize=T))>0,]
 
-myfiltbioms <- lapply(mybioms,function(obj) prune_samples(sample_data(obj)$condition!="C",obj))
-Ldds <- lapply(myfiltbioms,function(obj) phylo_to_des(obj,fit=F,calcFactors=geoSet))
+# p value for FDR cutoff
+alpha <- 0.1
 
-Ldds <- lapply(Ldds,function(obj) obj[rowSums(counts(obj))>5,])
-#designs=c(formula(~condition),formula(~pair+condition))
+# the full model 
+full_design <- ~pair + condition
 
-design = ~pair+condition
-lapply(seq(1,length(Ldds)),function(i) design(Ldds[[i]])<<-design)
+# add full model to dds object
+design(dds) <- full_design
 
-Ldds <- lapply(Ldds,function(obj) DESeq(obj,parallel=T))
+# calculate fit
+dds <- DESeq(dds,parallel=T)
 
-alpha <- 0.05
+# contrast
+contrast <- c("condition","S","H")
+res <- results(dds,alpha=alpha,parallel=T,contrast=contrast)
+res.merge <- data.table(inner_join(data.table(OTU=rownames(res),as.data.frame(res)),data.table(OTU=rownames(taxData),taxData)))
+write.table(res.merge, paste(RHB,"diff.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
 
-
-res <- lapply(Ldds,function(obj) results(obj,alpha=alpha,parallel=T,contrast=contrast))
-
-#res.merge <- lapply(res,function(o) lapply(seq(1:2),function(i) 
-
-res.merge <- lapply(seq(1,length(Ldds)),function(i) 
-	data.table(inner_join(
-		data.table(OTU=rownames(res[[i]]),as.data.frame(res[[i]])),
-		data.table(OTU=rownames(tax_table(mybioms[[i]])),as.data.frame(as.matrix(tax_table(mybioms[[i]])))) 
-	)))
-
-
-write.table(res.merge[[1]],"bacteria.res",sep="\t",quote=F,na="",row.names=F)
-write.table(res.merge[[2]],"fungi.res",sep="\t",quote=F,na="",row.names=F)
-write.table(res.merge[[3]],"oo.res",sep="\t",quote=F,na="",row.names=F)
-write.table(res.merge[[4]],"nem.res",sep="\t",quote=F,na="",row.names=F)
-
-## Volcano plots
-
-pdf("volcano_plots.pdf")
-lapply(res.merge,function(obj) {
-	with(obj,plot(log2FoldChange,log10(baseMean),pch=20, xlim=c(-5,5)))
-	with(subset(obj, padj<.1 ), points(log2FoldChange, log10(baseMean), pch=20, col="red"))
-	with(subset(obj, abs(log2FoldChange)>1), points(log2FoldChange, log10(baseMean), pch=20, col="orange"))
-	with(subset(obj, padj<.1 & abs(log2FoldChange)>1), points(log2FoldChange, log10(baseMean), pch=20, col="green"))
-})
+# MA plot
+pdf(past(RHB,"ma_plot.pdf"))
+plot_ma(res.merge)
 dev.off()
-
 
 #===============================================================================
 #       Alpha diversity analysis
