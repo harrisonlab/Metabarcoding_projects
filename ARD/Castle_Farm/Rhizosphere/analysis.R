@@ -194,7 +194,7 @@ res.merge <- data.table(inner_join(data.table(OTU=rownames(res),as.data.frame(re
 write.table(res.merge, paste(RHB,"diff.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
 
 # MA plot
-pdf(paste(RHB,"ma_plot.pdf"))
+pdf(paste(RHB,"ma_plot.pdf",sep="_"))
 plot_ma(res.merge)
 dev.off()
 
