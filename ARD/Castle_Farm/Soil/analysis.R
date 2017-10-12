@@ -78,7 +78,7 @@ combinedTaxa <- combineTaxa("zOO.taxa")
 # show the list
 combinedTaxa[,1]
 # manual filter list to remove none species (e.g. unknown, Pythium aff)
-combinedTaxa <- combinedTaxa[c(-4,-6,-13,-15,-16,-24,-32),]
+combinedTaxa <- combinedTaxa[c(-4,-6,-15,-16,-24,-32),]
 # adjust countData for combined taxa
 countData <- combCounts(combinedTaxa,countData)
 # adjust taxData for combined taxa
@@ -124,15 +124,14 @@ design<-~1
 #create DES object
 dds<-DESeqDataSetFromMatrix(countData,colData,design)
 
-dds$group <- paste(dds$condition,dds$pair,sep="_")
-dds <- collapseReplicates2(dds,groupby=dds$group)
-
 # calculate size factors - use geoMeans function if
 # every gene contains at least one zero, as cannot compute log geometric means
-sizeFactors(dds) <-sizeFactors(estimateSizeFactors(dds))
-#sizeFactors(dds) <-geoMeans(dds)
+# sizeFactors(dds) <-sizeFactors(estimateSizeFactors(dds))
+sizeFactors(dds) <-geoMeans(dds) # this sometimes gives better sizeFactors (as in this case)
 # calcNormFactors(counts(dds),method="RLE",lib.size=(prop.table(colSums(counts(dds)))))
 
+dds$group <- paste(dds$condition,dds$pair,sep="_")
+dds <- collapseReplicates2(dds,groupby=dds$group)
 
 #===============================================================================
 #       Filter data 
