@@ -1,15 +1,46 @@
+# folder containing project files
+PROJECT_FOLDER=~/projects/ARD
+
 # sequence data location(s)
+RUN=170110
 RUN=170224
 RUN=170323
+RUN=170424 #nem/oo
 
-# demultiplex 
+# make the project folder
+mkdir -p $PROJECT_FOLDER
+
+# link to metabarcoding pipeline (specific for authors profile)
+ln -s $PROJECT_FOLDER/metabarcoding_pipeline $MBPL
+
+# folder to hold fastq files
+mkdir -p $PROJECT_FOLDER/data/$RUN/fastq
+
+# variable to hold folder names (BAC and FUN)
+RIB="BAC FUN"
+
+# loop through the RIB variable, i.e. s = BAC on first loop, S= FUN on second loop, and create the folders
+for s in $RIB; do
+mkdir -p $PROJECT_FOLDER/data/$RUN/$s/fastq
+mkdir $PROJECT_FOLDER/data/$RUN/$s/filtered
+mkdir $PROJECT_FOLDER/data/$RUN/$s/unfiltered
+mkdir $PROJECT_FOLDER/data/$RUN/$s/fasta
+done
+
+# QC
+for FILE in $PROJECT_FOLDER/data/$RUN/fastq/*.gz; do
+$PROJECT_FOLDER/metabarcoding_pipeline/scripts/PIPELINE.sh -c qcheck $FILE $PROJECT_FOLDER/data/$RUN/quality
+done
+
+# BAC and FUN are multiplexed. Can seperate by the primer sequences (p1 for BAC, p2 for FUN)
 P1F=CCTACGGGNGGCWGCAG
 P1R=GACTACHVGGGTATCTAATCC
 P2F=CTTGGTCATTTAGAGGAAGTAA
 P2R=ATATGCTTAAGTTCAGCGGG
 
+# demultiplex with 0 difference in primer seqeunce
 $PROJECT_FOLDER/metabarcoding_pipeline/scripts/PIPELINE.sh -c demultiplex \
-"$PROJECT_FOLDER/data/$RUN/fastq/*_R1_*" 0 \
+"$PROJECT_FOLDER/data/$RUN/fastq/*R1*.gz" 0 \
 $P1F $P1R $P2F $P2R
 
 mv $PROJECT_FOLDER/data/$RUN/fastq/*ps1* $PROJECT_FOLDER/data/$RUN/BAC/fastq/.
@@ -20,6 +51,7 @@ mv $PROJECT_FOLDER/data/$RUN/fastq/*ambig* $PROJECT_FOLDER/data/$RUN/ambiguous/.
 SSU=BAC;FPL=17;RPL=21
 MINL=300;MINOVER=5;QUAL=0.5
 
+## pre-process BAC files (min length 300, max diffs 5, quality 0.5)
 $PROJECT_FOLDER/metabarcoding_pipeline/scripts/PIPELINE.sh -c 16Spre \
 "$PROJECT_FOLDER/data/$RUN/$SSU/fastq/*R1*.fastq" \
 $PROJECT_FOLDER/data/$RUN/$SSU \
@@ -30,13 +62,14 @@ $MINL $MINOVER $QUAL
 SSU=FUN;FPL=23;RPL=21
 MINL=200;MAXR2=250;QUAL=1
 
+## Pre-process FUN files (min length 200, MAX R2 length 250, quality 1)
 $PROJECT_FOLDER/metabarcoding_pipeline/scripts/PIPELINE.sh -c ITSpre \
  "$PROJECT_FOLDER/data/$RUN/$SSU/fastq/*R1*.fastq" \
  $PROJECT_FOLDER/data/$RUN/$SSU \
  $PROJECT_FOLDER/metabarcoding_pipeline/primers/primers.db \
  $MINL $MAXR2 $QUAL; 
 
-## forward only pipeline to remove none ITS regions
+## identify none ITS (FUN) regions (R1 only)
 $PROJECT_FOLDER/metabarcoding_pipeline/scripts/PIPELINE.sh -c procends \
 $PROJECT_FOLDER/data/$RUN/$SSU/fasta \
 R1 \
@@ -44,14 +77,14 @@ $PROJECT_FOLDER/metabarcoding_pipeline/hmm/ssu_end.hmm \
 $PROJECT_FOLDER/metabarcoding_pipeline/hmm/58s_start.hmm \
 ssu 58ss 20
 
-### 
+### remove none ITS regions from sequence
 $PROJECT_FOLDER/metabarcoding_pipeline/scripts/PIPELINE.sh -c ITS \
  "$PROJECT_FOLDER/data/$RUN/$SSU/fasta/*R1" \
  $PROJECT_FOLDER/metabarcoding_pipeline/scripts/rm_SSU_58Ss.R \
  "*.\\.ssu" \
  "*.\\.58"
  
-###
+### Move merged fasta to filtered folder
 for D in $PROJECT_FOLDER/data/$RUN/$SSU/fasta/*1; do 
  F=$(echo $D|awk -F"/" '{print $NF}'|awk -F"_" '{print $1".r1.fa"}'); 
  L=$(echo $D|awk -F"/" '{print $NF}'|awk -F"." '{print $1}' OFS=".") ;
