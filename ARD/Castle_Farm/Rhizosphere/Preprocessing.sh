@@ -14,7 +14,7 @@ ln -s $PROJECT_FOLDER/metabarcoding_pipeline $MBPL
 mkdir -p $PROJECT_FOLDER/data/$RUN/fastq
 
 # variable to hold folder names (BAC and FUN)
-RIB="BAC FUN OO"
+RIB="BAC FUN OO NEM"
 
 # loop through the RIB variable, i.e. s = BAC on first loop, S= FUN on second loop, and create the folders
 for s in $RIB; do
