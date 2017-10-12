@@ -78,7 +78,7 @@ combinedTaxa <- combineTaxa("zOO.taxa")
 # show the list
 combinedTaxa[,1]
 # manual filter list to remove none species (e.g. unknown, Pythium aff)
-combinedTaxa <- combinedTaxa[c(-4,-6,-15,-16,-24,-32),]
+combinedTaxa <- combinedTaxa[c(-3,-9),]
 # adjust countData for combined taxa
 countData <- combCounts(combinedTaxa,countData)
 # adjust taxData for combined taxa
