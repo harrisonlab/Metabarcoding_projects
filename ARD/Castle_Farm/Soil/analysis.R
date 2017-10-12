@@ -78,7 +78,7 @@ combinedTaxa <- combineTaxa("zOO.taxa")
 # show the list
 combinedTaxa[,1]
 # manual filter list to remove none species (e.g. unknown, Pythium aff)
-combinedTaxa <- combinedTaxa[c(-2,-8,-9,-17,-20,-25),]
+combinedTaxa <- combinedTaxa[c(-4,-6,-13,-15,-16,-24,-32),]
 # adjust countData for combined taxa
 countData <- combCounts(combinedTaxa,countData)
 # adjust taxData for combined taxa
@@ -114,7 +114,7 @@ invisible(mapply(assign, names(ubiom_NEM), ubiom_NEM, MoreArgs=list(envir = glob
 colData <- colData[names(countData),]
 
 # remove low count samples and control samples (not needed here)
-filter <- (colSums(countData)>=1000) & (colData$pair!="C")
+filter <- (colSums(countData)>=1000) & (colData$pair!="Control")
 colData <- droplevels(colData[filter,])
 countData <- countData[,filter]
 
@@ -123,6 +123,9 @@ design<-~1
 
 #create DES object
 dds<-DESeqDataSetFromMatrix(countData,colData,design)
+
+dds$group <- paste(dds$condition,dds$pair,sep="_")
+dds <- collapseReplicates2(dds,groupby=dds$group)
 
 # calculate size factors - use geoMeans function if
 # every gene contains at least one zero, as cannot compute log geometric means
@@ -151,20 +154,20 @@ mypca <- des_to_pca(dds)
 df <-t(data.frame(t(mypca$x)*mypca$percentVar))
 
 # Add spatial information as a numeric and plot 
-colData$location<-as.number(colData$pair)
+dds$location<-as.number(dds$pair)
 
 # plot the PCA
 pdf(paste(RHB,"VA.pdf",sep="_"))
-plotOrd(df,colData,design="condition",xlabel="PC1",ylabel="PC2")
-plotOrd(df,colData,shape="condition",design="location",continuous=T,xlabel="PC1",ylabel="PC2")
+plotOrd(df,colData(dds),design="condition",xlabel="PC1",ylabel="PC2")
+plotOrd(df,colData(dds),shape="condition",design="location",continuous=T,xlabel="PC1",ylabel="PC2")
 dev.off()
 
 ### remove spatial information (this uses the factor "pair" not the numeric "location") and plot
-pc.res <- resid(aov(mypca$x~colData$pair,colData))
+pc.res <- resid(aov(mypca$x~pair,colData(dds)))
 df <- t(data.frame(t(pc.res*mypca$percentVar)))
 
 pdf(paste(RHB,"VA_deloc.pdf",sep="_"))
-plotOrd(df,colData,shape="condition",design="location",continuous=T,xlabel="PC1",ylabel="PC2")
+plotOrd(df,colData(dds),shape="condition",design="location",continuous=T,xlabel="PC1",ylabel="PC2")
 dev.off()
 
 #===============================================================================
