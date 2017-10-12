@@ -124,14 +124,16 @@ design<-~1
 #create DES object
 dds<-DESeqDataSetFromMatrix(countData,colData,design)
 
-# calculate size factors - use geoMeans function if
-# every gene contains at least one zero, as cannot compute log geometric means
-# sizeFactors(dds) <-sizeFactors(estimateSizeFactors(dds))
-sizeFactors(dds) <-geoMeans(dds) # this sometimes gives better sizeFactors (as in this case)
-# calcNormFactors(counts(dds),method="RLE",lib.size=(prop.table(colSums(counts(dds)))))
-
+# collapse replicates to their mean (collapseReplicates calulates the sum of replicates) - probably best to do this before library size correction
 dds$group <- paste(dds$condition,dds$pair,sep="_")
-dds <- collapseReplicates2(dds,groupby=dds$group)
+dds <- collapseReplicates2(dds,groupby=dds$group,simple=T)
+
+# calculate size factors - using geoMeans function (works better with this data set)
+max(geoMeans(dds))/min(geoMeans(dds))
+max(sizeFactors(estimateSizeFactors(dds)))/min(sizeFactors(estimateSizeFactors(dds)))
+# sizeFactors(dds) <-sizeFactors(estimateSizeFactors(dds))
+sizeFactors(dds) <-geoMeans(dds) 
+# calcNormFactors(counts(dds),method="RLE",lib.size=(prop.table(colSums(counts(dds)))))
 
 #===============================================================================
 #       Filter data 
@@ -190,7 +192,7 @@ design(dds) <- full_design
 dds <- DESeq(dds,parallel=T)
 
 # contrast
-contrast <- c("condition","S","H")
+contrast <- c("condition","Symptom","Healthy")
 res <- results(dds,alpha=alpha,parallel=T,contrast=contrast)
 res.merge <- data.table(inner_join(data.table(OTU=rownames(res),as.data.frame(res)),data.table(OTU=rownames(taxData),taxData)))
 write.table(res.merge, paste(RHB,"diff.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
