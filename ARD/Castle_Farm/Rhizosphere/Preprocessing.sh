@@ -66,12 +66,12 @@ $PROJECT_FOLDER/metabarcoding_pipeline/scripts/PIPELINE.sh -c 16Spre \
  $PROJECT_FOLDER/metabarcoding_pipeline/primers/adapters.db \
  300 5 0.5
 
-# Pre-process FUN files (min length 200, MAX R2 length 250, quality 1)
+# Pre-process FUN files (min length 200, MAX length 300, quality 1)
 $PROJECT_FOLDER/metabarcoding_pipeline/scripts/PIPELINE.sh -c ITSpre \
  "$PROJECT_FOLDER/data/$RUN/FUN/fastq/*R1*.fastq" \
  $PROJECT_FOLDER/data/$RUN/FUN \
  $PROJECT_FOLDER/metabarcoding_pipeline/primers/primers.db \
- 200 250 1
+ 200 300 1
 
 ## identify none ITS (FUN) regions (R1 only)
 $PROJECT_FOLDER/metabarcoding_pipeline/scripts/PIPELINE.sh -c procends \
@@ -128,7 +128,7 @@ rename 's/\.r1//' $PROJECT_FOLDER/data/$RUN/OO/filtered/*.fa
 sed -i -e 's/-.*_/_/' $PROJECT_FOLDER/data/$RUN/OO/filtered/*.fa
 rename 's/-.*_/_/' $PROJECT_FOLDER/data/$RUN/OO/unfiltered/*.fastq
 
-# Pre-process NEM files (min length 100, MAXR2 length, quality 1)
+# Pre-process NEM files (min length 100, max length, quality 1)
 $PROJECT_FOLDER/metabarcoding_pipeline/scripts/PIPELINE.sh -c NEMpre \
  "$PROJECT_FOLDER/data/$RUN/NEM/fastq/*R1*.fastq" \
  $PROJECT_FOLDER/data/$RUN/NEM \
