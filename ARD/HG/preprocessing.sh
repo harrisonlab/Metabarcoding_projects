@@ -91,3 +91,22 @@ for D in $PROJECT_FOLDER/data/$RUN/$SSU/fasta/*1; do
  awk -v L=$L '/>/{sub(".*",">"L"."(++i))}1' $D/$F > $F.tmp && mv $F.tmp $PROJECT_FOLDER/data/$RUN/$SSU/filtered/$F;
 # mv $PROJECT_FOLDER/data/$RUN/$SSU/fasta/${L}_R1/$F $PROJECT_FOLDER/data/$RUN/$SSU/filtered/$L; 
 done
+
+# move files
+RUN="170110 170224 170323"
+SSU="BAC FUN"
+LOC="Goatham Heineken"
+
+for R in $RUN; do
+ for S in $SSU; do
+  for L in $LOC; do
+   T="${L:0:1}"
+    ln -s ~/projects/ARD/data/$R/$S/filtered/${T}1* ~/projects/ARD/analysis/$L/Year2/$S/filtered/.
+    ln -s ~/projects/ARD/data/$R/$S/unfiltered/${T}1* ~/projects/ARD/analysis/$L/Year2/$S/unfiltered/.
+  done
+ done
+done
+
+
+
+
