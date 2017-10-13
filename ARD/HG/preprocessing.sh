@@ -60,9 +60,9 @@ $MINL $MINOVER $QUAL
 
 # fungi
 SSU=FUN;FPL=23;RPL=21
-MINL=200;MAXR2=250;QUAL=1
+MINL=200;MAXR2=300;QUAL=1
 
-## Pre-process FUN files (min length 200, MAX R2 length 250, quality 1)
+## Pre-process FUN files (min length 200, MAX R2 length 300, quality 1)
 $PROJECT_FOLDER/metabarcoding_pipeline/scripts/PIPELINE.sh -c ITSpre \
  "$PROJECT_FOLDER/data/$RUN/$SSU/fastq/*R1*.fastq" \
  $PROJECT_FOLDER/data/$RUN/$SSU \
