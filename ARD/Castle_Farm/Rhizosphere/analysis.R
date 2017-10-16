@@ -112,6 +112,9 @@ invisible(mapply(assign, names(ubiom_NEM), ubiom_NEM, MoreArgs=list(envir = glob
 
 # ensure colData rows and countData columns have the same order
 colData <- colData[names(countData),]
+# Depending on how I've produced the files...
+# row.names(colData) <- colData$name
+# colData <- colData[gsub("\\.","-",sub("_.*","",sub("^X","",names(countData)))),]
 
 # remove low count samples and control samples (not needed here)
 filter <- (colSums(countData)>=1000) & (colData$pair!="C")
@@ -122,12 +125,14 @@ countData <- countData[,filter]
 design<-~1
 
 #create DES object
+# colnames(countData) <- row.names(colData)
 dds<-DESeqDataSetFromMatrix(countData,colData,design)
 
 # calculate size factors - use geoMeans function if
 # every gene contains at least one zero, as cannot compute log geometric means
 # sizeFactors(dds) <-sizeFactors(estimateSizeFactors(dds))
 sizeFactors(dds) <-geoMeans(dds)
+# library(edgeR) # I think anyway
 # calcNormFactors(counts(dds),method="RLE",lib.size=(prop.table(colSums(counts(dds)))))
 
 
@@ -187,11 +192,11 @@ design(dds) <- full_design
 # calculate fit
 dds <- DESeq(dds,parallel=T)
 
-# contrast
+# contrast (not actually necessary in this case as this would be yhe default result calculated by results(dds)
 contrast <- c("condition","S","H")
 res <- results(dds,alpha=alpha,parallel=T,contrast=contrast)
 res.merge <- data.table(inner_join(data.table(OTU=rownames(res),as.data.frame(res)),data.table(OTU=rownames(taxData),taxData)))
-write.table(res.merge, paste(RHB,"diff.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
+write.table(res.merge, paste(RHB,"diff_v2_geomeans.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
 
 # MA plot
 pdf(paste(RHB,"ma_plot.pdf",sep="_"))
