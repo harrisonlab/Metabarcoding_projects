@@ -58,7 +58,7 @@ $PROJECT_FOLDER/metabarcoding_pipeline/scripts/PIPELINE.sh -c ITSpre \
  "$PROJECT_FOLDER/data/$RUN/FUN/fastq/*R1*.fastq" \
  $PROJECT_FOLDER/data/$RUN/FUN \
  $PROJECT_FOLDER/metabarcoding_pipeline/primers/primers.db \
- 200 250 1
+ 200 300 1
 
 ## identify none ITS (FUN) regions (R1 only)
 $PROJECT_FOLDER/metabarcoding_pipeline/scripts/PIPELINE.sh -c procends \
