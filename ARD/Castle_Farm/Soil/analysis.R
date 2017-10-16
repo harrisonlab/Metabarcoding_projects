@@ -111,6 +111,8 @@ invisible(mapply(assign, names(ubiom_NEM), ubiom_NEM, MoreArgs=list(envir = glob
 #===============================================================================
 
 # ensure colData rows and countData columns have the same order
+# for v2 of FUN data
+# colnames(countData) <- paste0(sub(".*_","",names(countData)),"D161020") 
 colData <- colData[names(countData),]
 
 # remove low count samples and control samples (not needed here)
