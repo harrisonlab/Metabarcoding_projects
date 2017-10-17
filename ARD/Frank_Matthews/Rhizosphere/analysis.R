@@ -74,7 +74,7 @@ invisible(mapply(assign, names(ubiom_OO), ubiom_OO, MoreArgs=list(envir = global
 # list of species with more than one associated OTU
 combinedTaxa <- combineTaxa("zOO.taxa")
 # show the list
-combinedTaxa[,1]
+combinedTaxa
 # manual filter list to remove none species (e.g. unknown, Pythium aff)
 combinedTaxa <- combinedTaxa[c(-6),]
 # adjust countData for combined taxa
@@ -93,6 +93,17 @@ countData <- combCounts(combinedTaxa,countData)
 taxData <- combTaxa(combinedTaxa,taxData)
 ubiom_FUN$countData <- countData
 ubiom_FUN$taxData <- taxData
+
+# list of species with more than one associated OTU
+invisible(mapply(assign, names(ubiom_NEM), ubiom_NEM, MoreArgs=list(envir = globalenv())))
+combinedTaxa <- combineTaxa("zFUN.taxa")
+combinedTaxa
+combinedTaxa <- combinedTaxa[c(-1,-4,-7,-9),]
+countData <- combCounts(combinedTaxa,countData)
+taxData <- combTaxa(combinedTaxa,taxData)
+ubiom_NEM$countData <- countData
+ubiom_NEM$taxData <- taxData
+
 
 #===============================================================================
 #       Attach objects
