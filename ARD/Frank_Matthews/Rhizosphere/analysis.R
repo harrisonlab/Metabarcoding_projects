@@ -76,7 +76,7 @@ combinedTaxa <- combineTaxa("zOO.taxa")
 # show the list
 combinedTaxa[,1]
 # manual filter list to remove none species (e.g. unknown, Pythium aff)
-combinedTaxa <- combinedTaxa[c(-3,-9),]
+combinedTaxa <- combinedTaxa[c(-6),]
 # adjust countData for combined taxa
 countData <- combCounts(combinedTaxa,countData)
 # adjust taxData for combined taxa
@@ -128,8 +128,8 @@ dds<-DESeqDataSetFromMatrix(countData,colData,design)
 
 # calculate size factors - use geoMeans function if
 # every gene contains at least one zero, as cannot compute log geometric means
-# sizeFactors(dds) <-sizeFactors(estimateSizeFactors(dds))
-sizeFactors(dds) <-geoMeans(dds)
+ sizeFactors(dds) <-sizeFactors(estimateSizeFactors(dds))
+# sizeFactors(dds) <-geoMeans(dds)
 # library(edgeR) # I think anyway
 # calcNormFactors(counts(dds),method="RLE",lib.size=(prop.table(colSums(counts(dds)))))
 
@@ -191,10 +191,10 @@ design(dds) <- full_design
 dds <- DESeq(dds,parallel=T)
 
 # contrast (not actually necessary in this case as this would be yhe default result calculated by results(dds)
-contrast <- c("condition","S","H")
+contrast <- c("condition","R","V")
 res <- results(dds,alpha=alpha,parallel=T,contrast=contrast)
 res.merge <- data.table(inner_join(data.table(OTU=rownames(res),as.data.frame(res)),data.table(OTU=rownames(taxData),taxData)))
-write.table(res.merge, paste(RHB,"diff_v2_geomeans.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
+write.table(res.merge, paste(RHB,"diff.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
 
 # MA plot
 pdf(paste(RHB,"ma_plot.pdf",sep="_"))
