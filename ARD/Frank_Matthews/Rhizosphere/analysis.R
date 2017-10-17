@@ -11,8 +11,6 @@ library(plyr)
 library(dplyr)
 library(devtools)
 load_all("~/pipelines/metabarcoding/scripts/myfunctions")
-# library(cooccur)
-# library(parallel)
 
 #===============================================================================
 #       Load data 
