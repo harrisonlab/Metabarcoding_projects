@@ -96,9 +96,9 @@ ubiom_FUN$taxData <- taxData
 
 # list of species with more than one associated OTU
 invisible(mapply(assign, names(ubiom_NEM), ubiom_NEM, MoreArgs=list(envir = globalenv())))
-combinedTaxa <- combineTaxa("zFUN.taxa")
+combinedTaxa <- combineTaxa("zNEM.taxa")
 combinedTaxa
-combinedTaxa <- combinedTaxa[c(-1,-4,-7,-9),]
+combinedTaxa <- combinedTaxa[c(3,5),]
 countData <- combCounts(combinedTaxa,countData)
 taxData <- combTaxa(combinedTaxa,taxData)
 ubiom_NEM$countData <- countData
