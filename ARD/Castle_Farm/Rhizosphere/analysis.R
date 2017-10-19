@@ -99,6 +99,15 @@ taxData <- combTaxa(combinedTaxa,taxData)
 ubiom_FUN$countData <- countData
 ubiom_FUN$taxData <- taxData
 
+# list of species with more than one associated OTU
+invisible(mapply(assign, names(ubiom_NEM), ubiom_NEM, MoreArgs=list(envir = globalenv())))
+combinedTaxa <- combineTaxa("zNEM.taxa")
+combinedTaxa <- combinedTaxa[c(-3,-6),]
+countData <- combCounts(combinedTaxa,countData)
+taxData <- combTaxa(combinedTaxa,taxData)
+ubiom_NEM$countData <- countData
+ubiom_NEM$taxData <- taxData
+
 #===============================================================================
 #       Attach objects
 #===============================================================================
@@ -219,9 +228,9 @@ design(dds) <- full_design
 # calculate fit
 dds <- DESeq(dds,parallel=T)
 
-# contrast (not actually necessary in this case as this would be yhe default result calculated by results(dds)
-contrast <- c("condition","S","H")
-res <- results(dds,alpha=alpha,parallel=T,contrast=contrast)
+# contrast (not actually necessary in this case as this would be the default result calculated by results(dds)
+# contrast <- c("condition","S","H")
+res <- results(dds,alpha=alpha,parallel=T)
 res.merge <- data.table(inner_join(data.table(OTU=rownames(res),as.data.frame(res)),data.table(OTU=rownames(taxData),taxData)))
 write.table(res.merge, paste(RHB,"diff_filtered.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
 
