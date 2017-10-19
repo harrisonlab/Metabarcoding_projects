@@ -48,6 +48,7 @@ ubiom_FUN <- list(
 	taxData=phyloTaxaTidy(read.table("zFUN.taxa",header=F,sep=",",row.names=1)[,c(1,3,5,7,9,11,13,2,4,6,8,10,12,14)],0.65),
 	RHB="FUN"
 ) 
+colnames(ubiom_FUN$countData) <- gsub("(^.*_)(S[0-9]*)($)","\\2D161020",colnames(ubiom_FUN$countData)) # \\2 keeps the second match () group
 
 # Oomycetes
 ubiom_OO <- list(
@@ -141,9 +142,34 @@ sizeFactors(dds) <-geoMeans(dds)
 #       Filter data 
 #============================================================================
 
-# Pythium specific filter to remove OTUs which are unlikely part of the SAR kingdom
+# Oomcete specific filter to remove OTUs which are unlikely part of the SAR kingdom
 myfilter <- row.names(countData[row.names(countData) %in% row.names(taxData[(taxData$kingdom=="SAR"|as.numeric(taxData$k_conf)<=0.5),]),])
+# apply filter
+dds <- dds[myfilter,]
 
+### read accumulation filter
+# output pdf file
+pdf(paste(RHB,"OTU_counts.pdf",sep="_"))
+
+# plot cummulative reads
+plotCummulativeReads(counts(dds,normalize=T))
+
+# close pdf
+dev.off()
+
+#### Select filter ####
+# get row sum of normalized counts
+df <- as.data.table(rowSums(counts(dds,normalize=T)),keep.rownames=T)
+# order decending
+df <- df[order(-V2)]
+
+# Apply seperately for appropriate data set depending on cut-off chosen from graph
+myfilter <- df$V1[1:700] #FUN
+myfilter <- df$V1[1:50] # OO
+myfilter <- df$V1[1:75] # NEM
+myfilter <- df$V1[1:4500]  # BAC
+
+# filter out low abundance OTUs
 dds <- dds[myfilter,]
 
 #===============================================================================
@@ -193,11 +219,14 @@ design(dds) <- full_design
 # calculate fit
 dds <- DESeq(dds,parallel=T)
 
-# contrast
-contrast <- c("condition","Symptom","Healthy")
-res <- results(dds,alpha=alpha,parallel=T,contrast=contrast)
+# get results (no contrast needed as default is correct way round)
+res <- results(dds,alpha=alpha,parallel=T)
+
+# merge results with taxonomy table
 res.merge <- data.table(inner_join(data.table(OTU=rownames(res),as.data.frame(res)),data.table(OTU=rownames(taxData),taxData)))
-write.table(res.merge, paste(RHB,"diff.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
+
+# output resules
+write.table(res.merge, paste(RHB,"diff_filtered.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
 
 # MA plot
 pdf(paste(RHB,"ma_plot.pdf",sep="_"))
