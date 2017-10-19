@@ -166,8 +166,8 @@ df <- df[order(-V2)]
 # Apply seperately for appropriate data set depending on cut-off chosen from graph
 myfilter <- df$V1[1:700] #FUN
 myfilter <- df$V1[1:50] # OO
-myfilter <- df$V1[1:75] # NEM
-myfilter <- df$V1[1:4500]  # BAC
+myfilter <- df$V1[1:80] # NEM
+myfilter <- df$V1[1:600]  # BAC
 
 # filter out low abundance OTUs
 dds <- dds[myfilter,]
