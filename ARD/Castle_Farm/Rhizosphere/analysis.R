@@ -176,7 +176,7 @@ df <- df[order(-V2)]
 myfilter <- df$V1[1:500] #FUN
 myfilter <- df$V1[1:40] # OO
 myfilter <- df$V1[1:75] # NEM
-myfilter <- df$V1[1:150]  # fun rhiz
+myfilter <- df$V1[1:4500]  # BAC
 
 # filter out low abundance OTUs
 dds <- dds[myfilter,]
@@ -238,6 +238,10 @@ write.table(res.merge, paste(RHB,"diff_filtered.txt",sep="_"),quote=F,sep="\t",n
 pdf(paste(RHB,"ma_plot.pdf",sep="_"))
 plot_ma(res.merge)
 dev.off()
+
+
+#################################################################################
+#################################################################################
 
 #===============================================================================
 #       Alpha diversity analysis
