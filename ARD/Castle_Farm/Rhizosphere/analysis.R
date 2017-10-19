@@ -49,6 +49,9 @@ ubiom_FUN <- list(
 	RHB="FUN"
 ) 
 
+# I've rerun the fungal pipeline, which now uses a different naming convention
+colnames(ubiom_FUN$countData) <- gsub("(^.*_)(S[0-9]*)($)","\\2D170217",colnames(ubiom_FUN$countData)) # \\2 keeps the second match () group
+
 # Oomycetes
 ubiom_OO <- list(
 	countData=read.table("OO.zotus_table.txt",header=T,sep="\t",row.names=1,comment.char = ""),
@@ -140,9 +143,33 @@ sizeFactors(dds) <-geoMeans(dds)
 #       Filter data 
 #============================================================================
 
-# Pythium specific filter to remove OTUs which are unlikely part of the SAR kingdom
+### Pythium specific filter to remove OTUs which are unlikely part of the SAR kingdom
 myfilter <- row.names(countData[row.names(countData) %in% row.names(taxData[(taxData$kingdom=="SAR"|as.numeric(taxData$k_conf)<=0.5),]),])
+dds <- dds[myfilter,]
 
+### read accumulation filter
+# output pdf file
+pdf(paste(RHB,"OTU_counts.pdf",sep="_"))
+
+# plot cummulative reads
+plotCummulativeReads(counts(dds,normalize=T))
+
+# close pdf
+dev.off()
+
+#### Select filter ####
+# get row sum of normalized counts
+df <- as.data.table(rowSums(counts(dds,normalize=T)),keep.rownames=T)
+# order decending
+df <- df[order(-V2)]
+
+# Apply seperately for appropriate data set depending on cut-off chosen from graph
+myfilter <- df$V1[1:500] #FUN
+myfilter <- df$V1[1:40] # OO
+myfilter <- df$V1[1:75] # NEM
+myfilter <- df$V1[1:150]  # fun rhiz
+
+# filter out low abundance OTUs
 dds <- dds[myfilter,]
 
 #===============================================================================
@@ -196,7 +223,7 @@ dds <- DESeq(dds,parallel=T)
 contrast <- c("condition","S","H")
 res <- results(dds,alpha=alpha,parallel=T,contrast=contrast)
 res.merge <- data.table(inner_join(data.table(OTU=rownames(res),as.data.frame(res)),data.table(OTU=rownames(taxData),taxData)))
-write.table(res.merge, paste(RHB,"diff_v2_geomeans.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
+write.table(res.merge, paste(RHB,"diff_filtered.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
 
 # MA plot
 pdf(paste(RHB,"ma_plot.pdf",sep="_"))
