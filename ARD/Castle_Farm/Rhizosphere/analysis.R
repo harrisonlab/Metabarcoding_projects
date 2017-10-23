@@ -146,6 +146,8 @@ dds<-DESeqDataSetFromMatrix(countData,colData,design)
 sizeFactors(dds) <-geoMeans(dds)
 # library(edgeR) # I think anyway
 # calcNormFactors(counts(dds),method="RLE",lib.size=(prop.table(colSums(counts(dds)))))
+# Correction from aboslute quantification (BAC only at the moment)
+sizeFactors(dds)<-geoMeans(dds)* sapply(colData$copies,function(x) x/mean(colData$copies,na.rm=T))
 
 
 #===============================================================================
