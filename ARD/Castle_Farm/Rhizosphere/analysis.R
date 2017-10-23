@@ -162,23 +162,18 @@ dds <- dds[myfilter,]
 # output pdf file
 pdf(paste(RHB,"OTU_counts.pdf",sep="_"))
 
-# plot cummulative reads
+# plot cummulative reads (will also produce a data table "dtt" in the global environment)
 plotCummulativeReads(counts(dds,normalize=T))
 
 # close pdf
 dev.off()
 
 #### Select filter ####
-# get row sum of normalized counts
-df <- as.data.table(rowSums(counts(dds,normalize=T)),keep.rownames=T)
-# order decending
-df <- df[order(-V2)]
-
 # Apply seperately for appropriate data set depending on cut-off chosen from graph
-myfilter <- df$V1[1:500] #FUN
-myfilter <- df$V1[1:40] # OO
-myfilter <- df$V1[1:75] # NEM
-myfilter <- df$V1[1:4500]  # BAC
+myfilter <- dtt$OTU[1:500] #FUN
+myfilter <- dtt$OTU[1:40] # OO
+myfilter <- dtt$OTU[1:75] # NEM
+myfilter <- dtt$OTU[1:4500]  # BAC
 
 # filter out low abundance OTUs
 dds <- dds[myfilter,]
