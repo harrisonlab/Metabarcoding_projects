@@ -48,7 +48,7 @@ ubiom_FUN <- list(
 ) 
 
 # I've rerun the fungal pipeline, which now uses a different naming convention
-colnames(ubiom_FUN$countData) <- gsub("(^.*_)(S[0-9]*)($)","\\2D170217",colnames(ubiom_FUN$countData)) # \\2 keeps the second match () group
+colnames(ubiom_FUN$countData) <- gsub("([0-9]?[abcdef])([\\._].*)","\\1",colnames(ubiom_FUN$countData)) # \\2 keeps the second match () group
 
 # Oomycetes
 ubiom_OO <- list(
@@ -127,7 +127,7 @@ colData <- colData[names(countData),]
 # colData <- colData[gsub("\\.","-",sub("_.*","",sub("^X","",names(countData)))),]
 
 # remove low count samples and control samples (not needed here)
-filter <- (colSums(countData)>=1000) & (colData$pair!="C")
+filter <- (colSums(countData)>=1000) & (colData$condition!="C")
 colData <- droplevels(colData[filter,])
 countData <- countData[,filter]
 
@@ -158,17 +158,11 @@ dds <- dds[myfilter,]
 
 ### read accumulation filter
 # output pdf file
-pdf(paste(RHB,"OTU_counts.pdf",sep="_"))
-
-# plot cummulative reads (will also produce a data table "dtt" in the global environment)
-plotCummulativeReads(counts(dds,normalize=T))
-
-# close pdf
-dev.off()
+ggsave(paste(RHB,"OTU_counts.pdf",sep="_"),plotCummulativeReads(counts(dds,normalize=T)))					
 
 #### Select filter ####
 # Apply seperately for appropriate data set depending on cut-off chosen from graph
-myfilter <- dtt$OTU[1:500] #FUN
+myfilter <- dtt$OTU[1:300] #FUN
 myfilter <- dtt$OTU[1:40] # OO
 myfilter <- dtt$OTU[1:75] # NEM
 myfilter <- dtt$OTU[1:4500]  # BAC
@@ -192,7 +186,7 @@ colData$location<-as.number(colData$pair)
 # plot the PCA
 pdf(paste(RHB,"VA.pdf",sep="_"))
 plotOrd(df,colData,design="condition",xlabel="PC1",ylabel="PC2")
-plotOrd(df,colData,shape="condition",design="location",continuous=T,xlabel="PC1",ylabel="PC2")
+plotOrd(df,colData,shape="condition",design="meters",continuous=T,xlabel="PC1",ylabel="PC2")
 dev.off()
 
 ### remove spatial information (this uses the factor "pair" not the numeric "location") and plot
