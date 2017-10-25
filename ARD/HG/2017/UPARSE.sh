@@ -1,3 +1,6 @@
+# This is preliminary and will need to be changed to incorporate G and H into a single run 
+# (and possibly multiple years - though I'll need to play around with the settings USEARCH 32 will run out of memory)
+
 # setup links and variables
 PROJECT_FOLDER=~/projects/ARD/analysis
 ln -s ~/pipelines/metabarcoding/ $PROJECT_FOLDER/metabarcoding_pipeline
