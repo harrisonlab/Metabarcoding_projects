@@ -177,25 +177,26 @@ dds <- dds[myfilter,]
 # perform PC decomposition of DES object
 mypca <- des_to_pca(dds)
 
+### attempt sequencer run information removal (there are better methods available, but this is not so bad)
+colData$run <- as.factor(colData$run)					
+pc.res <- resid(aov(mypca$x~colData$run,colData))					
+					
 # to get pca plot axis into the same scale create a dataframe of PC scores multiplied by their variance
-df <-t(data.frame(t(mypca$x)*mypca$percentVar))
-
-# Add spatial information as a numeric and plot 
-colData$location<-as.number(colData$pair)
+df <- t(data.frame(t(pc.res*mypca$percentVar)))
 
 # plot the PCA
 pdf(paste(RHB,"VA.pdf",sep="_"))
 plotOrd(df,colData,design="condition",xlabel="PC1",ylabel="PC2")
-plotOrd(df,colData,shape="condition",design="meters",continuous=T,xlabel="PC1",ylabel="PC2")
+plotOrd(df,colData,shape="condition",design="distance",continuous=T,xlabel="PC1",ylabel="PC2")
 dev.off()
 
 ### remove spatial information (this uses the factor "pair" not the numeric "location") and plot
-pc.res <- resid(aov(mypca$x~colData$pair,colData))
-df <- t(data.frame(t(pc.res*mypca$percentVar)))
+# convert spatial information to a factor
+colData$position <- as.factor(colData$meters)	
+pc.res <- resid(aov(mypca$x~run+position,colData))
+df <- t(data.frame(t(pc.res2*mypca$percentVar)))
 
-pdf(paste(RHB,"VA_deloc.pdf",sep="_"))
-plotOrd(df,colData,shape="condition",design="location",continuous=T,xlabel="PC1",ylabel="PC2")
-dev.off()
+ggsave(paste(RHB,"VA_deloc_v2.pdf",sep="_"),plotOrd(df,colData,shape="condition",design="distance",continuous=T,xlabel="PC1",ylabel="PC2"))					
 
 #===============================================================================
 #       differential analysis
@@ -207,9 +208,9 @@ dds<-dds[rowSums(counts(dds,normalize=T))>0,]
 
 # p value for FDR cutoff
 alpha <- 0.1
-
+					
 # the full model 
-full_design <- ~pair + condition
+full_design <- ~run + position + condition
 
 # add full model to dds object
 design(dds) <- full_design
