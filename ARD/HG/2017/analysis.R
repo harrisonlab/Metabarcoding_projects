@@ -9,6 +9,7 @@ register(MulticoreParam(12))
 library(data.table)
 library(plyr)
 library(dplyr)
+library(ggplot2)
 library(devtools)
 load_all("~/pipelines/metabarcoding/scripts/myfunctions")
 
