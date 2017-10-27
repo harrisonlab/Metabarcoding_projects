@@ -128,10 +128,15 @@ colData <- colData[names(countData),]
 # row.names(colData) <- colData$name
 # colData <- colData[gsub("\\.","-",sub("_.*","",sub("^X","",names(countData)))),]
 
+# add grouping vector
+colData$groupby <- gsub("(*.[0-9])([a-f]$)","\\1",rownames(colData))
+
+
 # remove low count samples and control samples (not needed here)
 filter <- (colSums(countData)>=1000) & (colData$condition!="c")
 colData <- droplevels(colData[filter,])
 countData <- countData[,filter]
+
 
 # simple Deseq design
 design<-~1
@@ -139,8 +144,6 @@ design<-~1
 #create DES object
 # colnames(countData) <- row.names(colData)
 dds<-DESeqDataSetFromMatrix(countData,colData,design)
-
-
 
 # calculate size factors - use geoMeans function if
 # every gene contains at least one zero, as cannot compute log geometric means
@@ -151,6 +154,8 @@ sizeFactors(dds) <-geoMeans(dds)
 # Correction from aboslute quantification (BAC only at the moment)
 sizeFactors(dds)<-geoMeans(dds)* sapply(colData$copies,function(x) x/mean(colData$copies,na.rm=T))
 
+# collapse replicates
+dds <- collapseReplicates2(dds,groupby=dds$groupby,simple=F)					
 
 #===============================================================================
 #       Filter data 
@@ -182,18 +187,18 @@ dds <- dds[myfilter,]
 mypca <- des_to_pca(dds)
 
 ### attempt sequencer run information removal (there are better methods available, but this is not so bad)
-colData$run <- as.factor(colData$run)					
-pc.res <- resid(aov(mypca$x~colData$sequence_run,colData))					
+dds$sequence_run <- as.factor(dds$sequence_run)					
+pc.res <- resid(aov(mypca$x~dds$sequence_run))					
 					
 # to get pca plot axis into the same scale create a dataframe of PC scores multiplied by their variance
 df <- t(data.frame(t(pc.res*mypca$percentVar)))
 
 # plot genotypes
-ggsave(paste(RHB,"gen.pdf",sep="_"),plotOrd(df,colData,design="genotype_name",xlabel="PC1",ylabel="PC2"))
+ggsave(paste(RHB,"gen.pdf",sep="_"),plotOrd(df,colData(dds),design="genotype_name",xlabel="PC1",ylabel="PC2"))
 # plot the PCA
 pdf(paste(RHB,"VA.pdf",sep="_"))
-plotOrd(df,colData,design="condition",xlabel="PC1",ylabel="PC2")
-plotOrd(df,colData,shape="condition",design="distance",continuous=T,xlabel="PC1",ylabel="PC2")
+plotOrd(df,colData(dds),design="condition",xlabel="PC1",ylabel="PC2")
+plotOrd(df,colData(dds),shape="condition",design="distance",continuous=T,xlabel="PC1",ylabel="PC2")
 dev.off()
 
 ### remove spatial information (this uses the factor "pair" not the numeric "location") and plot
@@ -202,7 +207,7 @@ colData$position <- as.factor(colData$meters)
 pc.res <- resid(aov(mypca$x~run+position,colData))
 df <- t(data.frame(t(pc.res2*mypca$percentVar)))
 
-ggsave(paste(RHB,"VA_deloc_v2.pdf",sep="_"),plotOrd(df,colData,shape="condition",design="distance",continuous=T,xlabel="PC1",ylabel="PC2"))					
+ggsave(paste(RHB,"VA_deloc_v2.pdf",sep="_"),plotOrd(df,colData(dds),shape="condition",design="distance",continuous=T,xlabel="PC1",ylabel="PC2"))					
 
 #===============================================================================
 #       differential analysis
