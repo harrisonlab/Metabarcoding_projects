@@ -18,7 +18,8 @@ load_all("~/pipelines/metabarcoding/scripts/myfunctions")
 #===============================================================================
 
 # load denoised otu count table
-countData <- read.table("BAC.zotus_table.txt",header=T,sep="\t",row.names=1, comment.char = "")
+countData <- read.table("BAC.zotus_table.txt",header=T,sep="\t",row.names=1, check.names=F,comment.char = "")
+countData <- gsub("([0-9]?[abcdef])([-_].*)","\\1",colnames(countData)) # \\2 keeps the second match () group
 
 # load sample metadata
 colData <- read.table("colData",header=T,sep="\t",row.names=1)
@@ -42,30 +43,30 @@ ubiom_BAC <- list(
 
 # Fungi all in one call
 ubiom_FUN <- list(
-	countData=read.table("FUN.zotus_table.txt",header=T,sep="\t",row.names=1,comment.char = ""),
+	countData=read.table("FUN.zotus_table.txt",header=T,sep="\t",row.names=1,check.names=F,comment.char = ""),
 	colData=read.table("colData",header=T,sep="\t",row.names=1),
 	taxData=phyloTaxaTidy(read.table("zFUN.taxa",header=F,sep=",",row.names=1)[,c(1,3,5,7,9,11,13,2,4,6,8,10,12,14)],0.65),
 	RHB="FUN"
 ) 
 
 # I've rerun the fungal pipeline, which now uses a different naming convention
-colnames(ubiom_FUN$countData) <- gsub("([0-9]?[abcdef])([\\._].*)","\\1",colnames(ubiom_FUN$countData)) # \\2 keeps the second match () group
+colnames(ubiom_FUN$countData) <-  gsub("([0-9]?[abcdef])([-_].*)","\\1",colnames(countData)) # \\2 keeps the second match () group
 
 # Oomycetes
-ubiom_OO <- list(
-	countData=read.table("OO.zotus_table.txt",header=T,sep="\t",row.names=1,comment.char = ""),
-	colData=read.table("colData2",header=T,sep="\t",row.names=1),
-	taxData=phyloTaxaTidy(read.table("zOO.taxa",header=F,sep=",",row.names=1)[,c(1,3,5,7,9,11,13,2,4,6,8,10,12,14)],0.65),
-	RHB="OO"
-) 
+#ubiom_OO <- list(
+#	countData=read.table("OO.zotus_table.txt",header=T,sep="\t",row.names=1,comment.char = ""),
+#	colData=read.table("colData2",header=T,sep="\t",row.names=1),
+#	taxData=phyloTaxaTidy(read.table("zOO.taxa",header=F,sep=",",row.names=1)[,c(1,3,5,7,9,11,13,2,4,6,8,10,12,14)],0.65),
+#	RHB="OO"
+#) 
 
 # Nematodes 
-ubiom_NEM <- list(
-	countData=read.table("NEM.zotus_table.txt",header=T,sep="\t",row.names=1,comment.char = ""),
-	colData=read.table("colData2",header=T,sep="\t",row.names=1),
-	taxData=phyloTaxaTidy(read.table("zNEM.taxa",header=F,sep=",",row.names=1)[,c(1,3,5,7,9,11,13,2,4,6,8,10,12,14)],0.65),
-	RHB="NEM"
-) 
+#ubiom_NEM <- list(
+#	countData=read.table("NEM.zotus_table.txt",header=T,sep="\t",row.names=1,comment.char = ""),
+#	colData=read.table("colData2",header=T,sep="\t",row.names=1),
+#	taxData=phyloTaxaTidy(read.table("zNEM.taxa",header=F,sep=",",row.names=1)[,c(1,3,5,7,9,11,13,2,4,6,8,10,12,14)],0.65),
+#	RHB="NEM"
+#) 
 
 #===============================================================================
 #       Combine species 
@@ -74,20 +75,20 @@ ubiom_NEM <- list(
 #### combine species at 0.95 (default) confidence (if they are species). Works well for Oomycetes and Fungi
 
 # attach OO objects
-invisible(mapply(assign, names(ubiom_OO), ubiom_OO, MoreArgs=list(envir = globalenv())))
+#invisible(mapply(assign, names(ubiom_OO), ubiom_OO, MoreArgs=list(envir = globalenv())))
 # list of species with more than one associated OTU
-combinedTaxa <- combineTaxa("zOO.taxa")
+#combinedTaxa <- combineTaxa("zOO.taxa")
 # show the list
-combinedTaxa[,1]
+#combinedTaxa[,1]
 # manual filter list to remove none species (e.g. unknown, Pythium aff)
-combinedTaxa <- combinedTaxa[c(-3,-9),]
+#combinedTaxa <- combinedTaxa[c(-3,-9),]
 # adjust countData for combined taxa
-countData <- combCounts(combinedTaxa,countData)
+#countData <- combCounts(combinedTaxa,countData)
 # adjust taxData for combined taxa
-taxData <- combTaxa(combinedTaxa,taxData)
+#taxData <- combTaxa(combinedTaxa,taxData)
 # copy back to object
-ubiom_OO$countData <- countData
-ubiom_OO$taxData <- taxData
+#ubiom_OO$countData <- countData
+#ubiom_OO$taxData <- taxData
 
 # list of species with more than one associated OTU
 invisible(mapply(assign, names(ubiom_FUN), ubiom_FUN, MoreArgs=list(envir = globalenv())))
@@ -99,13 +100,13 @@ ubiom_FUN$countData <- countData
 ubiom_FUN$taxData <- taxData
 
 # list of species with more than one associated OTU
-invisible(mapply(assign, names(ubiom_NEM), ubiom_NEM, MoreArgs=list(envir = globalenv())))
-combinedTaxa <- combineTaxa("zNEM.taxa")
-combinedTaxa <- combinedTaxa[c(-3,-6),]
-countData <- combCounts(combinedTaxa,countData)
-taxData <- combTaxa(combinedTaxa,taxData)
-ubiom_NEM$countData <- countData
-ubiom_NEM$taxData <- taxData
+#invisible(mapply(assign, names(ubiom_NEM), ubiom_NEM, MoreArgs=list(envir = globalenv())))
+#combinedTaxa <- combineTaxa("zNEM.taxa")
+#combinedTaxa <- combinedTaxa[c(-3,-6),]
+#countData <- combCounts(combinedTaxa,countData)
+#taxData <- combTaxa(combinedTaxa,taxData)
+#ubiom_NEM$countData <- countData
+#ubiom_NEM$taxData <- taxData
 
 #===============================================================================
 #       Attach objects
@@ -114,8 +115,8 @@ ubiom_NEM$taxData <- taxData
 # attach objects (FUN, BAC,OO or NEM)
 invisible(mapply(assign, names(ubiom_FUN), ubiom_FUN, MoreArgs=list(envir = globalenv())))
 invisible(mapply(assign, names(ubiom_BAC), ubiom_BAC, MoreArgs=list(envir = globalenv())))
-invisible(mapply(assign, names(ubiom_OO), ubiom_OO, MoreArgs=list(envir = globalenv())))
-invisible(mapply(assign, names(ubiom_NEM), ubiom_NEM, MoreArgs=list(envir = globalenv())))
+#invisible(mapply(assign, names(ubiom_OO), ubiom_OO, MoreArgs=list(envir = globalenv())))
+#invisible(mapply(assign, names(ubiom_NEM), ubiom_NEM, MoreArgs=list(envir = globalenv())))
 
 #===============================================================================
 #       Create DEseq objects 
