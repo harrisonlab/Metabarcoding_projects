@@ -50,7 +50,7 @@ ubiom_FUN <- list(
 ) 
 
 # I've rerun the fungal pipeline, which now uses a different naming convention
-colnames(ubiom_FUN$countData) <-  gsub("([0-9]?[abcdef])([-_].*)","\\1",colnames(countData)) # \\2 keeps the second match () group
+colnames(ubiom_FUN$countData) <-  gsub("([0-9]?[abcdef])([-_].*)","\\1",colnames(ubiom_FUN$countData)) # \\2 keeps the second match () group
 
 # Oomycetes
 #ubiom_OO <- list(
