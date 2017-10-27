@@ -203,10 +203,14 @@ dev.off()
 
 ### remove spatial information (this uses the factor "pair" not the numeric "location") and plot
 # convert spatial information to a factor
-colData$position <- as.factor(colData$meters)	
-pc.res <- resid(aov(mypca$x~run+position,colData))
-df <- t(data.frame(t(pc.res2*mypca$percentVar)))
+dds$position <- as.factor(dds$meters)	
+pc.res <- resid(aov(mypca$x~dds$sequence_run+dds$position,colData))
+df <- t(data.frame(t(pc.res*mypca$percentVar)))
 
+# plot genotypes
+ggsave(paste(RHB,"gen_loc.pdf",sep="_"),plotOrd(df,colData(dds),design="genotype_name",shape="condition",xlabel="PC1",ylabel="PC2"))
+					
+					
 ggsave(paste(RHB,"VA_deloc_v2.pdf",sep="_"),plotOrd(df,colData(dds),shape="condition",design="distance",continuous=T,xlabel="PC1",ylabel="PC2"))					
 
 #===============================================================================
