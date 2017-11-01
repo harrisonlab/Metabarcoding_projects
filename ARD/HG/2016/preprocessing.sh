@@ -82,7 +82,8 @@ $PROJECT_FOLDER/metabarcoding_pipeline/scripts/PIPELINE.sh -c ITS \
  "$PROJECT_FOLDER/data/$RUN/$SSU/fasta/*R1" \
  $PROJECT_FOLDER/metabarcoding_pipeline/scripts/rm_SSU_58Ss.R \
  "*.\\.ssu" \
- "*.\\.58"
+ "*.\\.58" \
+ $FPL $RPL
  
 ### Move merged fasta to filtered folder
 for D in $PROJECT_FOLDER/data/$RUN/$SSU/fasta/*1; do 
