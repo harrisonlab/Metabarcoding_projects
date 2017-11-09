@@ -17,7 +17,20 @@ done
 
 # Oomycetes
 $PROJECT_FOLDER/metabarcoding_pipeline/scripts/PIPELINE.sh -c OOpre \
-  "$PROJECT_FOLDER/data/$RUN/$SSU/fastq/*R1*.fastq" \
-  $PROJECT_FOLDER/data/$RUN/$SSU \
+  "$PROJECT_FOLDER/data/$RUN/OO/fastq/*R1*.fastq" \
+  $PROJECT_FOLDER/data/$RUN/OO \
   $PROJECT_FOLDER/metabarcoding_pipeline/primers/adapters.db \
   300 5 0.5 21 20
+
+# Nematodes
+$PROJECT_FOLDER/metabarcoding_pipeline/scripts/PIPELINE.sh -c NEMpre \
+ "$PROJECT_FOLDER/data/$RUN/NEM/fastq/*R1*.fastq" \
+ $PROJECT_FOLDER/data/$RUN/NEM \
+ $PROJECT_FOLDER/metabarcoding_pipeline/primers/nematode.db \
+ 200 1.5 23 18
+
+for f in $PROJECT_FOLDER/data/$RUN/NEM/fasta/*.fa; do 
+ F=$(echo $f|awk -F"/" '{print $NF}'|awk -F"_" '{print $1".r1.fa"}'); 
+ L=$(echo $f|awk -F"/" '{print $NF}'|awk -F"." '{print $1}' OFS=".") ;
+ awk -v L=$L '/>/{sub(".*",">"L"."(++i))}1' $f > $F.tmp && mv $F.tmp $PROJECT_FOLDER/data/$RUN/NEM/filtered/$F;
+done
