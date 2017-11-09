@@ -58,6 +58,7 @@ ubiom_OO <- list(
 	taxData=phyloTaxaTidy(read.table("zOO.taxa",header=F,sep=",",row.names=1)[,c(1,3,5,7,9,11,13,2,4,6,8,10,12,14)],0.65),
 	RHB="OO"
 ) 
+colnames(ubiom_OO$countData) <- gsub("\\.","_",sub("\\.Nem.*","",colnames(ubiom_OO$countData)))
 
 # Nematodes 
 ubiom_NEM <- list(
@@ -66,6 +67,7 @@ ubiom_NEM <- list(
 	taxData=phyloTaxaTidy(read.table("zNEM.taxa",header=F,sep=",",row.names=1)[,c(1,3,5,7,9,11,13,2,4,6,8,10,12,14)],0.65),
 	RHB="NEM"
 ) 
+colnames(ubiom_NEM$countData) <- gsub("\\.","_",sub("\\.Nem.*","",colnames(ubiom_NEM$countData)))
 
 #===============================================================================
 #       Combine species 
@@ -80,7 +82,7 @@ combinedTaxa <- combineTaxa("zOO.taxa")
 # show the list
 combinedTaxa
 # manual filter list to remove none species (e.g. unknown, Pythium aff)
-combinedTaxa <- combinedTaxa[c(-6),]
+combinedTaxa <- combinedTaxa[c(-2,-6),]
 # adjust countData for combined taxa
 countData <- combCounts(combinedTaxa,countData)
 # adjust taxData for combined taxa
@@ -102,7 +104,7 @@ ubiom_FUN$taxData <- taxData
 invisible(mapply(assign, names(ubiom_NEM), ubiom_NEM, MoreArgs=list(envir = globalenv())))
 combinedTaxa <- combineTaxa("zNEM.taxa")
 combinedTaxa
-combinedTaxa <- combinedTaxa[c(3,5),]
+combinedTaxa <- combinedTaxa[c(-6,-8),]
 countData <- combCounts(combinedTaxa,countData)
 taxData <- combTaxa(combinedTaxa,taxData)
 ubiom_NEM$countData <- countData
