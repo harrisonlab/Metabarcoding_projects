@@ -50,7 +50,6 @@ ubiom_FUN <- list(
 ) 
 colnames(ubiom_FUN$countData) <- gsub("\\.","_",sub("\\.ITS.*","",colnames(ubiom_FUN$countData)))
 
-
 # Oomycetes
 ubiom_OO <- list(
 	countData=read.table("OO.zotus_table.txt",header=T,sep="\t",row.names=1,comment.char = ""),
@@ -165,6 +164,10 @@ plotCummulativeReads(counts(dds,normalize=T))
 
 # close pdf
 dev.off()
+
+# produce taxonomy table joined to row counts (you could use tibble rather than adding a row names column, but I can't remeber the syntax off hand)
+taxData$OTU <- row.names(taxData)
+write.table(as.data.table(inner_join(dtt,taxData)),paste(RHB,"counts.txt",sep="_"),sep="\t",quote=F,row.names=F)
 
 #### Select filter ####
 # Apply seperately for appropriate data set depending on cut-off chosen from graph
