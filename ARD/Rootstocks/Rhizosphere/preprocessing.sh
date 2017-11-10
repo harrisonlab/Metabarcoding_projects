@@ -10,7 +10,7 @@ $PROJECT_FOLDER/metabarcoding_pipeline/scripts/PIPELINE.sh -c ITSpre \
  $PROJECT_FOLDER/data/$RUN/FUN \
  $PROJECT_FOLDER/metabarcoding_pipeline/primers/primers.db \
  200 1 23 21
- 
+
 for F in $PROJECT_FOLDER/data/$RUN/FUN/fasta/*_R1.fa; do 
  FO=$(echo $F|awk -F"/" '{print $NF}'|awk -F"_" '{print $1".r1.fa"}'); 
  L=$(echo $F|awk -F"/" '{print $NF}'|awk -F"_" '{print $1}') ;
