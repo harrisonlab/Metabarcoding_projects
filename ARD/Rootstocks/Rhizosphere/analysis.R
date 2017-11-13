@@ -37,6 +37,7 @@ ubiom_BAC <- list(
 	taxData=taxData,
 	RHB="BAC"
 )
+colnames(ubiom_BAC$countData) <- gsub("\\.","_",sub("_.*","",colnames(ubiom_BAC$countData)))
 
 # Fungi all in one call
 ubiom_FUN <- list(
@@ -45,9 +46,7 @@ ubiom_FUN <- list(
 	taxData=phyloTaxaTidy(read.table("zFUN.taxa",header=F,sep=",",row.names=1)[,c(1,3,5,7,9,11,13,2,4,6,8,10,12,14)],0.65),
 	RHB="FUN"
 ) 
-
-# I've rerun the fungal pipeline, which now uses a different naming convention
-colnames(ubiom_FUN$countData) <- gsub("(^.*_)(S[0-9]*)($)","\\2D170217",colnames(ubiom_FUN$countData)) # \\2 keeps the second match () group
+colnames(ubiom_FUN$countData) <- gsub("\\.","_",sub("_.*","",colnames(ubiom_FUN$countData)))
 
 #===============================================================================
 #       Combine species 
