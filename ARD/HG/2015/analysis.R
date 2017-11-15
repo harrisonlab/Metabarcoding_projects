@@ -452,23 +452,35 @@ summary(aov(Simpson~location+(Sample*Orchard),all_alpha[[1]]))
 ### A better statistical approach using an ordinal non-parametric test
 library(MASS)
 library(car)
-all_alpha_ord <- all_alpha
-# convert metrics to factors
-all_alpha_ord[[1]]$Chao1 <- as.factor(all_alpha_ord[[1]]$Chao1)
-all_alpha_ord[[1]]$Shannon <- as.factor(all_alpha_ord[[1]]$Shannon)
-all_alpha_ord[[1]]$Simpson <- as.factor(all_alpha_ord[[1]]$Simpson)
-all_alpha_ord[[2]]$Chao1 <- as.factor(all_alpha_ord[[2]]$Chao1)
-all_alpha_ord[[2]]$Shannon <- as.factor(all_alpha_ord[[2]]$Shannon)
-all_alpha_ord[[2]]$Simpson <- as.factor(all_alpha_ord[[2]]$Simpson)
 
-Anova(polr(Chao1~location+(Sample*Orchard),all_alpha_ord[[1]],Hess=T),type="III")
-Anova(polr(Shannon~location+(Sample*Orchard),all_alpha_ord[[1]],Hess=T),type="III")
-Anova(polr(Simpson~location+(Sample*Orchard),all_alpha_ord[[1]],Hess=T),type="III")
-Anova(polr(Chao1~location+(Sample*Orchard),all_alpha_ord[[2]],Hess=T),type="III")
-Anova(polr(Shannon~location+(Sample*Orchard),all_alpha_ord[[2]],Hess=T),type="III")
-Anova(polr(Simpson~location+(Sample*Orchard),all_alpha_ord[[2]],Hess=T),type="III")
-    
-		    
+Anova(polr(as.factor(all_alpha_ord[[1]]$Chao1)~location+(Sample*Orchard),all_alpha[[1]],Hess=T),type="III")
+Anova(polr(as.factor(all_alpha_ord[[1]]Shannon)~location+(Sample*Orchard),all_alpha[[1]],Hess=T),type="III")
+Anova(polr(as.factor(all_alpha_ord[[1]]Simpson)~location+(Sample*Orchard),all_alpha[[1]],Hess=T),type="III")
+Anova(polr(as.factor(all_alpha_ord[[2]]Chao1)~location+(Sample*Orchard),all_alpha[[2]],Hess=T),type="III")
+Anova(polr(as.factor(all_alpha_ord[[2]]Shannon)~location+(Sample*Orchard),all_alpha[[2]],Hess=T),type="III")
+Anova(polr(as.factor(all_alpha_ord[[2]]Simpson)~location+(Sample*Orchard),all_alpha[[2]],Hess=T),type="III")
+
+### rank + ANOVA + permutaion test
+library(lmPerm)
+summary(aovp(as.numeric(factor(all_alpha[[1]]$Chao1))~location+(Sample*Orchard),all_alpha[[1]]))
+summary(aovp(as.numeric(factor(all_alpha[[1]]$Shannon))~location+(Sample*Orchard),all_alpha[[1]]))
+summary(aovp(as.numeric(factor(all_alpha[[1]]$Simpson))~location+(Sample*Orchard),all_alpha[[1]]))
+summary(aovp(as.numeric(factor(all_alpha[[2]]$Chao1))~location+(Sample*Orchard),all_alpha[[2]]))
+summary(aovp(as.numeric(factor(all_alpha[[2]]$Shannon))~location+(Sample*Orchard),all_alpha[[2]]))
+summary(aovp(as.numeric(factor(all_alpha[[2]]$Simpson))~location+(Sample*Orchard),all_alpha[[2]]))
+
+lf <- function(X,x) {
+  data.frame(prop.table(summary(aovp(as.numeric(factor(X[[x]]))~location+(Sample*Orchard),X))[[1]][c(2)])*100,
+    summary(aovp(as.numeric(factor(X[[x]]))~location+(Sample*Orchard),X))[[1]][5])
+}
+
+lf(all_alpha[[1]],"Chao1")
+lf(all_alpha[[1]],"Shannon")
+lf(all_alpha[[1]],"Simpson")
+lf(all_alpha[[2]],"Chao1")
+lf(all_alpha[[2]],"Shannon")
+lf(all_alpha[[2]],"Simpson")
+	    		    
 #### CHANGE i ####
 i=1 #or 2
 sample_data(phylist[[i]])$Class <- paste(sample_data(phylist[[i]])$Orchard,sample_data(phylist[[i]])$Sample,sep=" ")
