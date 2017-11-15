@@ -418,12 +418,11 @@ alpha_counts <- lapply(countData,function(X) {
 	return(round(X,0))
 })
 
-
 phylist <- lapply(seq(1,2),function(i) phyloseq(otu_table(alpha_counts[[i]],taxa_are_rows=T),sample_data(as.data.frame(colData[[i]])),tax_table(tax_table(myfiltbioms[[i]]))))
 
 all_alpha <- lapply(phylist,function(o) plot_richness(o,returnData=T))
 
-
+### DO NOT USE -  THIS USES ANOVA ON NON-LINEAR RESPONSE VARIABLES (PROBABLY PRODUCES UNRELIABLE RESULTS) ###
 data.frame(prop.table(summary(aov(Chao1~location+(Sample*Orchard),all_alpha[[2]]))[[1]][c(2)])*100,
            summary(aov(Chao1~location+(Sample*Orchard),all_alpha[[2]]))[[1]][5])
 data.frame(prop.table(summary(aov(Shannon~location+(Sample*Orchard),all_alpha[[2]]))[[1]][c(2)])*100,
@@ -448,9 +447,28 @@ summary(aov(Simpson~location+(Sample*Orchard),all_alpha[[2]]))
 summary(aov(Chao1~location+(Sample*Orchard),all_alpha[[1]]))
 summary(aov(Shannon~location+(Sample*Orchard),all_alpha[[1]]))
 summary(aov(Simpson~location+(Sample*Orchard),all_alpha[[1]]))
+##### END DO NOT USE ####
 
+### A better statistical approach using an ordinal non-parametric test
+library(MASS)
+library(car)
+all_alpha_ord <- all_alpha
+# convert metrics to factors
+all_alpha_ord[[1]]$Chao1 <- as.factor(all_alpha_ord[[1]]$Chao1)
+all_alpha_ord[[1]]$Shannon <- as.factor(all_alpha_ord[[1]]$Shannon)
+all_alpha_ord[[1]]$Simpson <- as.factor(all_alpha_ord[[1]]$Simpson)
+all_alpha_ord[[2]]$Chao1 <- as.factor(all_alpha_ord[[2]]$Chao1)
+all_alpha_ord[[2]]$Shannon <- as.factor(all_alpha_ord[[2]]$Shannon)
+all_alpha_ord[[2]]$Simpson <- as.factor(all_alpha_ord[[2]]$Simpson)
 
-
+Anova(polr(Chao1~location+(Sample*Orchard),all_alpha_ord[[1]],Hess=T),type="III")
+Anova(polr(Shannon~location+(Sample*Orchard),all_alpha_ord[[1]],Hess=T),type="III")
+Anova(polr(Simpson~location+(Sample*Orchard),all_alpha_ord[[1]],Hess=T),type="III")
+Anova(polr(Chao1~location+(Sample*Orchard),all_alpha_ord[[2]],Hess=T),type="III")
+Anova(polr(Shannon~location+(Sample*Orchard),all_alpha_ord[[2]],Hess=T),type="III")
+Anova(polr(Simpson~location+(Sample*Orchard),all_alpha_ord[[2]],Hess=T),type="III")
+    
+		    
 #### CHANGE i ####
 i=1 #or 2
 sample_data(phylist[[i]])$Class <- paste(sample_data(phylist[[i]])$Orchard,sample_data(phylist[[i]])$Sample,sep=" ")
