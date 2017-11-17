@@ -611,22 +611,22 @@ du <- lapply(unifracs,function(o) o[, , "d_UW"]) # Unweighted UniFrac
 lapply(seq(1,2),function(i) adonis(as.dist(du[[i]])~location+Orchard*Sample,colData[[i]],parallel=12,permutations=9999))
 lapply(seq(1,2),function(i) adonis(as.dist(dw[[i]])~location+Orchard*Sample,colData[[i]],parallel=12,permutations=9999))
 
-heatPlot <- function(m,s="A") {
-  g <- plotHeatmap(m,textSize=15)
+heatPlot <- function(m,s="A",textSize=15) {
+  g <- plotHeatmap(m,textSize=textSize)
   g <- g +theme(axis.title=element_blank(),plot.margin = unit(c(1,1,3,3), "lines"))
-  g <- g + annotation_custom(textGrob("Grass",gp = gpar(fontsize = 15)),xmin=11.92,xmax=11.92,ymin=-4,ymax=-4)
-  g <- g + annotation_custom(textGrob("Tree",gp = gpar(fontsize = 15)),xmin=35.75,xmax=35.75,ymin=-4,ymax=-4)
-  g <- g + annotation_custom(textGrob("Grass",gp = gpar(fontsize = 15)),xmin=59.58,xmax=59.58,ymin=-4,ymax=-4)
-  g <- g + annotation_custom(textGrob("Tree",gp = gpar(fontsize = 15)),xmin=83.42,xmax=83.42,ymin=-4,ymax=-4)
-  g <- g + annotation_custom(textGrob("\nCider",gp = gpar(fontsize = 15)),xmin=23.83,xmax=23.83,ymin=-6,ymax=-6)
-  g <- g + annotation_custom(textGrob("\nDessert",gp = gpar(fontsize = 15)),xmin=71.42,xmax=71.42,ymin=-6,ymax=-6)
+  g <- g + annotation_custom(textGrob("Grass",gp = gpar(fontsize = textSize)),xmin=11.92,xmax=11.92,ymin=-4,ymax=-4)
+  g <- g + annotation_custom(textGrob("Tree",gp = gpar(fontsize = textSize)),xmin=35.75,xmax=35.75,ymin=-4,ymax=-4)
+  g <- g + annotation_custom(textGrob("Grass",gp = gpar(fontsize = textSize)),xmin=59.58,xmax=59.58,ymin=-4,ymax=-4)
+  g <- g + annotation_custom(textGrob("Tree",gp = gpar(fontsize = textSize)),xmin=83.42,xmax=83.42,ymin=-4,ymax=-4)
+  g <- g + annotation_custom(textGrob("\nCider",gp = gpar(fontsize = textSize)),xmin=23.83,xmax=23.83,ymin=-6,ymax=-6)
+  g <- g + annotation_custom(textGrob("\nDessert",gp = gpar(fontsize = textSize)),xmin=71.42,xmax=71.42,ymin=-6,ymax=-6)
 
-  g <- g + annotation_custom(textGrob("\nGrass",rot=90,gp = gpar(fontsize = 15)),ymin=11.92,ymax=11.92,xmin=-9,xmax=-9)
-  g <- g + annotation_custom(textGrob("\nTree",rot=90,gp = gpar(fontsize = 15)),ymin=35.75,ymax=35.75,xmin=-9,xmax=-9)
-  g <- g + annotation_custom(textGrob("\nGrass",rot=90,gp = gpar(fontsize = 15)),ymin=59.58,ymax=59.58,xmin=-9,xmax=-9)
-  g <- g + annotation_custom(textGrob("\nTree",rot=90,gp = gpar(fontsize = 15)),ymin=83.42,ymax=83.42,xmin=-9,xmax=-9)
-  g <- g + annotation_custom(textGrob("Cider",rot=90,gp = gpar(fontsize = 15)),ymin=23.83,ymax=23.83,xmin=-11,xmax=-11)
-  g <- g + annotation_custom(textGrob("Dessert",rot=90,gp = gpar(fontsize = 15)),ymin=71.42,ymax=71.42,xmin=-11,xmax=-11)
+  g <- g + annotation_custom(textGrob("\nGrass",rot=90,gp = gpar(fontsize = textSize)),ymin=11.92,ymax=11.92,xmin=-9,xmax=-9)
+  g <- g + annotation_custom(textGrob("\nTree",rot=90,gp = gpar(fontsize = textSize)),ymin=35.75,ymax=35.75,xmin=-9,xmax=-9)
+  g <- g + annotation_custom(textGrob("\nGrass",rot=90,gp = gpar(fontsize = textSize)),ymin=59.58,ymax=59.58,xmin=-9,xmax=-9)
+  g <- g + annotation_custom(textGrob("\nTree",rot=90,gp = gpar(fontsize = textSize)),ymin=83.42,ymax=83.42,xmin=-9,xmax=-9)
+  g <- g + annotation_custom(textGrob("Cider",rot=90,gp = gpar(fontsize = textSize)),ymin=23.83,ymax=23.83,xmin=-11,xmax=-11)
+  g <- g + annotation_custom(textGrob("Dessert",rot=90,gp = gpar(fontsize = textSize)),ymin=71.42,ymax=71.42,xmin=-11,xmax=-11)
 
   g <- g + annotation_custom(linesGrob(), xmin = 23.83, xmax = 23.83, ymin = 0, ymax = -1)
   g <- g + annotation_custom(linesGrob(), xmin = 47.75, xmax = 47.75, ymin = 0, ymax = -4)
@@ -642,12 +642,12 @@ heatPlot <- function(m,s="A") {
   return(g)
 }
 
-pdf("POOLED_betaX.pdf",height=9,width=11)
+pdf("BRANDNEW_POOLED_betaX.pdf",height=9,width=11)
 grid.arrange(
-  heatPlot(du[[2]],"A"),
-  heatPlot(dw[[2]],"B"),
-  heatPlot(du[[1]],"C"),
-  heatPlot(dw[[1]],"D"),
+  heatPlot(du[[2]],"A",17.5),
+  heatPlot(dw[[2]],"B",17.5),
+  heatPlot(du[[1]],"C",17.5),
+  heatPlot(dw[[1]],"D",17.5),
   nrow=2,
   ncol=2
 )
