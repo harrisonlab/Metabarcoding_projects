@@ -200,13 +200,15 @@ perVar <- x * mypca[[2]]$percentVar
 colSums(perVar)
 colSums(perVar)/sum(colSums(perVar))*100
 
-# PCA plots
+##### PCA plots ######
 
 df <- lapply(mypca,function(o) t(data.frame(t(o$x)*o$percentVar)))
 
-g1 <- plotOrd(df[[2]],colData[[2]],shapes=c("Orchard","Sample"),design="Distance",xlabel="PC1",ylabel="PC2",continuous=T,dimx=1,dimy=2,colourScale=c("black","lightblue"),legend=F,textSize=14)
-g2 <- plotOrd(df[[1]],colData[[1]],shapes=c("Orchard","Sample"),design="Distance",xlabel="PC1",ylabel="PC2",continuous=T,dimx=1,dimy=2,colourScale=c("black","lightblue"),legend=F,textSize=14)
+g1 <- plotOrd(df[[2]],colData[[2]],shapes=c("Orchard","Sample"),design="Distance",xlabel="PC1",ylabel="PC2",continuous=T,dimx=1,dimy=2,colourScale=c("black","lightgrey"),legend=T,textSize=18)
+g2 <- plotOrd(df[[1]],colData[[1]],shapes=c("Orchard","Sample"),design="Distance",xlabel="PC1",ylabel="PC2",continuous=T,dimx=1,dimy=2,colourScale=c("black","lightgrey"),legend=F,textSize=18)
 
+glegend <- 
+	     
 g2 <- g2 + theme(legend.direction="horizontal", 
 		 legend.position="bottom",
 		 legend.justification=c(0,0),
