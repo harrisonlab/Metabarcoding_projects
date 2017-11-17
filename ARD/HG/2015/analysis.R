@@ -480,6 +480,58 @@ lf(all_alpha[[1]],"Simpson")
 lf(all_alpha[[2]],"Chao1")
 lf(all_alpha[[2]],"Shannon")
 lf(all_alpha[[2]],"Simpson")
+
+####### ALPHA DIVERISTY PLOT 16/11/2017 ######
+# function to extract legend grob from a ggplot
+g_legend<-function(a.gplot){
+    tmp <- ggplot_gtable(ggplot_build(a.gplot))
+    leg <- which(sapply(tmp$grobs, function(x) x$name) == "guide-box")
+    legend <- tmp$grobs[[leg]]
+    legend
+}
+
+#setEPS() # turn on postscript - decided against it here, works better as pdf
+
+# text size
+ts <- 17
+
+# plot Alpha diversity measures 
+g1 <- plot_richness(phylist[[2]],x="Orchard",shape="Sample",color="Distance",measures=c("Chao1", "Shannon", "Simpson"),textSize=ts,size=1.75) + scale_color_gradient(low="black", high="lightgrey")
+g2 <- plot_richness(phylist[[1]],x="Orchard",shape="Sample",color="Distance",measures=c("Chao1", "Shannon", "Simpson"),textSize=ts,size=1.75,limits=c(2000,4000)) + scale_color_gradient(low="black", high="lightgrey")
+
+# get the legend from one of the plots
+legend <- g_legend(g1)
+
+# modify plots to remove legend, titles and y-axis grid lines, and edit the argins
+g1 <- g1 + theme(legend.position="none",
+                 axis.title.x=element_blank(),
+                 axis.title.y=element_blank(),
+     		 panel.grid.minor.y =element_blank(),
+                 plot.margin=margin(t=-1,b=0.05,unit="lines"))
+g2 <- g2 + theme(legend.position="none",
+                 axis.title.x=element_blank(),
+                 axis.title.y=element_blank(),
+     		 panel.grid.minor.y =element_blank(),
+     		 plot.margin=margin(t=0,b=0.2,unit="lines"))
+
+# create grobs for A and B 
+title.A <- textGrob(label = "A",x = unit(0, "lines"),y = unit(0, "lines"),hjust = -0.5, vjust = 2,gp = gpar(fontsize = ts))
+title.B <- textGrob(label = "B",x = unit(0, "lines"),y = unit(0, "lines"),hjust = -0.5, vjust = 2.2,gp = gpar(fontsize = ts))
+
+# add A and B to plots
+g3 <- arrangeGrob(g1, top = title.A)
+g4 <- arrangeGrob(g2, top = title.B)
+# not certain why but arrangeGrobs sends a blank page to the default device
+dev.off()
+
+#postscript("EVEN_NEWER_POOLED_Alpha.pdf",height=12.5,width=12.5)
+# create layout matrix - 2 rows with 6 columns. First five columns give used by the two figures last column is used by the legend
+lay=rbind(c(1,1,1,1,1,3),c(2,2,2,2,2,3))
+
+# create and save plot
+ggsave("EVEN_NEWER_POOLED_Alpha.pdf",grid.arrange(g3,g4,legend,layout_matrix=lay))
+
+########## END NEW PLOT #############
 	    		    
 #### CHANGE i ####
 i=1 #or 2
