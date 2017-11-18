@@ -69,6 +69,17 @@ $PROJECT_FOLDER/metabarcoding_pipeline/scripts/PIPELINE.sh -c ITSpre \
  $PROJECT_FOLDER/metabarcoding_pipeline/primers/primers.db \
  $MINL $MAXR2 $QUAL; 
 
+for F in $PROJECT_FOLDER/data/$RUN/$SSU/fasta/*_R1.fa; do 
+ FO=$(echo $F|awk -F"/" '{print $NF}'|awk -F"_" '{print $1".r1.fa"}'); 
+ L=$(echo $F|awk -F"/" '{print $NF}'|awk -F"_" '{print $1}') ;
+ echo $F
+ echo $FO
+ echo $L
+ awk -v L=$L '/>/{sub(".*",">"L"."(++i))}1' $F > $FO.tmp && mv $FO.tmp $PROJECT_FOLDER/data/$RUN/$SSU/filtered/$FO;
+done
+
+
+##### BELOW NO LONGER IMPLEMENTED
 ## identify none ITS (FUN) regions (R1 only)
 $PROJECT_FOLDER/metabarcoding_pipeline/scripts/PIPELINE.sh -c procends \
 $PROJECT_FOLDER/data/$RUN/$SSU/fasta \
