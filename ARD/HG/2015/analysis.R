@@ -204,33 +204,37 @@ colSums(perVar)/sum(colSums(perVar))*100
 
 df <- lapply(mypca,function(o) t(data.frame(t(o$x)*o$percentVar)))
 
-g1 <- plotOrd(df[[2]],colData[[2]],shapes=c("Orchard","Sample"),design="Distance",xlabel="PC1",ylabel="PC2",continuous=T,dimx=1,dimy=2,colourScale=c("black","lightgrey"),legend=T,textSize=18)
-g2 <- plotOrd(df[[1]],colData[[1]],shapes=c("Orchard","Sample"),design="Distance",xlabel="PC1",ylabel="PC2",continuous=T,dimx=1,dimy=2,colourScale=c("black","lightgrey"),legend=F,textSize=18)
+g1 <- plotOrd(df[[2]],colData[[2]],shapes=c("Orchard","Sample"),design="Distance",xlabel="PC1",ylabel="PC2",continuous=T,dimx=1,dimy=2,colourScale=c("black","lightgrey"),legend=F,textSize=14,ylims=c(-5,5)) + theme_classic_thin(14)  %+replace% theme(plot.margin=margin(4,4,0,4),legend.position="none")
+g2 <- plotOrd(df[[1]],colData[[1]],shapes=c("Orchard","Sample"),design="Distance",xlabel="PC1",ylabel="PC2",continuous=T,dimx=1,dimy=2,colourScale=c("black","lightgrey"),legend=F,textSize=14,ylims=c(-5,15)) + theme_classic_thin(14)  %+replace% theme(plot.margin=margin(0,14,0,12),legend.position="none")
 
-glegend <- 
-	     
-g2 <- g2 + theme(legend.direction="horizontal", 
-		 legend.position="bottom",
-		 legend.justification=c(0,0),
-		 legend.box="vertical",
-		 legend.box.just="left",
-		 legend.text=element_text(size=12),
-		 legend.title=element_text(size=12),
-		 axis.line.x = element_line(size=0.3,colour = "black"),
-		 axis.line.y = element_line(size=0.3,colour = "black"),
-		 axis.text = element_text(colour = "black"),
-		 plot.margin=unit(c(2.5,1,0.5,0.5), "lines")
-)	
+# generate legends
+legend_shapes <- plotOrd(df[[2]],colData[[2]],shapes=c("Orchard","Sample"),xlabel="PC1",ylabel="PC2",continuous=F,dimx=1,dimy=2,colourScale=c("black","lightgrey"),legend=T,textSize=14,pointSize=3,cbPalette=T)
+legend_shapes <- legend_shapes + theme(legend.direction="vertical",legend.position="top",legend.box="vertical",legend.box.just="left",plot.margin=margin(0,0,0,0,unit="lines"))
+legend_shapes <- g_legend(legend_shapes)
+legend_dist <- plotOrd(df[[2]],colData[[2]],design="Distance",xlabel="PC1",ylabel="PC2",continuous=T,dimx=1,dimy=2,colourScale=c("black","lightgrey"),legend=T,textSize=14,pointSize=3,cbPalette=T)
+legend_dist <- legend_dist + theme(legend.direction="horizontal",legend.position="top",legend.box="vertical",legend.box.just="left",plot.margin=margin(0,0,0,0,unit="lines"))
+legend_dist <- g_legend(legend_dist)
+    
+# modify plots to remove legend, titles and y-axis grid lines, and edit the argins
+#g1 <- g1 + theme_classic_thin(18) %+replace% theme(legend.position="none")
 
-### Main figure		  
-pdf("POOLED_ITS_16S_orchards2.pdf",width=7,height=6.5)	
-g3 <- ggplotGrob(g1+annotate("text",label=paste("A"), x=25, y=3,size=5))
-g4<-  ggplotGrob(g2+annotate("text",label=paste("B"), x=60, y=8,size=5))
-g <- rbind(g3, g4, size="first")
-#grid.newpage()
-grid.draw(g)
+g3 <- ggplotGrob(g1+annotate("text",label=paste("A"), x=25, y=4,size=6))
+g4<-  ggplotGrob(g2+annotate("text",label=paste("B"), x=65, y=13.5,size=6))
+#g <- rbind(g3, g4, size="first")
 dev.off()
 
+lay=cbind(c(1,1,2,2,3,5),c(1,1,2,2,4,5))
+	     
+#lay=rbind(c(1,1),c(1,1),c(2,2),c(2,2c(3,4))
+
+ggsave("BRANDNEW_POOLED_ITS_16S_orchards2.pdf",grid.arrange(g3,g4,legend_shapes,legend_dist,blank,layout_matrix=lay),width=7,height=6.5)	
+
+
+#postscript("EVEN_NEWER_POOLED_Alpha.pdf",height=12.5,width=12.5)
+# create layout matrix - 2 rows with 6 columns. First five columns give used by the two figures last column is used by the legend
+
+# create and save plot
+     
 
 ### PCA per orchard
 #phylist <- lapply(seq(1,2),function(i) phyloseq(otu_table(counts(Ldds[[i]],normalize=F),taxa_are_rows=T),sample_data(as.data.frame(colData[[i]])),tax_table(tax_table(myfiltbiom[[i]]))))
