@@ -342,6 +342,28 @@ mylegend <- ggplot_legend( plotOrd(df[[2]][,1:2],sample_data(myfiltbiom[[2]]),
 #===============================================================================
 #       autocorrelation
 #===============================================================================
+
+## V1 (using all data for VST calculation) prefered method
+LddsFilt <- lapply(Ldds,function(o) o[rowSums(counts(o,normalize=T))>5,])	    
+phylist <- lapply(seq(1,2),function(i) phyloseq(
+	otu_table(counts(LddsFilt[[i]],normalize=F),taxa_are_rows=T),
+	sample_data(as.data.frame(colData[[i]]))
+	#,tax_table(tax_table(myfiltbioms[[i]]))
+))
+tempiom <- phylist
+tempiom[[1]]@otu_table@.Data <-  assay(varianceStabilizingTransformation(phylo_to_des(tempiom[[1]])))
+tempiom[[2]]@otu_table@.Data <-  assay(varianceStabilizingTransformation(phylo_to_des(tempiom[[2]])))		  
+
+
+mypca <- list(
+  Bacteria_Dessert=plotPCA(tempiom[[1]],returnData=T,trans=F,filterFun=filterFun,filter="Dessert"),
+  Bacteria_Cider=plotPCA(tempiom[[1]],returnData=T,trans=F,filterFun=filterFun,filter="Cider"),
+  Fungi_Dessert=plotPCA(tempiom[[2]],returnData=T,trans=F,filterFun=filterFun,filter="Dessert"),
+  Fungi_Cider=plotPCA(tempiom[[2]],returnData=T,trans=F,filterFun=filterFun,filter="Cider")
+)
+##
+
+## V2 (using each data set seperatly for VST calculation)
 LddsFilt <- lapply(Ldds,function(o) o[rowSums(counts(o,normalize=T))>5,])
 
 phylist <- lapply(seq(1,2),function(i) phyloseq(
@@ -350,14 +372,13 @@ phylist <- lapply(seq(1,2),function(i) phyloseq(
 	#tax_table(myfiltbioms[[i]])
 ))
 
-
 mypca <- list(
   Bacteria_Dessert= pca_des(LddsFilt$Bacteria[,LddsFilt$Bacteria$Orchard=="Dessert"]), 
   Bacteria_Cider =  pca_des(LddsFilt$Bacteria[,LddsFilt$Bacteria$Orchard=="Cider"]),
   Fungi_Dessert =   pca_des(LddsFilt$Fungi[,LddsFilt$Fungi$Orchard=="Dessert"]),
   Fungi_Cider =     pca_des(LddsFilt$Fungi[,LddsFilt$Fungi$Orchard=="Cider"])
 )
-
+##
 
 myfiltbiom <- list(
 	Bacteria_Dessert=prune_samples(sample_data(phylist[[1]])$Orchard=="Dessert",phylist[[1]]),
@@ -382,27 +403,27 @@ c_fix <- function(p,o,pn){
   return(d)  
 }
 		       
-g1<-plotCorrelog(mypca[[1]],myfiltbiom[[1]],"PC1",cutoff,xlim=NULL,ylim=c(-1,1),na.add=c(9,17),cols=c("black","lightgrey"),legend=F,textSize=16)
-g2<-plotCorrelog(data=c_fix(mypca[[2]],myfiltbiom[[2]],"PC1"), cutoff,pc="PC1",ylim=c(-1,1),cols=c("black","lightgrey"),legend=F,textSize=16)
-g3<-plotCorrelog(mypca[[1]],myfiltbiom[[1]],"PC2",cutoff,xlim=NULL,ylim=c(-1,1),na.add=c(9,17),cols=c("black","lightgrey"),legend=F,textSize=16)
-g4<-plotCorrelog(data=c_fix(mypca[[2]],myfiltbiom[[2]],"PC2"),cutoff,pc="PC2",ylim=c(-1,1),cols=c("black","lightgrey"),legend=F,textSize=16)
+g1<-plotCorrelog(mypca[[1]],myfiltbiom[[1]],"PC1",cutoff,xlim=NULL,ylim=c(-1,1),na.add=c(9,17),cols=c("black","lightgrey"),legend=F,textSize=13)
+g2<-plotCorrelog(data=c_fix(mypca[[2]],myfiltbiom[[2]],"PC1"), cutoff,pc="PC1",ylim=c(-1,1),cols=c("black","lightgrey"),legend=F,textSize=13)
+g3<-plotCorrelog(mypca[[1]],myfiltbiom[[1]],"PC2",cutoff,xlim=NULL,ylim=c(-1,1),na.add=c(9,17),cols=c("black","lightgrey"),legend=F,textSize=13)
+g4<-plotCorrelog(data=c_fix(mypca[[2]],myfiltbiom[[2]],"PC2"),cutoff,pc="PC2",ylim=c(-1,1),cols=c("black","lightgrey"),legend=F,textSize=13)
 
-g11<-plotCorrelog(mypca[[3]],myfiltbiom[[3]],"PC1",cutoff,xlim=NULL,ylim=c(-1,1),na.add=c(9,17),cols=c("black","lightgrey"),legend=F,textSize=16)
-g12<-plotCorrelog(data=c_fix(mypca[[4]],myfiltbiom[[4]],"PC1"), cutoff,pc="PC1",ylim=c(-1,1),cols=c("black","lightgrey"),textSize=16,legend=T,lpos=c(0.275,0.25))
-g13<-plotCorrelog(mypca[[3]],myfiltbiom[[3]],"PC2",cutoff,xlim=NULL,ylim=c(-1,1),na.add=c(9,17),cols=c("black","lightgrey"),textSize=16,legend=F)
-g14<-plotCorrelog(data=c_fix(mypca[[4]],myfiltbiom[[4]],"PC2"),cutoff,pc="PC2",ylim=c(-1,1),cols=c("black","lightgrey"),textSize=16,legend=F)			      
-		      
+g11<-plotCorrelog(mypca[[3]],myfiltbiom[[3]],"PC1",cutoff,xlim=NULL,ylim=c(-1,1),na.add=c(9,17),cols=c("black","lightgrey"),legend=F,textSize=13)
+g12<-plotCorrelog(data=c_fix(mypca[[4]],myfiltbiom[[4]],"PC1"), cutoff,pc="PC1",ylim=c(-1,1),cols=c("black","lightgrey"),textSize=13,legend=T,lpos=c(0.275,0.25))
+g13<-plotCorrelog(mypca[[3]],myfiltbiom[[3]],"PC2",cutoff,xlim=NULL,ylim=c(-1,1),na.add=c(9,17),cols=c("black","lightgrey"),textSize=13,legend=F)
+g14<-plotCorrelog(data=c_fix(mypca[[4]],myfiltbiom[[4]],"PC2"),cutoff,pc="PC2",ylim=c(-1,1),cols=c("black","lightgrey"),textSize=13,legend=F)			      
+		       
 lay=cbind(c(1,3),c(2,4),c(5,7),c(6,8))			      
 pdf("BRANDNEW_all_correlog_bb2.pdf",width=8,height=5)
 grid.arrange(
-	g11+geom_text(aes(label = "A", x = 15, y = 1), color="black",size=3.5),
-	g13+geom_text(aes(label = "C",  x = 15, y = 1),color="black",size=3.5),
-	g12+geom_text(aes(label = "B",  x = 15, y = 1),color="black",size=3.5),
-	g14+geom_text(aes(label = "D",  x = 15, y = 1),color="black",size=3.5),
-	g1+geom_text(aes(label = "E", x = 15, y = 1), color="black",size=3.5),
-	g3+geom_text(aes(label = "G",  x = 15, y = 1),color="black",size=3.5),
-	g2+geom_text(aes(label = "F",  x = 15, y = 1),color="black",size=3.5),
-	g4+geom_text(aes(label = "H",  x = 15, y = 1),color="black",size=3.5),
+	g11+geom_text(aes(label = "A", x = 15, y = 1), color="black",size=4),
+	g13+geom_text(aes(label = "C",  x = 15, y = 1),color="black",size=4),
+	g12+geom_text(aes(label = "B",  x = 15, y = 1),color="black",size=4),
+	g14+geom_text(aes(label = "D",  x = 15, y = 1),color="black",size=4),
+	g1+geom_text(aes(label = "E", x = 15, y = 1), color="black",size=4),
+	g3+geom_text(aes(label = "G",  x = 15, y = 1),color="black",size=4),
+	g2+geom_text(aes(label = "F",  x = 15, y = 1),color="black",size=4),
+	g4+geom_text(aes(label = "H",  x = 15, y = 1),color="black",size=4),
 	layout_matrix=lay
 )
 dev.off()			      
