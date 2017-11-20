@@ -352,10 +352,10 @@ phylist <- lapply(seq(1,2),function(i) phyloseq(
 
 
 mypca <- list(
-  Bacteria_Dessert = pca_des(LddsFilt$Bacteria[,LddsFilt$Bacteria$Orchard=="Dessert"]), 
-  Bacteria_Cider =   pca_des(LddsFilt$Bacteria[,LddsFilt$Bacteria$Orchard=="Cider"]),
-  Fungi_Dessert =	 pca_des(LddsFilt$Fungi[,LddsFilt$Fungi$Orchard=="Dessert"]),
-  Fungi_Cider = 	 pca_des(LddsFilt$Fungi[,LddsFilt$Fungi$Orchard=="Cider"])
+  Bacteria_Dessert= pca_des(LddsFilt$Bacteria[,LddsFilt$Bacteria$Orchard=="Dessert"]), 
+  Bacteria_Cider =  pca_des(LddsFilt$Bacteria[,LddsFilt$Bacteria$Orchard=="Cider"]),
+  Fungi_Dessert =   pca_des(LddsFilt$Fungi[,LddsFilt$Fungi$Orchard=="Dessert"]),
+  Fungi_Cider =     pca_des(LddsFilt$Fungi[,LddsFilt$Fungi$Orchard=="Cider"])
 )
 
 
@@ -382,27 +382,27 @@ c_fix <- function(p,o,pn){
   return(d)  
 }
 		       
-g1<-plotCorrelog(mypca[[1]],myfiltbiom[[1]],"PC1",cutoff,xlim=NULL,ylim=c(-1,1),na.add=c(9,17),cols=c("black","lightblue"),legend=F)
-g2<-plotCorrelog(data=c_fix(mypca[[2]],myfiltbiom[[2]],"PC1"), cutoff,pc="PC1",ylim=c(-1,1),cols=c("black","lightblue"),legend=F)
-g3<-plotCorrelog(mypca[[1]],myfiltbiom[[1]],"PC2",cutoff,xlim=NULL,ylim=c(-1,1),na.add=c(9,17),cols=c("black","lightblue"),legend=F)
-g4<-plotCorrelog(data=c_fix(mypca[[2]],myfiltbiom[[2]],"PC2"),cutoff,pc="PC2",ylim=c(-1,1),cols=c("black","lightblue"),legend=F)
+g1<-plotCorrelog(mypca[[1]],myfiltbiom[[1]],"PC1",cutoff,xlim=NULL,ylim=c(-1,1),na.add=c(9,17),cols=c("black","lightgrey"),legend=F,textSize=16)
+g2<-plotCorrelog(data=c_fix(mypca[[2]],myfiltbiom[[2]],"PC1"), cutoff,pc="PC1",ylim=c(-1,1),cols=c("black","lightgrey"),legend=F,textSize=16)
+g3<-plotCorrelog(mypca[[1]],myfiltbiom[[1]],"PC2",cutoff,xlim=NULL,ylim=c(-1,1),na.add=c(9,17),cols=c("black","lightgrey"),legend=F,textSize=16)
+g4<-plotCorrelog(data=c_fix(mypca[[2]],myfiltbiom[[2]],"PC2"),cutoff,pc="PC2",ylim=c(-1,1),cols=c("black","lightgrey"),legend=F,textSize=16)
 
-g11<-plotCorrelog(mypca[[3]],myfiltbiom[[3]],"PC1",cutoff,xlim=NULL,ylim=c(-1,1),na.add=c(9,17),cols=c("black","lightblue"),legend=F)
-g12<-plotCorrelog(data=c_fix(mypca[[4]],myfiltbiom[[4]],"PC1"), cutoff,pc="PC1",ylim=c(-1,1),cols=c("black","lightblue"),legend=T,lpos=c(0.275,0.25))
-g13<-plotCorrelog(mypca[[3]],myfiltbiom[[3]],"PC2",cutoff,xlim=NULL,ylim=c(-1,1),na.add=c(9,17),cols=c("black","lightblue"),legend=F)
-g14<-plotCorrelog(data=c_fix(mypca[[4]],myfiltbiom[[4]],"PC2"),cutoff,pc="PC2",ylim=c(-1,1),cols=c("black","lightblue"),legend=F)			      
+g11<-plotCorrelog(mypca[[3]],myfiltbiom[[3]],"PC1",cutoff,xlim=NULL,ylim=c(-1,1),na.add=c(9,17),cols=c("black","lightgrey"),legend=F,textSize=16)
+g12<-plotCorrelog(data=c_fix(mypca[[4]],myfiltbiom[[4]],"PC1"), cutoff,pc="PC1",ylim=c(-1,1),cols=c("black","lightgrey"),textSize=16,legend=T,lpos=c(0.275,0.25))
+g13<-plotCorrelog(mypca[[3]],myfiltbiom[[3]],"PC2",cutoff,xlim=NULL,ylim=c(-1,1),na.add=c(9,17),cols=c("black","lightgrey"),textSize=16,legend=F)
+g14<-plotCorrelog(data=c_fix(mypca[[4]],myfiltbiom[[4]],"PC2"),cutoff,pc="PC2",ylim=c(-1,1),cols=c("black","lightgrey"),textSize=16,legend=F)			      
 		      
 lay=cbind(c(1,3),c(2,4),c(5,7),c(6,8))			      
-pdf("all_correlog_bb2.pdf",width=8,height=5)
+pdf("BRANDNEW_all_correlog_bb2.pdf",width=8,height=5)
 grid.arrange(
-	g11+geom_text(aes(label = "A", x = 15, y = 1), color="black",size=3),
-	g13+geom_text(aes(label = "C",  x = 15, y = 1),color="black",size=3),
-	g12+geom_text(aes(label = "B",  x = 15, y = 1),color="black",size=3),
-	g14+geom_text(aes(label = "D",  x = 15, y = 1),color="black",size=3),
-	g1+geom_text(aes(label = "E", x = 15, y = 1), color="black",size=3),
-	g3+geom_text(aes(label = "G",  x = 15, y = 1),color="black",size=3),
-	g2+geom_text(aes(label = "F",  x = 15, y = 1),color="black",size=3),
-	g4+geom_text(aes(label = "H",  x = 15, y = 1),color="black",size=3),
+	g11+geom_text(aes(label = "A", x = 15, y = 1), color="black",size=3.5),
+	g13+geom_text(aes(label = "C",  x = 15, y = 1),color="black",size=3.5),
+	g12+geom_text(aes(label = "B",  x = 15, y = 1),color="black",size=3.5),
+	g14+geom_text(aes(label = "D",  x = 15, y = 1),color="black",size=3.5),
+	g1+geom_text(aes(label = "E", x = 15, y = 1), color="black",size=3.5),
+	g3+geom_text(aes(label = "G",  x = 15, y = 1),color="black",size=3.5),
+	g2+geom_text(aes(label = "F",  x = 15, y = 1),color="black",size=3.5),
+	g4+geom_text(aes(label = "H",  x = 15, y = 1),color="black",size=3.5),
 	layout_matrix=lay
 )
 dev.off()			      
