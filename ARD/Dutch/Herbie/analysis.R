@@ -77,6 +77,9 @@ invisible(mapply(assign, names(ubiom_BAC), ubiom_BAC, MoreArgs=list(envir = glob
 # ensure colData rows and countData columns have the same order
 colData <- colData[names(countData),]
 
+# block will be an integer, needs to be a factor
+colData$block <- as.factor(colData$block)
+
 # remove low count samples and control samples (not needed here)
 filter <- colSums(countData)>=1000
 colData <- droplevels(colData[filter,])
@@ -164,15 +167,9 @@ res <- results(dds,alpha=alpha,parallel=T,contrast=contrast)
 res.merge <- data.table(inner_join(data.table(OTU=rownames(res),as.data.frame(res)),data.table(OTU=rownames(taxData),taxData)))
 write.table(res.merge, paste(RHB,"diff_filtered.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
 
-#################################################################################
-#################################################################################
-
 #===============================================================================
 #       Alpha diversity analysis
 #===============================================================================
 
-myfiltbioms <- lapply(mybioms,function(obj) prune_samples(sample_data(obj)$condition!="C",obj))
-
-pdf("Alpha_diversity.pdf")
-lapply(myfiltbioms ,function(obj) plot_richness(obj,x="condition",color="condition",measures=c("Chao1", "Shannon", "Simpson")))
-dev.off()
+# plot alpha diversity - plot_alpha will convert normalised abundances to integer values
+ggsave(paste(RHB,"Alpha.pdf",sep="_"),plot_alpha(counts(dds,normalize=T),colData,design="condition",colour="block",limits=c(2000,8000,"S.chao1")))
