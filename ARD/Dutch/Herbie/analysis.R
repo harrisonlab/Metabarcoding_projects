@@ -186,7 +186,10 @@ colData$Samples <- rownames(colData)
 all_alpha_ord <- as.data.table(inner_join(all_alpha_ord,colData))
 
 # perform anova for each index
-summary(aovp(as.numeric(as.factor(all_alpha_ord$S.chao1))~condition+Error(block),all_alpha_ord[order(S.chao1),]))
-summary(aovp(as.numeric(as.factor(all_alpha_ord$shannon))~condition+Error(block),all_alpha_ord[order(shannon),]))
-summary(aovp(as.numeric(as.factor(all_alpha_ord$simpson))~condition+Error(block),all_alpha_ord[order(simpson),]))
+setkey(all_alpha_ord,S.chao1)
+summary(aovp(as.numeric(as.factor(all_alpha_ord$S.chao1))~condition+Error(block),all_alpha_ord))
+setkey(all_alpha_ord,shannon)
+summary(aovp(as.numeric(as.factor(all_alpha_ord$shannon))~condition+Error(block),all_alpha_ord))
+setkey(all_alpha_ord,simpson)
+summary(aovp(as.numeric(as.factor(all_alpha_ord$simpson))~condition+Error(block),all_alpha_ord))
 
