@@ -78,7 +78,7 @@ invisible(mapply(assign, names(ubiom_BAC), ubiom_BAC, MoreArgs=list(envir = glob
 colData <- colData[names(countData),]
 
 # remove low count samples and control samples (not needed here)
-filter <- colSums(countData)>=1000)
+filter <- colSums(countData)>=1000
 colData <- droplevels(colData[filter,])
 countData <- countData[,filter]
 
@@ -133,7 +133,7 @@ df <-t(data.frame(t(mypca$x)*mypca$percentVar))
 pdf(paste(RHB,"PCA.pdf",sep="_"))
 plotOrd(df,colData,design="condition",shape="block",xlabel="PC1",ylabel="PC2")
 
-### remove/minimise block data
+### remove/minimise block effect
 pc.res <- resid(aov(mypca$x~colData$block,colData))
 df <- t(data.frame(t(pc.res*mypca$percentVar)))
 plotOrd(df,colData,design="condition",shape="block",xlabel="PC1",ylabel="PC2")
