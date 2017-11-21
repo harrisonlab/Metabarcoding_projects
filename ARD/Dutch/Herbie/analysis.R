@@ -94,8 +94,8 @@ dds<-DESeqDataSetFromMatrix(countData,colData,design)
 
 # calculate size factors - use geoMeans function if
 # every gene contains at least one zero, as cannot compute log geometric means
- sizeFactors(dds) <-sizeFactors(estimateSizeFactors(dds))
-# sizeFactors(dds) <-geoMeans(dds)
+# sizeFactors(dds) <-sizeFactors(estimateSizeFactors(dds))
+ sizeFactors(dds) <-geoMeans(dds)
 # library(edgeR) # I think anyway
 # calcNormFactors(counts(dds),method="RLE",lib.size=(prop.table(colSums(counts(dds)))))
 
