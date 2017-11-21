@@ -171,5 +171,22 @@ write.table(res.merge, paste(RHB,"diff_filtered.txt",sep="_"),quote=F,sep="\t",n
 #       Alpha diversity analysis
 #===============================================================================
 
-# plot alpha diversity - plot_alpha will convert normalised abundances to integer values
+# plot alpha diversity - plot_alpha will convert normalised abundances to integer values (limits for bac only)
 ggsave(paste(RHB,"Alpha.pdf",sep="_"),plot_alpha(counts(dds,normalize=T),colData,design="condition",colour="block",limits=c(2000,8000,"S.chao1")))
+
+### permutation based anova on diversity index ranks ###
+
+# get the diversity index data
+all_alpha_ord <- plot_alpha(counts(dds,normalize=T),colData,design="condition",colour="block",returnData=T)
+
+# add column names as row to metadata (or use tribble)
+colData$Samples <- rownames(colData)
+
+# join diversity indices and metadata
+all_alpha_ord <- as.data.table(inner_join(all_alpha_ord,colData))
+
+# perform anova for each index
+summary(aovp(as.numeric(as.factor(all_alpha_ord$S.chao1))~condition+Error(block),all_alpha_ord[order(S.chao1),]))
+summary(aovp(as.numeric(as.factor(all_alpha_ord$shannon))~condition+Error(block),all_alpha_ord[order(shannon),]))
+summary(aovp(as.numeric(as.factor(all_alpha_ord$simpson))~condition+Error(block),all_alpha_ord[order(simpson),]))
+
