@@ -143,12 +143,14 @@ dds<-DESeqDataSetFromMatrix(countData,colData,design)
 # calculate size factors - use geoMeans function if
 # every gene contains at least one zero, as cannot compute log geometric means
 # sizeFactors(dds) <-sizeFactors(estimateSizeFactors(dds))
-sizeFactors(dds) <-geoMeans(dds)
+# sizeFactors(dds) <-geoMeans(dds)
 # library(edgeR) # I think anyway
 # calcNormFactors(counts(dds),method="RLE",lib.size=(prop.table(colSums(counts(dds)))))
-# Correction from aboslute quantification (BAC only at the moment)
-sizeFactors(dds)<-geoMeans(dds)* sapply(colData$copies,function(x) x/mean(colData$copies,na.rm=T))
-
+# Correction from aboslute quantification
+# sizeFactors(dds)<-geoMeans(dds)* sapply(colData$funq,function(x) x/mean(colData$funq,na.rm=T))
+#sizeFactors(dds)<-geoMeans(dds)* sapply(colData$bacq,function(x) x/mean(colData$bacq,na.rm=T))
+sizeFactors(dds) <- colData$funq
+sizeFactors(dds) <- colData$bacq
 
 #===============================================================================
 #       Filter data 
@@ -160,7 +162,7 @@ dds <- dds[myfilter,]
 
 ### read accumulation filter
 # output pdf file
-pdf(paste(RHB,"OTU_counts.pdf",sep="_"))
+pdf(paste(RHB,"V2_OTU_counts.pdf",sep="_"))
 
 # plot cummulative reads (will also produce a data table "dtt" in the global environment)
 plotCummulativeReads(counts(dds,normalize=T))
@@ -192,7 +194,7 @@ df <-t(data.frame(t(mypca$x)*mypca$percentVar))
 colData$location<-as.number(colData$pair)
 
 # plot the PCA
-pdf(paste(RHB,"VA.pdf",sep="_"))
+pdf(paste(RHB,"absolute_VA.pdf",sep="_"))
 plotOrd(df,colData,design="condition",xlabel="PC1",ylabel="PC2")
 plotOrd(df,colData,shape="condition",design="location",continuous=T,xlabel="PC1",ylabel="PC2")
 dev.off()
@@ -201,7 +203,7 @@ dev.off()
 pc.res <- resid(aov(mypca$x~colData$pair,colData))
 df <- t(data.frame(t(pc.res*mypca$percentVar)))
 
-pdf(paste(RHB,"VA_deloc.pdf",sep="_"))
+pdf(paste(RHB,"absolute_VA_deloc.pdf",sep="_"))
 plotOrd(df,colData,shape="condition",design="location",continuous=T,xlabel="PC1",ylabel="PC2")
 dev.off()
 
@@ -229,7 +231,7 @@ dds <- DESeq(dds,parallel=T)
 # contrast <- c("condition","S","H")
 res <- results(dds,alpha=alpha,parallel=T)
 res.merge <- data.table(inner_join(data.table(OTU=rownames(res),as.data.frame(res)),data.table(OTU=rownames(taxData),taxData)))
-write.table(res.merge, paste(RHB,"diff_filtered.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
+write.table(res.merge, paste(RHB,"absolute_diff_filtered.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
 
 # MA plot
 pdf(paste(RHB,"ma_plot.pdf",sep="_"))
