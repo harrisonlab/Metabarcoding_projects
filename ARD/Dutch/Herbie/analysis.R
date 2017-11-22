@@ -8,6 +8,8 @@ register(MulticoreParam(12))
 library(data.table)
 library(plyr)
 library(dplyr)
+library(vegan)
+library(lmPerm)
 library(devtools)
 load_all("~/pipelines/metabarcoding/scripts/myfunctions")
 
@@ -31,12 +33,7 @@ taxData<-taxData[,c(1,3,5,7,9,11,13,2,4,6,8,10,12,14)]
 taxData<-phyloTaxaTidy(taxData,0.65)
 
 # save data into a list
-ubiom_BAC <- list(
-	countData=countData,
-	colData=colData,
-	taxData=taxData,
-	RHB="BAC"
-)
+ubiom_BAC <- list(countData=countData,colData=colData,taxData=taxData,RHB="BAC")
 
 # Fungi all in one call
 ubiom_FUN <- list(
@@ -96,7 +93,7 @@ dds<-DESeqDataSetFromMatrix(countData,colData,design)
 # every gene contains at least one zero, as cannot compute log geometric means
 # sizeFactors(dds) <-sizeFactors(estimateSizeFactors(dds))
  sizeFactors(dds) <-geoMeans(dds)
-# library(edgeR) # I think anyway
+# library(edgeR)
 # calcNormFactors(counts(dds),method="RLE",lib.size=(prop.table(colSums(counts(dds)))))
 
 #===============================================================================
@@ -104,20 +101,11 @@ dds<-DESeqDataSetFromMatrix(countData,colData,design)
 #============================================================================
 
 ### read accumulation filter
-# output pdf file
-pdf(paste(RHB,"OTU_counts.pdf",sep="_"))
 
 # plot cummulative reads (will also produce a data table "dtt" in the global environment)
-plotCummulativeReads(counts(dds,normalize=T))
-
-# close pdf
-dev.off()
+ggsave(paste(RHB,"OTU_counts.pdf",sep="_"),plotCummulativeReads(counts(dds,normalize=T)))
 
 #### Select filter ####
-# Apply seperately for appropriate data set depending on cut-off chosen from graph
-myfilter <- dtt$OTU[1:500] #FUN
-myfilter <- dtt$OTU[1:4500]  # BAC
-
 myfilter <- dtt$OTU[dtt$CD>5]
 # filter out low abundance OTUs
 dds <- dds[myfilter,]
@@ -162,7 +150,7 @@ design(dds) <- full_design
 # calculate fit
 dds <- DESeq(dds,parallel=T)
 
-contrast <- c("condition","Treated","Untreated") # the default  alculates the contrast the othe rway
+contrast <- c("condition","Treated","Untreated") # the default calculates the contrast the other way
 res <- results(dds,alpha=alpha,parallel=T,contrast=contrast)
 res.merge <- data.table(inner_join(data.table(OTU=rownames(res),as.data.frame(res)),data.table(OTU=rownames(taxData),taxData)))
 write.table(res.merge, paste(RHB,"diff_filtered.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
@@ -186,10 +174,13 @@ colData$Samples <- rownames(colData)
 all_alpha_ord <- as.data.table(inner_join(all_alpha_ord,colData))
 
 # perform anova for each index
+sink(paste(RHB,"ALPHA_stats.txt",sep="_"))
 setkey(all_alpha_ord,S.chao1)
 summary(aovp(as.numeric(as.factor(all_alpha_ord$S.chao1))~condition+Error(block),all_alpha_ord))
 setkey(all_alpha_ord,shannon)
 summary(aovp(as.numeric(as.factor(all_alpha_ord$shannon))~condition+Error(block),all_alpha_ord))
 setkey(all_alpha_ord,simpson)
 summary(aovp(as.numeric(as.factor(all_alpha_ord$simpson))~condition+Error(block),all_alpha_ord))
-
+setkey(all_alpha_ord,S.ACE)
+summary(aovp(as.numeric(as.factor(all_alpha_ord$S.ACE))~condition+Error(block),all_alpha_ord))
+sink()
