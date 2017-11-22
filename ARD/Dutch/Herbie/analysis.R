@@ -58,7 +58,6 @@ taxData <- combTaxa(combinedTaxa,taxData)
 ubiom_FUN$countData <- countData
 ubiom_FUN$taxData <- taxData
 
-
 #===============================================================================
 #       Attach objects
 #===============================================================================
@@ -96,6 +95,11 @@ dds<-DESeqDataSetFromMatrix(countData,colData,design)
 # library(edgeR)
 # calcNormFactors(counts(dds),method="RLE",lib.size=(prop.table(colSums(counts(dds)))))
 
+# the data contains three replicates for each sampling point 
+# these are likely to be highly correlated and could mess with the differential analysis
+dds <- collapseReplicates2(dds,groupby=paste0(dds$condition,dds$block),simple=F)
+
+colData <- colData(dds)
 #===============================================================================
 #       Filter data 
 #============================================================================
@@ -121,13 +125,13 @@ mypca <- des_to_pca(dds)
 df <-t(data.frame(t(mypca$x)*mypca$percentVar))
 
 # plot the PCA
-pdf(paste(RHB,"PCA.pdf",sep="_"))
-plotOrd(df,colData,design="condition",shape="block",xlabel="PC1",ylabel="PC2")
+pdf(paste(RHB,"collapsed_PCA.pdf",sep="_"))
+plotOrd(df,colData(dds),design="condition",shape="block",xlabel="PC1",ylabel="PC2")
 
 ### remove/minimise block effect
-pc.res <- resid(aov(mypca$x~colData$block,colData))
+pc.res <- resid(aov(mypca$x~colData(dds)$block,colData(dds)))
 df <- t(data.frame(t(pc.res*mypca$percentVar)))
-plotOrd(df,colData,design="condition",shape="block",xlabel="PC1",ylabel="PC2")
+plotOrd(df,colData(dds),design="condition",shape="block",xlabel="PC1",ylabel="PC2")
 dev.off()
 
 #===============================================================================
@@ -153,14 +157,14 @@ dds <- DESeq(dds,parallel=T)
 contrast <- c("condition","Treated","Untreated") # the default calculates the contrast the other way
 res <- results(dds,alpha=alpha,parallel=T,contrast=contrast)
 res.merge <- data.table(inner_join(data.table(OTU=rownames(res),as.data.frame(res)),data.table(OTU=rownames(taxData),taxData)))
-write.table(res.merge, paste(RHB,"diff_filtered.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
+write.table(res.merge, paste(RHB,"collapsed_diff_filtered.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
 
 #===============================================================================
 #       Alpha diversity analysis
 #===============================================================================
 
 # plot alpha diversity - plot_alpha will convert normalised abundances to integer values (limits for bac only)
-ggsave(paste(RHB,"Alpha.pdf",sep="_"),plot_alpha(counts(dds,normalize=T),colData,design="condition",colour="block",limits=c(2000,8000,"S.chao1")))
+ggsave(paste(RHB,"collapsed_Alpha.pdf",sep="_"),plot_alpha(counts(dds,normalize=T),colData(dds),design="condition",colour="block",limits=c(2000,8000,"S.chao1")))
 
 ### permutation based anova on diversity index ranks ###
 
@@ -171,10 +175,10 @@ all_alpha_ord <- plot_alpha(counts(dds,normalize=T),colData,design="condition",c
 colData$Samples <- rownames(colData)
 
 # join diversity indices and metadata
-all_alpha_ord <- as.data.table(inner_join(all_alpha_ord,colData))
+all_alpha_ord <- as.data.table(inner_join(all_alpha_ord,as.data.frame(colData)))
 
 # perform anova for each index
-sink(paste(RHB,"ALPHA_stats.txt",sep="_"))
+sink(paste(RHB,"collapsed_ALPHA_stats.txt",sep="_"))
 setkey(all_alpha_ord,S.chao1)
 summary(aovp(as.numeric(as.factor(all_alpha_ord$S.chao1))~condition+Error(block),all_alpha_ord))
 setkey(all_alpha_ord,shannon)
