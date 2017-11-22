@@ -99,7 +99,9 @@ dds<-DESeqDataSetFromMatrix(countData,colData,design)
 # calcNormFactors(counts(dds),method="RLE",lib.size=(prop.table(colSums(counts(dds)))))
 
 # three correlated sampling points - collapse to mean
-dds <- collapseReplicates2(dds,groupby=
+dds <- collapseReplicates2(dds,groupby=paste0(dds$condition,dds$block),simple=F)
+# extract new colData from the dds object
+colData <- as.data.frame(colData(dds))
 #===============================================================================
 #       Filter data 
 #============================================================================
