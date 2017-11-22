@@ -10,6 +10,7 @@ library(plyr)
 library(dplyr)
 library(vegan)
 library(lmPerm)
+library(ggplot2)
 library(devtools)
 load_all("~/pipelines/metabarcoding/scripts/myfunctions")
 
@@ -47,17 +48,15 @@ ubiom_FUN <- list(
 #       Combine species 
 #===============================================================================
 
-#### combine species at 0.95 (default) confidence (if they are species). Works well for Oomycetes and Fungi
+#### combine species at 0.95 (default) confidence (if they are species)
 
 # list of species with more than one associated OTU
 invisible(mapply(assign, names(ubiom_FUN), ubiom_FUN, MoreArgs=list(envir = globalenv())))
 combinedTaxa <- combineTaxa("zFUN.taxa")
-# all species in combinedTaxa are combinable
 countData <- combCounts(combinedTaxa,countData)
 taxData <- combTaxa(combinedTaxa,taxData)
 ubiom_FUN$countData <- countData
 ubiom_FUN$taxData <- taxData
-
 
 #===============================================================================
 #       Attach objects
@@ -74,13 +73,16 @@ invisible(mapply(assign, names(ubiom_BAC), ubiom_BAC, MoreArgs=list(envir = glob
 # ensure colData rows and countData columns have the same order
 colData <- colData[names(countData),]
 
-# block will be an integer, needs to be a factor
-colData$block <- as.factor(colData$block)
-
 # remove low count samples and control samples (not needed here)
-filter <- colSums(countData)>=1000
+filter <- colSums(countData)>=1000&colData$rootstock!=""
 colData <- droplevels(colData[filter,])
 countData <- countData[,filter]
+
+# treatment will be an integer, needs to be a factor
+colData$treatment <- as.factor(colData$treatment)
+
+# there are two diffrent sequencer runs
+colData$run <- as.factor(sub(".*D","",rownames(colData)))
 
 # simple Deseq design
 design<-~1
@@ -122,12 +124,12 @@ df <-t(data.frame(t(mypca$x)*mypca$percentVar))
 
 # plot the PCA
 pdf(paste(RHB,"PCA.pdf",sep="_"))
-plotOrd(df,colData,design="condition",shape="block",xlabel="PC1",ylabel="PC2")
+plotOrd(df,colData,design="rootstock",shape="treatment",xlabel="PC1",ylabel="PC2")
 
-### remove/minimise block effect
-pc.res <- resid(aov(mypca$x~colData$block,colData))
+### remove/minimise run effect
+pc.res <- resid(aov(mypca$x~colData$run,colData))
 df <- t(data.frame(t(pc.res*mypca$percentVar)))
-plotOrd(df,colData,design="condition",shape="block",xlabel="PC1",ylabel="PC2")
+plotOrd(df,colData,design="rootstock",shape="treatment",xlabel="PC1",ylabel="PC2")
 dev.off()
 
 #===============================================================================
@@ -142,7 +144,7 @@ dds<-dds[rowSums(counts(dds,normalize=T))>0,]
 alpha <- 0.1
 
 # the full model 
-full_design <- ~block + condition
+full_design <- ~run + treatment + rootstock
 
 # add full model to dds object
 design(dds) <- full_design
@@ -150,7 +152,7 @@ design(dds) <- full_design
 # calculate fit
 dds <- DESeq(dds,parallel=T)
 
-contrast <- c("condition","Treated","Untreated") # the default calculates the contrast the other way
+contrast <- c("rootstock","Kwee-Quince-Eline","M9")
 res <- results(dds,alpha=alpha,parallel=T,contrast=contrast)
 res.merge <- data.table(inner_join(data.table(OTU=rownames(res),as.data.frame(res)),data.table(OTU=rownames(taxData),taxData)))
 write.table(res.merge, paste(RHB,"diff_filtered.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
