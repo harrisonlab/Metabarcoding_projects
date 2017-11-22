@@ -35,6 +35,7 @@ taxData<-phyloTaxaTidy(taxData,0.65)
 
 # save data into a list
 ubiom_BAC <- list(countData=countData,colData=colData,taxData=taxData,RHB="BAC")
+names(ubiom_BAC$countData) <- sub("_.*","",gsub("\\.","-",(names(ubiom_BAC$countData))))
 
 # Fungi all in one call
 ubiom_FUN <- list(
@@ -43,6 +44,8 @@ ubiom_FUN <- list(
 	taxData=phyloTaxaTidy(read.table("zFUN.taxa",header=F,sep=",",row.names=1)[,c(1,3,5,7,9,11,13,2,4,6,8,10,12,14)],0.65),
 	RHB="FUN"
 ) 
+names(ubiom_FUN$countData) <- sub("_.*","",gsub("\\.","-",(names(ubiom_FUN$countData))))
+
 
 #===============================================================================
 #       Combine species 
@@ -70,6 +73,12 @@ invisible(mapply(assign, names(ubiom_BAC), ubiom_BAC, MoreArgs=list(envir = glob
 #       Create DEseq objects 
 #===============================================================================
 
+# treatment will be an integer, needs to be a factor
+colData$treatment <- as.factor(colData$treatment)
+# there are two diffrent sequencer runs
+colData$run <- as.factor(sub(".*D","",rownames(colData)))
+# move UID to rownames
+rownames(colData) <- colData$UID
 # ensure colData rows and countData columns have the same order
 colData <- colData[names(countData),]
 
@@ -77,12 +86,6 @@ colData <- colData[names(countData),]
 filter <- colSums(countData)>=1000&colData$rootstock!=""
 colData <- droplevels(colData[filter,])
 countData <- countData[,filter]
-
-# treatment will be an integer, needs to be a factor
-colData$treatment <- as.factor(colData$treatment)
-
-# there are two diffrent sequencer runs
-colData$run <- as.factor(sub(".*D","",rownames(colData)))
 
 # simple Deseq design
 design<-~1
@@ -93,13 +96,13 @@ dds<-DESeqDataSetFromMatrix(countData,colData,design)
 
 # calculate size factors - use geoMeans function if
 # every gene contains at least one zero, as cannot compute log geometric means
-# sizeFactors(dds) <-sizeFactors(estimateSizeFactors(dds))
- sizeFactors(dds) <-geoMeans(dds)
+ sizeFactors(dds) <-sizeFactors(estimateSizeFactors(dds))
+# sizeFactors(dds) <-geoMeans(dds)
 # library(edgeR)
 # calcNormFactors(counts(dds),method="RLE",lib.size=(prop.table(colSums(counts(dds)))))
 
 # three correlated sampling points - collapse to mean
-dds <- collapseReplicates2(dds,groupby=paste0(dds$condition,dds$block),simple=F)
+dds <- collapseReplicates2(dds,groupby=paste0(dds$condition,dds$treatment),simple=F)
 # extract new colData from the dds object
 colData <- as.data.frame(colData(dds))
 #===============================================================================
@@ -130,8 +133,8 @@ df <-t(data.frame(t(mypca$x)*mypca$percentVar))
 pdf(paste(RHB,"PCA.pdf",sep="_"))
 plotOrd(df,colData,design="rootstock",shape="treatment",xlabel="PC1",ylabel="PC2")
 
-### remove/minimise run effect
-pc.res <- resid(aov(mypca$x~colData$run,colData))
+### remove/minimise run effect (pretty useless in this case as the run (single sample point) explains the vast majority of the variance for this sample)
+pc.res <- resid(aov(mypca$x~colData$run,colData)) 
 df <- t(data.frame(t(pc.res*mypca$percentVar)))
 plotOrd(df,colData,design="rootstock",shape="treatment",xlabel="PC1",ylabel="PC2")
 dev.off()
@@ -166,7 +169,7 @@ write.table(res.merge, paste(RHB,"diff_filtered.txt",sep="_"),quote=F,sep="\t",n
 #===============================================================================
 
 # plot alpha diversity - plot_alpha will convert normalised abundances to integer values (limits for bac only)
-ggsave(paste(RHB,"Alpha.pdf",sep="_"),plot_alpha(counts(dds,normalize=T),colData,design="condition",colour="block",limits=c(2000,8000,"S.chao1")))
+ggsave(paste(RHB,"Alpha.pdf",sep="_"),plot_alpha(counts(dds,normalize=T),colData,design="rootstock",colour="treatment"))
 
 ### permutation based anova on diversity index ranks ###
 
