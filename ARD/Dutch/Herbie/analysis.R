@@ -10,6 +10,7 @@ library(plyr)
 library(dplyr)
 library(vegan)
 library(lmPerm)
+library(ggplot2)
 library(devtools)
 load_all("~/pipelines/metabarcoding/scripts/myfunctions")
 
@@ -21,7 +22,7 @@ load_all("~/pipelines/metabarcoding/scripts/myfunctions")
 countData <- read.table("BAC.zotus_table.txt",header=T,sep="\t",row.names=1, comment.char = "")
 
 # load sample metadata
-colData <- read.table("colData",header=T,sep="\t",row.names=1)
+colData <- read.table("colData",header=T,sep="\t",row.names=1,colClasses=c("factor"))
 
 # load taxonomy data
 taxData <- read.table("zBAC.taxa",header=F,sep=",",row.names=1)
@@ -38,7 +39,7 @@ ubiom_BAC <- list(countData=countData,colData=colData,taxData=taxData,RHB="BAC")
 # Fungi all in one call
 ubiom_FUN <- list(
 	countData=read.table("FUN.zotus_table.txt",header=T,sep="\t",row.names=1,comment.char = ""),
-	colData=read.table("colData",header=T,sep="\t",row.names=1),
+	colData=read.table("colData",header=T,sep="\t",row.names=1,colClasses=c("factor")),
 	taxData=phyloTaxaTidy(read.table("zFUN.taxa",header=F,sep=",",row.names=1)[,c(1,3,5,7,9,11,13,2,4,6,8,10,12,14)],0.65),
 	RHB="FUN"
 ) 
@@ -47,12 +48,9 @@ ubiom_FUN <- list(
 #       Combine species 
 #===============================================================================
 
-#### combine species at 0.95 (default) confidence (if they are species). Works well for Oomycetes and Fungi
-
-# list of species with more than one associated OTU
+#### combine species at 0.95 (default) confidence (if they are species) - Fungi only as no species level discrimination for bacteria
 invisible(mapply(assign, names(ubiom_FUN), ubiom_FUN, MoreArgs=list(envir = globalenv())))
 combinedTaxa <- combineTaxa("zFUN.taxa")
-# all species in combinedTaxa are combinable
 countData <- combCounts(combinedTaxa,countData)
 taxData <- combTaxa(combinedTaxa,taxData)
 ubiom_FUN$countData <- countData
@@ -73,9 +71,6 @@ invisible(mapply(assign, names(ubiom_BAC), ubiom_BAC, MoreArgs=list(envir = glob
 # ensure colData rows and countData columns have the same order
 colData <- colData[names(countData),]
 
-# block will be an integer, needs to be a factor
-colData$block <- as.factor(colData$block)
-
 # remove low count samples and control samples (not needed here)
 filter <- colSums(countData)>=1000
 colData <- droplevels(colData[filter,])
@@ -88,18 +83,18 @@ design<-~1
 # colnames(countData) <- row.names(colData)
 dds<-DESeqDataSetFromMatrix(countData,colData,design)
 
-# calculate size factors - use geoMeans function if
-# every gene contains at least one zero, as cannot compute log geometric means
-# sizeFactors(dds) <-sizeFactors(estimateSizeFactors(dds))
- sizeFactors(dds) <-geoMeans(dds)
-# library(edgeR)
-# calcNormFactors(counts(dds),method="RLE",lib.size=(prop.table(colSums(counts(dds)))))
+# calculate size factors - three different methods given...
+ sizeFactors(dds) <- sizeFactors(estimateSizeFactors(dds)) # the default
+ sizeFactors(dds) <- sizeFactors(estimateSizeFactors(dds,type="poscounts"))
+ #sizeFactors(dds) <-geoMeans(dds) # use if the min and max sizeFactors from the above are too disperate (say >10x), or method throws error (now built into deseq - see above)
+ library(edgeR) 
+ calcNormFactors(counts(dds),method="RLE",lib.size=(prop.table(colSums(counts(dds))))) # original DESeq method, other options also available using calcNormFactors
 
 # the data contains three replicates for each sampling point 
 # these are likely to be highly correlated and could mess with the differential analysis
 dds <- collapseReplicates2(dds,groupby=paste0(dds$condition,dds$block),simple=F)
 
-colData <- colData(dds)
+colData <- as.data.frame(colData(dds))
 #===============================================================================
 #       Filter data 
 #============================================================================
