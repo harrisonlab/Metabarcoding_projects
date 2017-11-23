@@ -680,8 +680,8 @@ grid.arrange(
 )
 dev.off()
 
-
-
+# average difference between orchards
+lapply(c(dw,du),function(obj) list(between=round(mean(obj[49:96,1:48]),2),within=round(mean(c(obj[1:48,1:48][lower.tri(obj[1:48,1:48])],obj[49:96,49:96][lower.tri(obj[49:96,49:96])])),2)))
 
 #===============================================================================
 #       differential analysis
