@@ -158,8 +158,8 @@ write.table(res.merge, paste(RHB,"collapsed_diff_filtered.txt",sep="_"),quote=F,
 #       Alpha diversity analysis
 #===============================================================================
 
-# plot alpha diversity - plot_alpha will convert normalised abundances to integer values (limits for bac only)
-ggsave(paste(RHB,"collapsed_Alpha.pdf",sep="_"),plot_alpha(counts(dds,normalize=T),colData(dds),design="condition",colour="block",limits=c(2000,8000,"S.chao1")))
+# plot alpha diversity - plot_alpha will convert normalised abundances to integer values
+ggsave(paste(RHB,"collapsed_Alpha.pdf",sep="_"),plot_alpha(counts(dds,normalize=T),colData(dds),design="condition",colour="block"))#,limits=c(2000,8000,"S.chao1")))
 
 ### permutation based anova on diversity index ranks ###
 
