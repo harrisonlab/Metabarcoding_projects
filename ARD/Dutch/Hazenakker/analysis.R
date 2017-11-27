@@ -85,23 +85,32 @@ design<-~1
 # colnames(countData) <- row.names(colData)
 dds<-DESeqDataSetFromMatrix(countData,colData,design)
 
-# calculate size factors - use geoMeans function if
-# every gene contains at least one zero, as cannot compute log geometric means
- sizeFactors(dds) <-sizeFactors(estimateSizeFactors(dds))
-# sizeFactors(dds) <-geoMeans(dds)
-# library(edgeR)
-# calcNormFactors(counts(dds),method="RLE",lib.size=(prop.table(colSums(counts(dds)))))
+# calculate size factors - three different methods given...
+# the default method 
+sizeFactors(dds) <- sizeFactors(estimateSizeFactors(dds))
+# use if the min and max sizeFactors from the above are too disperate (say >10x), or method throws error (same as geoMeans(dds) - but no built into deseq)
+# sizeFactors(dds) <- sizeFactors(estimateSizeFactors(dds,type="poscounts"))
+# or use edgeR's calcNormFactors which itself includes multiple normalisation methods (RLE, TMM, upperquantile)
+# library(edgeR) 
+# calcNormFactors(counts(dds),method="RLE",lib.size=(prop.table(colSums(counts(dds))))) # original DESeq method, other options also available using calcNormFactors
 
-# three correlated sampling points - collapse to mean
+#===============================================================================
+#       Collapse replicates
+#===============================================================================
+
+# the three sample points from the same locations are likely to be highly correlated 
+# DESeq doesn't have a method for handling correlated DVs
+# one possible correction is to collapse the replicates to the mean
+# collapseReplicates2 will adjust for different library sizes - results won't be exact as dds counts must be integer values (could multiply them all by longest decimal if really wanted)
 dds <- collapseReplicates2(dds,groupby=paste0(dds$condition,dds$treatment),simple=F)
 # extract new colData from the dds object
 colData <- as.data.frame(colData(dds))
+
 #===============================================================================
 #       Filter data 
 #============================================================================
 
 ### read accumulation filter
-
 # plot cummulative reads (will also produce a data table "dtt" in the global environment)
 ggsave(paste(RHB,"OTU_counts.pdf",sep="_"),plotCummulativeReads(counts(dds,normalize=T)))
 
@@ -133,7 +142,7 @@ dev.off()
 #===============================================================================
 #       differential analysis
 #===============================================================================
- 
+
 # filter for low counts - this can affect the FD probability and DESeq2 does apply its own filtering for genes/otus with no power 
 # but, no point keeping OTUs with 0 count
 dds<-dds[rowSums(counts(dds,normalize=T))>0,]
@@ -176,11 +185,11 @@ all_alpha_ord <- as.data.table(inner_join(all_alpha_ord,colData))
 # perform anova for each index
 sink(paste(RHB,"ALPHA_stats.txt",sep="_"))
 setkey(all_alpha_ord,S.chao1)
-summary(aovp(as.numeric(as.factor(all_alpha_ord$S.chao1))~condition+Error(block),all_alpha_ord))
+summary(aovp(as.numeric(as.factor(all_alpha_ord$S.chao1))~condition+Error(treatment),all_alpha_ord))
 setkey(all_alpha_ord,shannon)
-summary(aovp(as.numeric(as.factor(all_alpha_ord$shannon))~condition+Error(block),all_alpha_ord))
+summary(aovp(as.numeric(as.factor(all_alpha_ord$shannon))~condition+Error(treatment),all_alpha_ord))
 setkey(all_alpha_ord,simpson)
-summary(aovp(as.numeric(as.factor(all_alpha_ord$simpson))~condition+Error(block),all_alpha_ord))
+summary(aovp(as.numeric(as.factor(all_alpha_ord$simpson))~condition+Error(treatment),all_alpha_ord))
 setkey(all_alpha_ord,S.ACE)
-summary(aovp(as.numeric(as.factor(all_alpha_ord$S.ACE))~condition+Error(block),all_alpha_ord))
+summary(aovp(as.numeric(as.factor(all_alpha_ord$S.ACE))~condition+Error(treatment),all_alpha_ord))
 sink()
