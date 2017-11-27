@@ -140,7 +140,13 @@ plotOrd(df,colData,design="rootstock",shape="treatment",xlabel="PC1",ylabel="PC2
 dev.off()
 
 # could do some nmds/ordination plots as well
+ord <- metaMDS(t(counts(dds,normalize=T)))
+plot(ord, type = "n")
+text(ord, display = "sites",cex = 0.7, col = "red")
 
+
+
+ord.fit <- envfit(ord ~ rootstock + treatment, data=colData, perm=999)
 #===============================================================================
 #       differential analysis
 #===============================================================================
