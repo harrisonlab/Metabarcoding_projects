@@ -73,8 +73,8 @@ invisible(mapply(assign, names(ubiom_BAC), ubiom_BAC, MoreArgs=list(envir = glob
 # ensure colData rows and countData columns have the same order
 colData <- colData[names(countData),]
 
-# remove low count samples and control samples (not needed here)
-filter <- colSums(countData)>=1000&colData$rootstock!=""
+# remove low count samples
+filter <- colSums(countData)>=1000
 colData <- droplevels(colData[filter,])
 countData <- countData[,filter]
 
@@ -102,7 +102,7 @@ sizeFactors(dds) <- sizeFactors(estimateSizeFactors(dds))
 # DESeq doesn't have a method for handling correlated DVs
 # one possible correction is to collapse the replicates to the mean
 # collapseReplicates2 will adjust for different library sizes - results won't be exact as dds counts must be integer values (could multiply them all by longest decimal if really wanted)
-dds <- collapseReplicates2(dds,groupby=paste0(dds$condition,dds$treatment),simple=F)
+dds <- collapseReplicates2(dds,groupby=paste0(dds$condition,dds$pair),simple=F)
 # extract new colData from the dds object
 colData <- as.data.frame(colData(dds))
 
@@ -116,6 +116,7 @@ ggsave(paste(RHB,"OTU_counts.pdf",sep="_"),plotCummulativeReads(counts(dds,norma
 
 #### Select filter ####
 myfilter <- dtt$OTU[dtt$CD>5]
+# myfilter <- dtt$OTU[1:500] 
 # filter out low abundance OTUs
 dds <- dds[myfilter,]
 
@@ -131,45 +132,70 @@ df <-t(data.frame(t(mypca$x)*mypca$percentVar))
 
 # plot the PCA
 pdf(paste(RHB,"PCA.pdf",sep="_"))
-plotOrd(df,colData,design="rootstock",shape="treatment",xlabel="PC1",ylabel="PC2")
+plotOrd(df,colData,design="condition",shape="pair",xlabel="PC1",ylabel="PC2")
 
 ### remove/minimise run effect (pretty useless in this case as the run (single sample point) explains the vast majority of the variance for this sample)
-pc.res <- resid(aov(mypca$x~colData$run,colData)) 
+pc.res <- resid(aov(mypca$x~colData$pair,colData)) 
 df <- t(data.frame(t(pc.res*mypca$percentVar)))
-plotOrd(df,colData,design="rootstock",shape="treatment",xlabel="PC1",ylabel="PC2")
+plotOrd(df,colData,design="condition",shape="pair",xlabel="PC1",ylabel="PC2")
 dev.off()
 
 #===============================================================================
 #       differential analysis
 #===============================================================================
 
-# filter for low counts - this can affect the FD probability and DESeq2 does apply its own filtering for genes/otus with no power 
-# but, no point keeping OTUs with 0 count
-dds<-dds[rowSums(counts(dds,normalize=T))>0,]
-
 # p value for FDR cutoff
 alpha <- 0.1
 
+### test for ARD effect in paired samples ###
+dds2 <- dds[,(dds$Row=="52"|dds$Row=="53")&dds$pair!="6"]
+dds2$pair <- droplevels(dds2$pair)
+dds2$condition <- droplevels(dds2$condition)
+# filter for low counts
+myfilter <- dtt$OTU[1:500] 
+dds2 <- dds2[myfilter,]
+#dds2<-dds2[rowSums(counts(dds2,normalize=T))>0,]
 # the full model 
-full_design <- ~run + treatment + rootstock
-
+full_design <- ~pair+condition
 # add full model to dds object
-design(dds) <- full_design
-
+design(dds2) <- full_design
 # calculate fit
-dds <- DESeq(dds,parallel=T)
-
-contrast <- c("rootstock","Kwee-Quince-Eline","M9")
-res <- results(dds,alpha=alpha,parallel=T,contrast=contrast)
+dds2 <- DESeq(dds2,parallel=T)
+# get results
+res <- results(dds2,alpha=alpha,parallel=T)
+# merge with taxonomy
 res.merge <- data.table(inner_join(data.table(OTU=rownames(res),as.data.frame(res)),data.table(OTU=rownames(taxData),taxData)))
-write.table(res.merge, paste(RHB,"diff_filtered.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
+# write resuts
+write.table(res.merge, paste(RHB,"ARD_candidates.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
+#######
+
+### test for ARD in all samples ###
+dds2 <- dds[,dds$Row!=""]
+dds2$pair <- droplevels(dds2$pair)
+dds2$condition <- droplevels(dds2$condition)
+dds2$position <- droplevels(dds2$position)
+myfilter <- dtt$OTU[1:500] 
+dds2 <- dds2[myfilter,]
+full_design <- ~position+condition
+design(dds2) <- full_design
+dds2 <- DESeq(dds2,parallel=T)
+res <- results(dds2,alpha=alpha,parallel=T)
+res.merge <- data.table(inner_join(data.table(OTU=rownames(res),as.data.frame(res)),data.table(OTU=rownames(taxData),taxData)))
+write.table(res.merge, paste(RHB,"ARD_candidates_all_samples.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
+######
+
+### test for difference between tree stations and aisles (fully paired) ###
+dds2 <- dds[,(dds$Row=="52"|dds$Row=="53")&dds$pair!="6"]
+dds2$pair <- droplevels(dds2$pair)
+dds2$condition <- droplevels(dds2$condition)
+
 
 #===============================================================================
 #       Alpha diversity analysis
 #===============================================================================
 
 # plot alpha diversity - plot_alpha will convert normalised abundances to integer values (limits for bac only)
-ggsave(paste(RHB,"Alpha.pdf",sep="_"),plot_alpha(counts(dds,normalize=T),colData,design="rootstock",colour="treatment"))
+ggsave(paste(RHB,"Alpha.pdf",sep="_"),plot_alpha(counts(dds,normalize=T),colData,design="pair",colour="condition"))
 
 ### permutation based anova on diversity index ranks ###
 
