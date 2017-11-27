@@ -184,10 +184,20 @@ res.merge <- data.table(inner_join(data.table(OTU=rownames(res),as.data.frame(re
 write.table(res.merge, paste(RHB,"ARD_candidates_all_samples.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
 ######
 
+
 ### test for difference between tree stations and aisles (fully paired) ###
-dds2 <- dds[,(dds$Row=="52"|dds$Row=="53")&dds$pair!="6"]
+dds2 <- dds[,(dds$pair!="5")&(dds$pair!="6")]
 dds2$pair <- droplevels(dds2$pair)
 dds2$condition <- droplevels(dds2$condition)
+dds2$type <- as.factor(sub("^[B|E].*","aisle",sub("^[L|S].* ","",dds2$condition)))
+full_design <- ~type
+design(dds2) <- full_design
+dds2 <- DESeq(dds2,parallel=T)
+res <- results(dds2,alpha=alpha,parallel=T)
+res.merge <- data.table(inner_join(data.table(OTU=rownames(res),as.data.frame(res)),data.table(OTU=rownames(taxData),taxData)))
+write.table(res.merge, paste(RHB,"tree_aisle.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
+#######
+
 
 
 #===============================================================================
