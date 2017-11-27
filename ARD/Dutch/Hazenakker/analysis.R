@@ -35,7 +35,6 @@ taxData<-phyloTaxaTidy(taxData,0.65)
 
 # save data into a list
 ubiom_BAC <- list(countData=countData,colData=colData,taxData=taxData,RHB="BAC")
-names(ubiom_BAC$countData) <- sub("_.*","",gsub("\\.","-",(names(ubiom_BAC$countData))))
 
 # Fungi all in one call
 ubiom_FUN <- list(
@@ -44,8 +43,6 @@ ubiom_FUN <- list(
 	taxData=phyloTaxaTidy(read.table("zFUN.taxa",header=F,sep=",",row.names=1)[,c(1,3,5,7,9,11,13,2,4,6,8,10,12,14)],0.65),
 	RHB="FUN"
 ) 
-names(ubiom_FUN$countData) <- sub("_.*","",gsub("\\.","-",(names(ubiom_FUN$countData))))
-
 
 #===============================================================================
 #       Combine species 
@@ -65,7 +62,7 @@ ubiom_FUN$taxData <- taxData
 #       Attach objects
 #===============================================================================
 
-# attach objects (FUN, BAC)
+# attach objects (either FUN or BAC)
 invisible(mapply(assign, names(ubiom_FUN), ubiom_FUN, MoreArgs=list(envir = globalenv())))
 invisible(mapply(assign, names(ubiom_BAC), ubiom_BAC, MoreArgs=list(envir = globalenv())))
 
@@ -75,10 +72,7 @@ invisible(mapply(assign, names(ubiom_BAC), ubiom_BAC, MoreArgs=list(envir = glob
 
 # treatment will be an integer, needs to be a factor
 colData$treatment <- as.factor(colData$treatment)
-# there are two diffrent sequencer runs
-colData$run <- as.factor(sub(".*D","",rownames(colData)))
-# move UID to rownames
-rownames(colData) <- colData$UID
+
 # ensure colData rows and countData columns have the same order
 colData <- colData[names(countData),]
 
