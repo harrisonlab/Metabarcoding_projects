@@ -12,7 +12,7 @@ $PROJECT_FOLDER/metabarcoding_pipeline/scripts/PIPELINE.sh -c OTU $PROJECT_FOLDE
 
 for F in  $PROJECT_FOLDER/$RUN/FUN*otus.fa; do
   $PROJECT_FOLDER/metabarcoding_pipeline/scripts/PIPELINE.sh -c ITS_regions \
-  $PROJECT_FOLDER/$RUN/$F \
+  $F \
   $PROJECT_FOLDER/metabarcoding_pipeline/hmm/ssu_end.hmm \
   $PROJECT_FOLDER/metabarcoding_pipeline/hmm/58s_start.hmm \
   20
