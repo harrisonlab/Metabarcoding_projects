@@ -56,13 +56,14 @@ for RUN in $RUNS; do
    awk -v L=$L '/>/{sub(".*",">"L"."(++i))}1' $F > $FO.tmp && mv $FO.tmp $PROJECT_FOLDER/data/$RUN/$SSU/filtered/$FO;
   done
 done
-# Create Herbie folders and links 
+
+# Create Hazenakker folders and links 
 RIB="BAC FUN"
 for s in $RIB; do
- mkdir $PROJECT_FOLDER/analysis/Herbie/$s/filtered
- mkdir $PROJECT_FOLDER/analysis/Herbie/$s/unfiltered
+ mkdir -p $PROJECT_FOLDER/analysis/Hazenakker/$s/filtered
+ mkdir -p $PROJECT_FOLDER/analysis/Hazenakker/$s/unfiltered
  for RUN in $RUNS; do
-   ln -s PROJECT_FOLDER/data/$RUN/$s/filtered/B-f* $PROJECT_FOLDER/analysis/Herbie/$s/filtered/.
-   ln -s PROJECT_FOLDER/data/$RUN/$s/unfiltered/B-f* $PROJECT_FOLDER/analysis/Herbie/$s/filtered/.
+   ln -s $PROJECT_FOLDER/data/$RUN/$s/filtered/H-* $PROJECT_FOLDER/analysis/Hazenakker/$s/filtered/.
+   ln -s $PROJECT_FOLDER/data/$RUN/$s/unfiltered/H-* $PROJECT_FOLDER/analysis/Hazenakker/$s/unfiltered/.
  done
 done
