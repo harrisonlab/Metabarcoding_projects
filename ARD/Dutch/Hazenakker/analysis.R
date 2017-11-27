@@ -22,7 +22,7 @@ load_all("~/pipelines/metabarcoding/scripts/myfunctions")
 countData <- read.table("BAC.zotus_table.txt",header=T,sep="\t",row.names=1, comment.char = "")
 
 # load sample metadata
-colData <- read.table("colData",header=T,sep="\t",row.names=1)
+colData <- read.table("colData",header=T,sep="\t",row.names=1,colClasses=c("factor"))
 
 # load taxonomy data
 taxData <- read.table("zBAC.taxa",header=F,sep=",",row.names=1)
@@ -39,7 +39,7 @@ ubiom_BAC <- list(countData=countData,colData=colData,taxData=taxData,RHB="BAC")
 # Fungi all in one call
 ubiom_FUN <- list(
 	countData=read.table("FUN.zotus_table.txt",header=T,sep="\t",row.names=1,comment.char = ""),
-	colData=read.table("colData",header=T,sep="\t",row.names=1),
+	colData=read.table("colData",header=T,sep="\t",row.names=1,colClasses=c("factor")),
 	taxData=phyloTaxaTidy(read.table("zFUN.taxa",header=F,sep=",",row.names=1)[,c(1,3,5,7,9,11,13,2,4,6,8,10,12,14)],0.65),
 	RHB="FUN"
 ) 
@@ -69,9 +69,6 @@ invisible(mapply(assign, names(ubiom_BAC), ubiom_BAC, MoreArgs=list(envir = glob
 #===============================================================================
 #       Create DEseq objects 
 #===============================================================================
-
-# treatment will be an integer, needs to be a factor
-colData$treatment <- as.factor(colData$treatment)
 
 # ensure colData rows and countData columns have the same order
 colData <- colData[names(countData),]
