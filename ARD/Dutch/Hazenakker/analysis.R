@@ -139,6 +139,8 @@ df <- t(data.frame(t(pc.res*mypca$percentVar)))
 plotOrd(df,colData,design="rootstock",shape="treatment",xlabel="PC1",ylabel="PC2")
 dev.off()
 
+# could do some nmds/ordination plots as well
+
 #===============================================================================
 #       differential analysis
 #===============================================================================
