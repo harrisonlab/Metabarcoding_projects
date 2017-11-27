@@ -50,9 +50,9 @@ done
 # Create Herbie folders and links 
 RIB="BAC FUN"
 for s in $RIB; do
- mkdir $PROJECT_FOLDER/analysis/Herbie/$s/filtered
- ln -s PROJECT_FOLDER/data/$RUN/$s/filtered/B-f* $PROJECT_FOLDER/analysis/Herbie/$s/filtered/.
- mkdir $PROJECT_FOLDER/analysis/Herbie/$s/unfiltered
- ln -s PROJECT_FOLDER/data/$RUN/$s/unfiltered/B-f* $PROJECT_FOLDER/analysis/Herbie/$s/filtered/.
+ mkdir -p $PROJECT_FOLDER/analysis/Herbie/$s/filtered
+ ln -s $PROJECT_FOLDER/data/$RUN/$s/filtered/B-f* $PROJECT_FOLDER/analysis/Herbie/$s/filtered/.
+ mkdir -p $PROJECT_FOLDER/analysis/Herbie/$s/unfiltered
+ ln -s $PROJECT_FOLDER/data/$RUN/$s/unfiltered/B-f* $PROJECT_FOLDER/analysis/Herbie/$s/unfiltered/.
 done
 
