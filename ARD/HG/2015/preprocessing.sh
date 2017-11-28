@@ -123,10 +123,11 @@ done
 
 # Create HG folders and links 
 RIB="16S ITS"
-
 for s in $RIB; do
-  mkdir -p $PROJECT_FOLDER/analysis/HG/$s/filtered
-  ln -s $PROJECT_FOLDER/data/$RUN/$s/filtered/K-* $PROJECT_FOLDER/analysis/HG/$s/filtered/.
-  mkdir -p $PROJECT_FOLDER/analysis/Koekoek/$s/unfiltered
-  ln -s $PROJECT_FOLDER/data/$RUN/$s/unfiltered/K-* $PROJECT_FOLDER/analysis/HG/$s/unfiltered/.
+ mkdir -p $PROJECT_FOLDER/analysis/HG/$s/filtered
+ mkdir -p $PROJECT_FOLDER/analysis/HG/$s/unfiltered
+ for RUN in $RUNS; do
+   ln -s $PROJECT_FOLDER/data/$RUN/$s/filtered/* $PROJECT_FOLDER/analysis/HG/$s/filtered/.
+   ln -s $PROJECT_FOLDER/data/$RUN/$s/unfiltered/* $PROJECT_FOLDER/analysis/HG/$s/unfiltered/.
+ done
 done
