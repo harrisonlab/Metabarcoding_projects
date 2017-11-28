@@ -107,8 +107,8 @@ done
 for RUN in $RUNS; do
   # move files to filtered folder
   find $PROJECT_FOLDER/data/$RUN/ITS/fasta -type f -name *.r*.fa|xargs -I myfile mv myfile $PROJECT_FOLDER/data/$RUN/ITS/filtered/.
-  cd $PROJECT_FOLDER/data/$RUN/$SSU/filtered
-  for f in $PROJECT_FOLDER/data/$RUN/$SSU/filtered/*r1.fa
+  cd $PROJECT_FOLDER/data/$RUN/ITS/filtered
+  for f in $PROJECT_FOLDER/data/$RUN/ITS/filtered/*r1.fa
   do
       R1=$f
       R2=$(echo $R1|sed 's/\.r1\.fa/\.r2\.fa/')
