@@ -56,7 +56,7 @@ for RUN in $RUNS; do
    "$PROJECT_FOLDER/data/$RUN/16S/fastq/*R1*.fastq" \
    $PROJECT_FOLDER/data/$RUN/16S \
    $PROJECT_FOLDER/metabarcoding_pipeline/primers/adapters.db \
-   300 5 0.5
+   300 5 0.5 0 0
 done
 
 # Pre-process ITS files (min length 200, MAX length 300, quality 1)
@@ -65,7 +65,7 @@ for RUN in $RUNS; do
    "$PROJECT_FOLDER/data/$RUN/ITS/fastq/*R1*.fastq" \
    $PROJECT_FOLDER/data/$RUN/ITS \
    $PROJECT_FOLDER/metabarcoding_pipeline/primers/primers.db \
-   200 300 1
+   200 1 0 0
 done
 
 ## identify none ITS (FUN) regions
