@@ -93,3 +93,10 @@ $PROJECT_FOLDER/metabarcoding_pipeline/scripts/PIPELINE.sh -c NEMpre \
  $PROJECT_FOLDER/data/$RUN/NEM \
  $PROJECT_FOLDER/metabarcoding_pipeline/primers/nematode.db \
  200 1 23 18
+ # move FUN files to required location
+for F in $PROJECT_FOLDER/data/$RUN/NEM/fasta/*_R1.fa; do 
+  FO=$(echo $F|awk -F"/" '{print $NF}'|awk -F"_" '{print $1".r1.fa"}'); 
+  L=$(echo $F|awk -F"/" '{print $NF}'|awk -F"_" '{print $1}') ;
+  echo $L
+  awk -v L=$L '/>/{sub(".*",">"L"."(++i))}1' $F > $FO.tmp && mv $FO.tmp $PROJECT_FOLDER/data/$RUN/NEM/filtered/$FO;
+done
