@@ -59,6 +59,7 @@ ubiom_OO <- list(
 	taxData=phyloTaxaTidy(read.table("zOO.taxa",header=F,sep=",",row.names=1)[,c(1,3,5,7,9,11,13,2,4,6,8,10,12,14)],0.65),
 	RHB="OO"
 ) 
+rownames(ubiom_OO$colData) <- paste0("X",gsub("_","\\.",ubiom_OO$colData$name),"_",sub("D.*","",rownames(ubiom_OO$colData)))
 
 # Nematodes 
 ubiom_NEM <- list(
@@ -67,6 +68,7 @@ ubiom_NEM <- list(
 	taxData=phyloTaxaTidy(read.table("zNEM.taxa",header=F,sep=",",row.names=1)[,c(1,3,5,7,9,11,13,2,4,6,8,10,12,14)],0.65),
 	RHB="NEM"
 ) 
+rownames(ubiom_NEM$colData) <- paste0("X",gsub("_","\\.",ubiom_NEM$colData$name),"_",sub("D.*","",rownames(ubiom_NEM$colData)))
 
 #===============================================================================
 #       Combine species 
@@ -102,7 +104,7 @@ ubiom_FUN$taxData <- taxData
 # list of species with more than one associated OTU
 invisible(mapply(assign, names(ubiom_NEM), ubiom_NEM, MoreArgs=list(envir = globalenv())))
 combinedTaxa <- combineTaxa("zNEM.taxa")
-combinedTaxa <- combinedTaxa[c(-3,-6),]
+combinedTaxa <- combinedTaxa[-2,]
 countData <- combCounts(combinedTaxa,countData)
 taxData <- combTaxa(combinedTaxa,taxData)
 ubiom_NEM$countData <- countData
@@ -161,7 +163,7 @@ sizeFactors(dds) <- colData$bacq
 myfilter <- row.names(countData[row.names(countData) %in% row.names(taxData[(taxData$kingdom=="SAR"|as.numeric(taxData$k_conf)<=0.5),]),])
 dds <- dds[myfilter,]
 # nematode
-myfilter <- row.names(taxdata[taxData$o_
+myfilter <- row.names(taxData[as.number(taxData$c_conf)>0.9 & as.number(taxData$o_conf)>0.9,])
 
 ### read accumulation filter
 # output pdf file
