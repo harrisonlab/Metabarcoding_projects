@@ -40,6 +40,7 @@ ubiom_BAC <- list(
 	taxData=taxData,
 	RHB="BAC"
 )
+rownames(ubiom_BAC$colData) <- gsub("-","\\.",paste0("X",ubiom_BAC$colData$name,"_",sub("D.*","",rownames(ubiom_BAC$colData))))
 
 # Fungi all in one call
 ubiom_FUN <- list(
@@ -48,9 +49,8 @@ ubiom_FUN <- list(
 	taxData=phyloTaxaTidy(read.table("zFUN.taxa",header=F,sep=",",row.names=1)[,c(1,3,5,7,9,11,13,2,4,6,8,10,12,14)],0.65),
 	RHB="FUN"
 ) 
-
-# I've rerun the fungal pipeline, which now uses a different naming convention
-colnames(ubiom_FUN$countData) <- gsub("(^.*_)(S[0-9]*)($)","\\2D170217",colnames(ubiom_FUN$countData)) # \\2 keeps the second match () group
+# should fix colData really, then this is not necessary  
+rownames(ubiom_FUN$colData) <- gsub("-","\\.",paste0("X",ubiom_FUN$colData$name,"_",sub("D.*","",rownames(ubiom_FUN$colData))))
 
 # Oomycetes
 ubiom_OO <- list(
@@ -156,9 +156,12 @@ sizeFactors(dds) <- colData$bacq
 #       Filter data 
 #============================================================================
 
-### Pythium specific filter to remove OTUs which are unlikely part of the SAR kingdom
+### filters to remove OTUs which are unlikely part of the correct kingdom (SAR and 18S Eukaryote)
+# pythium
 myfilter <- row.names(countData[row.names(countData) %in% row.names(taxData[(taxData$kingdom=="SAR"|as.numeric(taxData$k_conf)<=0.5),]),])
 dds <- dds[myfilter,]
+# nematode
+myfilter <- row.names(taxdata[taxData$o_
 
 ### read accumulation filter
 # output pdf file
