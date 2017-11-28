@@ -87,16 +87,10 @@ $PROJECT_FOLDER/metabarcoding_pipeline/scripts/PIPELINE.sh -c OOpre \
  $PROJECT_FOLDER/metabarcoding_pipeline/primers/adapters.db \
  150 10 0.5 21 20
  
-# Pre-process NEM files (min length 100, max length, quality 1)
+# Pre-process NEM files (min length 150, max diffs 10 (actual: (min len * max diffs)/100), quality 0.5)
 $PROJECT_FOLDER/metabarcoding_pipeline/scripts/PIPELINE.sh -c NEMpre \
  "$PROJECT_FOLDER/data/$RUN/NEM/fastq/*R1*.fastq" \
  $PROJECT_FOLDER/data/$RUN/NEM \
- $PROJECT_FOLDER/metabarcoding_pipeline/primers/nematode.db \
- 200 1 23 18
- # move NEM files to required location
-for F in $PROJECT_FOLDER/data/$RUN/NEM/fasta/*_R1.fa; do 
-  FO=$(echo $F|awk -F"/" '{print $NF}'|awk -F"_" '{print $1".r1.fa"}'); 
-  L=$(echo $F|awk -F"/" '{print $NF}'|awk -F"_" '{print $1}') ;
-  echo $L
-  awk -v L=$L '/>/{sub(".*",">"L"."(++i))}1' $F > $FO.tmp && mv $FO.tmp $PROJECT_FOLDER/data/$RUN/NEM/filtered/$FO;
-done
+ $PROJECT_FOLDER/metabarcoding_pipeline/primers/adapters.db \
+ 150 10 0.5 23 18
+
