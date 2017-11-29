@@ -98,7 +98,7 @@ P2F=GAAGGTGAAGTCGTAACAAGG
 P2R=AGCGTTCTTCATCGATGTGC
 
 $PROJECT_FOLDER/metabarcoding_pipeline/scripts/PIPELINE.sh -c demultiplex \
-"$PROJECT_FOLDER/data/$RUN/fastq/*Nem*_R1_*" 0 \
+"$PROJECT_FOLDER/data/$RUN/fastq/*_R1_*" 1 \
 $P1F $P1R $P2F $P2R
 
 mv $PROJECT_FOLDER/data/$RUN/fastq/*ps1* $PROJECT_FOLDER/data/$RUN/NEM/fastq/.
@@ -110,37 +110,11 @@ $PROJECT_FOLDER/metabarcoding_pipeline/scripts/PIPELINE.sh -c OOpre \
  "$PROJECT_FOLDER/data/$RUN/OO/fastq/*R1*.fastq" \
  $PROJECT_FOLDER/data/$RUN/OO \
  $PROJECT_FOLDER/metabarcoding_pipeline/primers/adapters.db \
- 150 10 0.1
+ 150 10 0.1 21 20
  
-## move files to keep consistent with Fungal ITS workflow
-```shell
-mv $PROJECT_FOLDER/data/$RUN/$SSU/filtered/* $PROJECT_FOLDER/data/$RUN/$SSU/fasta/.
-rename 's/filtered\.//' $PROJECT_FOLDER/data/$RUN/OO/fasta/*.fa
-```
-
-## identify none ITS (OO) regions
-$PROJECT_FOLDER/metabarcoding_pipeline/scripts/PIPELINE.sh -c procends \
- $PROJECT_FOLDER/data/$RUN/OO/fasta \
- "" \
- $PROJECT_FOLDER/metabarcoding_pipeline/hmm/others/Oomycota/ssu_end.hmm \
- $PROJECT_FOLDER/metabarcoding_pipeline/hmm/others/Oomycota/58s_start.hmm \
- ssu 58ss 20
-
-## remove none ITS regions from sequence
-$PROJECT_FOLDER/metabarcoding_pipeline/scripts/PIPELINE.sh -c ITS \
-  "$PROJECT_FOLDER/data/$RUN/OO/fasta/*[^fa]" \
-  $PROJECT_FOLDER/metabarcoding_pipeline/scripts/rm_SSU_58Ss.R \
-  "*.\\.ssu" "*.\\.58"
-  
-## move (and rename) files to filtered folder and fix a problem with names (usearch truncates names with -)
-find $PROJECT_FOLDER/data/$RUN/OO/fasta -type f -name *r1.fa|xargs -I myfile mv myfile $PROJECT_FOLDER/data/$RUN/OO/filtered/.
-rename 's/\.r1//' $PROJECT_FOLDER/data/$RUN/OO/filtered/*.fa
-sed -i -e 's/-.*_/_/' $PROJECT_FOLDER/data/$RUN/OO/filtered/*.fa
-rename 's/-.*_/_/' $PROJECT_FOLDER/data/$RUN/OO/unfiltered/*.fastq
-
 # Pre-process NEM files (min length 100, MAXR2 length, quality 1)
 $PROJECT_FOLDER/metabarcoding_pipeline/scripts/PIPELINE.sh -c NEMpre \
  "$PROJECT_FOLDER/data/$RUN/NEM/fastq/*R1*.fastq" \
  $PROJECT_FOLDER/data/$RUN/NEM \
  $PROJECT_FOLDER/metabarcoding_pipeline/primers/nematode.db \
- 100 300 1
+ 150 10 0.5 23 18
