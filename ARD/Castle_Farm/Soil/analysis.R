@@ -174,7 +174,7 @@ ggsave(paste(RHB,"OTU_counts.pdf",sep="_"),plotCummulativeReads(counts(dds,norma
 myfilter <- dtt$OTU[1:500] #FUN
 myfilter <- dtt$OTU[1:80] # OO
 myfilter <- dtt$OTU[1:60] # NEM
-myfilter <- dtt$OTU[1:600]  # BAC
+myfilter <- dtt$OTU[1:5000]  # BAC
 
 # filter out low abundance OTUs
 dds <- dds[myfilter,]
