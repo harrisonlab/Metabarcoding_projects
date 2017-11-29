@@ -9,6 +9,7 @@ register(MulticoreParam(12))
 library(data.table)
 library(plyr)
 library(dplyr)
+library(ggplot2)
 library(devtools)
 load_all("~/pipelines/metabarcoding/scripts/myfunctions")
 # library(cooccur)
@@ -160,21 +161,19 @@ colData <- as.data.frame(colData(dds))
 myfilter <- row.names(countData[row.names(countData) %in% row.names(taxData[(taxData$kingdom=="SAR"|as.numeric(taxData$k_conf)<=0.5),]),])
 # apply filter
 dds <- dds[myfilter,]
+# nematode
+myfilter <- row.names(taxData[as.number(taxData$c_conf)>0.9 & as.number(taxData$o_conf)>0.9,])
+dds <- dds[rownames(dds)%in%myfilter,]
 
 ### read accumulation filter
-# output pdf file
-pdf(paste(RHB,"OTU_counts.pdf",sep="_"))
 
 # plot cummulative reads
-plotCummulativeReads(counts(dds,normalize=T))
-
-# close pdf
-dev.off()
+ggsave(paste(RHB,"OTU_counts.pdf",sep="_"),plotCummulativeReads(counts(dds,normalize=T)))
 
 # Apply seperately for appropriate data set depending on cut-off chosen from graph
 myfilter <- dtt$OTU[1:500] #FUN
 myfilter <- dtt$OTU[1:80] # OO
-myfilter <- dtt$OTU[1:80] # NEM
+myfilter <- dtt$OTU[1:60] # NEM
 myfilter <- dtt$OTU[1:600]  # BAC
 
 # filter out low abundance OTUs
