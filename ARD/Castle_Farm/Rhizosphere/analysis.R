@@ -159,6 +159,7 @@ myfilter <- row.names(countData[row.names(countData) %in% row.names(taxData[(tax
 dds <- dds[myfilter,]
 # nematode
 myfilter <- row.names(taxData[as.number(taxData$c_conf)>0.9 & as.number(taxData$o_conf)>0.9,])
+dds <- dds[rownames(dds)%in%myfilter,]
 
 ### read accumulation filter
 # output pdf file
@@ -173,7 +174,7 @@ dev.off()
 #### Select filter ####
 # Apply seperately for appropriate data set depending on cut-off chosen from graph
 myfilter <- dtt$OTU[1:500] #FUN
-myfilter <- dtt$OTU[1:40] # OO
+myfilter <- dtt$OTU[1:75] # OO
 myfilter <- dtt$OTU[1:75] # NEM
 myfilter <- dtt$OTU[1:4500]  # BAC
 
