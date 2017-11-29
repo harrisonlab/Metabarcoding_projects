@@ -58,29 +58,14 @@ $PROJECT_FOLDER/metabarcoding_pipeline/scripts/PIPELINE.sh -c ITSpre \
  "$PROJECT_FOLDER/data/$RUN/FUN/fastq/*R1*.fastq" \
  $PROJECT_FOLDER/data/$RUN/FUN \
  $PROJECT_FOLDER/metabarcoding_pipeline/primers/primers.db \
- 200 300 1
+ 200 1 23 21
 
-## identify none ITS (FUN) regions (R1 only)
-$PROJECT_FOLDER/metabarcoding_pipeline/scripts/PIPELINE.sh -c procends \
- $PROJECT_FOLDER/data/$RUN/FUN/fasta \
- R1 \
- $PROJECT_FOLDER/metabarcoding_pipeline/hmm/ssu_end.hmm \
- $PROJECT_FOLDER/metabarcoding_pipeline/hmm/58s_start.hmm \
- ssu 58ss 20
- 
-## remove none ITS regions from sequence
-$PROJECT_FOLDER/metabarcoding_pipeline/scripts/PIPELINE.sh -c ITS \
- "$PROJECT_FOLDER/data/$RUN/FUN/fasta/*R1" \
- $PROJECT_FOLDER/metabarcoding_pipeline/scripts/rm_SSU_58Ss.R \
- "*.\\.ssu" \
- "*.\\.58"
-
-## Move merged fasta to filtered folder
-for f in $PROJECT_FOLDER/data/$RUN/FUN/unfiltered/*r1*; do 
- F=$(echo $f|awk -F"/" '{print $NF}'|awk -F"_" '{print $1".r1.fa"}'); 
- L=$(echo $f|awk -F"/" '{print $NF}'|awk -F"." '{print $1}' OFS=".") ; 
- mv ../fasta/${L}_R1/$F ../filtered/$L; done
-
+for F in $PROJECT_FOLDER/data/$RUN/FUN/fasta/*_R1.fa; do 
+ FO=$(echo $F|awk -F"/" '{print $NF}'|awk -F"_" '{print $1".r1.fa"}'); 
+ L=$(echo $F|awk -F"/" '{print $NF}'|awk -F"_" '{print $1}') ;
+ echo $L
+ awk -v L=$L '/>/{sub(".*",">"L"."(++i))}1' $F > $FO.tmp && mv $FO.tmp $PROJECT_FOLDER/data/$RUN/FUN/filtered/$FO;
+done
 
 ### OO and NEM ###
 
