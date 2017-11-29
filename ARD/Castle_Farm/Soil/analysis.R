@@ -137,23 +137,20 @@ design<-~1
 #create DES object
 dds<-DESeqDataSetFromMatrix(countData,colData,design)
 
-# collapse replicates to their mean (collapseReplicates calulates the sum of replicates) - probably best to do this before library size correction
-dds$group <- paste(dds$condition,dds$pair,sep="_")
-dds <- collapseReplicates2(dds,groupby=dds$group,simple=T)
-
 # calculate size factors - using geoMeans function (works better with this data set)
 max(geoMeans(dds))/min(geoMeans(dds))
 max(sizeFactors(estimateSizeFactors(dds)))/min(sizeFactors(estimateSizeFactors(dds)))
-# sizeFactors(dds) <-sizeFactors(estimateSizeFactors(dds))
+sizeFactors(dds) <-sizeFactors(estimateSizeFactors(dds))
 sizeFactors(dds) <-geoMeans(dds) 
 # calcNormFactors(counts(dds),method="RLE",lib.size=(prop.table(colSums(counts(dds)))))
-
 
 #===============================================================================
 #       Collapse replicates
 #============================================================================
-dds <- collapseReplicates2(dds,groupby=
-
+# the data contains three replicates for each sampling point 
+# these are likely to be highly correlated and could mess with the differential analysis
+dds <- collapseReplicates2(dds,groupby=paste0(dds$condition,dds$pair),simple=F)
+colData <- as.data.frame(colData(dds))
 
 #===============================================================================
 #       Filter data 
@@ -174,17 +171,11 @@ plotCummulativeReads(counts(dds,normalize=T))
 # close pdf
 dev.off()
 
-#### Select filter ####
-# get row sum of normalized counts
-df <- as.data.table(rowSums(counts(dds,normalize=T)),keep.rownames=T)
-# order decending
-df <- df[order(-V2)]
-
 # Apply seperately for appropriate data set depending on cut-off chosen from graph
-myfilter <- df$V1[1:700] #FUN
-myfilter <- df$V1[1:50] # OO
-myfilter <- df$V1[1:80] # NEM
-myfilter <- df$V1[1:600]  # BAC
+myfilter <- dtt$OTU[1:500] #FUN
+myfilter <- dtt$OTU[1:80] # OO
+myfilter <- dtt$OTU[1:80] # NEM
+myfilter <- dtt$OTU[1:600]  # BAC
 
 # filter out low abundance OTUs
 dds <- dds[myfilter,]
@@ -203,7 +194,7 @@ df <-t(data.frame(t(mypca$x)*mypca$percentVar))
 dds$location<-as.number(dds$pair)
 
 # plot the PCA
-pdf(paste(RHB,"VA.pdf",sep="_"))
+pdf(paste(RHB,"PCA.pdf",sep="_"))
 plotOrd(df,colData(dds),design="condition",xlabel="PC1",ylabel="PC2")
 plotOrd(df,colData(dds),shape="condition",design="location",continuous=T,xlabel="PC1",ylabel="PC2")
 dev.off()
@@ -212,7 +203,7 @@ dev.off()
 pc.res <- resid(aov(mypca$x~pair,colData(dds)))
 df <- t(data.frame(t(pc.res*mypca$percentVar)))
 
-pdf(paste(RHB,"VA_deloc.pdf",sep="_"))
+pdf(paste(RHB,"PCA_deloc.pdf",sep="_"))
 plotOrd(df,colData(dds),shape="condition",design="location",continuous=T,xlabel="PC1",ylabel="PC2")
 dev.off()
 
