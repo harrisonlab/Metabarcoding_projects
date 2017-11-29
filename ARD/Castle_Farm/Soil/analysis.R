@@ -48,7 +48,7 @@ ubiom_FUN <- list(
 	taxData=phyloTaxaTidy(read.table("zFUN.taxa",header=F,sep=",",row.names=1)[,c(1,3,5,7,9,11,13,2,4,6,8,10,12,14)],0.65),
 	RHB="FUN"
 ) 
-colnames(ubiom_FUN$countData) <- gsub("(^.*_)(S[0-9]*)($)","\\2D161020",colnames(ubiom_FUN$countData)) # \\2 keeps the second match () group
+rownames(ubiom_FUN$colData) <- ubiom_FUN$colData$name
 
 # Oomycetes
 ubiom_OO <- list(
@@ -70,16 +70,16 @@ ubiom_NEM <- list(
 #       Combine species 
 #===============================================================================
 
-#### combine species at 0.95 (default) confidence (if they are species). Works well for Oomycetes and Fungi
+#### combine species at 0.95 (default) confidence (if they are species).
 
 # attach OO objects
 invisible(mapply(assign, names(ubiom_OO), ubiom_OO, MoreArgs=list(envir = globalenv())))
 # list of species with more than one associated OTU
 combinedTaxa <- combineTaxa("zOO.taxa")
 # show the list
-combinedTaxa[,1]
+combinedTaxa
 # manual filter list to remove none species (e.g. unknown, Pythium aff)
-combinedTaxa <- combinedTaxa[c(-3,-9),]
+combinedTaxa <- combinedTaxa[c(-3,-4,-7,-9,-10,-11),]
 # adjust countData for combined taxa
 countData <- combCounts(combinedTaxa,countData)
 # adjust taxData for combined taxa
@@ -96,6 +96,16 @@ countData <- combCounts(combinedTaxa,countData)
 taxData <- combTaxa(combinedTaxa,taxData)
 ubiom_FUN$countData <- countData
 ubiom_FUN$taxData <- taxData
+
+# nematodes
+invisible(mapply(assign, names(ubiom_NEM), ubiom_NEM, MoreArgs=list(envir = globalenv())))
+combinedTaxa <- combineTaxa("zNEM.taxa")
+combinedTaxa
+combinedTaxa <- combinedTaxa[c(-4,-6,-7),]
+countData <- combCounts(combinedTaxa,countData)
+taxData <- combTaxa(combinedTaxa,taxData)
+ubiom_NEM$countData <- countData
+ubiom_NEM$taxData <- taxData
 
 #===============================================================================
 #       Attach objects
@@ -137,6 +147,13 @@ max(sizeFactors(estimateSizeFactors(dds)))/min(sizeFactors(estimateSizeFactors(d
 # sizeFactors(dds) <-sizeFactors(estimateSizeFactors(dds))
 sizeFactors(dds) <-geoMeans(dds) 
 # calcNormFactors(counts(dds),method="RLE",lib.size=(prop.table(colSums(counts(dds)))))
+
+
+#===============================================================================
+#       Collapse replicates
+#============================================================================
+dds <- collapseReplicates2(dds,groupby=
+
 
 #===============================================================================
 #       Filter data 
