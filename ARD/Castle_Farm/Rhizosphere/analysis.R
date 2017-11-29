@@ -81,9 +81,9 @@ invisible(mapply(assign, names(ubiom_OO), ubiom_OO, MoreArgs=list(envir = global
 # list of species with more than one associated OTU
 combinedTaxa <- combineTaxa("zOO.taxa")
 # show the list
-combinedTaxa[,1]
+combinedTaxa
 # manual filter list to remove none species (e.g. unknown, Pythium aff)
-combinedTaxa <- combinedTaxa[c(-3,-9),]
+combinedTaxa <- combinedTaxa[c(-4,-7,-10),]
 # adjust countData for combined taxa
 countData <- combCounts(combinedTaxa,countData)
 # adjust taxData for combined taxa
@@ -93,14 +93,7 @@ ubiom_OO$countData <- countData
 ubiom_OO$taxData <- taxData
 
 # list of species with more than one associated OTU
-invisible(mapply(assign, names(ubiom_FUN), ubiom_FUN, MoreArgs=list(envir = globalenv())))
-combinedTaxa <- combineTaxa("zFUN.taxa")
-# all species in combinedTaxa are combinable
-countData <- combCounts(combinedTaxa,countData)
-taxData <- combTaxa(combinedTaxa,taxData)
-ubiom_FUN$countData <- countData
-ubiom_FUN$taxData <- taxData
-
+combinedTaxa
 # list of species with more than one associated OTU
 invisible(mapply(assign, names(ubiom_NEM), ubiom_NEM, MoreArgs=list(envir = globalenv())))
 combinedTaxa <- combineTaxa("zNEM.taxa")
@@ -125,13 +118,15 @@ invisible(mapply(assign, names(ubiom_NEM), ubiom_NEM, MoreArgs=list(envir = glob
 #===============================================================================
 
 # ensure colData rows and countData columns have the same order
+rownames(colData) <- sub("^XG","G",rownames(colData))
 colData <- colData[names(countData),]
 # Depending on how I've produced the files...
+colData <-colData[complete.cases(colData),]
 # row.names(colData) <- colData$name
 # colData <- colData[gsub("\\.","-",sub("_.*","",sub("^X","",names(countData)))),]
 
 # remove low count samples and control samples (not needed here)
-filter <- (colSums(countData)>=1000) & (colData$pair!="C")
+filter <- (colSums(countData)>=1000)&colData$condition!="C"
 colData <- droplevels(colData[filter,])
 countData <- countData[,filter]
 
@@ -144,14 +139,14 @@ dds<-DESeqDataSetFromMatrix(countData,colData,design)
 
 # calculate size factors - use geoMeans function if
 # every gene contains at least one zero, as cannot compute log geometric means
-# sizeFactors(dds) <-sizeFactors(estimateSizeFactors(dds))
+sizeFactors(dds) <-sizeFactors(estimateSizeFactors(dds))
 # sizeFactors(dds) <-geoMeans(dds)
 # library(edgeR) # I think anyway
 # calcNormFactors(counts(dds),method="RLE",lib.size=(prop.table(colSums(counts(dds)))))
 # Correction from aboslute quantification
 # sizeFactors(dds)<-geoMeans(dds)* sapply(colData$funq,function(x) x/mean(colData$funq,na.rm=T))
 #sizeFactors(dds)<-geoMeans(dds)* sapply(colData$bacq,function(x) x/mean(colData$bacq,na.rm=T))
-sizeFactors(dds) <- colData$funq
+sizeFactors(dds) <- 1/colData$funq
 sizeFactors(dds) <- colData$bacq
 
 #===============================================================================
@@ -167,7 +162,7 @@ myfilter <- row.names(taxData[as.number(taxData$c_conf)>0.9 & as.number(taxData$
 
 ### read accumulation filter
 # output pdf file
-pdf(paste(RHB,"V2_OTU_counts.pdf",sep="_"))
+pdf(paste(RHB,"OTU_counts.pdf",sep="_"))
 
 # plot cummulative reads (will also produce a data table "dtt" in the global environment)
 plotCummulativeReads(counts(dds,normalize=T))
@@ -199,7 +194,7 @@ df <-t(data.frame(t(mypca$x)*mypca$percentVar))
 colData$location<-as.number(colData$pair)
 
 # plot the PCA
-pdf(paste(RHB,"absolute_VA.pdf",sep="_"))
+pdf(paste(RHB,"PCA.pdf",sep="_"))
 plotOrd(df,colData,design="condition",xlabel="PC1",ylabel="PC2")
 plotOrd(df,colData,shape="condition",design="location",continuous=T,xlabel="PC1",ylabel="PC2")
 dev.off()
@@ -208,7 +203,7 @@ dev.off()
 pc.res <- resid(aov(mypca$x~colData$pair,colData))
 df <- t(data.frame(t(pc.res*mypca$percentVar)))
 
-pdf(paste(RHB,"absolute_VA_deloc.pdf",sep="_"))
+pdf(paste(RHB,"PCA_deloc.pdf",sep="_"))
 plotOrd(df,colData,shape="condition",design="location",continuous=T,xlabel="PC1",ylabel="PC2")
 dev.off()
 
@@ -236,7 +231,7 @@ dds <- DESeq(dds,parallel=T)
 # contrast <- c("condition","S","H")
 res <- results(dds,alpha=alpha,parallel=T)
 res.merge <- data.table(inner_join(data.table(OTU=rownames(res),as.data.frame(res)),data.table(OTU=rownames(taxData),taxData)))
-write.table(res.merge, paste(RHB,"absolute_diff_filtered.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
+write.table(res.merge, paste(RHB,"diff_filtered.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
 
 # MA plot
 pdf(paste(RHB,"ma_plot.pdf",sep="_"))
