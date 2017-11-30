@@ -40,7 +40,6 @@ ubiom_BAC <- list(
 	taxData=taxData,
 	RHB="BAC"
 )
-rownames(ubiom_BAC$colData) <- gsub("-","\\.",paste0("X",ubiom_BAC$colData$name,"_",sub("D.*","",rownames(ubiom_BAC$colData))))
 
 # Fungi all in one call
 ubiom_FUN <- list(
@@ -49,8 +48,6 @@ ubiom_FUN <- list(
 	taxData=phyloTaxaTidy(read.table("zFUN.taxa",header=F,sep=",",row.names=1)[,c(1,3,5,7,9,11,13,2,4,6,8,10,12,14)],0.65),
 	RHB="FUN"
 ) 
-# should fix colData really, then this is not necessary  
-rownames(ubiom_FUN$colData) <- gsub("-","\\.",paste0("X",ubiom_FUN$colData$name,"_",sub("D.*","",rownames(ubiom_FUN$colData))))
 
 # Oomycetes
 ubiom_OO <- list(
