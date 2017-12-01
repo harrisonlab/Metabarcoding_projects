@@ -232,4 +232,4 @@ res.merge <- data.table(inner_join(data.table(OTU=rownames(res),as.data.frame(re
 
 # output results
 write.table(res.merge, paste(RHB,"diff_filtered.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
-writeXStringSet(readDNAStringSet(paste0(RHB,".zotus.fa"))[res.merge[padj<=0.1]$OTU],paste0(RHB,".sig.fa"))
+writeXStringSet(readDNAStringSet(paste0(RHB,".otus.fa"))[res.merge[padj<=0.1]$OTU],paste0(RHB,".sig.fa"))
