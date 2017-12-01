@@ -9,6 +9,7 @@ register(MulticoreParam(12))
 library(data.table)
 library(plyr)
 library(dplyr)
+library(ggplot2)
 library(devtools)
 load_all("~/pipelines/metabarcoding/scripts/myfunctions")
 # library(cooccur)
@@ -89,9 +90,15 @@ taxData <- combTaxa(combinedTaxa,taxData)
 ubiom_OO$countData <- countData
 ubiom_OO$taxData <- taxData
 
-# list of species with more than one associated OTU
-combinedTaxa
-# list of species with more than one associated OTU
+# Fungi
+invisible(mapply(assign, names(ubiom_FUN), ubiom_FUN, MoreArgs=list(envir = globalenv())))
+combinedTaxa <- combineTaxa("zFUN.taxa")
+countData <- combCounts(combinedTaxa,countData)
+taxData <- combTaxa(combinedTaxa,taxData)
+ubiom_FUN$countData <- countData
+ubiom_FUN$taxData <- taxData
+
+# Nematodes
 invisible(mapply(assign, names(ubiom_NEM), ubiom_NEM, MoreArgs=list(envir = globalenv())))
 combinedTaxa <- combineTaxa("zNEM.taxa")
 combinedTaxa <- combinedTaxa[-2,]
@@ -115,12 +122,7 @@ invisible(mapply(assign, names(ubiom_NEM), ubiom_NEM, MoreArgs=list(envir = glob
 #===============================================================================
 
 # ensure colData rows and countData columns have the same order
-rownames(colData) <- sub("^XG","G",rownames(colData))
 colData <- colData[names(countData),]
-# Depending on how I've produced the files...
-colData <-colData[complete.cases(colData),]
-# row.names(colData) <- colData$name
-# colData <- colData[gsub("\\.","-",sub("_.*","",sub("^X","",names(countData)))),]
 
 # remove low count samples and control samples (not needed here)
 filter <- (colSums(countData)>=1000)&colData$condition!="C"
@@ -140,11 +142,10 @@ sizeFactors(dds) <-sizeFactors(estimateSizeFactors(dds))
 # sizeFactors(dds) <-geoMeans(dds)
 # library(edgeR) # I think anyway
 # calcNormFactors(counts(dds),method="RLE",lib.size=(prop.table(colSums(counts(dds)))))
+
 # Correction from aboslute quantification
-# sizeFactors(dds)<-geoMeans(dds)* sapply(colData$funq,function(x) x/mean(colData$funq,na.rm=T))
-#sizeFactors(dds)<-geoMeans(dds)* sapply(colData$bacq,function(x) x/mean(colData$bacq,na.rm=T))
-sizeFactors(dds) <- 1/colData$funq
-sizeFactors(dds) <- colData$bacq
+sizeFactors(dds) <- sizeFactors(dds)/colData$funq
+sizeFactors(dds) <- sizeFactors(dds)/colData$bacq
 
 #===============================================================================
 #       Filter data 
@@ -159,14 +160,8 @@ myfilter <- row.names(taxData[as.number(taxData$c_conf)>0.9 & as.number(taxData$
 dds <- dds[rownames(dds)%in%myfilter,]
 
 ### read accumulation filter
-# output pdf file
-pdf(paste(RHB,"OTU_counts.pdf",sep="_"))
-
 # plot cummulative reads (will also produce a data table "dtt" in the global environment)
-plotCummulativeReads(counts(dds,normalize=T))
-
-# close pdf
-dev.off()
+ggsave(paste(RHB,"qPCR_OTU_counts.pdf",sep="_"),plotCummulativeReads(counts(dds,normalize=T)))
 
 #### Select filter ####
 # Apply seperately for appropriate data set depending on cut-off chosen from graph
@@ -192,7 +187,7 @@ df <-t(data.frame(t(mypca$x)*mypca$percentVar))
 colData$location<-as.number(colData$pair)
 
 # plot the PCA
-pdf(paste(RHB,"PCA.pdf",sep="_"))
+pdf(paste(RHB,"qPCR_PCA.pdf",sep="_"))
 plotOrd(df,colData,design="condition",xlabel="PC1",ylabel="PC2")
 plotOrd(df,colData,shape="condition",design="location",continuous=T,xlabel="PC1",ylabel="PC2")
 dev.off()
@@ -201,7 +196,7 @@ dev.off()
 pc.res <- resid(aov(mypca$x~colData$pair,colData))
 df <- t(data.frame(t(pc.res*mypca$percentVar)))
 
-pdf(paste(RHB,"PCA_deloc.pdf",sep="_"))
+pdf(paste(RHB,"qPCR_PCA_deloc.pdf",sep="_"))
 plotOrd(df,colData,shape="condition",design="location",continuous=T,xlabel="PC1",ylabel="PC2")
 dev.off()
 
@@ -229,69 +224,5 @@ dds <- DESeq(dds,parallel=T)
 # contrast <- c("condition","S","H")
 res <- results(dds,alpha=alpha,parallel=T)
 res.merge <- data.table(inner_join(data.table(OTU=rownames(res),as.data.frame(res)),data.table(OTU=rownames(taxData),taxData)))
-write.table(res.merge, paste(RHB,"diff_filtered.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
-
-# MA plot
-pdf(paste(RHB,"ma_plot.pdf",sep="_"))
-plot_ma(res.merge)
-dev.off()
-
-
-#################################################################################
-#################################################################################
-
-#===============================================================================
-#       Alpha diversity analysis
-#===============================================================================
-
-myfiltbioms <- lapply(mybioms,function(obj) prune_samples(sample_data(obj)$condition!="C",obj))
-
-pdf("Alpha_diversity.pdf")
-lapply(myfiltbioms ,function(obj) plot_richness(obj,x="condition",color="condition",measures=c("Chao1", "Shannon", "Simpson")))
-dev.off()
-
-#===============================================================================
-#       network analysis
-#===============================================================================
-
-myfiltbioms <- lapply(mybioms,function(obj) prune_samples(sample_data(obj)$condition!="C",obj))
-
-cotables <- lapply(myfiltbioms,function(obj) as.data.frame(as.matrix(otu_table(obj))))
-cotables_h <- lapply(seq(1,length(myfiltbioms)),function(i)  cotables[[i]][,row.names(sample_data(prune_samples(sample_data(myfiltbioms[[i]])$condition=="Healthy",myfiltbioms[[i]])))]) 
-cotables_s <- lapply(seq(1,length(myfiltbioms)),function(i)  cotables[[i]][,row.names(sample_data(prune_samples(sample_data(myfiltbioms[[i]])$condition=="Symptom",myfiltbioms[[i]])))])
-
-cotables_h <- lapply(cotables_h, function(obj) obj[rowSums(obj)>5,colSums(obj)>5])
-cotables_s <- lapply(cotables_s, function(obj) obj[rowSums(obj)>5,colSums(obj)>5])
-
-lapply(seq(1,length(cotables_h)), function(i) cotables_h[[i]][cotables_h[[i]]>0] <<- 1)
-lapply(seq(1,length(cotables_s)), function(i) cotables_s[[i]][cotables_s[[i]]>0] <<- 1)
-
-CFcoHmodels <- mclapply(cotables_h, function(obj) cooccur2(obj,type = "spp_site",spp_names = T,thresh = T),mc.cores=4)
-CFcoSmodels <- mclapply(cotables_s, function(obj) cooccur2(obj,type = "spp_site",spp_names = T,thresh = T),mc.cores=4)
-
-lapply(seq(1,length(CFcoHmodels)), function(i) {
-	CFcoHmodels[[i]]$results$padj <<- p.adjust(apply(CFcoHmodels[[i]]$results[,8:9],1, min),"BH")
-	CFcoSmodels[[i]]$results$padj <<- p.adjust(apply(CFcoSmodels[[i]]$results[,8:9],1, min),"BH")
-})
-
-lapply(CFcoHmodels, function(obj) {nrow(obj$results[obj$results$padj<=0.1,]})
-
-lapply(CFcoHmodels, function(obj) nrow(obj$results[obj$results$padj<=0.05&obj$results$p_gt<=0.05,]))
-lapply(CFcoHmodels, function(obj) nrow(obj$results[obj$results$padj<=0.05&obj$results$p_lt<=0.05,]))
-
-lapply(CFcoSmodels, function(obj) nrow(obj$results[obj$results$padj<=0.05&obj$results$p_gt<=0.05,]))
-lapply(CFcoSmodels, function(obj) nrow(obj$results[obj$results$padj<=0.05&obj$results$p_lt<=0.05,]))
-
-
-X <- rbind.fill(lapply(CFcoHmodels, function(obj) head(obj$results[order(obj$results$padj),],6)))
-Y <- rbind.fill(lapply(CFcoSmodels, function(obj) head(obj$results[order(obj$results$padj),],6)))
-
-
-HcoHmodel16$results$p_lt
-
-write.table(X,"cooc.healthy.txt",sep="\t",quote=F,row.names=F)
-
-head(CHcoHmodel$results[order(CHcoHmodel$results$p_lt,CHcoHmodel$results$padj),])
-X <- head(CHcoHmodel16$results[order(CHcoHmodel16$results$p_lt,CHcoHmodel16$results$padj),])
-X <- rbind(X,head(CHcoHmodel16$results[order(CHcoHmodel16$results$p_gt,CHcoHmodel16$results$padj),]))
+write.table(res.merge, paste(RHB,"qPCR_filtered.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
 
