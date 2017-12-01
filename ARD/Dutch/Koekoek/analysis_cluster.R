@@ -168,7 +168,7 @@ res.merge <- data.table(inner_join(data.table(OTU=rownames(res),as.data.frame(re
 # write resuts
 write.table(res.merge, paste(RHB,"ARD_candidates.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
 # output significant otu fasta
-writeXStringSet(readDNAStringSet(paste0(RHB,".zotus.fa"))[res.merge[padj<=0.1]$OTU],paste(RHB,".ARD.sig.fa"))
+writeXStringSet(readDNAStringSet(paste0(RHB,".zotus.fa"))[res.merge[padj<=0.1]$OTU],paste0(RHB,".ARD.sig.fa"))
 
 
 #######
@@ -186,7 +186,7 @@ dds2 <- DESeq(dds2,parallel=T)
 res <- results(dds2,alpha=alpha,parallel=T)
 res.merge <- data.table(inner_join(data.table(OTU=rownames(res),as.data.frame(res)),data.table(OTU=rownames(taxData),taxData)))
 write.table(res.merge, paste(RHB,"ARD_candidates_all_samples.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
-writeXStringSet(readDNAStringSet(paste0(RHB,".zotus.fa"))[res.merge[padj<=0.1]$OTU],paste(RHB,".ARD_all.sig.fa"))
+writeXStringSet(readDNAStringSet(paste0(RHB,".zotus.fa"))[res.merge[padj<=0.1]$OTU],paste0(RHB,".ARD_all.sig.fa"))
 ######
 
 ### test for difference between tree stations and aisles (fully paired) ###
