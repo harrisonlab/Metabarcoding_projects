@@ -2,7 +2,6 @@
 #       Load libraries
 #===============================================================================
 
-# library(phyloseq)
 library(DESeq2)
 library("BiocParallel")
 register(MulticoreParam(12))
@@ -13,8 +12,6 @@ library(ggplot2)
 library(devtools)
 load_all("~/pipelines/metabarcoding/scripts/myfunctions")
 library(Biostrings)
-# library(cooccur)
-# library(parallel)
 
 #===============================================================================
 #       Load data 
