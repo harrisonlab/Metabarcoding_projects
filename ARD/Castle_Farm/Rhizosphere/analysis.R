@@ -12,6 +12,7 @@ library(dplyr)
 library(ggplot2)
 library(devtools)
 load_all("~/pipelines/metabarcoding/scripts/myfunctions")
+library(Biostrings)
 # library(cooccur)
 # library(parallel)
 
@@ -225,4 +226,5 @@ dds <- DESeq(dds,parallel=T)
 res <- results(dds,alpha=alpha,parallel=T)
 res.merge <- data.table(inner_join(data.table(OTU=rownames(res),as.data.frame(res)),data.table(OTU=rownames(taxData),taxData)))
 write.table(res.merge, paste(RHB,"diff.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
-
+# output sig fasta
+writeXStringSet(readDNAStringSet(paste0(RHB,".zotus.fa"))[res.merge[padj<=0.1]$OTU],paste(RHB,".sig.fa"))
