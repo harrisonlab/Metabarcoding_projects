@@ -102,7 +102,6 @@ ubiom_FUN$taxData <- taxData
 # Nematodes
 invisible(mapply(assign, names(ubiom_NEM), ubiom_NEM, MoreArgs=list(envir = globalenv())))
 combinedTaxa <- combineTaxa("zNEM.taxa")
-combinedTaxa <- combinedTaxa[-2,]
 countData <- combCounts(combinedTaxa,countData)
 taxData <- combTaxa(combinedTaxa,taxData)
 ubiom_NEM$countData <- countData
@@ -123,6 +122,7 @@ invisible(mapply(assign, names(ubiom_NEM), ubiom_NEM, MoreArgs=list(envir = glob
 #===============================================================================
 
 # ensure colData rows and countData columns have the same order
+rownames(colData) <- sub("^XG","G",rownames(colData))
 colData <- colData[names(countData),]
 
 # remove low count samples and control samples (not needed here)
@@ -168,7 +168,7 @@ ggsave(paste(RHB,"OTU_counts.pdf",sep="_"),plotCummulativeReads(counts(dds,norma
 # Apply seperately for appropriate data set depending on cut-off chosen from graph
 myfilter <- dtt$OTU[1:500] #FUN
 myfilter <- dtt$OTU[1:75] # OO
-myfilter <- dtt$OTU[1:75] # NEM
+myfilter <- dtt$OTU[1:30] # NEM
 myfilter <- dtt$OTU[1:4500]  # BAC
 
 # filter out low abundance OTUs
