@@ -78,7 +78,7 @@ combinedTaxa <- combineTaxa("OO.taxa")
 # show the list
 combinedTaxa
 # manual filter list to remove none species (e.g. unknown, Pythium aff)
-combinedTaxa <- combinedTaxa[c(-3,-4,-7,-9,-10,-11),]
+combinedTaxa <- combinedTaxa[2,]
 # adjust countData for combined taxa
 countData <- combCounts(combinedTaxa,countData)
 # adjust taxData for combined taxa
@@ -100,7 +100,7 @@ ubiom_FUN$taxData <- taxData
 invisible(mapply(assign, names(ubiom_NEM), ubiom_NEM, MoreArgs=list(envir = globalenv())))
 combinedTaxa <- combineTaxa("NEM.taxa")
 combinedTaxa
-combinedTaxa <- combinedTaxa[c(-4,-6,-7),]
+combinedTaxa <- combinedTaxa[c(-5,-7,-9),]
 countData <- combCounts(combinedTaxa,countData)
 taxData <- combTaxa(combinedTaxa,taxData)
 ubiom_NEM$countData <- countData
@@ -139,7 +139,7 @@ dds<-DESeqDataSetFromMatrix(countData,colData,design)
 # calculate size factors - using geoMeans function (works better with this data set)
 max(geoMeans(dds))/min(geoMeans(dds))
 max(sizeFactors(estimateSizeFactors(dds)))/min(sizeFactors(estimateSizeFactors(dds)))
-sizeFactors(dds) <-sizeFactors(estimateSizeFactors(dds))
+# sizeFactors(dds) <-sizeFactors(estimateSizeFactors(dds))
 sizeFactors(dds) <-geoMeans(dds) 
 # calcNormFactors(counts(dds),method="RLE",lib.size=(prop.table(colSums(counts(dds)))))
 
@@ -170,9 +170,9 @@ ggsave(paste(RHB,"OTU_counts.pdf",sep="_"),plotCummulativeReads(counts(dds,norma
 
 # Apply seperately for appropriate data set depending on cut-off chosen from graph
 myfilter <- dtt$OTU[1:500] #FUN
-myfilter <- dtt$OTU[1:80] # OO
-myfilter <- dtt$OTU[1:60] # NEM
-myfilter <- dtt$OTU[1:5000]  # BAC
+myfilter <- dtt$OTU[1:50] # OO
+myfilter <- dtt$OTU[1:30] # NEM
+myfilter <- dtt$OTU[1:1500]  # BAC
 
 # filter out low abundance OTUs
 dds <- dds[myfilter,]
@@ -232,4 +232,4 @@ res.merge <- data.table(inner_join(data.table(OTU=rownames(res),as.data.frame(re
 
 # output results
 write.table(res.merge, paste(RHB,"diff_filtered.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
-writeXStringSet(readDNAStringSet(paste0(RHB,".zotus.fa"))[res.merge[padj<=0.1]$OTU],paste(RHB,".sig.fa"))
+writeXStringSet(readDNAStringSet(paste0(RHB,".zotus.fa"))[res.merge[padj<=0.1]$OTU],paste0(RHB,".sig.fa"))
