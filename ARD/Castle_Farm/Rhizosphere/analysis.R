@@ -161,7 +161,7 @@ dds <- dds[rownames(dds)%in%myfilter,]
 
 ### read accumulation filter
 # plot cummulative reads (will also produce a data table "dtt" in the global environment)
-ggsave(paste(RHB,"qPCR_OTU_counts.pdf",sep="_"),plotCummulativeReads(counts(dds,normalize=T)))
+ggsave(paste(RHB,"OTU_counts.pdf",sep="_"),plotCummulativeReads(counts(dds,normalize=T)))
 
 #### Select filter ####
 # Apply seperately for appropriate data set depending on cut-off chosen from graph
@@ -187,7 +187,7 @@ df <-t(data.frame(t(mypca$x)*mypca$percentVar))
 colData$location<-as.number(colData$pair)
 
 # plot the PCA
-pdf(paste(RHB,"qPCR_PCA.pdf",sep="_"))
+pdf(paste(RHB,"PCA.pdf",sep="_"))
 plotOrd(df,colData,design="condition",xlabel="PC1",ylabel="PC2")
 plotOrd(df,colData,shape="condition",design="location",continuous=T,xlabel="PC1",ylabel="PC2")
 dev.off()
@@ -196,7 +196,7 @@ dev.off()
 pc.res <- resid(aov(mypca$x~colData$pair,colData))
 df <- t(data.frame(t(pc.res*mypca$percentVar)))
 
-pdf(paste(RHB,"qPCR_PCA_deloc.pdf",sep="_"))
+pdf(paste(RHB,"PCA_deloc.pdf",sep="_"))
 plotOrd(df,colData,shape="condition",design="location",continuous=T,xlabel="PC1",ylabel="PC2")
 dev.off()
 
@@ -224,5 +224,5 @@ dds <- DESeq(dds,parallel=T)
 # contrast <- c("condition","S","H")
 res <- results(dds,alpha=alpha,parallel=T)
 res.merge <- data.table(inner_join(data.table(OTU=rownames(res),as.data.frame(res)),data.table(OTU=rownames(taxData),taxData)))
-write.table(res.merge, paste(RHB,"qPCR_filtered.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
+write.table(res.merge, paste(RHB,"diff.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
 
