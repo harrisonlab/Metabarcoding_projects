@@ -25,7 +25,7 @@ for s in $RIB; do
 done
 
 # QC
-for FILE in $PROJECT_FOLDER/data/$RUN/fastq/Kenya*; do
+for FILE in $PROJECT_FOLDER/data/$RUN/fastq/*; do
   $PROJECT_FOLDER/metabarcoding_pipeline/scripts/PIPELINE.sh -c qcheck $FILE $PROJECT_FOLDER/data/$RUN/quality
 done
 
