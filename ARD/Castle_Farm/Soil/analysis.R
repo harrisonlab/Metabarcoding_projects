@@ -140,6 +140,7 @@ design<-~1
 dds<-DESeqDataSetFromMatrix(countData,colData,design)
 
 # calculate size factors - using geoMeans function (works better with this data set)
+# NOTE Nematode size factors are a factor of 5,000 different with estimateSizeFactors
 max(geoMeans(dds))/min(geoMeans(dds))
 max(sizeFactors(estimateSizeFactors(dds)))/min(sizeFactors(estimateSizeFactors(dds)))
 sizeFactors(dds) <-sizeFactors(estimateSizeFactors(dds))
