@@ -18,9 +18,22 @@ for F in $PROJECT_FOLDER/data/$RUN/FUN/fasta/*_R1.fa; do
 done
 
 # Bacteria
-SSU=BAC;FPL=17;RPL=21;MINL=300;MINOVER=5;QUAL=0.5
 $PROJECT_FOLDER/metabarcoding_pipeline/scripts/PIPELINE.sh -c 16Spre \
-"$PROJECT_FOLDER/data/$RUN/$SSU/fastq/*R1*.fastq" \
-$PROJECT_FOLDER/data/$RUN/$SSU \
-$PROJECT_FOLDER/metabarcoding_pipeline/primers/adapters.db \
-$MINL $MINOVER $QUAL $FPL $RPL 
+ "$PROJECT_FOLDER/data/$RUN/BAC/fastq/*R1*.fastq" \
+ $PROJECT_FOLDER/data/$RUN/BAC \
+ $PROJECT_FOLDER/metabarcoding_pipeline/primers/adapters.db \
+ 300 5 0.5 17 21 
+
+# Oomycetes
+$PROJECT_FOLDER/metabarcoding_pipeline/scripts/PIPELINE.sh -c OOpre \
+ "$PROJECT_FOLDER/data/$RUN/OO/fastq/*R1*.fastq" \
+ $PROJECT_FOLDER/data/$RUN/OO \
+ $PROJECT_FOLDER/metabarcoding_pipeline/primers/adapters.db \
+ 150 5 0.5 21 20
+
+# Nematodes
+$PROJECT_FOLDER/metabarcoding_pipeline/scripts/PIPELINE.sh -c NEMpre \
+ "$PROJECT_FOLDER/data/$RUN/NEM/fastq/*R1*.fastq" \
+ $PROJECT_FOLDER/data/$RUN/NEM \
+ $PROJECT_FOLDER/metabarcoding_pipeline/primers/nematode.db \
+ 150 10 0.5 23 18
