@@ -8,6 +8,7 @@ register(MulticoreParam(12))
 library(data.table)
 library(plyr)
 library(dplyr)
+library(ggplot2)
 library(devtools)
 load_all("~/pipelines/metabarcoding/scripts/myfunctions")
 
@@ -37,7 +38,6 @@ ubiom_BAC <- list(
 	taxData=taxData,
 	RHB="BAC"
 )
-colnames(ubiom_BAC$countData) <- gsub("\\.","_",sub("_.*","",colnames(ubiom_BAC$countData)))
 
 # Fungi all in one call
 ubiom_FUN <- list(
@@ -46,7 +46,6 @@ ubiom_FUN <- list(
 	taxData=phyloTaxaTidy(read.table("zFUN.taxa",header=F,sep=",",row.names=1)[,c(1,3,5,7,9,11,13,2,4,6,8,10,12,14)],0.65),
 	RHB="FUN"
 ) 
-colnames(ubiom_FUN$countData) <- gsub("\\.","_",sub("_.*","",colnames(ubiom_FUN$countData)))
 
 #===============================================================================
 #       Combine species 
@@ -75,14 +74,12 @@ invisible(mapply(assign, names(ubiom_BAC), ubiom_BAC, MoreArgs=list(envir = glob
 #       Create DEseq objects 
 #===============================================================================
 
-# ensure colData rows and countData columns have the same order
-colData <- colData[names(countData),]
-# Depending on how I've produced the files...
-# row.names(colData) <- colData$name
-# colData <- colData[gsub("\\.","-",sub("_.*","",sub("^X","",names(countData)))),]
+# ensure colData rows and countData columns have the same order, then rename them (removing sample IDs)
+colData <- colData[colnames(countData),]
+colnames(countData) <- rownames(colData) <- colData$name 
 
 # remove low count samples and control samples (not needed here)
-filter <- (colSums(countData)>=1000) & (colData$pair!="C")
+filter <- (colSums(countData)>=1000)
 colData <- droplevels(colData[filter,])
 countData <- countData[,filter]
 
@@ -90,40 +87,29 @@ countData <- countData[,filter]
 design<-~1
 
 #create DES object
-# colnames(countData) <- row.names(colData)
 dds<-DESeqDataSetFromMatrix(countData,colData,design)
 
-# calculate size factors - use geoMeans function if
-# every gene contains at least one zero, as cannot compute log geometric means
-# sizeFactors(dds) <-sizeFactors(estimateSizeFactors(dds))
-sizeFactors(dds) <-geoMeans(dds)
+# calculate size factors - further option methods given
+ sizeFactors(dds) <-sizeFactors(estimateSizeFactors(dds))
+# sizeFactors(dds) <-geoMeans(dds)
 # library(edgeR) # I think anyway
 # calcNormFactors(counts(dds),method="RLE",lib.size=(prop.table(colSums(counts(dds)))))
 
 #===============================================================================
 #       Filter data 
-#============================================================================
+#===============================================================================
 
 ### read accumulation filter
-# output pdf file
-pdf(paste(RHB,"OTU_counts.pdf",sep="_"))
-
 # plot cummulative reads (will also produce a data table "dtt" in the global environment)
-plotCummulativeReads(counts(dds,normalize=T))
-
-# close pdf
-dev.off()
+ggsave(paste(RHB,"OTU_counts.pdf",sep="_"),plotCummulativeReads(counts(dds,normalize=T)))
 
 #### Select filter ####
-# Apply seperately for appropriate data set depending on cut-off chosen from graph
-myfilter <- dtt$OTU[1:500] #FUN
-myfilter <- dtt$OTU[1:40] # OO
-
+myfilter <- dtt$OTU[dtt$CD>5]
 # filter out low abundance OTUs
 dds <- dds[myfilter,]
 
 #===============================================================================
-#       PCA plot
+#       PCA plot all data
 #===============================================================================
 
 # perform PC decomposition of DES object
@@ -132,21 +118,33 @@ mypca <- des_to_pca(dds)
 # to get pca plot axis into the same scale create a dataframe of PC scores multiplied by their variance
 df <-t(data.frame(t(mypca$x)*mypca$percentVar))
 
-# Add spatial information as a numeric and plot 
-colData$location<-as.number(colData$pair)
-
 # plot the PCA
-pdf(paste(RHB,"VA.pdf",sep="_"))
-plotOrd(df,colData,design="condition",xlabel="PC1",ylabel="PC2")
-plotOrd(df,colData,shape="condition",design="location",continuous=T,xlabel="PC1",ylabel="PC2")
-dev.off()
+ggsave(paste(RHB,"PCA.pdf",sep="_"),plotOrd(df,colData,design="genotype",shape="run",xlabel="PC1",ylabel="PC2"))
 
-### remove spatial information (this uses the factor "pair" not the numeric "location") and plot
-pc.res <- resid(aov(mypca$x~colData$pair,colData))
+### remove run information (can't distinguish between run and site) and plot
+pc.res <- resid(aov(mypca$x~colData$run,colData))
 df <- t(data.frame(t(pc.res*mypca$percentVar)))
+ggsave(paste(RHB,"PCA_deloc.pdf",sep="_"),plotOrd(df,colData,shape="run",design="genotype",xlabel="PC1",ylabel="PC2"))
 
-pdf(paste(RHB,"VA_deloc.pdf",sep="_"))
-plotOrd(df,colData,shape="condition",design="location",continuous=T,xlabel="PC1",ylabel="PC2")
+#===============================================================================
+#       Matched genotypes
+#===============================================================================
+
+filter <- colData$genotype=="M9"|like(colData$genotype,"M26")
+colData <- droplevels(colData[filter,])
+countData <- countData[,filter]
+dds <- dds[,filter]
+dds$genotype <- droplevels(dds$genotype)
+dds$run <- droplevels(dds$run)
+
+# pca plot
+mypca <- des_to_pca(dds)
+df <-t(data.frame(t(mypca$x)*mypca$percentVar))
+pc.res <- resid(aov(mypca$x~colData$run,colData))
+d <- t(data.frame(t(pc.res*mypca$percentVar)))
+pdf(paste(RHB,"matched.pdf",sep="_"))
+ plotOrd(df,colData,design="genotype",shape="run",xlabel="PC1",ylabel="PC2")
+ plotOrd(d,colData,design="genotype",shape="run",xlabel="PC1",ylabel="PC2")
 dev.off()
 
 #===============================================================================
@@ -160,26 +158,36 @@ dds<-dds[rowSums(counts(dds,normalize=T))>0,]
 # p value for FDR cutoff
 alpha <- 0.1
 
-# the full model 
-full_design <- ~pair + condition
+# add a condition column (this is actually the genotype and genotype is conditon, but it doesn't matter so much)
+dds$condition <- as.factor(sub(" .*","",dds$genotype))
+
+dds$gs <- as.factor(paste(dds$genotype,dds$run,sep="_"))
+
+design <- ~gs
 
 # add full model to dds object
-design(dds) <- full_design
+design(dds) <- design
 
 # calculate fit
 dds <- DESeq(dds,parallel=T)
-
 # contrast (not actually necessary in this case as this would be the default result calculated by results(dds)
 # contrast <- c("condition","S","H")
-res <- results(dds,alpha=alpha,parallel=T)
+contrast_list <- list(M9=c("gs","M9_a","M9_b"),M26_a=c("gs","M26_a","M26.Sand_b"),M26_b=c("gs","M26_a","M26.Clay_b") ,M26_a=c("gs","M26.Sand_b","M26.Clay_b"))
+res_list <- lapply(contrast_list,function(l) {results(dds,alpha=alpha,parallel=T,contrast=l)})
+sapply(res_list,summary)
+counter<-1
+res.merge_list <- lapply(res_list,function(l) {
+	X<-data.table(inner_join(data.table(OTU=rownames(l),as.data.frame(l)),data.table(OTU=rownames(taxData),taxData)))
+	write.table(X, paste(RHB,names(res_list)[counter],"diff_filtered.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
+	counter<<-counter+1
+})
+dds2 <-dds
+design <- ~run+condition
+design(dds2) <- design
+dds2 <- DESeq(dds2,parallel=T)
+res <-results(dds2,alpha=alpha,parallel=T)
 res.merge <- data.table(inner_join(data.table(OTU=rownames(res),as.data.frame(res)),data.table(OTU=rownames(taxData),taxData)))
-write.table(res.merge, paste(RHB,"diff_filtered.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
-
-# MA plot
-pdf(paste(RHB,"ma_plot.pdf",sep="_"))
-plot_ma(res.merge)
-dev.off()
-
+write.table(res.merge, paste(RHB,"m9-m27_diff_filtered.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
 
 #===============================================================================
 #       Alpha diversity analysis
