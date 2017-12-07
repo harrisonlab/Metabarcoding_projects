@@ -158,8 +158,28 @@ dds<-dds[rowSums(counts(dds,normalize=T))>0,]
 # p value for FDR cutoff
 alpha <- 0.1
 
-# add a condition column (this is actually the genotype and genotype is conditon, but it doesn't matter so much)
+# add a condition (actual genotype) column 
 dds$condition <- as.factor(sub(" .*","",dds$genotype))
+
+# the model (run=site,condition=genotype)
+design <- ~run+condition+run:condition
+
+design(dds) <- design
+dds <- DESeq(dds,parallel=T)
+
+# the main (run/site 1) effect
+fm_effect     <- results(dds,contrast=c("condition","M9","M26"),parallel=T,alpha=alpha)
+
+# the site 2 effect
+shrama_effect <- results(dds,list(c("condition_M9_vs_M26","runb.conditionM9")),parallel=T,alpha=alpha)
+
+# the interaction - is the genotype effect different across sites
+interaction <- results(dds,name="runb.conditionM9",parallel=T,alpha=alpha) 
+
+# were interested in microbial host recruitment - independent of site
+# fm_effect|shrama_effect - interaction
+# isn't this the same as the model ~run + condition
+
 
 dds$gs <- as.factor(paste(dds$genotype,dds$run,sep="_"))
 
@@ -181,11 +201,10 @@ res.merge_list <- lapply(res_list,function(l) {
 	write.table(X, paste(RHB,names(res_list)[counter],"diff_filtered.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
 	counter<<-counter+1
 })
-dds2 <-dds
-design <- ~run+condition
-design(dds2) <- design
-dds2 <- DESeq(dds2,parallel=T)
-res <-results(dds2,alpha=alpha,parallel=T)
+
+
+
+#res <-results(dds2,alpha=alpha,parallel=T)
 res.merge <- data.table(inner_join(data.table(OTU=rownames(res),as.data.frame(res)),data.table(OTU=rownames(taxData),taxData)))
 write.table(res.merge, paste(RHB,"m9-m27_diff_filtered.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
 
