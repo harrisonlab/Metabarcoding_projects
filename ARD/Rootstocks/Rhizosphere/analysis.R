@@ -199,6 +199,33 @@ write.table(res.merge, paste(RHB,"FPM_LRT_diff.txt",sep="_"),quote=F,sep="\t",na
 #===============================================================================
 
 #===============================================================================
+#       Beta diversity analysis
+#===============================================================================
+
+
+phylip_data<-fread(paste0(RHB,".z.phy"))
+colnames(phylip_data) <- c("OTU",t(phylip_data[,1]))
+
+nj.tree <- nj(as.dist(phylip_data[,-1]))
+write.tree(nj.tree,paste0(RHB,".tree"))
+
+nj.tree <- root(nj.tree,outgroup=200,resolve.root=T)
+
+# the OTU names in the dist object and count data must match - they won't for fungi due to combining similar OTUs
+rownames(dds) <- sub("_.*","",rownames(dds))
+
+unifracs <- GUniFrac(t(counts(dds,normalize=T)),nj.tree,alpha=c(0, 0.5, 1))$unifracs
+
+dw <- unifracs[, , "d_1"] # Weighted UniFrac
+du <- unifracs[, , "d_UW"] # Unweighted UniFrac
+
+adonis(as.dist(du)~location+Orchard*Sample,colData,parallel=12,permutations=9999))
+adonis(as.dist(dw)~run+genotype,colData,parallel=12,permutations=9999)
+
+g <- plotHeatmap(m,textSize=16)
+ggsave("test.pdf",g)
+
+#===============================================================================
 #       Alpha diversity analysis
 #===============================================================================
 
