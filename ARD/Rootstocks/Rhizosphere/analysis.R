@@ -95,6 +95,11 @@ dds<-DESeqDataSetFromMatrix(countData,colData,design)
 # library(edgeR) # I think anyway
 # calcNormFactors(counts(dds),method="RLE",lib.size=(prop.table(colSums(counts(dds)))))
 
+# add a condition (actual genotype) column 
+dds$condition <- as.factor(sub(" .*","",dds$genotype))
+dds$site <- as.factor(sub("_.*","",dds$name))
+#levels(dds$site) <- c("Frank Matthews","Shrama")
+
 #===============================================================================
 #       Filter data 
 #===============================================================================
@@ -127,86 +132,74 @@ df <- t(data.frame(t(pc.res*mypca$percentVar)))
 ggsave(paste(RHB,"PCA_deloc.pdf",sep="_"),plotOrd(df,colData,shape="run",design="genotype",xlabel="PC1",ylabel="PC2"))
 
 #===============================================================================
-#       Matched genotypes
+#       Matched genotypes across sites
 #===============================================================================
 
-filter <- colData$genotype=="M9"|like(colData$genotype,"M26")
-colData <- droplevels(colData[filter,])
-countData <- countData[,filter]
-dds <- dds[,filter]
-dds$genotype <- droplevels(dds$genotype)
-dds$run <- droplevels(dds$run)
+dds2 <- dds[,dds$genotype=="M9"|like(dds$genotype,"M26")]
+colData(dds2) <- droplevels(colData(dds2))
 
-# pca plot
-mypca <- des_to_pca(dds)
+#### pca plot ####
+mypca <- des_to_pca(dds2)
 df <-t(data.frame(t(mypca$x)*mypca$percentVar))
-pc.res <- resid(aov(mypca$x~colData$run,colData))
+pc.res <- resid(aov(mypca$x~run,colData(dds2)))
 d <- t(data.frame(t(pc.res*mypca$percentVar)))
 pdf(paste(RHB,"matched.pdf",sep="_"))
- plotOrd(df,colData,design="genotype",shape="run",xlabel="PC1",ylabel="PC2")
- plotOrd(d,colData,design="genotype",shape="run",xlabel="PC1",ylabel="PC2")
+ plotOrd(df,colData(dds2),design="condition",shape="site",xlabel="PC1",ylabel="PC2")
+ plotOrd(d,colData(dds2),design="condition",shape="site",xlabel="PC1",ylabel="PC2")
 dev.off()
+#####
 
-#===============================================================================
-#       differential analysis
-#===============================================================================
+#### differential analysis ####
  
 # filter for low counts - this can affect the FD probability and DESeq2 does apply its own filtering for genes/otus with no power 
-# but, no point keeping OTUs with 0 count
-dds<-dds[rowSums(counts(dds,normalize=T))>0,]
+dds2<-dds2[rowSums(counts(dds2,normalize=T))>5,]
 
 # p value for FDR cutoff
 alpha <- 0.1
 
-# add a condition (actual genotype) column 
-dds$condition <- as.factor(sub(" .*","",dds$genotype))
+# the model (condition=genotype)
+design <- ~site+condition
 
-# the model (run=site,condition=genotype)
-design <- ~run+condition+run:condition
+# add model to dds object
+design(dds2) <- design
 
-design(dds) <- design
-dds <- DESeq(dds,parallel=T)
+# calculate
+dds2 <- DESeq(dds2,parallel=T)
 
-# the main (run/site 1) effect
-fm_effect     <- results(dds,contrast=c("condition","M9","M26"),parallel=T,alpha=alpha)
+# extract results
+res <- results(dds2,parallel=T,alpha=alpha) # difference is in relation to M9
 
-# the site 2 effect
-shrama_effect <- results(dds,list(c("condition_M9_vs_M26","runb.conditionM9")),parallel=T,alpha=alpha)
-
-# the interaction - is the genotype effect different across sites
-interaction <- results(dds,name="runb.conditionM9",parallel=T,alpha=alpha) 
-
-# were interested in microbial host recruitment - independent of site
-# fm_effect|shrama_effect - interaction
-# isn't this the same as the model ~run + condition
-
-
-dds$gs <- as.factor(paste(dds$genotype,dds$run,sep="_"))
-
-design <- ~gs
-
-# add full model to dds object
-design(dds) <- design
-
-# calculate fit
-dds <- DESeq(dds,parallel=T)
-# contrast (not actually necessary in this case as this would be the default result calculated by results(dds)
-# contrast <- c("condition","S","H")
-contrast_list <- list(M9=c("gs","M9_a","M9_b"),M26_a=c("gs","M26_a","M26.Sand_b"),M26_b=c("gs","M26_a","M26.Clay_b") ,M26_a=c("gs","M26.Sand_b","M26.Clay_b"))
-res_list <- lapply(contrast_list,function(l) {results(dds,alpha=alpha,parallel=T,contrast=l)})
-sapply(res_list,summary)
-counter<-1
-res.merge_list <- lapply(res_list,function(l) {
-	X<-data.table(inner_join(data.table(OTU=rownames(l),as.data.frame(l)),data.table(OTU=rownames(taxData),taxData)))
-	write.table(X, paste(RHB,names(res_list)[counter],"diff_filtered.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
-	counter<<-counter+1
-})
-
-
-
-#res <-results(dds2,alpha=alpha,parallel=T)
+# combine with taxonomy
 res.merge <- data.table(inner_join(data.table(OTU=rownames(res),as.data.frame(res)),data.table(OTU=rownames(taxData),taxData)))
-write.table(res.merge, paste(RHB,"m9-m27_diff_filtered.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
+
+# write to file
+write.table(res.merge, paste(RHB,"m9_m26_diff.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
+#####
+
+#===============================================================================
+#       Within sites (may be better to do this without pooling data)
+#===============================================================================
+ 
+# frank mathews
+dds_fm <- dds[,dds$site=="FM"]
+colData(dds_fm) <- droplevels(colData(dds_fm))
+dds_fm <- dds_fm[rowSums(counts(dds_fm,normalize=T))>5,]
+design(dds_fm) <- ~condition
+dds_fm <- DESeq(dds_fm,reduced=~1,test="LRT",parallel=T)
+res_fm <- results(dds_fm,parallel=T,alpha=alpha)
+
+res <- results(dds_fm,parallel=T,listValues = c(0.5, 1),
+contrast=list(c("condition_M26_vs_M25"),c("condition_M9_vs_M25")))
+
+# shrama
+dds_sh <- dds[,dds$site=="Sch"]
+colData(dds_sh) <- droplevels(colData(dds_sh))
+
+
+
+#===============================================================================
+#       differential analysis
+#===============================================================================
 
 #===============================================================================
 #       Alpha diversity analysis
