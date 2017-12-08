@@ -74,7 +74,7 @@ invisible(mapply(assign, names(ubiom_BAC), ubiom_BAC, MoreArgs=list(envir = glob
 colData <- colData[names(countData),]
 
 # remove low count samples and control samples (not needed here)
-filter <- colSums(countData)>=1000&colData$rootstock!=""
+filter <- colSums(countData)>=1000#&colData$rootstock!=""
 colData <- droplevels(colData[filter,])
 countData <- countData[,filter]
 
@@ -129,15 +129,16 @@ mypca <- des_to_pca(dds)
 # to get pca plot axis into the same scale create a dataframe of PC scores multiplied by their variance
 df <-t(data.frame(t(mypca$x)*mypca$percentVar))
 
+dds$block <- dds$treatment
+
 # plot the PCA
-pdf(paste(RHB,"PCA.pdf",sep="_"))
-plotOrd(df,colData,design="rootstock",shape="treatment",xlabel="PC1",ylabel="PC2")
+ggsave(paste(RHB,"PCA.pdf",sep="_"),plotOrd(df,colData,design="condition",shape="run",xlabel="PC1",ylabel="PC2"))
 
 ### remove/minimise run effect (pretty useless in this case as the run (single sample point) explains the vast majority of the variance for this sample)
-pc.res <- resid(aov(mypca$x~colData$run,colData)) 
-df <- t(data.frame(t(pc.res*mypca$percentVar)))
-plotOrd(df,colData,design="rootstock",shape="treatment",xlabel="PC1",ylabel="PC2")
-dev.off()
+# pc.res <- resid(aov(mypca$x~colData$run,colData)) 
+# df <- t(data.frame(t(pc.res*mypca$percentVar)))
+# plotOrd(df,colData,design="rootstock",shape="treatment",xlabel="PC1",ylabel="PC2")
+# dev.off()
 
 # could do some nmds/ordination plots as well
 ord <- metaMDS(t(counts(dds,normalize=T)))
@@ -151,15 +152,18 @@ ord.fit <- envfit(ord ~ rootstock + treatment, data=colData, perm=999)
 #       differential analysis
 #===============================================================================
 
+dds <- dds[,dds$rootstock!=""]
+colData(dds) <-  droplevels(colData(dds))
+
 # filter for low counts - this can affect the FD probability and DESeq2 does apply its own filtering for genes/otus with no power 
 # but, no point keeping OTUs with 0 count
-dds<-dds[rowSums(counts(dds,normalize=T))>0,]
+dds<-dds[rowSums(counts(dds,normalize=T))>5,]
 
 # p value for FDR cutoff
 alpha <- 0.1
 
 # the full model 
-full_design <- ~run + treatment + rootstock
+full_design <- ~run + rootstock
 
 # add full model to dds object
 design(dds) <- full_design
@@ -177,7 +181,7 @@ write.table(res.merge, paste(RHB,"diff_filtered.txt",sep="_"),quote=F,sep="\t",n
 #===============================================================================
 
 # plot alpha diversity - plot_alpha will convert normalised abundances to integer values (limits for bac only)
-ggsave(paste(RHB,"Alpha.pdf",sep="_"),plot_alpha(counts(dds,normalize=T),colData,design="rootstock",colour="treatment"))
+ggsave(paste(RHB,"Alpha.pdf",sep="_"),plot_alpha(counts(dds,normalize=T),colData,design="condition",colour="rootstock"))
 
 ### permutation based anova on diversity index ranks ###
 
