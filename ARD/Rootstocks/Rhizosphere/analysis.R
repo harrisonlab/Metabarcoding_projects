@@ -184,9 +184,15 @@ write.table(res.merge, paste(RHB,"m9_m26_diff.txt",sep="_"),quote=F,sep="\t",na=
 dds_fm <- dds[,dds$site=="FM"]
 colData(dds_fm) <- droplevels(colData(dds_fm))
 dds_fm <- dds_fm[rowSums(counts(dds_fm,normalize=T))>5,]
-design(dds_fm) <- ~condition
+design(dds_fm) <- ~genotype
 dds_fm <- DESeq(dds_fm,reduced=~1,test="LRT",parallel=T)
-res_fm <- results(dds_fm,parallel=T,alpha=alpha)
+res_fm_lrt <- results(dds_fm,parallel=T)
+res_fm_m9_vs_m25 <- results(dds_fm,parallel=T,names="genotypeM9_vs_genotypeM25")
+res_fm_m26_vs_m25 <- results(dds_fm,parallel=T,names="genotypeM26_vs_genotypeM25")
+res_fm_m9_vs_m26 <- results(dds_fm,parallel=T,contrast=c("genotype","M9","M26"))
+
+
+res_fm_lrt[res_fm_lrt$padj<=0.1,,na.rm=T]
 
 res <- results(dds_fm,parallel=T,listValues = c(0.5, 1),
 contrast=list(c("condition_M26_vs_M25"),c("condition_M9_vs_M25")))
