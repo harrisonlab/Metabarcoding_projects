@@ -191,17 +191,8 @@ res_fm_m9_vs_m25 <- results(dds_fm,parallel=T,names="genotypeM9_vs_genotypeM25")
 res_fm_m26_vs_m25 <- results(dds_fm,parallel=T,names="genotypeM26_vs_genotypeM25")
 res_fm_m9_vs_m26 <- results(dds_fm,parallel=T,contrast=c("genotype","M9","M26"))
 
-
-res_fm_lrt[res_fm_lrt$padj<=0.1,,na.rm=T]
-
-res <- results(dds_fm,parallel=T,listValues = c(0.5, 1),
-contrast=list(c("condition_M26_vs_M25"),c("condition_M9_vs_M25")))
-
-# shrama
-dds_sh <- dds[,dds$site=="Sch"]
-colData(dds_sh) <- droplevels(colData(dds_sh))
-
-
+res.merge <- data.table(inner_join(data.table(OTU=rownames(res_fm_lrt),as.data.frame(res_fm_lrt)),data.table(OTU=rownames(taxData),taxData)))
+write.table(res.merge, paste(RHB,"FPM_LRT_diff.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
 
 #===============================================================================
 #       differential analysis
