@@ -203,10 +203,12 @@ write.table(res.merge, paste(RHB,"FPM_LRT_diff.txt",sep="_"),quote=F,sep="\t",na
 #===============================================================================
 
 
-phylip_data<-fread(paste0(RHB,".z.phy"))
-colnames(phylip_data) <- c("OTU",t(phylip_data[,1]))
+#phylip_data<-fread(paste0(RHB,".z.phy"))
+#colnames(phylip_data) <- c("OTU",t(phylip_data[,1]))
 
-nj.tree <- nj(as.dist(phylip_data[,-1]))
+phylip_data <- fread.phylip(paste0(RHB,".z.phy"))
+
+nj.tree <- nj(as.dist(phylip_data))
 write.tree(nj.tree,paste0(RHB,".tree"))
 
 nj.tree <- root(nj.tree,outgroup=200,resolve.root=T)
