@@ -177,6 +177,10 @@ write.table(res.merge, paste(RHB,"diff_filtered.txt",sep="_"),quote=F,sep="\t",n
 #===============================================================================
 #       Alpha diversity analysis
 #===============================================================================
+
+# Recreate dds object and don't filter for low counts before running Alpha diversity
+
+# add some extra columns to coldata to describe the data (easier than releveling condition and changing row names)
 colData$Sample<-c(paste0(rep("B",3),seq(1,3)),paste0(rep("E",3),seq(1,3)),paste0(rep("A",3),seq(1,3)),paste0(rep("P",3),seq(1,3)))
 colData$type <- as.factor(c(rep("Between",3),rep("Edge",3),rep("Apple",3),rep("Pear",3)))
 
