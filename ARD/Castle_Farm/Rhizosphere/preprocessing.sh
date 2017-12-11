@@ -13,11 +13,8 @@ ln -s $PROJECT_FOLDER/metabarcoding_pipeline $MBPL
 # folder to hold fatsq files
 mkdir -p $PROJECT_FOLDER/data/$RUN/fastq
 
-# variable to hold folder names (BAC and FUN)
-RIB="BAC FUN OO NEM"
-
-# loop through the RIB variable, i.e. s = BAC on first loop, S= FUN on second loop, and create the folders
-for s in $RIB; do
+# loop, i.e. s = BAC on first loop, S= FUN on second loop, and create the folders
+for s in "BAC FUN OO NEM"; do
   mkdir -p $PROJECT_FOLDER/data/$RUN/$s/fastq
   mkdir $PROJECT_FOLDER/data/$RUN/$s/filtered
   mkdir $PROJECT_FOLDER/data/$RUN/$s/unfiltered
@@ -72,10 +69,11 @@ $PROJECT_FOLDER/metabarcoding_pipeline/scripts/PIPELINE.sh -c ITSpre \
  $PROJECT_FOLDER/data/$RUN/FUN \
  $PROJECT_FOLDER/metabarcoding_pipeline/primers/primers.db \
  200 1 23 21
+ 
 # move FUN files to required location
 for F in $PROJECT_FOLDER/data/$RUN/FUN/fasta/*_R1.fa; do 
-  FO=$(echo $F|awk -F"/" '{print $NF}'|awk -F"_" '{print $1".r1.fa"}'); 
-  L=$(echo $F|awk -F"/" '{print $NF}'|awk -F"_" '{print $1}') ;
+  FO=$(awk -F"/" '{print $NF}' <<< $F|awk -F"_" '{print $1".r1.fa"}'); 
+  L=$(awk -F"/" '{print $NF}' <<< $F|awk -F"_" '{print $1}') ;
   echo $L
   awk -v L=$L '/>/{sub(".*",">"L"."(++i))}1' $F > $FO.tmp && mv $FO.tmp $PROJECT_FOLDER/data/$RUN/FUN/filtered/$FO;
 done
@@ -95,8 +93,8 @@ $PROJECT_FOLDER/metabarcoding_pipeline/scripts/PIPELINE.sh -c NEMpre \
  150 10 0.5 23 18
 # move NEM files to required location
 for F in $PROJECT_FOLDER/data/$RUN/NEM/fasta/*_R1.fa; do 
-  FO=$(echo $F|awk -F"/" '{print $NF}'|awk -F"_" '{print $1".r1.fa"}'); 
-  L=$(echo $F|awk -F"/" '{print $NF}'|awk -F"_" '{print $1}') ;
+  FO=$(awk -F"/" '{print $NF}' <<< $F|awk -F"_" '{print $1".r1.fa"}'); 
+  L=$(awk -F"/" '{print $NF}' <<< $F|awk -F"_" '{print $1}') ;
   echo $L
   awk -v L=$L '/>/{sub(".*",">"L"."(++i))}1' $F > $FO.tmp && mv $FO.tmp $PROJECT_FOLDER/data/$RUN/NEM/filtered/$FO;
 done
