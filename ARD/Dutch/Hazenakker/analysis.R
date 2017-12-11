@@ -102,7 +102,7 @@ sizeFactors(dds) <- sizeFactors(estimateSizeFactors(dds))
 # DESeq doesn't have a method for handling correlated DVs
 # one possible correction is to collapse the replicates to the mean
 # collapseReplicates2 will adjust for different library sizes - results won't be exact as dds counts must be integer values (could multiply them all by longest decimal if really wanted)
-dds <- collapseReplicates2(dds,groupby=paste0(dds$condition,dds$treatment),simple=F)
+dds <- collapseReplicates2(dds,groupby=paste0(dds$condition,dds$block),simple=F)
 # extract new colData from the dds object
 colData <- as.data.frame(colData(dds))
 
@@ -135,17 +135,15 @@ dds$block <- dds$treatment
 ggsave(paste(RHB,"PCA.pdf",sep="_"),plotOrd(df,colData,design="condition",shape="run",xlabel="PC1",ylabel="PC2"))
 
 ### remove/minimise run effect (pretty useless in this case as the run (single sample point) explains the vast majority of the variance for this sample)
-# pc.res <- resid(aov(mypca$x~colData$run,colData)) 
-# df <- t(data.frame(t(pc.res*mypca$percentVar)))
-# plotOrd(df,colData,design="rootstock",shape="treatment",xlabel="PC1",ylabel="PC2")
+ pc.res <- resid(aov(mypca$x~colData$run,colData)) 
+ df <- t(data.frame(t(pc.res*mypca$percentVar)))
+ ggsave(paste(RHB,"PCA_run_corrected.pdf",sep="_"),plotOrd(df,colData,design="condition",xlabel="PC1",ylabel="PC2"))
 # dev.off()
 
 # could do some nmds/ordination plots as well
 ord <- metaMDS(t(counts(dds,normalize=T)))
 plot(ord, type = "n")
 text(ord, display = "sites",cex = 0.7, col = "red")
-
-
 
 ord.fit <- envfit(ord ~ rootstock + treatment, data=colData, perm=999)
 #===============================================================================
