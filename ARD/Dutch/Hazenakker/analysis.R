@@ -177,9 +177,11 @@ write.table(res.merge, paste(RHB,"diff_filtered.txt",sep="_"),quote=F,sep="\t",n
 #===============================================================================
 #       Alpha diversity analysis
 #===============================================================================
+colData$Sample<-c(paste0(rep("B",3),seq(1,3)),paste0(rep("E",3),seq(1,3)),paste0(rep("A",3),seq(1,3)),paste0(rep("P",3),seq(1,3)))
+colData$type <- as.factor(c(rep("Between",3),rep("Edge",3),rep("Apple",3),rep("Pear",3)))
 
 # plot alpha diversity - plot_alpha will convert normalised abundances to integer values (limits for bac only)
-ggsave(paste(RHB,"Alpha.pdf",sep="_"),plot_alpha(counts(dds,normalize=T),colData,design="condition",colour="rootstock"))
+ggsave(paste(RHB,"Alpha.pdf",sep="_"),plot_alpha(counts(dds,normalize=T),colData,design="type",colour="Sample"))
 
 ### permutation based anova on diversity index ranks ###
 
