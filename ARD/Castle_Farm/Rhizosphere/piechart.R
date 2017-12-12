@@ -1,3 +1,5 @@
+taxData<-phyloTaxaTidy(taxData,0.9,level=2)
+
 X <- sumTaxa(list(as.data.frame(counts(dds,normalized=F)),taxData,colData(dds)),taxon="rank",proportional=T)
 Y <- sumTaxa(list(as.data.frame(counts(dds,normalized=T)),taxData,colData(dds)),taxon="rank",proportional=T)
 X$type=1
