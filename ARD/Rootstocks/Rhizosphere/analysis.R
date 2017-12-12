@@ -106,7 +106,7 @@ dds$site <- as.factor(sub("_.*","",dds$name))
 
 ### read accumulation filter
 # plot cummulative reads (will also produce a data table "dtt" in the global environment)
-ggsave(paste(RHB,"OTU_counts.pdf",sep="_"),plotCummulativeReads(counts(dds,normalize=T)))
+plotCummulativeReads(counts(dds,normalize=T))
 
 #### Select filter ####
 myfilter <- dtt$OTU[dtt$CD>5]
@@ -143,10 +143,8 @@ mypca <- des_to_pca(dds2)
 df <-t(data.frame(t(mypca$x)*mypca$percentVar))
 pc.res <- resid(aov(mypca$x~run,colData(dds2)))
 d <- t(data.frame(t(pc.res*mypca$percentVar)))
-pdf(paste(RHB,"matched.pdf",sep="_"))
- plotOrd(df,colData(dds2),design="condition",shape="site",xlabel="PC1",ylabel="PC2")
- plotOrd(d,colData(dds2),design="condition",shape="site",xlabel="PC1",ylabel="PC2")
-dev.off()
+ggsave(paste(RHB,"PCA.pdf",sep="_"),plotOrd(df,colData(dds2),design="condition",shape="site",xlabel="PC1",ylabel="PC2"))
+ggsave(paste(RHB,"PCA_no_site.pdf",sep="_"),plotOrd(d,colData(dds2),design="condition",shape="site",xlabel="PC1",ylabel="PC2"))
 #####
 
 #### differential analysis ####
@@ -184,15 +182,18 @@ write.table(res.merge, paste(RHB,"m9_m26_diff.txt",sep="_"),quote=F,sep="\t",na=
 dds_fm <- dds[,dds$site=="FM"]
 colData(dds_fm) <- droplevels(colData(dds_fm))
 dds_fm <- dds_fm[rowSums(counts(dds_fm,normalize=T))>5,]
+# pca plot
+mypca <- des_to_pca(dds_fm)
+ggsave(paste(RHB,"PCA_FM.pdf",sep="_"),plotOrd(t(data.frame(t(mypca$x)*mypca$percentVar)),colData(dds_fm),design="condition",xlabel="PC1",ylabel="PC2",ylims=c(5,-5)))
+# differential analysis
 design(dds_fm) <- ~genotype
 dds_fm <- DESeq(dds_fm,reduced=~1,test="LRT",parallel=T)
 res_fm_lrt <- results(dds_fm,parallel=T)
 res_fm_m9_vs_m25 <- results(dds_fm,parallel=T,names="genotypeM9_vs_genotypeM25")
 res_fm_m26_vs_m25 <- results(dds_fm,parallel=T,names="genotypeM26_vs_genotypeM25")
 res_fm_m9_vs_m26 <- results(dds_fm,parallel=T,contrast=c("genotype","M9","M26"))
-
 res.merge <- data.table(inner_join(data.table(OTU=rownames(res_fm_lrt),as.data.frame(res_fm_lrt)),data.table(OTU=rownames(taxData),taxData)))
-write.table(res.merge, paste(RHB,"FPM_LRT_diff.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
+write.table(res.merge, paste(RHB,"FPM_LRT-not that useful.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
 
 #===============================================================================
 #       differential analysis
