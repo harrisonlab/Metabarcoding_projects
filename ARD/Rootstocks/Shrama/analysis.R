@@ -46,9 +46,6 @@ ubiom_FUN <- list(
 	RHB="FUN"
 ) 
 
-# I've rerun the fungal pipeline, which now uses a different naming convention
-colnames(ubiom_FUN$countData) <- gsub("(^.*_)(S[0-9]*)($)","\\2D170217",colnames(ubiom_FUN$countData)) # \\2 keeps the second match () group
-
 #===============================================================================
 #       Combine species 
 #===============================================================================
@@ -77,12 +74,9 @@ invisible(mapply(assign, names(ubiom_BAC), ubiom_BAC, MoreArgs=list(envir = glob
 
 # ensure colData rows and countData columns have the same order
 colData <- colData[names(countData),]
-# Depending on how I've produced the files...
-# row.names(colData) <- colData$name
-# colData <- colData[gsub("\\.","-",sub("_.*","",sub("^X","",names(countData)))),]
 
 # remove low count samples and control samples (not needed here)
-filter <- (colSums(countData)>=1000) & (colData$pair!="C")
+filter <- (colSums(countData)>=1000) & (colData$area=="Rhizosphere"|colData$area=="Stool bed")
 colData <- droplevels(colData[filter,])
 countData <- countData[,filter]
 
@@ -95,39 +89,21 @@ dds<-DESeqDataSetFromMatrix(countData,colData,design)
 
 # calculate size factors - use geoMeans function if
 # every gene contains at least one zero, as cannot compute log geometric means
-# sizeFactors(dds) <-sizeFactors(estimateSizeFactors(dds))
-sizeFactors(dds) <-geoMeans(dds)
+ sizeFactors(dds) <-sizeFactors(estimateSizeFactors(dds))
+# sizeFactors(dds) <-geoMeans(dds)
 # library(edgeR) # I think anyway
 # calcNormFactors(counts(dds),method="RLE",lib.size=(prop.table(colSums(counts(dds)))))
-# Correction from aboslute quantification (BAC only at the moment)
-sizeFactors(dds)<-geoMeans(dds)* sapply(colData$copies,function(x) x/mean(colData$copies,na.rm=T))
-
 
 #===============================================================================
 #       Filter data 
 #============================================================================
 
-### Pythium specific filter to remove OTUs which are unlikely part of the SAR kingdom
-myfilter <- row.names(countData[row.names(countData) %in% row.names(taxData[(taxData$kingdom=="SAR"|as.numeric(taxData$k_conf)<=0.5),]),])
-dds <- dds[myfilter,]
-
 ### read accumulation filter
-# output pdf file
-pdf(paste(RHB,"OTU_counts.pdf",sep="_"))
-
 # plot cummulative reads (will also produce a data table "dtt" in the global environment)
-plotCummulativeReads(counts(dds,normalize=T))
-
-# close pdf
-dev.off()
+plotCummulativeReads(counts(dds,normalize=T),plot=F)
 
 #### Select filter ####
-# Apply seperately for appropriate data set depending on cut-off chosen from graph
-myfilter <- dtt$OTU[1:500] #FUN
-myfilter <- dtt$OTU[1:40] # OO
-myfilter <- dtt$OTU[1:75] # NEM
-myfilter <- dtt$OTU[1:4500]  # BAC
-
+myfilter <- dtt$OTU[dtt$CD>5] 
 # filter out low abundance OTUs
 dds <- dds[myfilter,]
 
@@ -141,64 +117,19 @@ mypca <- des_to_pca(dds)
 # to get pca plot axis into the same scale create a dataframe of PC scores multiplied by their variance
 df <-t(data.frame(t(mypca$x)*mypca$percentVar))
 
-# Add spatial information as a numeric and plot 
-colData$location<-as.number(colData$pair)
+# Convert sequencing run date to a factor
+colData$run<-as.factor(colData$run)
 
-# plot the PCA
-pdf(paste(RHB,"VA.pdf",sep="_"))
-plotOrd(df,colData,design="condition",xlabel="PC1",ylabel="PC2")
-plotOrd(df,colData,shape="condition",design="location",continuous=T,xlabel="PC1",ylabel="PC2")
-dev.off()
-
-### remove spatial information (this uses the factor "pair" not the numeric "location") and plot
-pc.res <- resid(aov(mypca$x~colData$pair,colData))
+### remove sequencing run bias and plot
+pc.res <- resid(aov(mypca$x~colData$run,colData))
 df <- t(data.frame(t(pc.res*mypca$percentVar)))
 
-pdf(paste(RHB,"VA_deloc.pdf",sep="_"))
-plotOrd(df,colData,shape="condition",design="location",continuous=T,xlabel="PC1",ylabel="PC2")
-dev.off()
+# plot the PCA
+ggsave(paste(RHB,"PCA.pdf",sep="_"),plotOrd(df,colData,design="genotype",shape="area",xlabel="PC1",ylabel="PC2",ylims=c(-1.5,0.5)))
 
 #===============================================================================
-#       differential analysis
-#===============================================================================
- 
-# filter for low counts - this can affect the FD probability and DESeq2 does apply its own filtering for genes/otus with no power 
-# but, no point keeping OTUs with 0 count
-dds<-dds[rowSums(counts(dds,normalize=T))>0,]
-
-# p value for FDR cutoff
-alpha <- 0.1
-
-# the full model 
-full_design <- ~pair + condition
-
-# add full model to dds object
-design(dds) <- full_design
-
-# calculate fit
-dds <- DESeq(dds,parallel=T)
-
-# contrast (not actually necessary in this case as this would be the default result calculated by results(dds)
-# contrast <- c("condition","S","H")
-res <- results(dds,alpha=alpha,parallel=T)
-res.merge <- data.table(inner_join(data.table(OTU=rownames(res),as.data.frame(res)),data.table(OTU=rownames(taxData),taxData)))
-write.table(res.merge, paste(RHB,"diff_filtered.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
-
-# MA plot
-pdf(paste(RHB,"ma_plot.pdf",sep="_"))
-plot_ma(res.merge)
-dev.off()
-
-#===============================================================================
-#       Alpha diversity analysis
+#       ANOVA
 #===============================================================================
 
-myfiltbioms <- lapply(mybioms,function(obj) prune_samples(sample_data(obj)$condition!="C",obj))
 
-pdf("Alpha_diversity.pdf")
-lapply(myfiltbioms ,function(obj) plot_richness(obj,x="condition",color="condition",measures=c("Chao1", "Shannon", "Simpson")))
-dev.off()
 
-#===============================================================================
-#       Beta diversity analysis
-#===============================================================================
