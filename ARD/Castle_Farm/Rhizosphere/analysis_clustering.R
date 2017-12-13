@@ -99,7 +99,7 @@ invisible(mapply(assign, names(ubiom_NEM), ubiom_NEM, MoreArgs=list(envir = glob
 #===============================================================================
 
 # ensure colData rows and countData columns have the same order
-rownames(colData) <- sub("^XG","G",rownames(colData))
+#rownames(colData) <- sub("^XG","G",rownames(colData))
 colData <- colData[names(countData),]
 
 # remove low count samples and control samples (not needed here)
@@ -205,3 +205,38 @@ res.merge <- data.table(inner_join(data.table(OTU=rownames(res),as.data.frame(re
 write.table(res.merge, paste(RHB,"diff.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
 # output sig fasta
 writeXStringSet(readDNAStringSet(paste0(RHB,".otus.fa"))[res.merge[padj<=0.1]$OTU],paste0(RHB,".sig.fa"))
+
+
+#===============================================================================
+#       Pie chart
+#===============================================================================
+taxData<-phyloTaxaTidy(taxData,0.9,level=2)
+
+X <- sumTaxaAdvanced(list(as.data.frame(counts(dds,normalized=F)),taxData,colData(dds)),taxon="rank",proportional=T,cutoff=1)
+Y <- sumTaxaAdvanced(list(as.data.frame(counts(dds,normalized=T)),taxData,colData(dds)),taxon="rank",proportional=T,cutoff=1)
+X$type=1
+Y$type=2
+X <- rbind(X,Y)
+
+X$Phylum <- droplevels(X$rank)
+levels(X$Phylum) <- sub("\\(.*","",X$Phylum)
+#levels(X$Phylum)[5] <- "Candidatus Saccharibacteria"
+
+X <- X %>% group_by(type) %>% mutate(pos = 100-(cumsum(all)- all/2))
+
+g <- ggplot(X,aes(x="",y=all,fill=Phylum,label = sprintf("%0.1f", round(all, digits = 1))))
+g <- g + geom_bar(width = 1,stat="identity")
+g <- g + scale_fill_viridis(discrete=TRUE,direction=-1,begin=0.2)
+g <- g + geom_text(data=X[X$all>5,],aes(y = pos),size=3)
+#g <- g +geom_text(aes(label = sprintf("%0.2f", round(all, digits = 2))), position = position_stack(vjust = 0.5,),size=2)
+g <- g + geom_label_repel(data=X[X$all<=5,],aes(y = pos), size=3, show.legend = F, nudge_x=0.75,nudge_y=0.75,segment.size=0.1)
+g <- g + coord_polar(theta="y",direction=-1)
+g <- g +facet_grid(facets=. ~ type,switch="x")
+g <- g + theme_blank() %+replace% theme(	
+#  panel.border = element_rect(colour = "black", fill=NA, size=0.5),
+  axis.text  = element_blank(),
+  axis.ticks = element_blank(),
+  strip.background = element_blank(),
+  #strip.text.x = element_blank()
+)
+ggsave(paste0(RHB,"_pie.pdf"),g+xlab(NULL)+ylab(NULL))
