@@ -131,5 +131,22 @@ ggsave(paste(RHB,"PCA.pdf",sep="_"),plotOrd(df,colData,design="genotype",shape="
 #       ANOVA
 #===============================================================================
 
+lapply(seq(1:4),function(x)
+	summary(aov(mypca$x[,x]~run+,colData[[2]]))
+)
 
+lapply(seq(1:4),function(x)
+	summary(aov(mypca$x[,x]~run+,colData))[[1]][[2]]/
+	sum(summary(aov(mypca$x[,x]~location+),colData))[[1]][[2]])*100
+)
+
+# Calculate sum of squares
+sum_squares <- t(apply(mypca$x,2,function(x) 
+  t(summary(aov(x~run+(Orchard*Sample),colData))[[1]][2]))
+)
+colnames(sum_squares) <- c("run",,"residual")
+x<-t(apply(sum_squares,1,prop.table))
+perVar <- x * mypca$percentVar
+colSums(perVar)
+colSums(perVar)/sum(colSums(perVar))*100
 
