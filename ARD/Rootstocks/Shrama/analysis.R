@@ -130,23 +130,28 @@ ggsave(paste(RHB,"PCA.pdf",sep="_"),plotOrd(df,colData,design="genotype",shape="
 #===============================================================================
 #       ANOVA
 #===============================================================================
+dds_rhiz  <- dds[,dds$area=="Rhizosphere"]
+dds_stool <- dds[,dds$area!="Rhizosphere"]
+
+mypca_rhiz <- des_to_pca(dds_rhiz)
+mypca_stool <- des_to_pca(dds_stool)
 
 lapply(seq(1:4),function(x)
-	summary(aov(mypca$x[,x]~run+,colData[[2]]))
+	summary(aov(resid(aov(mypca_rhiz$x[,x]~run,colData(dds_rhiz)))~genotype,colData(dds_rhiz)))
 )
 
 lapply(seq(1:4),function(x)
-	summary(aov(mypca$x[,x]~run+,colData))[[1]][[2]]/
-	sum(summary(aov(mypca$x[,x]~location+),colData))[[1]][[2]])*100
+	summary(aov(mypca_rhiz$x[,x]~run+genotype,colData(dds_rhiz)))[[1]][[2]]/
+	sum(summary(aov(mypca_rhiz$x[,x]~run+genotype,colData(dds_rhiz)))[[1]][[2]])*100
 )
 
 # Calculate sum of squares
-sum_squares <- t(apply(mypca$x,2,function(x) 
-  t(summary(aov(x~run+(Orchard*Sample),colData))[[1]][2]))
+sum_squares <- t(apply(mypca_rhiz$x,2,function(x) 
+  t(summary(aov(x~run+genotype,colData(dds_rhiz)))[[1]][2]))
 )
-colnames(sum_squares) <- c("run",,"residual")
+colnames(sum_squares) <- c("run","genotype","residual")
 x<-t(apply(sum_squares,1,prop.table))
-perVar <- x * mypca$percentVar
+perVar <- x * mypca_rhiz$percentVar
 colSums(perVar)
 colSums(perVar)/sum(colSums(perVar))*100
 
