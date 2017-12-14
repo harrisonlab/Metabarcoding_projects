@@ -130,6 +130,10 @@ ggsave(paste(RHB,"PCA.pdf",sep="_"),plotOrd(df,colData,design="genotype",shape="
 #===============================================================================
 #       ANOVA
 #===============================================================================
+
+# Want to see if genotype for  can describe more of the variance in the rhizosphere data compared to the bulk soil data.
+# This would suggest that the rhizospere are recruting specific OTUs
+
 dds_rhiz  <- dds[,dds$area=="Rhizosphere"]
 dds_stool <- dds[,dds$area!="Rhizosphere"]
 
