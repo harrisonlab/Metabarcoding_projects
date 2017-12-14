@@ -131,7 +131,7 @@ ggsave(paste(RHB,"PCA.pdf",sep="_"),plotOrd(df,colData,design="genotype",shape="
 #       ANOVA
 #===============================================================================
 
-# Want to see if genotype for  can describe more of the variance in the rhizosphere data compared to the bulk soil data.
+# Want to see if genotype can describe more of the variance in the rhizosphere data compared to the bulk soil data.
 # This would suggest that the rhizospere are recruting specific OTUs
 
 dds_rhiz  <- dds[,dds$area=="Rhizosphere"]
@@ -145,17 +145,24 @@ lapply(seq(1:4),function(x)
 )
 
 lapply(seq(1:4),function(x)
+	summary(aov(resid(aov(mypca_stool$x[,x]~run,colData(dds_stool)))~genotype,colData(dds_stool)))
+)
+
+lapply(seq(1:4),function(x)
 	summary(aov(mypca_rhiz$x[,x]~run+genotype,colData(dds_rhiz)))[[1]][[2]]/
 	sum(summary(aov(mypca_rhiz$x[,x]~run+genotype,colData(dds_rhiz)))[[1]][[2]])*100
 )
 
 # Calculate sum of squares
-sum_squares <- t(apply(mypca_rhiz$x,2,function(x) 
-  t(summary(aov(x~run+genotype,colData(dds_rhiz)))[[1]][2]))
-)
-colnames(sum_squares) <- c("run","genotype","residual")
-x<-t(apply(sum_squares,1,prop.table))
-perVar <- x * mypca_rhiz$percentVar
-colSums(perVar)
-colSums(perVar)/sum(colSums(perVar))*100
+sum_squares_rhiz <- t(apply(mypca_rhiz$x,2,function(x){t(summary(aov(x~run+genotype,colData(dds_rhiz)))[[1]][2])}))
+sum_squares_stool <- t(apply(mypca_stool$x,2,function(x){t(summary(aov(x~run+genotype,colData(dds_stool)))[[1]][2])}))
+
+qfun <- function (X,Y) {
+	colnames(X) <- c("run","genotype","residual")
+	x<-t(apply(X,1,prop.table))
+	perVar <- x * Y$percentVar
+	colSums(perVar)
+	colSums(perVar)/sum(colSums(perVar))*100
+}
+
 
