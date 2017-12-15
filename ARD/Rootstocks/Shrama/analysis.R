@@ -134,19 +134,26 @@ ggsave(paste(RHB,"PCA.pdf",sep="_"),plotOrd(df,colData,design="genotype",shape="
 # Want to see if genotype can describe more of the variance in the rhizosphere data compared to the bulk soil data.
 # This would suggest that the rhizospere are recruting specific OTUs
 
-pc.res <- resid(aov(mypca$x~run,colData(dds)))
+qfun <- function (mypca,dds,names=c("area","genotype","interaction","residual"),model) {
+	X <- t(apply(mypca$x,2,function(x){t(summary(aov(as.formula(paste0("x",model)),colData(dds)))[[1]][2])}))
+	colnames(X) <- names
+	x<-t(apply(X,1,prop.table))
+	perVar <- x * mypca$percentVar
+	print(colSums(perVar))
+	print(colSums(perVar)/sum(colSums(perVar))*100)
+	return(as.data.table(perVar))
+}
 
-ss_all_res <- qfun(list(x=pc.res,percentVar=mypca$percentVar),dds)
+#pc.res <- resid(aov(mypca$x~run,colData(dds)))
 
-ss_all <- qfun(mypca,dds)
+#ss_all_res <- qfun(list(x=pc.res,percentVar=mypca$percentVar),dds)
 
-test <- aov(pc.res[,1]~area + genotype + area * genotype,colData(dds))
+ss_all <- qfun(mypca,dds,model="~run+area + genotype + area * genotype",names=c("run","area","genotype","interaction","residual"))
 
 lapply(seq(1:4),function(x)
-	summary(aov(pc.res[,x]~area + genotype + area * genotype,colData(dds)))[[1]][[2]]/
-	sum(summary(aov(pc.res[,x]~area + genotype + area * genotype,colData(dds)))[[1]][[2]])*100
+	summary(aov(mypca$x[,x]~area + genotype + area * genotype,colData(dds)))[[1]][[2]]/
+	sum(summary(aov(mypca$x[,x]~area + genotype + area * genotype,colData(dds)))[[1]][[2]])*100
 )
-
 
 dds_rhiz  <- dds[,dds$area=="Rhizosphere"]
 dds_stool <- dds[,dds$area!="Rhizosphere"]
@@ -155,34 +162,20 @@ mypca_rhiz <- des_to_pca(dds_rhiz)
 mypca_stool <- des_to_pca(dds_stool)
 
 lapply(seq(1:4),function(x)
-	summary(aov(resid(aov(mypca_rhiz$x[,x]~run,colData(dds_rhiz)))~genotype,colData(dds_rhiz)))
+	summary(aov(mypca_rhiz$x[,x]~genotype,colData(dds_rhiz)))[[1]][[2]]/
+	sum(summary(aov(mypca_rhiz$x[,x]~genotype,colData(dds_rhiz)))[[1]][[2]])*100
 )
 
-lapply(seq(1:4),function(x)
-	summary(aov(resid(aov(mypca_stool$x[,x]~run,colData(dds_stool)))~genotype,colData(dds_stool)))
-)
-
-lapply(seq(1:4),function(x)
-	summary(aov(mypca_rhiz$x[,x]~run+genotype,colData(dds_rhiz)))[[1]][[2]]/
-	sum(summary(aov(mypca_rhiz$x[,x]~run+genotype,colData(dds_rhiz)))[[1]][[2]])*100
-)
-
+	lapply(seq(1:4),function(x)
+		summary(aov(mypca_stool$x[,x]~genotype,colData(dds_stool)))[[1]][[2]]/
+		sum(summary(aov(mypca_stool$x[,x]~genotype,colData(dds_stool)))[[1]][[2]])*100
+	)
 # sum of squares
 
-qfun <- function (mypca,dds) {
-	X <- t(apply(mypca$x,2,function(x){t(summary(aov(x~area+genotype+area*genotype,colData(dds)))[[1]][2])}))
-	colnames(X) <- c("area","genotype","interaction","residual")
-	x<-t(apply(X,1,prop.table))
-	perVar <- x * mypca$percentVar
-	print(colSums(perVar))
-	print(colSums(perVar)/sum(colSums(perVar))*100)
-	return(as.data.table(perVar))
-}
+ss_pervar_rhiz  <- qfun(mypca_rhiz,dds_rhiz,names=c("genotype","residual"),model="~genotype")
+ss_pervar_stool <- qfun(mypca_stool,dds_stool,names=c("genotype","residual"),model="~genotype")
 
-ss_pervar_rhiz  <- qfun(mypca_rhiz,dds_rhiz)
-ss_pervar_stool <- qfun(mypca_stool,dds_stool)
-
-
-#sum_squares_rhiz <- t(apply(mypca_rhiz$x,2,function(x){t(summary(aov(x~run+genotype,colData(dds_rhiz)))[[1]][2])}))
-#sum_squares_stool <- t(apply(mypca_stool$x,2,function(x){t(summary(aov(x~run+genotype,colData(dds_stool)))[[1]][2])}))
-
+# alternative - combine both P26 sand and clay into single genotype
+levels(dds$genotype)[2:3] <- "M26"
+dds_rhiz  <- dds[,dds$area=="Rhizosphere"]
+dds_stool <- dds[,dds$area!="Rhizosphere"]
