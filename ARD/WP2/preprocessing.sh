@@ -2,7 +2,7 @@ PROJECT_FOLDER=~/projects/ARD
 RUNS="171129 171215"
 
 # make project folders
-for RUN in RUNS; do
+for RUN in $RUNS; do
   mkdir -p $PROJECT_FOLDER/data/$RUN/fastq
   mkdir $PROJECT_FOLDER/data/$RUN/quality
   mkdir $PROJECT_FOLDER/data/$RUN/ambiguous
@@ -15,7 +15,7 @@ for RUN in RUNS; do
 done
 
 # quality check
-for RUN in RUNS; do
+for RUN in $RUNS; do
   for FILE in $PROJECT_FOLDER/data/$RUN/fastq/*; do 
     $PROJECT_FOLDER/metabarcoding_pipeline/scripts/PIPELINE.sh -c qcheck $FILE $PROJECT_FOLDER/data/$RUN/quality
   done
@@ -27,20 +27,20 @@ P1R=GACTACHVGGGTATCTAATCC
 P2F=CTTGGTCATTTAGAGGAAGTAA
 P2R=ATATGCTTAAGTTCAGCGGG
 
-for RUN in RUNS; do
+for RUN in $RUNS; do
   $PROJECT_FOLDER/metabarcoding_pipeline/scripts/PIPELINE.sh -c demultiplex \
    "$PROJECT_FOLDER/data/$RUN/fastq/*16s*_R1_*" 0 \
    $P1F $P1R $P2F $P2R
 done
 
-for RUN in RUNS; do
+for RUN in $RUNS; do
   mv $PROJECT_FOLDER/data/$RUN/fastq/*ps1* $PROJECT_FOLDER/data/$RUN/BAC/fastq/.
   mv $PROJECT_FOLDER/data/$RUN/fastq/*ps2* $PROJECT_FOLDER/data/$RUN/FUN/fastq/.
   mv $PROJECT_FOLDER/data/$RUN/fastq/*ambig* $PROJECT_FOLDER/data/$RUN/ambiguous/.
 done
 
 # BACTERIA
-for RUN in RUNS; do
+for RUN in $RUNS; do
   $PROJECT_FOLDER/metabarcoding_pipeline/scripts/PIPELINE.sh -c 16Spre \
    "$PROJECT_FOLDER/data/$RUN/BAC/fastq/*R1*.fastq" \
    $PROJECT_FOLDER/data/$RUN/BAC \
@@ -49,12 +49,21 @@ for RUN in RUNS; do
 done 
 
  # FUNGI
-for RUN in RUNS; do
+for RUN in $RUNS; do
   $PROJECT_FOLDER/metabarcoding_pipeline/scripts/PIPELINE.sh -c ITSpre \
    "$PROJECT_FOLDER/data/$RUN/FUN/fastq/*R1*.fastq" \
    $PROJECT_FOLDER/data/$RUN/FUN \
    $PROJECT_FOLDER/metabarcoding_pipeline/primers/primers.db \
    200 1 23 21
+done
+
+for RUN in $RUNS; do
+  for F in $PROJECT_FOLDER/data/$RUN/FUN/fasta/*_R1.fa; do 
+   FO=$(awk -F"/" '{print $NF}' <<< $F|awk -F"_" '{print $1".r1.fa"}'); 
+   L=$(awk -F"/" '{print $NF}' <<< $F|awk -F"_" '{print $1}') ;
+   echo $L
+   awk -v L=$L '/>/{sub(".*",">"L"."(++i))}1' $F > $FO.tmp && mv $FO.tmp $PROJECT_FOLDER/data/$RUN/FUN/filtered/$FO;
+  done
 done
 
 # make analysis folders
@@ -65,10 +74,10 @@ for s in BAC FUN OO NEM; do
 done
 
 # link processed data to anaylsis folders
-for RUN in RUNS; do
-  for s in BAC FUN OO NEM; do
-    ln -s $PROJECT_FOLDER/data/$RUN/$s/unfiltered/WP2* $PROJECT_FOLDER/analysis/WP2/$s/unfiltered/.
-    ln -s $PROJECT_FOLDER/data/$RUN/$s/filtered/WP2* $PROJECT_FOLDER/analysis/WP2/$s/filtered/.
+for RUN in $RUNS; do
+  for s in BAC FUN; do
+    ln -s $PROJECT_FOLDER/data/$RUN/$s/unfiltered/* $PROJECT_FOLDER/analysis/WP2/$s/unfiltered/.
+    ln -s $PROJECT_FOLDER/data/$RUN/$s/filtered/* $PROJECT_FOLDER/analysis/WP2/$s/filtered/.
   done
 done
 
