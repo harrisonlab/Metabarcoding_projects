@@ -173,5 +173,5 @@ lapply(seq(1:4),function(x) {X<-summary(aov(mypca_stool$x[,x]~genotype,colData(d
 
 # alternative - combine both P26 sand and clay into single genotype
 levels(dds$genotype)[2:3] <- "M26"
-dds_rhiz  <- dds[,dds$area=="Rhizosphere"]
-dds_stool <- dds[,dds$area!="Rhizosphere"]
+mypca <- des_to_pca(dds)
+# then re-run this section
