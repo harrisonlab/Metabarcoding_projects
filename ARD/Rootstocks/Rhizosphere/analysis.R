@@ -106,7 +106,7 @@ dds$site <- as.factor(sub("_.*","",dds$name))
 
 ### read accumulation filter
 # plot cummulative reads (will also produce a data table "dtt" in the global environment)
-plotCummulativeReads(counts(dds,normalize=T))
+plotCummulativeReads(counts(dds,normalize=T),plot=F)
 
 #### Select filter ####
 myfilter <- dtt$OTU[dtt$CD>5]
@@ -124,12 +124,12 @@ mypca <- des_to_pca(dds)
 df <-t(data.frame(t(mypca$x)*mypca$percentVar))
 
 # plot the PCA
-ggsave(paste(RHB,"PCA.pdf",sep="_"),plotOrd(df,colData,design="genotype",shape="run",xlabel="PC1",ylabel="PC2"))
+ggsave(paste(RHB,"PCA.pdf",sep="_"),plotOrd(df,colData(dds),design="genotype",shape="site",xlabel="PC1",ylabel="PC2"))
 
 ### remove run information (can't distinguish between run and site) and plot
 pc.res <- resid(aov(mypca$x~colData$run,colData))
 df <- t(data.frame(t(pc.res*mypca$percentVar)))
-ggsave(paste(RHB,"PCA_deloc.pdf",sep="_"),plotOrd(df,colData,shape="run",design="genotype",xlabel="PC1",ylabel="PC2"))
+ggsave(paste(RHB,"PCA_deloc.pdf",sep="_"),plotOrd(df,colData(dds),shape="site",design="genotype",xlabel="PC1",ylabel="PC2",xlim=c(-1,1)))
 
 #===============================================================================
 #       Matched genotypes across sites
@@ -137,14 +137,15 @@ ggsave(paste(RHB,"PCA_deloc.pdf",sep="_"),plotOrd(df,colData,shape="run",design=
 
 dds2 <- dds[,dds$genotype=="M9"|like(dds$genotype,"M26")]
 colData(dds2) <- droplevels(colData(dds2))
+levels(dds2$genotype)[1:3] <- "M26"
 
 #### pca plot ####
 mypca <- des_to_pca(dds2)
 df <-t(data.frame(t(mypca$x)*mypca$percentVar))
 pc.res <- resid(aov(mypca$x~run,colData(dds2)))
 d <- t(data.frame(t(pc.res*mypca$percentVar)))
-ggsave(paste(RHB,"PCA.pdf",sep="_"),plotOrd(df,colData(dds2),design="condition",shape="site",xlabel="PC1",ylabel="PC2"))
-ggsave(paste(RHB,"PCA_no_site.pdf",sep="_"),plotOrd(d,colData(dds2),design="condition",shape="site",xlabel="PC1",ylabel="PC2"))
+ggsave(paste(RHB,"PCA_matched.pdf",sep="_"),plotOrd(df,colData(dds2),design="genotype",shape="site",xlabel="PC1",ylabel="PC2"))
+ggsave(paste(RHB,"PCA_matched_no_site.pdf",sep="_"),plotOrd(d,colData(dds2),design="genotype",shape="site",xlabel="PC1",ylabel="PC2"))
 #####
 
 #### differential analysis ####
@@ -156,7 +157,7 @@ dds2<-dds2[rowSums(counts(dds2,normalize=T))>5,]
 alpha <- 0.1
 
 # the model (condition=genotype)
-design <- ~site+condition
+design <- ~site+genotype
 
 # add model to dds object
 design(dds2) <- design
@@ -184,7 +185,7 @@ colData(dds_fm) <- droplevels(colData(dds_fm))
 dds_fm <- dds_fm[rowSums(counts(dds_fm,normalize=T))>5,]
 # pca plot
 mypca <- des_to_pca(dds_fm)
-ggsave(paste(RHB,"PCA_FM.pdf",sep="_"),plotOrd(t(data.frame(t(mypca$x)*mypca$percentVar)),colData(dds_fm),design="condition",xlabel="PC1",ylabel="PC2",ylims=c(5,-5)))
+ggsave(paste(RHB,"PCA_FM.pdf",sep="_"),plotOrd(t(data.frame(t(mypca$x)*mypca$percentVar)),colData(dds_fm),design="genotype",xlabel="PC1",ylabel="PC2",ylims=c(5,-5)))
 # differential analysis
 design(dds_fm) <- ~genotype
 dds_fm <- DESeq(dds_fm,reduced=~1,test="LRT",parallel=T)
@@ -193,7 +194,7 @@ res_fm_m9_vs_m25 <- results(dds_fm,parallel=T,names="genotypeM9_vs_genotypeM25")
 res_fm_m26_vs_m25 <- results(dds_fm,parallel=T,names="genotypeM26_vs_genotypeM25")
 res_fm_m9_vs_m26 <- results(dds_fm,parallel=T,contrast=c("genotype","M9","M26"))
 res.merge <- data.table(inner_join(data.table(OTU=rownames(res_fm_lrt),as.data.frame(res_fm_lrt)),data.table(OTU=rownames(taxData),taxData)))
-write.table(res.merge, paste(RHB,"FPM_LRT-not that useful.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
+write.table(res.merge, paste(RHB,"FPM_likelihood_ratio_test.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
 
 #===============================================================================
 #       differential analysis
