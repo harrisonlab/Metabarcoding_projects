@@ -148,12 +148,10 @@ qfun <- function (mypca,dds,names=c("area","genotype","interaction","residual"),
 
 #ss_all_res <- qfun(list(x=pc.res,percentVar=mypca$percentVar),dds)
 
-ss_all <- qfun(mypca,dds,model="~run+area + genotype + area * genotype",names=c("run","area","genotype","interaction","residual"))
-
-lapply(seq(1:4),function(x)
-	summary(aov(mypca$x[,x]~area + genotype + area * genotype,colData(dds)))[[1]][[2]]/
-	sum(summary(aov(mypca$x[,x]~area + genotype + area * genotype,colData(dds)))[[1]][[2]])*100
-)
+ss_all <- qfun(mypca,dds,model="~area + genotype + area * genotype",names=c("area","genotype","interaction","residual"))
+ss_all_run <- qfun(mypca,dds,model="~run+area + genotype + area * genotype",names=c("run","area","genotype","interaction","residual"))
+lapply(seq(1:4),function(x) {X<-summary(aov(mypca$x[,x]~area + genotype + area * genotype,colData(dds)))[[1]][[2]];X/sum(X)*100})
+lapply(seq(1:4),function(x) {X<-summary(aov(mypca$x[,x]~run+area + genotype + area * genotype,colData(dds)))[[1]][[2]];X/sum(X)*100})
 
 dds_rhiz  <- dds[,dds$area=="Rhizosphere"]
 dds_stool <- dds[,dds$area!="Rhizosphere"]
@@ -161,19 +159,17 @@ dds_stool <- dds[,dds$area!="Rhizosphere"]
 mypca_rhiz <- des_to_pca(dds_rhiz)
 mypca_stool <- des_to_pca(dds_stool)
 
-lapply(seq(1:4),function(x)
-	summary(aov(mypca_rhiz$x[,x]~genotype,colData(dds_rhiz)))[[1]][[2]]/
-	sum(summary(aov(mypca_rhiz$x[,x]~genotype,colData(dds_rhiz)))[[1]][[2]])*100
-)
-
-	lapply(seq(1:4),function(x)
-		summary(aov(mypca_stool$x[,x]~genotype,colData(dds_stool)))[[1]][[2]]/
-		sum(summary(aov(mypca_stool$x[,x]~genotype,colData(dds_stool)))[[1]][[2]])*100
-	)
 # sum of squares
-
+ss_pervar_rhiz  <- qfun(mypca_rhiz,dds_rhiz,names=c("run","genotype","residual"),model="~run+genotype")
 ss_pervar_rhiz  <- qfun(mypca_rhiz,dds_rhiz,names=c("genotype","residual"),model="~genotype")
+ss_pervar_stool <- qfun(mypca_stool,dds_stool,names=c("run","genotype","residual"),model="~run+genotype")
 ss_pervar_stool <- qfun(mypca_stool,dds_stool,names=c("genotype","residual"),model="~genotype")
+
+lapply(seq(1:4),function(x) {X<-summary(aov(mypca_rhiz$x[,x]~run+genotype,colData(dds_rhiz)))[[1]][[2]];X/sum(X)*100})
+lapply(seq(1:4),function(x) {X<-summary(aov(mypca_rhiz$x[,x]~genotype,colData(dds_rhiz)))[[1]][[2]];X/sum(X)*100})
+
+lapply(seq(1:4),function(x) {X<-summary(aov(mypca_stool$x[,x]~run+genotype,colData(dds_stool)))[[1]][[2]];X/sum(X)*100})
+lapply(seq(1:4),function(x) {X<-summary(aov(mypca_stool$x[,x]~genotype,colData(dds_stool)))[[1]][[2]];X/sum(X)*100})
 
 # alternative - combine both P26 sand and clay into single genotype
 levels(dds$genotype)[2:3] <- "M26"
