@@ -60,15 +60,15 @@ done
 # make analysis folders
 mkdir $PROJECT_FOLDER/analysis/WP2
 for s in BAC FUN OO NEM; do
-  mkdir $PROJECT_FOLDER/analysis/WP2/$s/filtered
+  mkdir -p $PROJECT_FOLDER/analysis/WP2/$s/filtered
   mkdir $PROJECT_FOLDER/analysis/WP2/$s/unfiltered
 done
 
 # link processed data to anaylsis folders
 for RUN in RUNS; do
   for s in BAC FUN OO NEM; do
-    ln -s $PROJECT_FOLDER/data/$RUN/$s/unfiltered/* $PROJECT_FOLDER/analysis/WP2/$s/unfiltered/.
-    ln -s $PROJECT_FOLDER/data/$RUN/$s/filtered/* $PROJECT_FOLDER/analysis/WP2/$s/filtered/.
+    ln -s $PROJECT_FOLDER/data/$RUN/$s/unfiltered/WP2* $PROJECT_FOLDER/analysis/WP2/$s/unfiltered/.
+    ln -s $PROJECT_FOLDER/data/$RUN/$s/filtered/WP2* $PROJECT_FOLDER/analysis/WP2/$s/filtered/.
   done
 done
 
