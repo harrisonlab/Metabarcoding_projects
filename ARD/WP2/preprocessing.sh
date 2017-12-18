@@ -49,10 +49,27 @@ for RUN in RUNS; do
 done 
 
  # FUNGI
- for RUN in RUNS; do
-   $PROJECT_FOLDER/metabarcoding_pipeline/scripts/PIPELINE.sh -c ITSpre \
-    "$PROJECT_FOLDER/data/$RUN/FUN/fastq/*R1*.fastq" \
-    $PROJECT_FOLDER/data/$RUN/FUN \
-    $PROJECT_FOLDER/metabarcoding_pipeline/primers/primers.db \
-    200 1 23 21
+for RUN in RUNS; do
+  $PROJECT_FOLDER/metabarcoding_pipeline/scripts/PIPELINE.sh -c ITSpre \
+   "$PROJECT_FOLDER/data/$RUN/FUN/fastq/*R1*.fastq" \
+   $PROJECT_FOLDER/data/$RUN/FUN \
+   $PROJECT_FOLDER/metabarcoding_pipeline/primers/primers.db \
+   200 1 23 21
 done
+
+# make analysis folders
+mkdir $PROJECT_FOLDER/analysis/WP2
+for s in BAC FUN OO NEM; do
+  mkdir $PROJECT_FOLDER/analysis/WP2/$s/filtered
+  mkdir $PROJECT_FOLDER/analysis/WP2/$s/unfiltered
+done
+
+# link processed data to anaylsis folders
+for RUN in RUNS; do
+  for s in BAC FUN OO NEM; do
+    ln -s $PROJECT_FOLDER/data/$RUN/$s/unfiltered/* $PROJECT_FOLDER/analysis/WP2/$s/unfiltered/.
+    ln -s $PROJECT_FOLDER/data/$RUN/$s/filtered/* $PROJECT_FOLDER/analysis/WP2/$s/filtered/.
+  done
+done
+
+  
