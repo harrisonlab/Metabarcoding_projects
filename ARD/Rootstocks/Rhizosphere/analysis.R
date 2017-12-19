@@ -47,6 +47,28 @@ ubiom_FUN <- list(
 	RHB="FUN"
 ) 
 
+ubiom_OO <- list(
+	countData=read.table("OO.zotus_table.txt",header=T,sep="\t",row.names=1,comment.char = ""),
+	colData=read.table("colData",header=T,sep="\t",row.names=1),
+	taxData=phyloTaxaTidy(read.table("zOO.taxa",header=F,sep=",",row.names=1)[,c(1,3,5,7,9,11,13,2,4,6,8,10,12,14)],0.65),
+	RHB="OO"
+)
+ubiom_OO$colData <- colData[grep("FM",rownames(ubiom_OO$colData)),]
+rownames(ubiom_OO$colData) <- sub("\\.R.*","\\.R",rownames(ubiom_OO$colData))
+colnames(ubiom_OO$countData) <- sub("\\.R.*","\\.R",colnames(ubiom_OO$countData))
+
+# Nematodes 
+ubiom_NEM <- list(
+	countData=read.table("NEM.zotus_table.txt",header=T,sep="\t",row.names=1,comment.char = ""),
+	colData=read.table("colData",header=T,sep="\t",row.names=1),
+	taxData=phyloTaxaTidy(read.table("zNEM.taxa",header=F,sep=",",row.names=1)[,c(1,3,5,7,9,11,13,2,4,6,8,10,12,14)],0.65),
+	RHB="NEM"
+) 
+ubiom_NEM$colData <- colData[grep("FM",rownames(ubiom_NEM$colData)),]
+rownames(ubiom_NEM$colData) <- sub("\\.R.*","\\.R",rownames(ubiom_NEM$colData))
+colnames(ubiom_NEM$countData) <- sub("\\.R.*","\\.R",colnames(ubiom_NEM$countData))
+
+
 #===============================================================================
 #       Combine species 
 #===============================================================================
@@ -62,13 +84,34 @@ taxData <- combTaxa(combinedTaxa,taxData)
 ubiom_FUN$countData <- countData
 ubiom_FUN$taxData <- taxData
 
+# OO
+invisible(mapply(assign, names(ubiom_OO), ubiom_OO, MoreArgs=list(envir = globalenv())))
+combinedTaxa <- combineTaxa("zOO.taxa")
+combinedTaxa
+combinedTaxa <- combinedTaxa[-7,]
+countData <- combCounts(combinedTaxa,countData)
+taxData <- combTaxa(combinedTaxa,taxData)
+ubiom_OO$countData <- countData
+ubiom_OO$taxData <- taxData
+
+# Nematodes
+invisible(mapply(assign, names(ubiom_NEM), ubiom_NEM, MoreArgs=list(envir = globalenv())))
+combinedTaxa <- combineTaxa("zNEM.taxa")
+combinedTaxa <- combinedTaxa[4,]
+countData <- combCounts(combinedTaxa,countData)
+taxData <- combTaxa(combinedTaxa,taxData)
+ubiom_NEM$countData <- countData
+ubiom_NEM$taxData <- taxData
+
 #===============================================================================
 #       Attach objects
 #===============================================================================
 
-# attach objects (FUN, BAC,OO or NEM)
+# attach objects (FUN, BAC, OO or NEM)
 invisible(mapply(assign, names(ubiom_FUN), ubiom_FUN, MoreArgs=list(envir = globalenv())))
 invisible(mapply(assign, names(ubiom_BAC), ubiom_BAC, MoreArgs=list(envir = globalenv())))
+invisible(mapply(assign, names(ubiom_OO), ubiom_OO, MoreArgs=list(envir = globalenv())))
+invisible(mapply(assign, names(ubiom_NEM), ubiom_NEM, MoreArgs=list(envir = globalenv())))
 
 #===============================================================================
 #       Create DEseq objects 
@@ -79,7 +122,7 @@ colData <- colData[colnames(countData),]
 colnames(countData) <- rownames(colData) <- colData$name 
 
 # remove low count samples and control samples (not needed here)
-filter <- (colSums(countData)>=1000)
+filter <- (colSums(countData)>=1000) # don't use this for nematode as the reads are too low
 colData <- droplevels(colData[filter,])
 countData <- countData[,filter]
 
@@ -104,11 +147,17 @@ dds$site <- as.factor(sub("_.*","",dds$name))
 #       Filter data 
 #===============================================================================
 
-### read accumulation filter
-# plot cummulative reads (will also produce a data table "dtt" in the global environment)
-plotCummulativeReads(counts(dds,normalize=T),plot=F)
+### filters to remove OTUs which are unlikely part of the correct kingdom (SAR and 18S Eukaryote)
+# pythium
+myfilter <- row.names(countData[row.names(countData) %in% row.names(taxData[(taxData$kingdom=="SAR"|as.numeric(taxData$k_conf)<=0.5),]),])
+dds <- dds[myfilter,]
+# nematode
+myfilter <- row.names(taxData[as.number(taxData$c_conf)>0.9 & as.number(taxData$o_conf)>0.9,])
+dds <- dds[rownames(dds)%in%myfilter,]
 
 #### Select filter ####
+# plotCummulative reads will return a data table ("dtt") with OTUs in abundance descending order
+plotCummulativeReads(counts(dds,normalize=T),plot=F,returnData="dtt")
 myfilter <- dtt$OTU[dtt$CD>5]
 # filter out low abundance OTUs
 dds <- dds[myfilter,]
@@ -124,7 +173,7 @@ mypca <- des_to_pca(dds)
 df <-t(data.frame(t(mypca$x)*mypca$percentVar))
 
 # plot the PCA
-ggsave(paste(RHB,"PCA.pdf",sep="_"),plotOrd(df,colData(dds),design="genotype",shape="site",xlabel="PC1",ylabel="PC2"))
+ggsave(paste(RHB,"PCA.pdf",sep="_"),plotOrd(df,colData(dds),design="genotype",xlabel="PC1",ylabel="PC2"))
 
 ### remove run information (can't distinguish between run and site) and plot
 pc.res <- resid(aov(mypca$x~colData$run,colData))
