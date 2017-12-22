@@ -66,6 +66,25 @@ for RUN in $RUNS; do
   done
 done
 
+# Oomycetes
+for RUN in "171218"; do
+  $PROJECT_FOLDER/metabarcoding_pipeline/scripts/PIPELINE.sh -c OOpre \
+   "$PROJECT_FOLDER/data/$RUN/OO/fastq/*R1*.fastq" \
+   $PROJECT_FOLDER/data/$RUN/OO \
+   $PROJECT_FOLDER/metabarcoding_pipeline/primers/adapters.db \
+   150 5 0.5 21 20
+done    
+
+# Nematode
+for RUN in "171218"; do
+  $PROJECT_FOLDER/metabarcoding_pipeline/scripts/PIPELINE.sh -c NEMpre \
+   "$PROJECT_FOLDER/data/$RUN/NEM/fastq/*R1*.fastq" \
+   $PROJECT_FOLDER/data/$RUN/NEM \
+   $PROJECT_FOLDER/metabarcoding_pipeline/primers/nematode.db \
+   150 10 0.5 23 18
+done
+
+
 # make analysis folders
 mkdir $PROJECT_FOLDER/analysis/WP2
 for s in BAC FUN OO NEM; do
