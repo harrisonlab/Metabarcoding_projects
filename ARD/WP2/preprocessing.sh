@@ -1,5 +1,5 @@
 PROJECT_FOLDER=~/projects/ARD
-RUNS="171129 171215"
+RUNS="171129 171215 171218"
 
 # make project folders
 for RUN in $RUNS; do
