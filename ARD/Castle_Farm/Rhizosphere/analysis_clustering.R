@@ -245,171 +245,70 @@ g <- g + theme_blank() %+replace% theme(
 )
 ggsave(paste0(RHB,"_pie.pdf"),g+xlab(NULL)+ylab(NULL))
 
-
+#==============================================================================
+#       ANOVA
 #===============================================================================
 
-#       Alpha diversity analysis
+qfun <- function (mypca,dds,names=c("area","genotype","interaction","residual"),model) {
+	X <- t(apply(mypca$x,2,function(x){t(summary(aov(as.formula(paste0("x",model)),colData(dds)))[[1]][2])}))
+	colnames(X) <- names
+	x<-t(apply(X,1,prop.table))
+	perVar <- x * mypca$percentVar
+	print(colSums(perVar))
+	print(colSums(perVar)/sum(colSums(perVar))*100)
+	return(as.data.table(perVar))
+}
 
-#===============================================================================
-
-
-
-# Recreate dds object and don't filter for low counts before running Alpha diversity
-
-
-
-# add some extra columns to coldata to describe the data (easier than releveling condition and changing row names)
-
-colData$Sample<-c(paste0(rep("B",3),seq(1,3)),paste0(rep("E",3),seq(1,3)),paste0(rep("A",3),seq(1,3)),paste0(rep("P",3),seq(1,3)))
-
-colData$type <- as.factor(c(rep("Between",3),rep("Edge",3),rep("Apple",3),rep("Pear",3)))
-
-
-
-# plot alpha diversity - plot_alpha will convert normalised abundances to integer values (limits for bac only)
-
-ggsave(paste(RHB,"Alpha.pdf",sep="_"),plot_alpha(counts(dds,normalize=T),colData,design="type",colour="Sample"))
-
-
-
-### permutation based anova on diversity index ranks ###
-
-
-
-# get the diversity index data
-
-all_alpha_ord <- plot_alpha(counts(dds,normalize=T),colData,design="condition",colour="block",returnData=T)
-
-
-
-# add column names as row to metadata (or use tribble)
-
-colData$Samples <- rownames(colData)
-
-
-
-# join diversity indices and metadata
-
-all_alpha_ord <- as.data.table(inner_join(all_alpha_ord,colData))
-
-
-
-# perform anova for each index
-
-sink(paste(RHB,"ALPHA_stats.txt",sep="_"))
-
-setkey(all_alpha_ord,S.chao1)
-
-summary(aovp(as.numeric(as.factor(all_alpha_ord$S.chao1))~condition+Error(treatment),all_alpha_ord))
-
-setkey(all_alpha_ord,shannon)
-
-summary(aovp(as.numeric(as.factor(all_alpha_ord$shannon))~condition+Error(treatment),all_alpha_ord))
-
-setkey(all_alpha_ord,simpson)
-
-summary(aovp(as.numeric(as.factor(all_alpha_ord$simpson))~condition+Error(treatment),all_alpha_ord))
-
-setkey(all_alpha_ord,S.ACE)
-
-summary(aovp(as.numeric(as.factor(all_alpha_ord$S.ACE))~condition+Error(treatment),all_alpha_ord))
-
+sink(paste(RHB,"ALPHA_PCA_ANOVA.txt",sep="_"))
+print("ANOVA")
+lapply(seq(1:3),function(x) summary(aov(mypca$x[,x]~pair+condition,colData(dds))))
+lapply(seq(1:3),function(x) summary(aov(mypca$x[,x]~condition + Error(pair),colData(dds))))
+print("PERMANOVA")      
+lapply(seq(1:3),function(x) summary(aovp(mypca$x[,x]~pair+condition,colData(dds))))
+lapply(seq(1:3),function(x) summary(aovp(mypca$x[,x]~condition + Error(pair),colData(dds))))
 sink()
 
 #===============================================================================
-
-#       ANOVA
-
+#       Alpha diversity analysis
 #===============================================================================
 
+# Recreate dds object and don't filter for low counts before running Alpha diversity
 
+# plot alpha diversity - plot_alpha will convert normalised abundances to integer values (limits for bac only)
 
-# Want to see if genotype can describe more of the variance in the rhizosphere data compared to the bulk soil data.
+# Add spatial information as a numeric and plot 
+colData$pair<-as.number(colData$pair)
 
-# This would suggest that the rhizospere are recruting specific OTUs
+ggsave(paste(RHB,"Alpha.pdf",sep="_"),plot_alpha(counts(dds,normalize=T),colData,design="condition",colour="pair"))
 
+### permutation based anova on diversity index ranks ###
 
+# get the diversity index data
+all_alpha_ord <- plot_alpha(counts(dds,normalize=T),colData,design="condition",returnData=T)
 
-qfun <- function (mypca,dds,names=c("area","genotype","interaction","residual"),model) {
+# add column names as row to metadata (or use tribble)
+colData$Samples <- rownames(colData)
 
-	X <- t(apply(mypca$x,2,function(x){t(summary(aov(as.formula(paste0("x",model)),colData(dds)))[[1]][2])}))
+# join diversity indices and metadata
+all_alpha_ord <- as.data.table(inner_join(all_alpha_ord,colData))
 
-	colnames(X) <- names
-
-	x<-t(apply(X,1,prop.table))
-
-	perVar <- x * mypca$percentVar
-
-	print(colSums(perVar))
-
-	print(colSums(perVar)/sum(colSums(perVar))*100)
-
-	return(as.data.table(perVar))
-
-}
-
-
-
-#pc.res <- resid(aov(mypca$x~run,colData(dds)))
-
-
-
-#ss_all_res <- qfun(list(x=pc.res,percentVar=mypca$percentVar),dds)
-
-
-
-ss_all <- qfun(mypca,dds,model="~area + genotype + area * genotype",names=c("area","genotype","interaction","residual"))
-
-ss_all_run <- qfun(mypca,dds,model="~run+area + genotype + area * genotype",names=c("run","area","genotype","interaction","residual"))
-
-lapply(seq(1:4),function(x) {X<-summary(aov(mypca$x[,x]~area + genotype + area * genotype,colData(dds)))[[1]][[2]];X/sum(X)*100})
-
-lapply(seq(1:4),function(x) {X<-summary(aov(mypca$x[,x]~run+area + genotype + area * genotype,colData(dds)))[[1]][[2]];X/sum(X)*100})
-
-
-
-dds_rhiz  <- dds[,dds$area=="Rhizosphere"]
-
-dds_stool <- dds[,dds$area!="Rhizosphere"]
-
-
-
-mypca_rhiz <- des_to_pca(dds_rhiz)
-
-mypca_stool <- des_to_pca(dds_stool)
-
-
-
-# sum of squares
-
-ss_pervar_rhiz  <- qfun(mypca_rhiz,dds_rhiz,names=c("run","genotype","residual"),model="~run+genotype")
-
-ss_pervar_rhiz  <- qfun(mypca_rhiz,dds_rhiz,names=c("genotype","residual"),model="~genotype")
-
-ss_pervar_stool <- qfun(mypca_stool,dds_stool,names=c("run","genotype","residual"),model="~run+genotype")
-
-ss_pervar_stool <- qfun(mypca_stool,dds_stool,names=c("genotype","residual"),model="~genotype")
-
-
-
-lapply(seq(1:4),function(x) {X<-summary(aov(mypca_rhiz$x[,x]~run+genotype,colData(dds_rhiz)))[[1]][[2]];X/sum(X)*100})
-
-lapply(seq(1:4),function(x) {X<-summary(aov(mypca_rhiz$x[,x]~genotype,colData(dds_rhiz)))[[1]][[2]];X/sum(X)*100})
-
-
-
-lapply(seq(1:4),function(x) {X<-summary(aov(mypca_stool$x[,x]~run+genotype,colData(dds_stool)))[[1]][[2]];X/sum(X)*100})
-
-lapply(seq(1:4),function(x) {X<-summary(aov(mypca_stool$x[,x]~genotype,colData(dds_stool)))[[1]][[2]];X/sum(X)*100})
-
-
-
-# alternative - combine both P26 sand and clay into single genotype
-
-levels(dds$genotype)[2:3] <- "M26"
-
-mypca <- des_to_pca(dds)
-
-# then re-run this section
-
-
+# perform anova for each index
+colData$pair<-as.factor(colData$pair)       
+sink(paste(RHB,"ALPHA_stats.txt",sep="_"))
+setkey(all_alpha_ord,S.chao1)
+print("Chao1")
+summary(aovp(as.numeric(as.factor(all_alpha_ord$S.chao1))~pair+condition,all_alpha_ord))  
+summary(aovp(as.numeric(as.factor(all_alpha_ord$S.chao1))~condition+Error(pair),all_alpha_ord))
+setkey(all_alpha_ord,shannon)
+print("Shannon")
+summary(aovp(as.numeric(as.factor(all_alpha_ord$shannon))~pair+condition,all_alpha_ord))  
+summary(aovp(as.numeric(as.factor(all_alpha_ord$shannon))~condition+Error(pair),all_alpha_ord))
+setkey(all_alpha_ord,simpson)
+print("simpson")
+summary(aovp(as.numeric(as.factor(all_alpha_ord$simpson))~pair+condition,all_alpha_ord))  
+summary(aovp(as.numeric(as.factor(all_alpha_ord$simpson))~condition+Error(pair),all_alpha_ord))
+setkey(all_alpha_ord,S.ACE)
+print("ACE")
+summary(aovp(as.numeric(as.factor(all_alpha_ord$S.ACE))~pair+condition,all_alpha_ord))  
+summary(aovp(as.numeric(as.factor(all_alpha_ord$S.ACE))~condition+Error(pair),all_alpha_ord))
+sink()
