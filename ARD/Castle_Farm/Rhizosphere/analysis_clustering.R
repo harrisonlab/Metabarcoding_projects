@@ -122,6 +122,10 @@ sizeFactors(dds) <-sizeFactors(estimateSizeFactors(dds))
 # calcNormFactors(counts(dds),method="RLE",lib.size=(prop.table(colSums(counts(dds)))))
 
 # Correction from aboslute quantification
+sizeFactors(dds) <- 1/colData$funq
+sizeFactors(dds) <- 1/colData$bacq
+
+# Correction from aboslute quantification v2
 sizeFactors(dds) <- sizeFactors(dds)/colData$funq
 sizeFactors(dds) <- sizeFactors(dds)/colData$bacq
 
