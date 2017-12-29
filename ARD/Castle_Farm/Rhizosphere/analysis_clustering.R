@@ -56,6 +56,7 @@ ubiom_OO <- list(
 	RHB="OO"
 ) 
 rownames(ubiom_OO$colData) <- paste0("X",gsub("_","\\.",ubiom_OO$colData$name),"_",sub("D.*","",rownames(ubiom_OO$colData)))
+rownames(ubiom_OO$colData) <- sub("XG","G",rownames(ubiom_OO$colData))
 
 # Nematodes 
 ubiom_NEM <- list(
@@ -65,6 +66,7 @@ ubiom_NEM <- list(
 	RHB="NEM"
 ) 
 rownames(ubiom_NEM$colData) <- paste0("X",gsub("_","\\.",ubiom_NEM$colData$name),"_",sub("D.*","",rownames(ubiom_NEM$colData)))
+rownames(ubiom_NEM$colData) <- sub("XG","G",rownames(ubiom_NEM	`1$colData))
 
 #===============================================================================
 #       Combine species 
