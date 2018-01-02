@@ -66,7 +66,7 @@ ubiom_NEM <- list(
 	RHB="NEM"
 ) 
 rownames(ubiom_NEM$colData) <- paste0("X",gsub("_","\\.",ubiom_NEM$colData$name),"_",sub("D.*","",rownames(ubiom_NEM$colData)))
-rownames(ubiom_NEM$colData) <- sub("XG","G",rownames(ubiom_NEM	`1$colData))
+rownames(ubiom_NEM$colData) <- sub("XG","G",rownames(ubiom_NEM$colData))
 
 #===============================================================================
 #       Combine species 
@@ -104,8 +104,14 @@ invisible(mapply(assign, names(ubiom_NEM), ubiom_NEM, MoreArgs=list(envir = glob
 #rownames(colData) <- sub("^XG","G",rownames(colData))
 colData <- colData[names(countData),]
 
-# remove low count samples and control samples (not needed here)
-filter <- (colSums(countData)>=1000)&colData$condition!="C"
+# remove low count and control samples 
+filter <- (colSums(countData)>=1000) & colData$condition!="C"
+
+# remove pair of any sample with a low count
+exclude<-which(!filter)
+filter <- filter&sapply(colData$pair,function(x) length(which(x==colData$pair[-exclude]))>1)
+
+# apply filter
 colData <- droplevels(colData[filter,])
 countData <- countData[,filter]
 
