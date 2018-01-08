@@ -1,5 +1,5 @@
 PROJECT_FOLDER=~/projects/ARD
-RUNS="171129 171215 171218"
+RUNS="171129 171215 171218 180102"
 
 # make project folders
 for RUN in $RUNS; do
@@ -67,7 +67,7 @@ for RUN in $RUNS; do
 done
 
 # Oomycetes
-for RUN in "171218"; do
+for RUN in $RUNS; do
   $PROJECT_FOLDER/metabarcoding_pipeline/scripts/PIPELINE.sh -c OOpre \
    "$PROJECT_FOLDER/data/$RUN/OO/fastq/*R1*.fastq" \
    $PROJECT_FOLDER/data/$RUN/OO \
@@ -76,7 +76,7 @@ for RUN in "171218"; do
 done    
 
 # Nematode
-for RUN in "171218"; do
+for RUN in $RUNS; do
   $PROJECT_FOLDER/metabarcoding_pipeline/scripts/PIPELINE.sh -c NEMpre \
    "$PROJECT_FOLDER/data/$RUN/NEM/fastq/*R1*.fastq" \
    $PROJECT_FOLDER/data/$RUN/NEM \
@@ -94,7 +94,7 @@ done
 
 # link processed data to anaylsis folders
 for RUN in $RUNS; do
-  for s in BAC FUN; do
+  for s in BAC FUN OO NEM; do
     ln -s $PROJECT_FOLDER/data/$RUN/$s/unfiltered/* $PROJECT_FOLDER/analysis/WP2/$s/unfiltered/.
     ln -s $PROJECT_FOLDER/data/$RUN/$s/filtered/* $PROJECT_FOLDER/analysis/WP2/$s/filtered/.
   done
