@@ -24,69 +24,18 @@ environment(plot_ordination) <- environment(ordinate) <- environment(plot_richne
 #       Load data
 #===============================================================================
 
-# load otu count table
-countData <- read.table("BAC.otus_table.txt",header=T,sep="\t",row.names=1, comment.char = "")
 
-# load sample metadata
-colData <- read.table("colData",header=T,sep="\t",row.names=1)
+ubiom_BAC <- loadData("BAC.otus_table.txt","colData","BAC.taxa","BAC.phy",RHB="BAC")
+ubiom_FUN <- loadData("FUN.otus_table.txt","colData","FUN.taxa","FUN.phy",RHB="FUN")
+ubiom_OO <- loadData("OO.otus_table.txt","colData","OO.taxa","OO.phy",RHB="OO")
+ubiom_NEM <- loadData("NEM.otus_table.txt","colData","NEM.taxa","NEM.phy",RHB="NEM")
 
-# load taxonomy data
-taxData <- read.table("BAC.taxa",header=F,sep=",",row.names=1)
 
-# reorder columns
-taxData<-taxData[,c(1,3,5,7,9,11,13,2,4,6,8,10,12,14)]
-
-# add best "rank" at 0.65 confidence and tidy-up the table
-taxData<-phyloTaxaTidy(taxData,0.65)
-
-# get unifrac dist
-phylipData <- fread.phylip("BAC.phy")
-
-njtree <- nj(as.dist(phylipData))
-
-# save data into a list
-ubiom_BAC <- list(
-  countData=countData,
-  colData=colData,
-  taxData=taxData,
-  phylipData=phylipData,
-  njtree=njtree,
-  RHB="BAC"
-)
-
-# Fungi all in one call
-ubiom_FUN <- list(
-  countData=read.table("FUN.otus_table.txt",header=T,sep="\t",row.names=1,comment.char = ""),
-  colData=read.table("colData",header=T,sep="\t",row.names=1),
-  taxData=phyloTaxaTidy(read.table("FUN.taxa",header=F,sep=",",row.names=1)[,c(1,3,5,7,9,11,13,2,4,6,8,10,12,14)],0.65),
-  phylipData=fread.phylip("FUN.phy"),
-  RHB="FUN"
-)
+ubiom_BAC$njtree <- nj(as.dist(ubiom_BAC$phylipData))
 ubiom_FUN$njtree <- nj(as.dist(ubiom_FUN$phylipData))
-
-# Oomycetes
-ubiom_OO <- list(
-  countData=read.table("OO.otus_table.txt",header=T,sep="\t",row.names=1,comment.char = ""),
-  colData=read.table("colData2",header=T,sep="\t",row.names=1),
-  taxData=phyloTaxaTidy(read.table("OO.taxa",header=F,sep=",",row.names=1)[,c(1,3,5,7,9,11,13,2,4,6,8,10,12,14)],0.65),
-  phylipData=fread.phylip("OO.phy"),
-  RHB="OO"
-)
 ubiom_OO$njtree <- nj(as.dist(ubiom_OO$phylipData))
-rownames(ubiom_OO$colData) <- paste0("X",gsub("_","\\.",ubiom_OO$colData$name),"_",sub("D.*","",rownames(ubiom_OO$colData)))
-rownames(ubiom_OO$colData) <- sub("XG","G",rownames(ubiom_OO$colData))
-
-# Nematodes
-ubiom_NEM <- list(
-  countData=read.table("NEM.otus_table.txt",header=T,sep="\t",row.names=1,comment.char = ""),
-  colData=read.table("colData2",header=T,sep="\t",row.names=1),
-  taxData=phyloTaxaTidy(read.table("NEM.taxa",header=F,sep=",",row.names=1)[,c(1,3,5,7,9,11,13,2,4,6,8,10,12,14)],0.65),
-  phylipData=fread.phylip("NEM.phy"),
-  RHB="NEM"
-)
 ubiom_NEM$njtree <- nj(as.dist(ubiom_NEM$phylipData))
-rownames(ubiom_NEM$colData) <- paste0("X",gsub("_","\\.",ubiom_NEM$colData$name),"_",sub("D.*","",rownames(ubiom_NEM$colData)))
-rownames(ubiom_NEM$colData) <- sub("XG","G",rownames(ubiom_NEM$colData))
+
 
 #===============================================================================
 #       Combine species
