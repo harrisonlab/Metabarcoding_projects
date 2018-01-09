@@ -24,11 +24,10 @@ environment(plot_ordination) <- environment(ordinate) <- environment(plot_richne
 #       Load data
 #===============================================================================
 
-
 ubiom_BAC <- loadData("BAC.otus_table.txt","colData","BAC.taxa","BAC.phy",RHB="BAC")
 ubiom_FUN <- loadData("FUN.otus_table.txt","colData","FUN.taxa","FUN.phy",RHB="FUN")
-ubiom_OO <- loadData("OO.otus_table.txt","colData2","OO.taxa","OO.phy",RHB="OO")
-ubiom_NEM <- loadData("NEM.otus_table.txt","colData2","NEM.taxa","NEM.phy",RHB="NEM")
+ubiom_OO <- loadData("OO.otus_table.txt","colData","OO.taxa","OO.phy",RHB="OO")
+ubiom_NEM <- loadData("NEM.otus_table.txt","colData","NEM.taxa","NEM.phy",RHB="NEM")
 
 #===============================================================================
 #       Combine species
