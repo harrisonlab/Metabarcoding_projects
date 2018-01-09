@@ -19,7 +19,7 @@ for s in $RIB; do
 done
 
 # QC
-for FILE in $PROJECT_FOLDER/data/$RUN/fastq/Kenya*; do
+for FILE in $PROJECT_FOLDER/data/$RUN/fastq/*; do
   $PROJECT_FOLDER/metabarcoding_pipeline/scripts/PIPELINE.sh -c qcheck $FILE $PROJECT_FOLDER/data/$RUN/quality
 done
 
@@ -31,8 +31,8 @@ P2R=ATATGCTTAAGTTCAGCGGG
 
 # demultiplex with 0 difference in primer seqeunce
 $PROJECT_FOLDER/metabarcoding_pipeline/scripts/PIPELINE.sh -c demultiplex \
-"$PROJECT_FOLDER/data/$RUN/fastq/*" 1 \
-$P1F $P1R $P2F $P2R
+ "$PROJECT_FOLDER/data/$RUN/fastq/*R1*" 1 \
+ $P1F $P1R $P2F $P2R
 
 mv $PROJECT_FOLDER/data/$RUN/fastq/*ps1* $PROJECT_FOLDER/data/$RUN/OO/fastq/.
 mv $PROJECT_FOLDER/data/$RUN/fastq/*ps2* $PROJECT_FOLDER/data/$RUN/FUN/fastq/.
