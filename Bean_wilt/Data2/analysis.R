@@ -66,7 +66,7 @@ mypca <- des_to_pca(dds)
 d <-t(data.frame(t(mypca$x)*mypca$percentVar))
 
 # plot the PCA
-ggsave(paste(RHB,"PCA2.pdf",sep="_"),plotOrd(d,colData(dds),shape=c("BEAN","FARM"),design="STATUS",continuous=F,xlabel="PC1",ylabel="PC2",alpha=0.75,pointSize=2))
+ggsave(paste(RHB,"PCA.pdf",sep="_"),plotOrd(d,colData(dds),shape=c("VARIETY"),design="STATUS",continuous=F,xlabel="PC1",ylabel="PC2",alpha=0.75,pointSize=2))
 
 #===============================================================================
 #       differential analysis
@@ -92,6 +92,4 @@ res.merge <- data.table(inner_join(data.table(OTU=rownames(res),as.data.frame(re
 write.table(res.merge, paste(RHB,"VARIETY_diff.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
 
 # output sig fasta
-writeXStringSet(readDNAStringSet(paste0(RHB,".VARIETY.otus.fa"))[res.merge[padj<=0.1]$OTU],paste0(RHB,".sig.fa"))
-
-invisible(mapply(assign, names(ubiom_FUN), ubiom_FUN, MoreArgs=list(envir = globalenv())))
+writeXStringSet(readDNAStringSet(paste0(RHB,".otus.fa"))[res.merge[padj<=0.1]$OTU],paste0(RHB,".VARIETY.sig.fa"))
