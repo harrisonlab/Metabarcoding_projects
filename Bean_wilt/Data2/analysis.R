@@ -39,7 +39,7 @@ ubiom_OO$dds <- ubiom_to_des(ubiom_OO,filter=expression(colSums(countData)>=1000
 #       Attach objects
 #===============================================================================
 
-# attach objects (FUN, BAC,OO or NEM)
+# attach objects (FUN, or OO)
 invisible(mapply(assign, names(ubiom_FUN), ubiom_FUN, MoreArgs=list(envir = globalenv())))
 invisible(mapply(assign, names(ubiom_OO), ubiom_OO, MoreArgs=list(envir = globalenv())))
 
@@ -93,3 +93,16 @@ write.table(res.merge, paste(RHB,"VARIETY_diff.txt",sep="_"),quote=F,sep="\t",na
 
 # output sig fasta
 writeXStringSet(readDNAStringSet(paste0(RHB,".otus.fa"))[res.merge[padj<=0.1]$OTU],paste0(RHB,".VARIETY.sig.fa"))
+
+## Within bean
+dds2 <- dds[,dds$BEAN=="RUNNER"]
+colData(dds2) <- droplevels(colData(dds2))
+design(dds2) <- ~ FARM + STATUS
+dds2 <- DESeq(dds2)
+
+res <- results(dds,alpha=alpha,parallel=T)
+res.merge <- data.table(inner_join(data.table(OTU=rownames(res),as.data.frame(res)),data.table(OTU=rownames(taxData),taxData)))
+write.table(res.merge, paste(RHB,"RUNNER_diff.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
+
+# output sig fasta
+writeXStringSet(readDNAStringSet(paste0(RHB,".otus.fa"))[res.merge[padj<=0.1]$OTU],paste0(RHB,".RUNNER.sig.fa"))
