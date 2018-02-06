@@ -192,7 +192,7 @@ ubiom_FUN$taxData <- taxData
     #       Beta diversity PCA/NMDS
     #===============================================================================
 
-		### PCA ###
+    ### PCA ###
 
     # perform PC decomposition of DES object
     mypca <- des_to_pca(dds)
@@ -209,7 +209,7 @@ ubiom_FUN$taxData <- taxData
      plotOrd(d,colData,shape="Condition",design="Location",continuous=T,xlabel="PC1",ylabel="PC2")
     dev.off()
 
-		ggsave(paste(RHB,"PCA_loc.pdf",sep="_"),plotOrd(d,colData,shape="Condition",design="Location",continuous=T,xlabel="PC1",ylabel="PC2",alpha=0.75,pointSize=2))
+    ggsave(paste(RHB,"PCA_loc.pdf",sep="_"),plotOrd(d,colData,shape="Condition",design="Location",continuous=T,xlabel="PC1",ylabel="PC2",alpha=0.75,pointSize=2))
 
     ### remove spatial information (this uses the factor "Pair" not the numeric "Location") and plot
     pc.res <- resid(aov(mypca$x~colData$Pair,colData))
@@ -224,52 +224,52 @@ ubiom_FUN$taxData <- taxData
       lapply(seq(1:3),function(x) summary(aovp(mypca$x[,x]~Pair+Condition,colData(dds))))
     sink()
 
-		### NMDS ###
+	### NMDS ###
 
-		# phyloseq has functions (using Vegan) for making NMDS plots
-		myphylo <- ubiom_to_phylo(list(counts(dds,normalize=T),taxData,colData))
+	# phyloseq has functions (using Vegan) for making NMDS plots
+	myphylo <- ubiom_to_phylo(list(counts(dds,normalize=T),taxData,colData))
 
-		# add tree to phyloseq object
-		phy_tree(myphylo) <- njtree
+	# add tree to phyloseq object
+	phy_tree(myphylo) <- njtree
 
-		# calculate NMDS ordination using weighted unifrac scores
-		ordu = ordinate(myphylo, "NMDS", "unifrac", weighted=TRUE)
+	# calculate NMDS ordination using weighted unifrac scores
+	ordu = ordinate(myphylo, "NMDS", "unifrac", weighted=TRUE)
 
-		# plot with plotOrd (or use plot_ordination)
-		ggsave(paste(RHB,"Unifrac_NMDS.pdf",sep="_"),plotOrd(ordu$points,colData,shape="Condition",design="Location",continuous=T,xlabel="NMDS1",ylabel="NMDS2",alpha=0.75,pointSize=2))
+	# plot with plotOrd (or use plot_ordination)
+	ggsave(paste(RHB,"Unifrac_NMDS.pdf",sep="_"),plotOrd(ordu$points,colData,shape="Condition",design="Location",continuous=T,xlabel="NMDS1",ylabel="NMDS2",alpha=0.75,pointSize=2))
 
-		# permanova of unifrac distance
-		sink(paste(RHB,"PERMANOVA_unifrac.txt",sep="_"))
-	    adonis(distance(myphylo,"unifrac",weighted=T)~Pair+Condition,colData(dds),parallel=12,permutations=9999)
-		sink()
+	# permanova of unifrac distance
+	sink(paste(RHB,"PERMANOVA_unifrac.txt",sep="_"))
+	adonis(distance(myphylo,"unifrac",weighted=T)~Pair+Condition,colData(dds),parallel=12,permutations=9999)
+	sink()
 
-		# phyla plots - keep top 7 phyla only
-		phylum.sum = tapply(taxa_sums(myphylo), tax_table(myphylo)[, "phylum"], sum, na.rm=TRUE)
-		top7phyla = names(sort(phylum.sum, TRUE))[1:7]
-		myphylo_slim = prune_taxa((tax_table(myphylo)[, "phylum"] %in% top7phyla), myphylo)
+	# phyla plots - keep top 7 phyla only
+	phylum.sum = tapply(taxa_sums(myphylo), tax_table(myphylo)[, "phylum"], sum, na.rm=TRUE)
+	top7phyla = names(sort(phylum.sum, TRUE))[1:7]
+	myphylo_slim = prune_taxa((tax_table(myphylo)[, "phylum"] %in% top7phyla), myphylo)
 
-		# split phylo into H and S
-		H <- prune_samples(colData$Condition=="H",myphylo_slim)
-		S <- prune_samples(colData$Condition=="S",myphylo_slim)
+	# split phylo into H and S
+	H <- prune_samples(colData$Condition=="H",myphylo_slim)
+	S <- prune_samples(colData$Condition=="S",myphylo_slim)
 
-		# calculate ordination
-		Hord <- ordinate(H, "NMDS", "bray")
-		Sord <- ordinate(S, "NMDS", "bray")
+	# calculate ordination
+	Hord <- ordinate(H, "NMDS", "bray")
+	Sord <- ordinate(S, "NMDS", "bray")
 
-		# plot with plot_ordination
-		theme_set(theme_facet_blank(angle=0,vjust=0,hjust=0.5))
-		pdf(paste(RHB,"NMDS_taxa_by_Condition.pdf",sep="_"))
-		  plot_ordination(H, Hord, type="taxa", color="phylum")+ facet_wrap(~phylum, 3)
-		  plot_ordination(S, Sord, type="taxa", color="phylum")+ facet_wrap(~phylum, 3)
-		dev.off()
+	# plot with plot_ordination
+	theme_set(theme_facet_blank(angle=0,vjust=0,hjust=0.5))
+	pdf(paste(RHB,"NMDS_taxa_by_Condition.pdf",sep="_"))
+	  plot_ordination(H, Hord, type="taxa", color="phylum")+ facet_wrap(~phylum, 3)
+	  plot_ordination(S, Sord, type="taxa", color="phylum")+ facet_wrap(~phylum, 3)
+	dev.off()
 
-		#	theme_set(theme_classic_thin())
-		#	plot_ordination(myphylo, ordu, type="samples", shape="Condition", color="Location",continuous=T)
+	#	theme_set(theme_classic_thin())
+	#	plot_ordination(myphylo, ordu, type="samples", shape="Condition", color="Location",continuous=T)
 
-		# PCoA
-		# ordu = ordinate(myphylo, "PCoA", "unifrac", weighted=TRUE)
-		# d <-t(data.frame(t(ordu$vectors)*ordu$values$Relative_eig))
-		# plotOrd(d,colData,shape="Condition",design="Location",continuous=T,xlabel="PCoA1",ylabel="PCoA2")
+	# PCoA
+	# ordu = ordinate(myphylo, "PCoA", "unifrac", weighted=TRUE)
+	# d <-t(data.frame(t(ordu$vectors)*ordu$values$Relative_eig))
+	# plotOrd(d,colData,shape="Condition",design="Location",continuous=T,xlabel="PCoA1",ylabel="PCoA2")
 
     #===============================================================================
     #       differential analysis
@@ -379,8 +379,8 @@ ubiom_FUN$taxData <- taxData
      plotOrd(d,colData,design="Condition",xlabel="PC1",ylabel="PC2")
      plotOrd(d,colData,shape="Condition",design="Location",continuous=T,xlabel="PC1",ylabel="PC2")
     dev.off()
-
-		ggsave(paste(RHB,"qPCR_PCA_loc.pdf",sep="_"),plotOrd(d,colData,shape="Condition",design="Location",continuous=T,xlabel="PC1",ylabel="PC2",alpha=0.75,pointSize=2,ylims=c(-2,4)))
+    
+    ggsave(paste(RHB,"qPCR_PCA_loc.pdf",sep="_"),plotOrd(d,colData,shape="Condition",design="Location",continuous=T,xlabel="PC1",ylabel="PC2",alpha=0.75,pointSize=2,ylims=c(-2,4)))
 
     ### remove spatial information (this uses the factor "Pair" not the numeric "Location") and plot
     pc.res <- resid(aov(mypca$x~colData$Pair,colData))
@@ -395,42 +395,42 @@ ubiom_FUN$taxData <- taxData
       lapply(seq(1:3),function(x) summary(aovp(mypca$x[,x]~Pair+Condition,colData(dds))))
     sink()
 
-		### NMDS ###
+    ### NMDS ###
 
-		# phyloseq has functions (using Vegan) for making NMDS plots
-		myphylo <- ubiom_to_phylo(list(counts(dds,normalize=T),taxData,colData))
+    # phyloseq has functions (using Vegan) for making NMDS plots
+    myphylo <- ubiom_to_phylo(list(counts(dds,normalize=T),taxData,colData))
 
-		# add tree to phyloseq object
-		phy_tree(myphylo) <- njtree
+    # add tree to phyloseq object
+    phy_tree(myphylo) <- njtree
 
-		# calculate NMDS ordination using weighted unifrac scores
-		ordu = ordinate(myphylo, "NMDS", "unifrac", weighted=TRUE)
+    # calculate NMDS ordination using weighted unifrac scores
+    ordu = ordinate(myphylo, "NMDS", "unifrac", weighted=TRUE)
 
-		# plot with plotOrd (or use plot_ordination)
-		ggsave(paste(RHB,"qPCR_Unifrac_NMDS.pdf",sep="_"),plotOrd(ordu$points,colData,shape="Condition",design="Location",continuous=T,xlabel="NMDS1",ylabel="NMDS2",alpha=0.75,pointSize=2))
+    # plot with plotOrd (or use plot_ordination)
+    ggsave(paste(RHB,"qPCR_Unifrac_NMDS.pdf",sep="_"),plotOrd(ordu$points,colData,shape="Condition",design="Location",continuous=T,xlabel="NMDS1",ylabel="NMDS2",alpha=0.75,pointSize=2))
 
-		# permanova of unifrac distance
-		sink(paste(RHB,"qPCR_PERMANOVA_unifrac.txt",sep="_"))
-	    adonis(distance(myphylo,"unifrac",weighted=T)~Pair+Condition,colData(dds),parallel=12,permutations=9999)
-		sink()
+    # permanova of unifrac distance
+    sink(paste(RHB,"qPCR_PERMANOVA_unifrac.txt",sep="_"))
+      adonis(distance(myphylo,"unifrac",weighted=T)~Pair+Condition,colData(dds),parallel=12,permutations=9999)
+    sink()
 
-		# phyla plots - keep top 7 phyla only
-		phylum.sum = tapply(taxa_sums(myphylo), tax_table(myphylo)[, "phylum"], sum, na.rm=TRUE)
-		top7phyla = names(sort(phylum.sum, TRUE))[1:7]
-		myphylo_slim = prune_taxa((tax_table(myphylo)[, "phylum"] %in% top7phyla), myphylo)
+    # phyla plots - keep top 7 phyla only
+    phylum.sum = tapply(taxa_sums(myphylo), tax_table(myphylo)[, "phylum"], sum, na.rm=TRUE)
+    top7phyla = names(sort(phylum.sum, TRUE))[1:7]
+    myphylo_slim = prune_taxa((tax_table(myphylo)[, "phylum"] %in% top7phyla), myphylo)
 
-		# split phylo into H and S
-		H <- prune_samples(colData$Condition=="H",myphylo_slim)
-		S <- prune_samples(colData$Condition=="S",myphylo_slim)
+    # split phylo into H and S
+    H <- prune_samples(colData$Condition=="H",myphylo_slim)
+    S <- prune_samples(colData$Condition=="S",myphylo_slim)
 
-		Hord <- ordinate(H, "NMDS", "bray")
-		Sord <- ordinate(S, "NMDS", "bray")
+    Hord <- ordinate(H, "NMDS", "bray")
+    Sord <- ordinate(S, "NMDS", "bray")
 
-		theme_set(theme_facet_blank(angle=0,vjust=0,hjust=0.5))
-		pdf(paste(RHB,"qPCR_NMDS_taxa_by_Condition.pdf",sep="_"))
-		  plot_ordination(H, Hord, type="taxa", color="phylum",ylims=c(-0.8,1.2),xlims=c(-0.8,1.2))+ facet_wrap(~phylum, 3)
-		  plot_ordination(S, Sord, type="taxa", color="phylum",ylims=c(-0.8,1.2),xlims=c(-0.8,1.2))+ facet_wrap(~phylum, 3)
-		dev.off()
+    theme_set(theme_facet_blank(angle=0,vjust=0,hjust=0.5))
+    pdf(paste(RHB,"qPCR_NMDS_taxa_by_Condition.pdf",sep="_"))
+     plot_ordination(H, Hord, type="taxa", color="phylum",ylims=c(-0.8,1.2),xlims=c(-0.8,1.2))+ facet_wrap(~phylum, 3)
+     plot_ordination(S, Sord, type="taxa", color="phylum",ylims=c(-0.8,1.2),xlims=c(-0.8,1.2))+ facet_wrap(~phylum, 3)
+    dev.off()
 
     #===============================================================================
     #       differential analysis
@@ -552,7 +552,7 @@ ubiom_FUN$taxData <- taxData
     #       Beta diversity PCA/NMDS
     #===============================================================================
 
-		### PCA ###
+    ### PCA ###
 
     # perform PC decomposition of DES object
     mypca <- des_to_pca(dds)
@@ -569,7 +569,7 @@ ubiom_FUN$taxData <- taxData
      plotOrd(d,colData,shape="Condition",design="Location",continuous=T,xlabel="PC1",ylabel="PC2")
     dev.off()
 
-		ggsave(paste(RHB,"PCA_loc.pdf",sep="_"),plotOrd(d,colData,shape="Condition",design="Location",continuous=T,xlabel="PC1",ylabel="PC2",alpha=0.75,pointSize=2))
+    ggsave(paste(RHB,"PCA_loc.pdf",sep="_"),plotOrd(d,colData,shape="Condition",design="Location",continuous=T,xlabel="PC1",ylabel="PC2",alpha=0.75,pointSize=2))
 
     ### remove spatial information (this uses the factor "Pair" not the numeric "Location") and plot
     pc.res <- resid(aov(mypca$x~colData$Pair,colData))
@@ -584,44 +584,44 @@ ubiom_FUN$taxData <- taxData
       lapply(seq(1:3),function(x) summary(aovp(mypca$x[,x]~Pair+Condition,colData(dds))))
     sink()
 
-		### NMDS ###
+	### NMDS ###
 
-		# phyloseq has functions (using Vegan) for making NMDS plots
-		myphylo <- ubiom_to_phylo(list(counts(dds,normalize=T),taxData,colData))
+	# phyloseq has functions (using Vegan) for making NMDS plots
+	myphylo <- ubiom_to_phylo(list(counts(dds,normalize=T),taxData,colData))
 
-		# add tree to phyloseq object
-		phy_tree(myphylo) <- njtree
+	# add tree to phyloseq object
+	phy_tree(myphylo) <- njtree
 
-		# calculate NMDS ordination using weighted unifrac scores
-		ordu = ordinate(myphylo, "NMDS", "unifrac", weighted=TRUE)
+	# calculate NMDS ordination using weighted unifrac scores
+	ordu = ordinate(myphylo, "NMDS", "unifrac", weighted=TRUE)
 
-		# plot with plotOrd (or use plot_ordination)
-		ggsave(paste(RHB,"Unifrac_NMDS.pdf",sep="_"),plotOrd(ordu$points,colData,shape="Condition",design="Location",continuous=T,xlabel="NMDS1",ylabel="NMDS2",alpha=0.75,pointSize=2))
+	# plot with plotOrd (or use plot_ordination)
+	ggsave(paste(RHB,"Unifrac_NMDS.pdf",sep="_"),plotOrd(ordu$points,colData,shape="Condition",design="Location",continuous=T,xlabel="NMDS1",ylabel="NMDS2",alpha=0.75,pointSize=2))
 
-		# permanova of unifrac distance
-		sink(paste(RHB,"PERMANOVA_unifrac.txt",sep="_"))
-	    adonis(distance(myphylo,"unifrac",weighted=T)~Pair+Condition,colData(dds),parallel=12,permutations=9999)
-		sink()
+	# permanova of unifrac distance
+	sink(paste(RHB,"PERMANOVA_unifrac.txt",sep="_"))
+	adonis(distance(myphylo,"unifrac",weighted=T)~Pair+Condition,colData(dds),parallel=12,permutations=9999)
+	sink()
 
-		# phyla plots - keep top 7 phyla only
-		phylum.sum = tapply(taxa_sums(myphylo), tax_table(myphylo)[, "phylum"], sum, na.rm=TRUE)
-		top12phyla = names(sort(phylum.sum, TRUE))[1:12]
-		myphylo_slim = prune_taxa((tax_table(myphylo)[, "phylum"] %in% top12phyla), myphylo)
+	# phyla plots - keep top 7 phyla only
+	phylum.sum = tapply(taxa_sums(myphylo), tax_table(myphylo)[, "phylum"], sum, na.rm=TRUE)
+	top12phyla = names(sort(phylum.sum, TRUE))[1:12]
+	myphylo_slim = prune_taxa((tax_table(myphylo)[, "phylum"] %in% top12phyla), myphylo)
 
-		# split phylo into H and S
-		H <- prune_samples(colData$Condition=="H",myphylo_slim)
-		S <- prune_samples(colData$Condition=="S",myphylo_slim)
+	# split phylo into H and S
+	H <- prune_samples(colData$Condition=="H",myphylo_slim)
+	S <- prune_samples(colData$Condition=="S",myphylo_slim)
 
-		# calculate ordination
-		Hord <- ordinate(H, "NMDS", "bray")
-		Sord <- ordinate(S, "NMDS", "bray")
+	# calculate ordination
+	Hord <- ordinate(H, "NMDS", "bray")
+	Sord <- ordinate(S, "NMDS", "bray")
 
-		# plot with plot_ordination
-		theme_set(theme_facet_blank(angle=0,vjust=0,hjust=0.5))
-		pdf(paste(RHB,"NMDS_taxa_by_Condition.pdf",sep="_"))
-		  plot_ordination(H, Hord, type="taxa", color="phylum")+ facet_wrap(~phylum, 3)
-		  plot_ordination(S, Sord, type="taxa", color="phylum")+ facet_wrap(~phylum, 3)
-		dev.off()
+	# plot with plot_ordination
+	theme_set(theme_facet_blank(angle=0,vjust=0,hjust=0.5))
+	pdf(paste(RHB,"NMDS_taxa_by_Condition.pdf",sep="_"))
+	  plot_ordination(H, Hord, type="taxa", color="phylum")+ facet_wrap(~phylum, 3)
+	  plot_ordination(S, Sord, type="taxa", color="phylum")+ facet_wrap(~phylum, 3)
+	dev.off()
 
     #===============================================================================
     #       differential analysis
