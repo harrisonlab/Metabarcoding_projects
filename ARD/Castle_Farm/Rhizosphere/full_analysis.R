@@ -242,7 +242,13 @@ ubiom_FUN$taxData <- taxData
 	sink(paste(RHB,"PERMANOVA_unifrac.txt",sep="_"))
 	adonis(distance(myphylo,"unifrac",weighted=T)~Pair+Condition,colData(dds),parallel=12,permutations=9999)
 	sink()
+	
+	# calculate NMDS ordination with bray-curtis distance matrix     
+	ordu = ordinate(myphylo, "NMDS", "bray",stratmax=50) 
 
+	# plot with plotOrd (or use plot_ordination)
+	ggsave(paste(RHB,"BRAY_NMDS.pdf",sep="_"),plotOrd(ordu$points,colData,shape="Condition",design="Location",continuous=T,xlabel="NMDS1",ylabel="NMDS2",alpha=0.75,pointSize=2))
+	     
 	# phyla plots - keep top 7 phyla only
 	phylum.sum = tapply(taxa_sums(myphylo), tax_table(myphylo)[, "phylum"], sum, na.rm=TRUE)
 	top7phyla = names(sort(phylum.sum, TRUE))[1:7]
@@ -363,7 +369,7 @@ ubiom_FUN$taxData <- taxData
     #       Beta diversity PCA/NMDS
     #===============================================================================
 
-		### PCA ###
+    ### PCA ###
 
     # perform PC decomposition of DES object
     mypca <- des_to_pca(dds)
@@ -413,6 +419,12 @@ ubiom_FUN$taxData <- taxData
     sink(paste(RHB,"qPCR_PERMANOVA_unifrac.txt",sep="_"))
       adonis(distance(myphylo,"unifrac",weighted=T)~Pair+Condition,colData(dds),parallel=12,permutations=9999)
     sink()
+
+    # calculate NMDS ordination with bray-curtis distance matrix     
+    ordu = ordinate(myphylo, "NMDS", "bray",stratmax=50) 
+
+    # plot with plotOrd (or use plot_ordination)
+    ggsave(paste(RHB,"qPC_BRAY_NMDS.pdf",sep="_"),plotOrd(ordu$points,colData,shape="Condition",design="Location",continuous=T,xlabel="NMDS1",ylabel="NMDS2",alpha=0.75,pointSize=2))
 
     # phyla plots - keep top 7 phyla only
     phylum.sum = tapply(taxa_sums(myphylo), tax_table(myphylo)[, "phylum"], sum, na.rm=TRUE)
@@ -603,6 +615,12 @@ ubiom_FUN$taxData <- taxData
 	adonis(distance(myphylo,"unifrac",weighted=T)~Pair+Condition,colData(dds),parallel=12,permutations=9999)
 	sink()
 
+     	# calculate NMDS ordination with bray-curtis distance matrix     
+	ordu = ordinate(myphylo, "NMDS", "bray",stratmax=50) 
+
+	# plot with plotOrd (or use plot_ordination)
+	ggsave(paste(RHB,"BRAY_NMDS.pdf",sep="_"),plotOrd(ordu$points,colData,shape="Condition",design="Location",continuous=T,xlabel="NMDS1",ylabel="NMDS2",alpha=0.75,pointSize=2))
+
 	# phyla plots - keep top 7 phyla only
 	phylum.sum = tapply(taxa_sums(myphylo), tax_table(myphylo)[, "phylum"], sum, na.rm=TRUE)
 	top12phyla = names(sort(phylum.sum, TRUE))[1:12]
@@ -717,7 +735,7 @@ ubiom_FUN$taxData <- taxData
     #       Beta diversity PCA/NMDS
     #===============================================================================
 
-		### PCA ###
+    ### PCA ###
 
     # perform PC decomposition of DES object
     mypca <- des_to_pca(dds)
@@ -734,7 +752,7 @@ ubiom_FUN$taxData <- taxData
      plotOrd(d,colData,shape="Condition",design="Location",continuous=T,xlabel="PC1",ylabel="PC2")
     dev.off()
 
-		ggsave(paste(RHB,"qPCR_PCA_loc.pdf",sep="_"),plotOrd(d,colData,shape="Condition",design="Location",continuous=T,xlabel="PC1",ylabel="PC2",alpha=0.75,pointSize=2))
+    ggsave(paste(RHB,"qPCR_PCA_loc.pdf",sep="_"),plotOrd(d,colData,shape="Condition",design="Location",continuous=T,xlabel="PC1",ylabel="PC2",alpha=0.75,pointSize=2))
 
     ### remove spatial information (this uses the factor "Pair" not the numeric "Location") and plot
     pc.res <- resid(aov(mypca$x~colData$Pair,colData))
@@ -763,9 +781,15 @@ ubiom_FUN$taxData <- taxData
 		# plot with plotOrd (or use plot_ordination)
 		ggsave(paste(RHB,"qPCR_Unifrac_NMDS.pdf",sep="_"),plotOrd(ordu$points,colData,shape="Condition",design="Location",continuous=T,xlabel="NMDS1",ylabel="NMDS2",alpha=0.75,pointSize=2))
 
+	        # calculate NMDS ordination with bray-curtis distance matrix     
+		ordu = ordinate(myphylo, "NMDS", "bray",stratmax=50) 
+
+		# plot with plotOrd (or use plot_ordination)
+		ggsave(paste(RHB,"qPCR_BRAY_NMDS.pdf",sep="_"),plotOrd(ordu$points,colData,shape="Condition",design="Location",continuous=T,xlabel="NMDS1",ylabel="NMDS2",alpha=0.75,pointSize=2))
+	     
 		# permanova of unifrac distance
 		sink(paste(RHB,"qPCR_PERMANOVA_unifrac.txt",sep="_"))
-	    adonis(distance(myphylo,"unifrac",weighted=T)~Pair+Condition,colData(dds),parallel=12,permutations=9999)
+	    	  adonis(distance(myphylo,"unifrac",weighted=T)~Pair+Condition,colData(dds),parallel=12,permutations=9999)
 		sink()
 
 		# phyla plots - keep top 7 phyla only
@@ -956,6 +980,12 @@ ubiom_FUN$taxData <- taxData
 	sink(paste(RHB,"PERMANOVA_unifrac.txt",sep="_"))
 		adonis(distance(myphylo,"unifrac",weighted=T)~Pair+Condition,colData(dds),parallel=12,permutations=9999)
 	sink()
+
+     	# calculate NMDS ordination with bray-curtis distance matrix     
+	ordu = ordinate(myphylo, "NMDS", "bray",stratmax=50) 
+
+	# plot with plotOrd (or use plot_ordination)
+	ggsave(paste(RHB,"BRAY_NMDS.pdf",sep="_"),plotOrd(ordu$points,colData,shape="Condition",design="Location",continuous=T,xlabel="NMDS1",ylabel="NMDS2",alpha=0.75,pointSize=2))
 
 	# phyla plots - keep top 7 phyla only
 	phylum.sum = tapply(taxa_sums(myphylo), tax_table(myphylo)[, "phylum"], sum, na.rm=TRUE)
@@ -1149,6 +1179,12 @@ ubiom_FUN$taxData <- taxData
 		adonis(distance(myphylo,"unifrac",weighted=T)~Pair+Condition,colData(dds),parallel=12,permutations=9999)
 	sink()
 
+     	# calculate NMDS ordination with bray-curtis distance matrix     
+	ordu = ordinate(myphylo, "NMDS", "bray",stratmax=50) 
+
+	# plot with plotOrd (or use plot_ordination)
+	ggsave(paste(RHB,"BRAY_NMDS.pdf",sep="_"),plotOrd(ordu$points,colData,shape="Condition",design="Location",continuous=T,xlabel="NMDS1",ylabel="NMDS2",alpha=0.75,pointSize=2))
+		       
 	# phyla plots - keep top 7 phyla only
 	phylum.sum = tapply(taxa_sums(myphylo), tax_table(myphylo)[, "phylum"], sum, na.rm=TRUE)
 	top7phyla = names(sort(phylum.sum, TRUE))[1:7]
