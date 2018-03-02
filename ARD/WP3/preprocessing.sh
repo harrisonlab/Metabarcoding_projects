@@ -96,8 +96,9 @@ done
 
 # link processed data to anaylsis folders
 for RUN in $RUNS; do
-  for s in BAC FUN OO NEM; do
+  for s in BAC FUN; do
     ln -s $PROJECT_FOLDER/data/$RUN/$s/unfiltered/* $PROJECT_FOLDER/analysis/WP3/$s/unfiltered/.
     ln -s $PROJECT_FOLDER/data/$RUN/$s/filtered/* $PROJECT_FOLDER/analysis/WP3/$s/filtered/.
+    ln -s $PROJECT_FOLDER/data/$RUN/ambiguous/* $PROJECT_FOLDER/analysis/WP3/ambiguous/.
   done
 done
