@@ -1,15 +1,16 @@
 #===============================================================================
 #       Load libraries
 #===============================================================================
-
 library(DESeq2)
-library(phyloseq)
-library(devtools)
+library(BiocParallel)
 library(data.table)
+library(plyr)
 library(dplyr)
-load_all("../../metabarcoding_pipeline/scripts/myfunctions") # this is a set of scipts to do various things (plotOrd, plotPCA, geoSet)
-library("BiocParallel")
+library(ggplot2)
+library(devtools)
 register(MulticoreParam(12))
+load_all("~/pipelines/metabarcoding/scripts/myfunctions")
+environment(plot_ordination) <- environment(ordinate) <- environment(plot_richness) <- environment(phyloseq::ordinate)
 
 
 #===============================================================================
@@ -18,23 +19,46 @@ register(MulticoreParam(12))
 
 ##### 16S #####
 
-biom_file = "16S.taxa.biom"
-colData = "colData"
-mybiom <- import_biom(biom_file) 
-sample_data(mybiom) <- read.table(colData,header=T,sep="\t",row.names=1)
-tax_table(mybiom) <- phyloTaxaTidy(tax_table(mybiom),0.65)
-biom16<-mybiom
+#biom_file = "16S.taxa.biom"
+#colData = "colData"
+#mybiom <- import_biom(biom_file) 
+#sample_data(mybiom) <- read.table(colData,header=T,sep="\t",row.names=1)
+#tax_table(mybiom) <- phyloTaxaTidy(tax_table(mybiom),0.65)
+#biom16<-mybiom
 
 ##### ITS #####
 
-biom_file = "ITS.taxa.biom"
-colData = "colData"
-mybiom <- import_biom(biom_file) 
-sample_data(mybiom) <- read.table(colData,header=T,sep="\t",row.names=1)
-tax_table(mybiom) <- phyloTaxaTidy(tax_table(mybiom),0.65)
-biomITS<-mybiom
+#biom_file = "ITS.taxa.biom"
+#colData = "colData"
+#mybiom <- import_biom(biom_file) 
+#sample_data(mybiom) <- read.table(colData,header=T,sep="\t",row.names=1)
+#tax_table(mybiom) <- phyloTaxaTidy(tax_table(mybiom),0.65)
+#biomITS<-mybiom
+#mybioms <- list(bacteria=biom16,fungi=biomITS)
 
-mybioms <- list(bacteria=biom16,fungi=biomITS)
+ubiom_BAC <- loadData("16S.otu_table.txt","colData","16S.taxa","16S.phy",RHB="BAC")
+ubiom_FUN <- loadData("ITS.otu_table.txt","colData","ITS.taxa","ITS.phy",RHB="FUN")
+
+#===============================================================================
+#       Combine species
+#===============================================================================
+
+#### combine species at 0.95 (default) confidence (if they are species)
+
+# Fungi
+invisible(mapply(assign, names(ubiom_FUN), ubiom_FUN, MoreArgs=list(envir = globalenv())))
+combinedTaxa <- combineTaxa("ITS.taxa")
+countData <- combCounts(combinedTaxa,countData)
+taxData <- combTaxa(combinedTaxa,taxData)
+ubiom_FUN$countData <- countData
+ubiom_FUN$taxData <- taxData
+
+#===============================================================================
+#       Filter data
+#===============================================================================
+
+colData <- colData[colData$OAK==1,]
+dds <- dds[rowSums(counts(dds, normalize=T))>4,]
 
 
 #===============================================================================
