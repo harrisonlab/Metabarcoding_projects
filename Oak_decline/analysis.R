@@ -1,16 +1,15 @@
 #===============================================================================
 #       Load libraries
 #===============================================================================
+
 library(DESeq2)
-library(BiocParallel)
-library(data.table)
-library(plyr)
-library(dplyr)
-library(ggplot2)
+library(phyloseq)
 library(devtools)
+library(data.table)
+library(dplyr)
+load_all("../../metabarcoding_pipeline/scripts/myfunctions") # this is a set of scipts to do various things (plotOrd, plotPCA, geoSet)
+library("BiocParallel")
 register(MulticoreParam(12))
-load_all("~/pipelines/metabarcoding/scripts/myfunctions")
-environment(plot_ordination) <- environment(ordinate) <- environment(plot_richness) <- environment(phyloseq::ordinate)
 
 
 #===============================================================================
@@ -19,71 +18,24 @@ environment(plot_ordination) <- environment(ordinate) <- environment(plot_richne
 
 ##### 16S #####
 
-#biom_file = "16S.taxa.biom"
-#colData = "colData"
-#mybiom <- import_biom(biom_file) 
-#sample_data(mybiom) <- read.table(colData,header=T,sep="\t",row.names=1)
-#tax_table(mybiom) <- phyloTaxaTidy(tax_table(mybiom),0.65)
-#biom16<-mybiom
+biom_file = "16S.taxa.biom"
+colData = "colData"
+mybiom <- import_biom(biom_file) 
+sample_data(mybiom) <- read.table(colData,header=T,sep="\t",row.names=1)
+tax_table(mybiom) <- phyloTaxaTidy(tax_table(mybiom),0.65)
+biom16<-mybiom
 
 ##### ITS #####
 
-#biom_file = "ITS.taxa.biom"
-#colData = "colData"
-#mybiom <- import_biom(biom_file) 
-#sample_data(mybiom) <- read.table(colData,header=T,sep="\t",row.names=1)
-#tax_table(mybiom) <- phyloTaxaTidy(tax_table(mybiom),0.65)
-#biomITS<-mybiom
-#mybioms <- list(bacteria=biom16,fungi=biomITS)
+biom_file = "ITS.taxa.biom"
+colData = "colData"
+mybiom <- import_biom(biom_file) 
+sample_data(mybiom) <- read.table(colData,header=T,sep="\t",row.names=1)
+tax_table(mybiom) <- phyloTaxaTidy(tax_table(mybiom),0.65)
+biomITS<-mybiom
 
-ubiom_BAC <- loadData("16S.otu_table.txt","colData","16S.taxa","16S.phy",RHB="BAC")
-ubiom_FUN <- loadData("ITS.otu_table.txt","colData","ITS.taxa","ITS.phy",RHB="FUN")
+mybioms <- list(bacteria=biom16,fungi=biomITS)
 
-#===============================================================================
-#       Combine species
-#===============================================================================
-
-#### combine species at 0.95 (default) confidence (if they are species)
-
-# Fungi
-invisible(mapply(assign, names(ubiom_FUN), ubiom_FUN, MoreArgs=list(envir = globalenv())))
-combinedTaxa <- combineTaxa("ITS.taxa")
-countData <- combCounts(combinedTaxa,countData)
-taxData <- combTaxa(combinedTaxa,taxData)
-ubiom_FUN$countData <- countData
-ubiom_FUN$taxData <- taxData
-
-#===============================================================================
-#       Filter none oak
-#===============================================================================
-colData <- colData[colData$OAK==1,]
-countData <- countData[,rownames(colData)]
-
-#===============================================================================
-#       Create DEseq objects 
-#===============================================================================
-
-# simple Deseq design
-design<-~1
-
-#create DES object
-dds<-DESeqDataSetFromMatrix(countData,colData,design)
-
-# collapse replicates
-dds <- collapseReplicates(dds,groupby=paste0(dds$site,dds$tree))
-colData <- as.data.frame(colData(dds))
-
-# remove low count samples
-#filter <- (colSums(countData)>=1000)
-#colData <- droplevels(colData[filter,])
-#countData <- countData[,filter]
-
-# calculate size factors - using geoMeans function (works better with this data set)
-max(geoMeans(dds))/min(geoMeans(dds))
-max(sizeFactors(estimateSizeFactors(dds)))/min(sizeFactors(estimateSizeFactors(dds)))
-# sizeFactors(dds) <-sizeFactors(estimateSizeFactors(dds))
-sizeFactors(dds) <-geoMeans(dds) 
-# calcNormFactors(counts(dds),method="RLE",lib.size=(prop.table(colSums(counts(dds)))))
 
 #===============================================================================
 #       PCA analysis
