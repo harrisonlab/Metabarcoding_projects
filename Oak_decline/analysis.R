@@ -54,12 +54,36 @@ ubiom_FUN$countData <- countData
 ubiom_FUN$taxData <- taxData
 
 #===============================================================================
-#       Filter data
+#       Filter none oak
+#===============================================================================
+colData <- colData[colData$OAK==1,]
+countData <- countData[,rownames(colData)]
+
+#===============================================================================
+#       Create DEseq objects 
 #===============================================================================
 
-colData <- colData[colData$OAK==1,]
-dds <- dds[rowSums(counts(dds, normalize=T))>4,]
+# simple Deseq design
+design<-~1
 
+#create DES object
+dds<-DESeqDataSetFromMatrix(countData,colData,design)
+
+# collapse replicates
+dds <- collapseReplicates(dds,groupby=paste0(dds$site,dds$tree))
+colData <- as.data.frame(colData(dds))
+
+# remove low count samples
+#filter <- (colSums(countData)>=1000)
+#colData <- droplevels(colData[filter,])
+#countData <- countData[,filter]
+
+# calculate size factors - using geoMeans function (works better with this data set)
+max(geoMeans(dds))/min(geoMeans(dds))
+max(sizeFactors(estimateSizeFactors(dds)))/min(sizeFactors(estimateSizeFactors(dds)))
+# sizeFactors(dds) <-sizeFactors(estimateSizeFactors(dds))
+sizeFactors(dds) <-geoMeans(dds) 
+# calcNormFactors(counts(dds),method="RLE",lib.size=(prop.table(colSums(counts(dds)))))
 
 #===============================================================================
 #       PCA analysis
