@@ -10,9 +10,14 @@ library(dplyr)
 library(ggplot2)
 library(devtools)
 register(MulticoreParam(12))
+library(lmPerm)
+library(ape)
+library(vegan)
 load_all("~/pipelines/metabarcoding/scripts/myfunctions")
 environment(plot_alpha) <-environment(plot_ordination) <- environment(ordinate) <- environment(plot_richness) <- environment(phyloseq::ordinate)
 
+# library(future)
+# plan(multiprocess)
 
 #===============================================================================
 #       Load data 
@@ -36,14 +41,7 @@ ubiom_FUN$countData <- countData
 ubiom_FUN$taxData <- taxData
 
 #===============================================================================
-#       Filter none oak
-#===============================================================================
-
-#colData <- colData[colData$OAK==1,]
-#countData <- countData[,rownames(colData)]
-
-#===============================================================================
-#       Create DEseq objects
+#       Create DEseq objects (and remove none oak samples)
 #===============================================================================
 
 ubiom_FUN$dds <- ubiom_to_des(ubiom_FUN,filter=expression(colData$OAK==1),calcFactors=geoMeans)
@@ -88,51 +86,32 @@ sizeFactors(dds) <-geoMeans(dds)
 # calcNormFactors(counts(dds),method="RLE",lib.size=(prop.table(colSums(counts(dds)))))
 
 #===============================================================================
-#       Alpha diversity analysis
+#       Alpha diversity analysis - RUN BEFORE FILTERING OUT ANY LOW COUNT OTUS
 #===============================================================================
 
-pdf("16S_v2.alpha.pdf")
-plot_richness(biom16,color="condition",x="site",measures=c("Chao1", "Shannon", "Simpson"))
-dev.off()
-pdf("ITS_v2.alpha.pdf")
-plot_richness(biomITS,color="condition",x="site",measures=c("Chao1", "Shannon", "Simpson"))
-dev.off()
-
-all_alpha <- plot_richness(biom16,returnData=T)
-
-
-summary(aov(Chao1~condition*site,all_alpha))[[1]][2]
-summary(aov(Shannon~location+(Sample*Orchard),all_alpha))[[1]][2]
-summary(aov(Simpson~location+(Sample*Orchard),all_alpha))[[1]][2]
-
 # plot alpha diversity - plot_alpha will convert normalised abundances to integer values
-ggsave(paste(RHB,"Alpha_all.pdf",sep="_"),plot_alpha(counts(dds,normalize=T),colData(dds),design="site",colour="condition",measures=c("Chao1", "Shannon", "Simpson","Observed")))#,limits=c(0,1500,"Chao1")))
-ggsave(paste(RHB,"Alpha_Chao1.pdf",sep="_"),plot_alpha(counts(dds,normalize=T),colData(dds),design="site",colour="condition",measures=c("Chao1"))
-ggsave(paste(RHB,"Alpha_Shannon.pdf",sep="_"),plot_alpha(counts(dds,normalize=T),colData(dds),design="Genotype",colour="Block",measures=c("Shannon")))
-ggsave(paste(RHB,"Alpha_Simpson.pdf",sep="_"),plot_alpha(counts(dds,normalize=T),colData(dds),design="Genotype",colour="Block",measures=c("Simpson")))
-ggsave(paste(RHB,"Alpha_Observed.pdf",sep="_"),plot_alpha(counts(dds,normalize=T),colData(dds),design="Genotype",colour="Block",measures=c("Observed")))
-
+ggsave(paste(RHB,"Alpha_all.pdf",sep="_"),plot_alpha(counts(dds,normalize=T),colData(dds),design="site",colour="condition",measures=c("Chao1", "Shannon", "Simpson","Observed"),limits=c(0,600,"Chao1")))
 
 ### permutation based anova on diversity index ranks ###
 
 # get the diversity index data
-all_alpha_ord <- plot_alpha(counts(dds,normalize=T),colData(dds),design="Treatment",returnData=T)
+all_alpha_ord <- plot_alpha(counts(dds,normalize=T),colData(dds),design="site",colour="condition",returnData=T)
 
 # join diversity indices and metadata
-all_alpha_ord <- as.data.table(left_join(all_alpha_ord,colData,by=c("Samples"="Sample_FB"))) # or sample_on
+dds$Samples <- rownames(colData(dds)) # or could use tibble/rownames construct in join by syntax)
+all_alpha_ord <- as.data.table(left_join(all_alpha_ord,as.data.frame(colData(dds))))
 
-
-# perform anova for each index
+# perform anova for each index (this may need editing as the design will be unbalanced)
 sink(paste(RHB,"ALPHA_stats.txt",sep="_"))
 	setkey(all_alpha_ord,S.chao1)
 	print("Chao1")
-	summary(aovp(as.numeric(as.factor(all_alpha_ord$S.chao1))~Block + Treatment + Genotype + Treatment * Genotype,all_alpha_ord))
+	summary(aovp(as.numeric(as.factor(all_alpha_ord$S.chao1))~condition*site,all_alpha_ord))
 	setkey(all_alpha_ord,shannon)
 	print("Shannon")
-	summary(aovp(as.numeric(as.factor(all_alpha_ord$shannon))~Block + Treatment + Genotype + Treatment * Genotype,all_alpha_ord))
+	summary(aovp(as.numeric(as.factor(all_alpha_ord$shannon))~condition*site,all_alpha_ord))
 	setkey(all_alpha_ord,simpson)
 	print("simpson")
-	summary(aovp(as.numeric(as.factor(all_alpha_ord$simpson))~Block + Treatment + Genotype + Treatment * Genotype,all_alpha_ord))
+	summary(aovp(as.numeric(as.factor(all_alpha_ord$simpson))~condition*site,all_alpha_ord))
 sink()
 
 #===============================================================================
@@ -141,145 +120,92 @@ sink()
 
 dds <- dds[rowSums(counts(dds, normalize=T))>4,]
 
-
-
-
 #===============================================================================
 #       Beta diversity analysis
 #===============================================================================
 
-library(ape)
-library(data.table)
-library(future)
-plan(multiprocess)
+### PCA ###
 
-phylip_data_ITS = fread("ITS.phy",skip=1)
-ftITS <- future({nj(as.dist(data.frame(phylip_data_ITS,row.names="V1")))})
-nj.ITS <- value(ftITS) 
-write.tree(nj.ITS,"ITS.tree")
-phy_tree(biomITS) <- nj.ITS
+# perform PC decomposition of DES object
+mypca <- des_to_pca(dds)
 
+# to get pca plot axis into the same scale create a dataframe of PC scores multiplied by their variance
+d <-t(data.frame(t(mypca$x)*mypca$percentVar))
 
-phylip_data_16S = fread("16S.phy",skip=1)
-temp <- as.dist(data.frame(phylip_data_16S,row.names="V1"))
-ft <- future({nj(temp)})
-nj.16S <- value(ft) 
-write.tree(nj.16S,"ITS.tree")
-phy_tree(biom16S) <- nj.16S
+# plot the PCA
+g <- plotOrd(d,colData(dds),design="site",shape="condition",pointSize=1.5,axes=c(1,2),alpha=0.75)
+ggsave(paste(RHB,"PCA.pdf",sep="_"),g)
 
+# ANOVA
+sink(paste(RHB,"PCA_ANOVA.txt",sep="_"))
+	print("ANOVA")
+	lapply(seq(1:5),function(x) {
+		summary(aov(mypca$x[,x]~condition*site,colData(dds)))
+	})
+	print("PERMANOVA")
+	lapply(seq(1:5),function(x) {
+		summary(aovp(mypca$x[,x]~condition*site,colData(dds)))
+	})
+sink()
 
+### NMDS ###
 
+# phyloseq has functions (using Vegan) for making NMDS plots
+myphylo <- ubiom_to_phylo(list(counts(dds,normalize=T),taxData,as.data.frame(colData(dds))))
 
+# add tree to phyloseq object
+phy_tree(myphylo) <- nj(as.dist(phylipData))
 
-#===============================================================================
-#       PCA analysis
-#===============================================================================
+# calculate NMDS ordination using weighted unifrac scores
+ordu = ordinate(myphylo, "NMDS", "unifrac", weighted=TRUE)
 
-##### pca all sites #####
+theme_set(theme_bw())
+#p1 <- plot_ordination(myphylo, ordu, type="Samples", color="Treatment",shape="Genotype")
+#p1 + facet_wrap(~Genotype, 3)
 
-myfiltbioms <- lapply(mybioms,function(obj) prune_taxa(rowSums(otu_table(obj))>5,obj))
-mypcas <-  lapply(myfiltbioms, function(obj) plotPCA(obj,design="1",returnData=T,calcFactors=geoSet))
+# plot with plotOrd (or use plot_ordination)
+ggsave(paste(RHB,"Unifrac_NMDS.pdf",sep="_"),plotOrd(ordu$points,colData(dds),design="site",shape="condition",xlabel="NMDS1",ylabel="NMDS2",pointSize=1.5,axes=c(1,2),alpha=0.75))
 
-dfs <-lapply(seq(1:2), function(i) t(data.frame(t(mypcas[[i]]$x)*mypcas[[i]]$percentVar)))
+# permanova of unifrac distance
+sink(paste(RHB,"PERMANOVA_unifrac.txt",sep="_"))
+	print("weighted")
+	adonis(distance(myphylo,"unifrac",weighted=T)~condition*site,colData(dds),parallel=12,permutations=9999)
+	print("unweighted")
+	adonis(distance(myphylo,"unifrac",weighted=F)~condition*site,colData(dds),parallel=12,permutations=9999)
 
-pdf("all_pca2.pdf")
-lapply(seq(1:2),function(i) plotOrd(dfs[[i]],sample_data(myfiltbioms[[i]]),design=c("site","condition"),dimx=1,dimy=2,xlabel="PC1",ylabel="PC2",pointSize=1.5,cbPallete=T)+ ggtitle(names(myfiltbioms)[i]))
-lapply(seq(1:2),function(i) plotOrd(dfs[[i]],sample_data(myfiltbioms[[i]]),design=c("site","condition"),dimx=2,dimy=3,xlabel="PC2",ylabel="PC3",pointSize=1.5,cbPallete=T)+ ggtitle(names(myfiltbioms)[i]))
-dev.off()
-
-###### pca chestnuts/bigwood #####
-
-myfiltbioms <- lapply(mybioms,function(obj) prune_taxa(rowSums(otu_table(obj))>5,obj))
-
-filterFun=function(o,f){
-	o<-prune_samples(sample_data(o)$site==f,o)
-}
-
-mypcasites <- lapply(myfiltbioms,function(obj) 
-  sapply(seq(1:2),function(i) 
-    setNames(
-      list(
-        plotPCA(obj,design="1",returnData=T,calcFactors=geoSet,filterFun=filterFun,filter=levels(sample_data(obj)$site)[i])
-      ),c(levels(sample_data(obj)$site)[i])
-    )
-  )
-)
-
-dfs <- lapply(mypcasites, function(obj)
-	lapply(obj, function(o) t(data.frame(t(o$x)*o$percentVar)))
-)
-
-pdf("site_pca_all_2.pdf")
-glist1 <- lapply(dfs,function(obj) lapply(obj,function(o)
-	plotOrd(o,sample_data(biom16)[rownames(sample_data(biom16))%in%rownames(o)],design="condition",dimx=1,dimy=2,xlabel="PC1",ylabel="PC2",pointSize=1.5,cbPallete=T)
-))
-glist2 <- lapply(dfs,function(obj) lapply(obj,function(o)
-	plotOrd(o,sample_data(biom16)[rownames(sample_data(biom16))%in%rownames(o)],design="condition",dimx=2,dimy=3,xlabel="PC2",ylabel="PC3",pointSize=1.5,cbPallete=T)
-))
-nn <-  sapply(names(glist1),function(x) paste(x,sapply(glist1,names)))
-lapply(rep(1:2),function(i) lapply(rep(1:2),function(j) glist1[[i]][[j]]+ggtitle(nn[j,i])))
-lapply(rep(1:2),function(i) lapply(rep(1:2),function(j) glist2[[i]][[j]]+ggtitle(nn[j,i])))
-dev.off()
-
-
-##### pca chestnuts - with location info #####
-
-mypca_chestnuts <- list(bacteria=mypcasites[[1]][[2]],fungi=mypcasites[[2]][[2]])
-
+sink()
 
 #===============================================================================
 #       differential analysis
 #===============================================================================
 
-Ldds <- lapply(mybioms,function(o) 
-  sapply(seq(1:2),function(i) 
-    setNames(
-      list(phylo_to_des(filterFun(o,levels(sample_data(o)$site)[i]),fit=F,calcFactors=geoSet)),
-      c(levels(sample_data(o)$site)[i])
-    )
-  )
-)
+# p value for FDR cutoff
+alpha <- 0.5
 
-Ldds <- lapply(Ldds,function(obj) lapply(obj,function(o) o[rowSums(counts(o))>5,]))
-designs=c(formula(~condition),formula(~tree+condition))
-lapply(seq(1:2),function(i) lapply(seq(1:2), function(j) design(Ldds[[i]][[j]]) <<- designs[[j]])) # note the <<- for global assignment 
-Ldds <- lapply(Ldds,function(obj) lapply(obj,function(o) DESeq(o,parallel=T)))
+# the full model
+full_design <- ~site*condition
 
-alpha <- 0.05
+# add full model to dds object
+design(dds) <- full_design
 
-res <- lapply(Ldds,function(obj)lapply(obj,function(o)results(o,alpha=alpha,parallel=T)))
+# calculate fit
+dds <- DESeq(dds,parallel=T)	       
 
-#res.merge <- lapply(res,function(o) lapply(seq(1:2),function(i) 
+# calculate results for default contrast (S vs H)
+res <- results(dds,alpha=alpha,parallel=T)
 
-res.merge <- lapply(seq(1:2),function(i) lapply(seq(1:2),function(j) 
-	data.table(inner_join(
-		data.table(OTU=rownames(res[[i]][[j]]),as.data.frame(res[[i]][[j]])),
-		data.table(OTU=rownames(tax_table(mybioms[[i]])),as.data.frame(as.matrix(tax_table(mybioms[[i]]))))
-	))
-))
+# merge results with taxonomy data
+res.merge <- data.table(inner_join(data.table(OTU=rownames(res),as.data.frame(res)),data.table(OTU=rownames(taxData),taxData)))
+write.table(res.merge, paste(RHB,"diff.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
 
-write.table(res.merge[[1]][[1]],"Bigwood.bacteria.res",sep="\t",quote=F,na="",row.names=F)
-write.table(res.merge[[2]][[1]],"Bigwood.fungi.res",sep="\t",quote=F,na="",row.names=F)
-write.table(res.merge[[1]][[2]],"Chestnuts.bacteria.res",sep="\t",quote=F,na="",row.names=F)
-write.table(res.merge[[2]][[2]],"Chestnuts.fungi.res",sep="\t",quote=F,na="",row.names=F)
-
-## Volcano plots
-
-pdf("dispersion_plots.pdf")
-
-lapply(unlist(res.merge,recursive=F),function(o) {
-	with(o,plot(log2FoldChange,log10(baseMean),pch=20, xlim=c(-2.5,2)))
-	with(subset(o, padj<.05 ), points(log2FoldChange, log10(baseMean), pch=20, col="red"))
-	with(subset(o, abs(log2FoldChange)>1), points(log2FoldChange, log10(baseMean), pch=20, col="orange"))
-	with(subset(o, padj<.05 & abs(log2FoldChange)>1), points(log2FoldChange, log10(baseMean), pch=20, col="green"))
-})
-
-dev.off()
+# output sig fasta
+writeXStringSet(readDNAStringSet(paste0(RHB,".otus.fa"))[res.merge[padj<=0.05]$OTU],paste0(RHB,".sig.fa"))
 
 
+## MA plots
+plot_ma(res[,c(2,1,6)])
 
-
-
+######### END OF UPDATED STUFF ########
 
 #===============================================================================
 #       network analysis
