@@ -2,6 +2,7 @@
 #       Load libraries
 #===============================================================================
 library(DESeq2)
+library(phyloseq)
 library(BiocParallel)
 library(data.table)
 library(plyr)
@@ -10,31 +11,12 @@ library(ggplot2)
 library(devtools)
 register(MulticoreParam(12))
 load_all("~/pipelines/metabarcoding/scripts/myfunctions")
-environment(plot_ordination) <- environment(ordinate) <- environment(plot_richness) <- environment(phyloseq::ordinate)
+environment(plot_alpha) <-environment(plot_ordination) <- environment(ordinate) <- environment(plot_richness) <- environment(phyloseq::ordinate)
 
 
 #===============================================================================
 #       Load data 
 #===============================================================================
-
-##### 16S #####
-
-#biom_file = "16S.taxa.biom"
-#colData = "colData"
-#mybiom <- import_biom(biom_file) 
-#sample_data(mybiom) <- read.table(colData,header=T,sep="\t",row.names=1)
-#tax_table(mybiom) <- phyloTaxaTidy(tax_table(mybiom),0.65)
-#biom16<-mybiom
-
-##### ITS #####
-
-#biom_file = "ITS.taxa.biom"
-#colData = "colData"
-#mybiom <- import_biom(biom_file) 
-#sample_data(mybiom) <- read.table(colData,header=T,sep="\t",row.names=1)
-#tax_table(mybiom) <- phyloTaxaTidy(tax_table(mybiom),0.65)
-#biomITS<-mybiom
-#mybioms <- list(bacteria=biom16,fungi=biomITS)
 
 ubiom_BAC <- loadData("16S.otu_table.txt","colData","16S.taxa","16S.phy",RHB="BAC")
 ubiom_FUN <- loadData("ITS.otu_table.txt","colData","ITS.taxa","ITS.phy",RHB="FUN")
@@ -56,27 +38,47 @@ ubiom_FUN$taxData <- taxData
 #===============================================================================
 #       Filter none oak
 #===============================================================================
-colData <- colData[colData$OAK==1,]
-countData <- countData[,rownames(colData)]
+
+#colData <- colData[colData$OAK==1,]
+#countData <- countData[,rownames(colData)]
 
 #===============================================================================
-#       Create DEseq objects 
+#       Create DEseq objects
 #===============================================================================
 
-# simple Deseq design
-design<-~1
+ubiom_FUN$dds <- ubiom_to_des(ubiom_FUN,filter=expression(colData$OAK==1),calcFactors=geoMeans)
+ubiom_BAC$dds <- ubiom_to_des(ubiom_BAC,filter=expression(colData$OAK==1),calcFactors=geoMeans)
 
-#create DES object
-dds<-DESeqDataSetFromMatrix(countData,colData,design)
+#===============================================================================
+#       Attach objects
+#===============================================================================
 
-# collapse replicates
-dds <- collapseReplicates(dds,groupby=paste0(dds$site,dds$tree))
-colData <- as.data.frame(colData(dds))
+# attach objects (FUN, BAC,OO or NEM)
+invisible(mapply(assign, names(ubiom_FUN), ubiom_FUN, MoreArgs=list(envir = globalenv())))
+invisible(mapply(assign, names(ubiom_BAC), ubiom_BAC, MoreArgs=list(envir = globalenv())))
 
-# remove low count samples
-#filter <- (colSums(countData)>=1000)
-#colData <- droplevels(colData[filter,])
-#countData <- countData[,filter]
+#===============================================================================
+#       Subsample data
+#===============================================================================
+
+# get number of samples per tree
+sample_numbers <- table(paste0(dds$condition,dds$site,dds$tree))
+
+# collapse (sum) samples
+dds <- collapseReplicates(dds,groupby=paste0(dds$condition,dds$site,dds$tree))
+
+# set sequence depth to sample
+depth <- colSums(counts(dds))*(1/sample_numbers)
+
+# set random seed  value to get repeatable results
+fixed_seed <- sum(utf8ToInt("Xiangming Xu")) 
+
+# sub sample counts 
+sub_counts1 <- subsample(counts(dds),depth,replace=T,fixed_seed)
+sub_counts2 <- subsample(counts(dds),depth,replace=F,fixed_seed) # sampling without replacement is probably a better scheme (though there's very little difference in the final results)
+
+# create new deseq object
+dds <- DESeqDataSetFromMatrix(sub_counts2,colData(dds),~1)
 
 # calculate size factors - using geoMeans function (works better with this data set)
 max(geoMeans(dds))/min(geoMeans(dds))
@@ -84,6 +86,90 @@ max(sizeFactors(estimateSizeFactors(dds)))/min(sizeFactors(estimateSizeFactors(d
 # sizeFactors(dds) <-sizeFactors(estimateSizeFactors(dds))
 sizeFactors(dds) <-geoMeans(dds) 
 # calcNormFactors(counts(dds),method="RLE",lib.size=(prop.table(colSums(counts(dds)))))
+
+#===============================================================================
+#       Alpha diversity analysis
+#===============================================================================
+
+pdf("16S_v2.alpha.pdf")
+plot_richness(biom16,color="condition",x="site",measures=c("Chao1", "Shannon", "Simpson"))
+dev.off()
+pdf("ITS_v2.alpha.pdf")
+plot_richness(biomITS,color="condition",x="site",measures=c("Chao1", "Shannon", "Simpson"))
+dev.off()
+
+all_alpha <- plot_richness(biom16,returnData=T)
+
+
+summary(aov(Chao1~condition*site,all_alpha))[[1]][2]
+summary(aov(Shannon~location+(Sample*Orchard),all_alpha))[[1]][2]
+summary(aov(Simpson~location+(Sample*Orchard),all_alpha))[[1]][2]
+
+# plot alpha diversity - plot_alpha will convert normalised abundances to integer values
+ggsave(paste(RHB,"Alpha_all.pdf",sep="_"),plot_alpha(counts(dds,normalize=T),colData(dds),design="site",colour="condition",measures=c("Chao1", "Shannon", "Simpson","Observed")))#,limits=c(0,1500,"Chao1")))
+ggsave(paste(RHB,"Alpha_Chao1.pdf",sep="_"),plot_alpha(counts(dds,normalize=T),colData(dds),design="site",colour="condition",measures=c("Chao1"))
+ggsave(paste(RHB,"Alpha_Shannon.pdf",sep="_"),plot_alpha(counts(dds,normalize=T),colData(dds),design="Genotype",colour="Block",measures=c("Shannon")))
+ggsave(paste(RHB,"Alpha_Simpson.pdf",sep="_"),plot_alpha(counts(dds,normalize=T),colData(dds),design="Genotype",colour="Block",measures=c("Simpson")))
+ggsave(paste(RHB,"Alpha_Observed.pdf",sep="_"),plot_alpha(counts(dds,normalize=T),colData(dds),design="Genotype",colour="Block",measures=c("Observed")))
+
+
+### permutation based anova on diversity index ranks ###
+
+# get the diversity index data
+all_alpha_ord <- plot_alpha(counts(dds,normalize=T),colData(dds),design="Treatment",returnData=T)
+
+# join diversity indices and metadata
+all_alpha_ord <- as.data.table(left_join(all_alpha_ord,colData,by=c("Samples"="Sample_FB"))) # or sample_on
+
+
+# perform anova for each index
+sink(paste(RHB,"ALPHA_stats.txt",sep="_"))
+	setkey(all_alpha_ord,S.chao1)
+	print("Chao1")
+	summary(aovp(as.numeric(as.factor(all_alpha_ord$S.chao1))~Block + Treatment + Genotype + Treatment * Genotype,all_alpha_ord))
+	setkey(all_alpha_ord,shannon)
+	print("Shannon")
+	summary(aovp(as.numeric(as.factor(all_alpha_ord$shannon))~Block + Treatment + Genotype + Treatment * Genotype,all_alpha_ord))
+	setkey(all_alpha_ord,simpson)
+	print("simpson")
+	summary(aovp(as.numeric(as.factor(all_alpha_ord$simpson))~Block + Treatment + Genotype + Treatment * Genotype,all_alpha_ord))
+sink()
+
+#===============================================================================
+#       Filter data
+#===============================================================================
+
+dds <- dds[rowSums(counts(dds, normalize=T))>4,]
+
+
+
+
+#===============================================================================
+#       Beta diversity analysis
+#===============================================================================
+
+library(ape)
+library(data.table)
+library(future)
+plan(multiprocess)
+
+phylip_data_ITS = fread("ITS.phy",skip=1)
+ftITS <- future({nj(as.dist(data.frame(phylip_data_ITS,row.names="V1")))})
+nj.ITS <- value(ftITS) 
+write.tree(nj.ITS,"ITS.tree")
+phy_tree(biomITS) <- nj.ITS
+
+
+phylip_data_16S = fread("16S.phy",skip=1)
+temp <- as.dist(data.frame(phylip_data_16S,row.names="V1"))
+ft <- future({nj(temp)})
+nj.16S <- value(ft) 
+write.tree(nj.16S,"ITS.tree")
+phy_tree(biom16S) <- nj.16S
+
+
+
+
 
 #===============================================================================
 #       PCA analysis
@@ -192,47 +278,6 @@ dev.off()
 
 
 
-#===============================================================================
-#       Alpha diversity analysis
-#===============================================================================
-
-pdf("16S_v2.alpha.pdf")
-plot_richness(biom16,color="condition",x="site",measures=c("Chao1", "Shannon", "Simpson"))
-dev.off()
-pdf("ITS_v2.alpha.pdf")
-plot_richness(biomITS,color="condition",x="site",measures=c("Chao1", "Shannon", "Simpson"))
-dev.off()
-
-all_alpha <- plot_richness(biom16,returnData=T)
-
-
-summary(aov(Chao1~condition*site,all_alpha))[[1]][2]
-summary(aov(Shannon~location+(Sample*Orchard),all_alpha))[[1]][2]
-summary(aov(Simpson~location+(Sample*Orchard),all_alpha))[[1]][2]
-
-
-#===============================================================================
-#       Beta diversity analysis
-#===============================================================================
-
-library(ape)
-library(data.table)
-library(future)
-plan(multiprocess)
-
-phylip_data_ITS = fread("ITS.phy",skip=1)
-ftITS <- future({nj(as.dist(data.frame(phylip_data_ITS,row.names="V1")))})
-nj.ITS <- value(ftITS) 
-write.tree(nj.ITS,"ITS.tree")
-phy_tree(biomITS) <- nj.ITS
-
-
-phylip_data_16S = fread("16S.phy",skip=1)
-temp <- as.dist(data.frame(phylip_data_16S,row.names="V1"))
-ft <- future({nj(temp)})
-nj.16S <- value(ft) 
-write.tree(nj.16S,"ITS.tree")
-phy_tree(biom16S) <- nj.16S
 
 
 
