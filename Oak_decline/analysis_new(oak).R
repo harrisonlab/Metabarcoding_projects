@@ -44,8 +44,8 @@ ubiom_FUN$taxData <- taxData
 #       Create DEseq objects (and remove none oak samples)
 #===============================================================================
 
-ubiom_FUN$dds <- ubiom_to_des(ubiom_FUN,filter=expression(colData$OAK==1),calcFactors=geoMeans)
-ubiom_BAC$dds <- ubiom_to_des(ubiom_BAC,filter=expression(colData$OAK==1),calcFactors=geoMeans)
+ubiom_FUN$dds <- ubiom_to_des(ubiom_FUN,filter=expression(colData$OAK=="Quercus"),calcFactors=geoMeans)
+ubiom_BAC$dds <- ubiom_to_des(ubiom_BAC,filter=expression(colData$OAK=="Quercus"),calcFactors=geoMeans)
 
 #===============================================================================
 #       Attach objects
@@ -101,6 +101,9 @@ all_alpha_ord <- plot_alpha(counts(dds,normalize=T),colData(dds),design="site",c
 dds$Samples <- rownames(colData(dds)) # or could use tibble/rownames construct in join by syntax)
 all_alpha_ord <- as.data.table(left_join(all_alpha_ord,as.data.frame(colData(dds))))
 
+# remove specultation site..
+all_alpha_ord <- all_alpha_ord[site!="Speculation",]
+
 # perform anova for each index (this may need editing as the design will be unbalanced)
 sink(paste(RHB,"ALPHA_stats.txt",sep="_"))
 	setkey(all_alpha_ord,S.chao1)
@@ -127,31 +130,31 @@ dds <- dds[rowSums(counts(dds, normalize=T))>4,]
 ### PCA ###
 
 # perform PC decomposition of DES object
-mypca <- des_to_pca(dds)
+mypca <- des_to_pca(dds[,dds$site!="Speculation"])
 
 # to get pca plot axis into the same scale create a dataframe of PC scores multiplied by their variance
 d <-t(data.frame(t(mypca$x)*mypca$percentVar))
 
 # plot the PCA
-g <- plotOrd(d,colData(dds),design="site",shape="condition",pointSize=1.5,axes=c(1,2),alpha=0.75)
+g <- plotOrd(d,colData(dds[,dds$site!="Speculation"]),design="site",shape="condition",pointSize=1.5,axes=c(1,2),alpha=0.75)
 ggsave(paste(RHB,"PCA.pdf",sep="_"),g)
 
 # ANOVA
 sink(paste(RHB,"PCA_ANOVA.txt",sep="_"))
 	print("ANOVA")
-	lapply(seq(1:5),function(x) {
-		summary(aov(mypca$x[,x]~condition*site,colData(dds)))
+	lapply(seq(1:4),function(x) {
+		summary(aov(mypca$x[,x]~condition*site,colData(dds[,dds$site!="Speculation"])))
 	})
 	print("PERMANOVA")
-	lapply(seq(1:5),function(x) {
-		summary(aovp(mypca$x[,x]~condition*site,colData(dds)))
+	lapply(seq(1:4),function(x) {
+		summary(aovp(mypca$x[,x]~condition*site,colData(dds[,dds$site!="Speculation"])))
 	})
 sink()
 
 ### NMDS ###
 
 # phyloseq has functions (using Vegan) for making NMDS plots
-myphylo <- ubiom_to_phylo(list(counts(dds,normalize=T),taxData,as.data.frame(colData(dds))))
+myphylo <- ubiom_to_phylo(list(counts(dds[,dds$site!="Speculation"],normalize=T),taxData,as.data.frame(colData(dds[,dds$site!="Speculation"]))))
 
 # add tree to phyloseq object
 phy_tree(myphylo) <- nj(as.dist(phylipData))
@@ -159,21 +162,26 @@ phy_tree(myphylo) <- nj(as.dist(phylipData))
 # calculate NMDS ordination using weighted unifrac scores
 ordu = ordinate(myphylo, "NMDS", "unifrac", weighted=TRUE)
 
-theme_set(theme_bw())
-#p1 <- plot_ordination(myphylo, ordu, type="Samples", color="Treatment",shape="Genotype")
-#p1 + facet_wrap(~Genotype, 3)
-
 # plot with plotOrd (or use plot_ordination)
-ggsave(paste(RHB,"Unifrac_NMDS.pdf",sep="_"),plotOrd(ordu$points,colData(dds),design="site",shape="condition",xlabel="NMDS1",ylabel="NMDS2",pointSize=1.5,axes=c(1,2),alpha=0.75))
+ggsave(paste(RHB,"Unifrac_NMDS.pdf",sep="_"),plotOrd(ordu$points,colData(dds[,dds$site!="Speculation"]),design="site",shape="condition",xlabel="NMDS1",ylabel="NMDS2",pointSize=1.5,axes=c(1,2),alpha=0.75))
 
 # permanova of unifrac distance
 sink(paste(RHB,"PERMANOVA_unifrac.txt",sep="_"))
 	print("weighted")
-	adonis(distance(myphylo,"unifrac",weighted=T)~condition*site,colData(dds),parallel=12,permutations=9999)
+	adonis(distance(myphylo,"unifrac",weighted=T)~condition*site,colData(dds[,dds$site!="Speculation"]),parallel=12,permutations=9999)
 	print("unweighted")
-	adonis(distance(myphylo,"unifrac",weighted=F)~condition*site,colData(dds),parallel=12,permutations=9999)
+	adonis(distance(myphylo,"unifrac",weighted=F)~condition*site,colData(dds[,dds$site!="Speculation"]),parallel=12,permutations=9999)
 
 sink()
+
+## including speculation site ##
+mypca <- des_to_pca(dds)
+d <-t(data.frame(t(mypca$x)*mypca$percentVar))
+ggsave(paste(RHB,"ALL_SITES_PCA.pdf",sep="_"),plotOrd(d,colData(dds),design="site",shape="condition",pointSize=1.5,axes=c(1,2),alpha=0.75))
+myphylo <- ubiom_to_phylo(list(counts(dds,normalize=T),taxData,as.data.frame(colData(dds))))
+phy_tree(myphylo) <- nj(as.dist(phylipData))
+ordu = ordinate(myphylo, "NMDS", "unifrac", weighted=TRUE)
+ggsave(paste(RHB,"Unifrac_ALL_SITES_NMDS.pdf",sep="_"),plotOrd(ordu$points,colData(dds),design="site",shape="condition",xlabel="NMDS1",ylabel="NMDS2",pointSize=1.5,axes=c(1,2),alpha=0.75))
 
 #===============================================================================
 #       differential analysis
@@ -182,25 +190,50 @@ sink()
 # p value for FDR cutoff
 alpha <- 0.5
 
-# the full model
-full_design <- ~site*condition
+# chestnuts wood paired samples
+dds_nuts <- dds[,dds$site=="Chestnuts"]
+dds_nuts <- dds_nuts[,c(dds$tree[dds$condition=="Healthy" & dds$site=="Chestnuts"] %in% dds$tree[dds$condition=="Symptom" & dds$site=="Chestnuts"],dds$tree[dds$condition=="Symptom" & dds$site=="Chestnuts"] %in% dds$tree[dds$condition=="Healthy" & dds$site=="Chestnuts"])]
 
-# add full model to dds object
-design(dds) <- full_design
+# drop unused levels from colData
+colData(dds_nuts) <- droplevels(colData(dds_nuts))
+
+# the model
+full_design <- ~tree+condition
+
+# add model to dds object
+design(dds_nuts) <- full_design
 
 # calculate fit
-dds <- DESeq(dds,parallel=T)	       
+dds_nuts <- DESeq(dds_nuts,parallel=T)	       
 
 # calculate results for default contrast (S vs H)
-res <- results(dds,alpha=alpha,parallel=T)
+res <- results(dds_nuts,alpha=alpha,parallel=T)
 
 # merge results with taxonomy data
 res.merge <- data.table(inner_join(data.table(OTU=rownames(res),as.data.frame(res)),data.table(OTU=rownames(taxData),taxData)))
-write.table(res.merge, paste(RHB,"diff.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
+write.table(res.merge, paste(RHB,"chestnut_paired_diff.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
+
+
+# chestnut + bigwood samples
+dds2 <- dds[,dds$site!="Speculation"]
+# drop unused levels from colData
+colData(dds2) <- droplevels(colData(dds2))
+# design
+full_design <- ~site+condition
+# add model
+design(dds2) <- full_design
+# calculate fit
+dds2 <- DESeq(dds2,parallel=T)	       
+# calculate results
+res <- results(dds2,alpha=alpha,parallel=T)
+# merge results with taxonomy data
+res.merge <- data.table(inner_join(data.table(OTU=rownames(res),as.data.frame(res)),data.table(OTU=rownames(taxData),taxData)))
+#output results
+write.table(res.merge, paste(RHB,"condition_diff.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
+
 
 # output sig fasta
 writeXStringSet(readDNAStringSet(paste0(RHB,".otus.fa"))[res.merge[padj<=0.05]$OTU],paste0(RHB,".sig.fa"))
-
 
 ## MA plots
 plot_ma(res[,c(2,1,6)])
