@@ -75,7 +75,7 @@ for RUN in $RUNS; do
    $PROJECT_FOLDER/data/$RUN/OO \
    $PROJECT_FOLDER/metabarcoding_pipeline/primers/adapters.db \
    150 5 0.5 21 20
-done    
+done 
 
 # Nematode
 for RUN in $RUNS; do
@@ -86,6 +86,15 @@ for RUN in $RUNS; do
    150 10 0.5 23 18
 done
 
+# Ambiguous data
+for RUN in $RUNS; do
+  $PROJECT_FOLDER/metabarcoding_pipeline/scripts/PIPELINE.sh -c AMBIGpre \
+   "$PROJECT_FOLDER/data/$RUN/ambiguous/*R1*.fastq" \
+   $PROJECT_FOLDER/data/$RUN/ambiguous \
+   $PROJECT_FOLDER/metabarcoding_pipeline/primers/primers.db \
+   $PROJECT_FOLDER/metabarcoding_pipeline/primers/adapters.db \
+   300 5
+done
 
 # make analysis folders
 mkdir $PROJECT_FOLDER/analysis/WP3
@@ -99,8 +108,11 @@ for RUN in $RUNS; do
   for s in BAC FUN; do
     ln -s $PROJECT_FOLDER/data/$RUN/$s/unfiltered/* $PROJECT_FOLDER/analysis/WP3/$s/unfiltered/.
     ln -s $PROJECT_FOLDER/data/$RUN/$s/filtered/* $PROJECT_FOLDER/analysis/WP3/$s/filtered/.
-    ln -s $PROJECT_FOLDER/data/$RUN/ambiguous/* $PROJECT_FOLDER/analysis/WP3/ambiguous/.
   done
+  ln -s $PROJECT_FOLDER/data/$RUN/ambiguous/joined/* $PROJECT_FOLDER/analysis/WP3/ambiguous/joined.
+  ln -s $PROJECT_FOLDER/data/$RUN/ambiguous/unjoined/* $PROJECT_FOLDER/analysis/WP3/ambiguous/unjoined.
+
 done
 
+# rename files
 #find $PROJECT_FOLDER/analysis/WP3 -type l -name *|rename 's/-ITS.*/\.fa/' 
