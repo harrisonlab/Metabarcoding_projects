@@ -32,3 +32,12 @@ sed -i -e 's/Zotu/OTU/' $PROJECT_FOLDER/data/$RUN/NEM.zotus.fa
 $PROJECT_FOLDER/metabarcoding_pipeline/scripts/PIPELINE.sh -c dist $PROJECT_FOLDER $RUN NEM
 $PROJECT_FOLDER/metabarcoding_pipeline/scripts/PIPELINE.sh -c tax_assign $PROJECT_FOLDER $RUN NEM sintax
 $PROJECT_FOLDER/metabarcoding_pipeline/scripts/PIPELINE.sh -c OTU $PROJECT_FOLDER $RUN NEM 23 18
+
+# AMBIGUOUS
+mv $PROJECT_FOLDER/WP3/ambiguous/unjoined $PROJECT_FOLDER/WP3/ambiguous/unfiltered
+$PROJECT_FOLDER/metabarcoding_pipeline/scripts/PIPELINE.sh -c OTUS $PROJECT_FOLDER $RUN ambiguous 23 21
+mv $PROJECT_FOLDER/WP3/ambiguous/unfiltered $PROJECT_FOLDER/WP3/ambiguous/unjoined
+mv $PROJECT_FOLDER/WP3/ambiguous/joined $PROJECT_FOLDER/WP3/ambiguous/unfiltered
+$PROJECT_FOLDER/metabarcoding_pipeline/scripts/PIPELINE.sh -c OTUS $PROJECT_FOLDER $RUN ambiguous 17 21
+mv $PROJECT_FOLDER/WP3/ambiguous/unfiltered $PROJECT_FOLDER/WP3/ambiguous/joined
+
