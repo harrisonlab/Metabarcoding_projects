@@ -198,6 +198,31 @@ phy_tree(myphylo) <- nj(as.dist(phylipData))
 ordu = ordinate(myphylo, "NMDS", "unifrac", weighted=TRUE)
 ggsave(paste(RHB,"Unifrac_ALL_SITES_NMDS.pdf",sep="_"),plotOrd(ordu$points,colData(dds),design="site",shape="condition",xlabel="NMDS1",ylabel="NMDS2",pointSize=1.5,axes=c(1,2),alpha=0.75))
 
+## just chestnuts ##
+dds_nuts <- dds[,dds$site=="Chestnuts"]
+dds_nuts <- dds_nuts[,c(dds$tree[dds$condition=="Healthy" & dds$site=="Chestnuts"] %in% dds$tree[dds$condition=="Symptom" & dds$site=="Chestnuts"],dds$tree[dds$condition=="Symptom" & dds$site=="Chestnuts"] %in% dds$tree[dds$condition=="Healthy" & dds$site=="Chestnuts"])]
+mypca <- des_to_pca(dds_nuts)
+sink(paste(RHB,"PCA_chestnuts_ANOVA.txt",sep="_"))
+	print("ANOVA")
+	lapply(seq(1:4),function(x) {
+		summary(aov(mypca$x[,x]~tree+condition,colData(dds_nuts)))
+	})
+	print("PERMANOVA")
+	lapply(seq(1:4),function(x) {
+		summary(aovp(mypca$x[,x]~tree+condition,colData(dds_nuts)))
+	})
+sink()
+myphylo <- ubiom_to_phylo(list(counts(dds_nuts,normalize=T),taxData,as.data.frame(colData(dds_nuts))))
+phy_tree(myphylo) <- nj(as.dist(phylipData))
+ordu = ordinate(myphylo, "NMDS", "unifrac", weighted=TRUE)
+sink(paste(RHB,"chestnuts_PERMANOVA_unifrac.txt",sep="_"))
+	print("weighted")
+	adonis(distance(myphylo,"unifrac",weighted=T)~tree+condition,colData(dds_nuts),parallel=12,permutations=9999)
+	print("unweighted")
+	adonis(distance(myphylo,"unifrac",weighted=F)~tree+condition,colData(dds_nuts),parallel=12,permutations=9999)
+
+sink()
+
 #===============================================================================
 #       differential analysis
 #===============================================================================
