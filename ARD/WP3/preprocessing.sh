@@ -116,3 +116,6 @@ done
 
 # rename files
 #find $PROJECT_FOLDER/analysis/WP3 -type l -name *|rename 's/-ITS.*/\.fa/' 
+
+# concatenate unfiltered and ambiguous files
+# not implemented will align to OTUs seperately and combine OTU tables in R
