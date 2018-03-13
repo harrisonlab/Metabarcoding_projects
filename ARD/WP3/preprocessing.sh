@@ -102,3 +102,5 @@ for RUN in $RUNS; do
     ln -s $PROJECT_FOLDER/data/$RUN/ambiguous/* $PROJECT_FOLDER/analysis/WP3/ambiguous/.
   done
 done
+
+#find $PROJECT_FOLDER/analysis/WP3 -type l -name *|rename 's/-ITS.*/\.fa/' 
