@@ -238,6 +238,18 @@ sink(paste(RHB,"speculation_PERMANOVA_unifrac.txt",sep="_"))
 
 sink()
 
+## just chestnuts unpaired ##
+dds2 <- dds[,dds$site=="Chestnuts"]
+myphylo <- ubiom_to_phylo(list(counts(dds2,normalize=T),taxData,as.data.frame(colData(dds2))))
+# phy_tree(myphylo) <- phy_tree(myphylo2)
+phy_tree(myphylo) <- nj(as.dist(phylipData))
+sink(paste(RHB,"chestnuts_unpaired_PERMANOVA_unifrac.txt",sep="_"))
+	print("weighted")
+	adonis(distance(myphylo,"unifrac",weighted=T)~condition,colData(dds2),parallel=12,permutations=9999)
+	print("unweighted")
+	adonis(distance(myphylo,"unifrac",weighted=F)~condition,colData(dds2),parallel=12,permutations=9999)
+
+sink()
 #===============================================================================
 #       differential analysis
 #===============================================================================
@@ -320,6 +332,23 @@ res <- results(dds2,alpha=alpha,parallel=T)
 res.merge <- data.table(inner_join(data.table(OTU=rownames(res),as.data.frame(res)),data.table(OTU=rownames(taxData),taxData)))
 #output results
 write.table(res.merge, paste(RHB,"speculation_diff.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
+
+# chestnuts unpaired
+dds2 <- dds[,dds$site=="Chestnuts"]
+# drop unused levels from colData
+colData(dds2) <- droplevels(colData(dds2))
+# design
+full_design <- ~condition
+# add model
+design(dds2) <- full_design
+# calculate fit
+dds2 <- DESeq(dds2)	       
+# calculate results
+res <- results(dds2,alpha=alpha,parallel=T)
+# merge results with taxonomy data
+res.merge <- data.table(inner_join(data.table(OTU=rownames(res),as.data.frame(res)),data.table(OTU=rownames(taxData),taxData)))
+#output results
+write.table(res.merge, paste(RHB,"chestnuts_diff.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
 
 ######### END OF UPDATED STUFF ########
 
