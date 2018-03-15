@@ -90,7 +90,7 @@ sizeFactors(dds) <-geoMeans(dds)
 #===============================================================================
 
 # plot alpha diversity - plot_alpha will convert normalised abundances to integer values
-ggsave(paste(RHB,"Alpha_all.pdf",sep="_"),plot_alpha(counts(dds,normalize=T),colData(dds),design="site",colour="condition",measures=c("Chao1", "Shannon", "Simpson","Observed"),limits=c(0,600,"Chao1")))
+ggsave(paste(RHB,"Alpha_choa_all.pdf",sep="_"),plot_alpha(counts(dds,normalize=T),colData(dds),design="site",colour="condition",measures=c("Chao1", "Shannon", "Simpson","Observed"),limits=c(500,10000,"Chao1")))
 
 ### permutation based anova on diversity index ranks ###
 
@@ -101,8 +101,8 @@ all_alpha_ord <- plot_alpha(counts(dds,normalize=T),colData(dds),design="site",c
 dds$Samples <- rownames(colData(dds)) # or could use tibble/rownames construct in join by syntax)
 all_alpha_ord <- as.data.table(left_join(all_alpha_ord,as.data.frame(colData(dds))))
 
-# remove specultation site..
-all_alpha_ord <- all_alpha_ord[site!="Speculation",]
+# remove specultation site (not necessary as I now have 
+# all_alpha_ord <- all_alpha_ord[site!="Speculation",]
 
 # perform anova for each index (this may need editing as the design will be unbalanced)
 sink(paste(RHB,"ALPHA_stats.txt",sep="_"))
@@ -145,31 +145,31 @@ dds <- dds[rowSums(counts(dds, normalize=T))>4,]
 ### PCA ###
 
 # perform PC decomposition of DES object
-mypca <- des_to_pca(dds[,dds$site!="Speculation"])
+mypca <- des_to_pca(dds)
 
 # to get pca plot axis into the same scale create a dataframe of PC scores multiplied by their variance
 d <-t(data.frame(t(mypca$x)*mypca$percentVar))
 
 # plot the PCA
-g <- plotOrd(d,colData(dds[,dds$site!="Speculation"]),design="site",shape="condition",pointSize=1.5,axes=c(1,2),alpha=0.75)
+g <- plotOrd(d,colData(dds),design="site",shape="condition",pointSize=1.5,axes=c(1,2),alpha=0.75)
 ggsave(paste(RHB,"PCA.pdf",sep="_"),g)
 
 # ANOVA
 sink(paste(RHB,"PCA_ANOVA.txt",sep="_"))
 	print("ANOVA")
 	lapply(seq(1:4),function(x) {
-		summary(aov(mypca$x[,x]~condition*site,colData(dds[,dds$site!="Speculation"])))
+		summary(aov(mypca$x[,x]~condition*site,colData(dds)))
 	})
 	print("PERMANOVA")
 	lapply(seq(1:4),function(x) {
-		summary(aovp(mypca$x[,x]~condition*site,colData(dds[,dds$site!="Speculation"])))
+		summary(aovp(mypca$x[,x]~condition*site,colData(dds)))
 	})
 sink()
 
 ### NMDS ###
 
 # phyloseq has functions (using Vegan) for making NMDS plots
-myphylo <- ubiom_to_phylo(list(counts(dds[,dds$site!="Speculation"],normalize=T),taxData,as.data.frame(colData(dds[,dds$site!="Speculation"]))))
+myphylo <- ubiom_to_phylo(list(counts(dds,normalize=T),taxData,as.data.frame(colData(dds))))
 
 # add tree to phyloseq object
 phy_tree(myphylo) <- nj(as.dist(phylipData))
@@ -178,25 +178,16 @@ phy_tree(myphylo) <- nj(as.dist(phylipData))
 ordu = ordinate(myphylo, "NMDS", "unifrac", weighted=TRUE)
 
 # plot with plotOrd (or use plot_ordination)
-ggsave(paste(RHB,"Unifrac_NMDS.pdf",sep="_"),plotOrd(ordu$points,colData(dds[,dds$site!="Speculation"]),design="site",shape="condition",xlabel="NMDS1",ylabel="NMDS2",pointSize=1.5,axes=c(1,2),alpha=0.75))
+ggsave(paste(RHB,"Unifrac_NMDS.pdf",sep="_"),plotOrd(ordu$points,colData(dds),design="site",shape="condition",xlabel="NMDS1",ylabel="NMDS2",pointSize=1.5,axes=c(1,2),alpha=0.75))
 
 # permanova of unifrac distance
 sink(paste(RHB,"PERMANOVA_unifrac.txt",sep="_"))
 	print("weighted")
-	adonis(distance(myphylo,"unifrac",weighted=T)~condition*site,colData(dds[,dds$site!="Speculation"]),parallel=12,permutations=9999)
+	adonis(distance(myphylo,"unifrac",weighted=T)~condition*site,colData(dds),parallel=12,permutations=9999)
 	print("unweighted")
-	adonis(distance(myphylo,"unifrac",weighted=F)~condition*site,colData(dds[,dds$site!="Speculation"]),parallel=12,permutations=9999)
+	adonis(distance(myphylo,"unifrac",weighted=F)~condition*site,colData(dds),parallel=12,permutations=9999)
 
 sink()
-
-## including speculation site ##
-mypca <- des_to_pca(dds)
-d <-t(data.frame(t(mypca$x)*mypca$percentVar))
-ggsave(paste(RHB,"ALL_SITES_PCA.pdf",sep="_"),plotOrd(d,colData(dds),design="site",shape="condition",pointSize=1.5,axes=c(1,2),alpha=0.75))
-myphylo <- ubiom_to_phylo(list(counts(dds,normalize=T),taxData,as.data.frame(colData(dds))))
-phy_tree(myphylo) <- nj(as.dist(phylipData))
-ordu = ordinate(myphylo, "NMDS", "unifrac", weighted=TRUE)
-ggsave(paste(RHB,"Unifrac_ALL_SITES_NMDS.pdf",sep="_"),plotOrd(ordu$points,colData(dds),design="site",shape="condition",xlabel="NMDS1",ylabel="NMDS2",pointSize=1.5,axes=c(1,2),alpha=0.75))
 
 ## just chestnuts ##
 dds_nuts <- dds[,dds$site=="Chestnuts"]
@@ -214,7 +205,6 @@ sink(paste(RHB,"PCA_chestnuts_ANOVA.txt",sep="_"))
 sink()
 myphylo <- ubiom_to_phylo(list(counts(dds_nuts,normalize=T),taxData,as.data.frame(colData(dds_nuts))))
 phy_tree(myphylo) <- nj(as.dist(phylipData))
-ordu = ordinate(myphylo, "NMDS", "unifrac", weighted=TRUE)
 sink(paste(RHB,"chestnuts_PERMANOVA_unifrac.txt",sep="_"))
 	print("weighted")
 	adonis(distance(myphylo,"unifrac",weighted=T)~tree+condition,colData(dds_nuts),parallel=12,permutations=9999)
@@ -223,12 +213,37 @@ sink(paste(RHB,"chestnuts_PERMANOVA_unifrac.txt",sep="_"))
 
 sink()
 
+## just bigwood ##
+dds2 <- dds[,dds$site=="Bigwood"]
+myphylo <- ubiom_to_phylo(list(counts(dds2,normalize=T),taxData,as.data.frame(colData(dds2))))
+phy_tree(myphylo) <- phy_tree(myphylo2)
+#phy_tree(myphylo) <- nj(as.dist(phylipData))
+sink(paste(RHB,"bigwood_PERMANOVA_unifrac.txt",sep="_"))
+	print("weighted")
+	adonis(distance(myphylo,"unifrac",weighted=T)~condition,colData(dds2),parallel=12,permutations=9999)
+	print("unweighted")
+	adonis(distance(myphylo,"unifrac",weighted=F)~condition,colData(dds2),parallel=12,permutations=9999)
+
+sink()
+## just speculation ##
+dds2 <- dds[,dds$site=="Speculation"]
+myphylo <- ubiom_to_phylo(list(counts(dds2,normalize=T),taxData,as.data.frame(colData(dds2))))
+phy_tree(myphylo) <- phy_tree(myphylo2)
+#phy_tree(myphylo) <- nj(as.dist(phylipData))
+sink(paste(RHB,"speculation_PERMANOVA_unifrac.txt",sep="_"))
+	print("weighted")
+	adonis(distance(myphylo,"unifrac",weighted=T)~condition,colData(dds2),parallel=12,permutations=9999)
+	print("unweighted")
+	adonis(distance(myphylo,"unifrac",weighted=F)~condition,colData(dds2),parallel=12,permutations=9999)
+
+sink()
+
 #===============================================================================
 #       differential analysis
 #===============================================================================
 
 # p value for FDR cutoff
-alpha <- 0.5
+alpha <- 0.05
 
 # chestnuts wood paired samples
 dds_nuts <- dds[,dds$site=="Chestnuts"]
@@ -251,11 +266,12 @@ res <- results(dds_nuts,alpha=alpha,parallel=T)
 
 # merge results with taxonomy data
 res.merge <- data.table(inner_join(data.table(OTU=rownames(res),as.data.frame(res)),data.table(OTU=rownames(taxData),taxData)))
+
+# output results
 write.table(res.merge, paste(RHB,"chestnut_paired_diff.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
 
-
-# chestnut + bigwood samples
-dds2 <- dds[,dds$site!="Speculation"]
+# all samples
+dds2 <- dds
 # drop unused levels from colData
 colData(dds2) <- droplevels(colData(dds2))
 # design
@@ -269,14 +285,41 @@ res <- results(dds2,alpha=alpha,parallel=T)
 # merge results with taxonomy data
 res.merge <- data.table(inner_join(data.table(OTU=rownames(res),as.data.frame(res)),data.table(OTU=rownames(taxData),taxData)))
 #output results
-write.table(res.merge, paste(RHB,"condition_diff.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
+write.table(res.merge, paste(RHB,"all_diff.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
 
+# bigwood
+dds2 <- dds[,dds$site=="Bigwood"]
+# drop unused levels from colData
+colData(dds2) <- droplevels(colData(dds2))
+# design
+full_design <- ~condition
+# add model
+design(dds2) <- full_design
+# calculate fit
+dds2 <- DESeq(dds2,parallel=T)	       
+# calculate results
+res <- results(dds2,alpha=alpha,parallel=T)
+# merge results with taxonomy data
+res.merge <- data.table(inner_join(data.table(OTU=rownames(res),as.data.frame(res)),data.table(OTU=rownames(taxData),taxData)))
+#output results
+write.table(res.merge, paste(RHB,"bigwood_diff.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
 
-# output sig fasta
-writeXStringSet(readDNAStringSet(paste0(RHB,".otus.fa"))[res.merge[padj<=0.05]$OTU],paste0(RHB,".sig.fa"))
-
-## MA plots
-plot_ma(res[,c(2,1,6)])
+# speculation
+dds2 <- dds[,dds$site=="Speculation"]
+# drop unused levels from colData
+colData(dds2) <- droplevels(colData(dds2))
+# design
+full_design <- ~condition
+# add model
+design(dds2) <- full_design
+# calculate fit
+dds2 <- DESeq(dds2,parallel=T)	       
+# calculate results
+res <- results(dds2,alpha=alpha,parallel=T)
+# merge results with taxonomy data
+res.merge <- data.table(inner_join(data.table(OTU=rownames(res),as.data.frame(res)),data.table(OTU=rownames(taxData),taxData)))
+#output results
+write.table(res.merge, paste(RHB,"speculation_diff.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
 
 ######### END OF UPDATED STUFF ########
 
