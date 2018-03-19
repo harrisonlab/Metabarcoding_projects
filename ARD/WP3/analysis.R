@@ -86,3 +86,195 @@ ubiom_BAC$dds <- ubiom_to_des(ubiom_BAC,calcFactosr=geoMeans)
 # attach objects (FUN, BAC,OO or NEM)
 invisible(mapply(assign, names(ubiom_FUN), ubiom_FUN, MoreArgs=list(envir = globalenv())))
 invisible(mapply(assign, names(ubiom_BAC), ubiom_BAC, MoreArgs=list(envir = globalenv())))
+
+#===============================================================================
+#       Pool Data/subsample
+#===============================================================================
+
+# Get rid of control samples
+dds <- dds[,gsub("(^[A-Z][0-9]*)([A-Z])(.*)","\\2",rownames(colData(dds)))!="C"]
+
+# There are only 3 (out of 900) missing samples - subsampling is a bit too extreme
+# As each sample point has three biological replicates will take the mean of other samples to represent missing samples
+
+# get number of samples per tree
+sample_numbers <- table(sub("[A-Z]$","",rownames(colData(dds))))
+
+# collapse (sum) samples
+dds <- collapseReplicates(dds,groupby=sub("[A-Z]$","",rownames(colData(dds))))
+
+# set the dds sizefactor to the number of samples 
+dds$sizeFactors <- as.vector(3/sample_numbers)
+
+# recreate countData and colData
+countData<- round(counts(dds,normalize=T),0)
+colData <- as.data.frame(colData(dds))
+
+# new dds object with the corrected data set
+dds <- DESeqDataSetFromMatrix(countData,colData,~1)
+
+# calculate size factors - using geoMeans function (works better with this data set)
+max(geoMeans(dds))/min(geoMeans(dds))
+max(sizeFactors(estimateSizeFactors(dds)))/min(sizeFactors(estimateSizeFactors(dds)))
+# sizeFactors(dds) <-sizeFactors(estimateSizeFactors(dds))
+sizeFactors(dds) <-geoMeans(dds) 
+# calcNormFactors(counts(dds),method="RLE",lib.size=(prop.table(colSums(counts(dds)))))
+sizeFactors(dds) <-geoMeans(dds) 
+
+#===============================================================================
+#       Alpha diversity analysis - RUN BEFORE FILTERING OUT ANY LOW COUNT OTUS
+#===============================================================================
+
+# plot alpha diversity - plot_alpha will convert normalised abundances to integer values
+
+# plot alpha diversity - plot_alpha will convert normalised abundances to integer values
+ggsave(paste(RHB,"Alpha_choa_all.pdf",sep="_"),plot_alpha(counts(dds,normalize=T),colData(dds),design="site",colour="condition",measures=c("Chao1", "Shannon", "Simpson","Observed")))
+
+### permutation based anova on diversity index ranks ###
+
+# get the diversity index data
+all_alpha_ord <- plot_alpha(counts(dds,normalize=T),colData(dds),design="site",colour="condition",returnData=T)
+
+# join diversity indices and metadata
+dds$Samples <- rownames(colData(dds)) # or could use tibble/rownames construct in join by syntax)
+all_alpha_ord <- as.data.table(left_join(all_alpha_ord,as.data.frame(colData(dds))))
+
+# remove specultation site (not necessary as I now have 
+# all_alpha_ord <- all_alpha_ord[site!="Speculation",]
+
+# perform anova for each index (this may need editing as the design will be unbalanced)
+sink(paste(RHB,"ALPHA_stats.txt",sep="_"))
+	setkey(all_alpha_ord,S.chao1)
+	print("Chao1")
+	summary(aovp(as.numeric(as.factor(all_alpha_ord$S.chao1))~condition*site,all_alpha_ord))
+	setkey(all_alpha_ord,shannon)
+	print("Shannon")
+	summary(aovp(as.numeric(as.factor(all_alpha_ord$shannon))~condition*site,all_alpha_ord))
+	setkey(all_alpha_ord,simpson)
+	print("simpson")
+	summary(aovp(as.numeric(as.factor(all_alpha_ord$simpson))~condition*site,all_alpha_ord))
+sink()
+
+#===============================================================================
+#       Filter data
+#===============================================================================
+
+dds <- dds[rowSums(counts(dds, normalize=T))>4,]
+
+#===============================================================================
+#       Beta diversity analysis
+#===============================================================================
+
+### PCA ###
+
+# perform PC decomposition of DES object
+mypca <- des_to_pca(dds)
+
+# to get pca plot axis into the same scale create a dataframe of PC scores multiplied by their variance
+d <-t(data.frame(t(mypca$x)*mypca$percentVar))
+
+# plot the PCA
+g <- plotOrd(d,colData(dds),design="site",shape="time",pointSize=1.5,axes=c(1,2),alpha=0.75)
+ggsave(paste(RHB,"PCA.pdf",sep="_"),g)
+
+# ANOVA
+sink(paste(RHB,"PCA_ANOVA.txt",sep="_"))
+	print("ANOVA")
+	lapply(seq(1:4),function(x) {
+		summary(aov(mypca$x[,x]~condition*site,colData(dds)))
+	})
+	print("PERMANOVA")
+	lapply(seq(1:4),function(x) {
+		summary(aovp(mypca$x[,x]~condition*site,colData(dds)))
+	})
+sink()
+
+### NMDS ###
+
+# phyloseq has functions (using Vegan) for making NMDS plots
+myphylo <- ubiom_to_phylo(list(counts(dds,normalize=T),taxData,as.data.frame(colData(dds))))
+
+# add tree to phyloseq object
+phy_tree(myphylo) <- nj(as.dist(phylipData))
+
+# calculate NMDS ordination using weighted unifrac scores
+ordu = ordinate(myphylo, "NMDS", "unifrac", weighted=TRUE)
+
+theme_set(theme_bw())
+p1 <- plot_ordination(myphylo, ordu, type="Samples", color="Treatment",shape="Genotype")
+p1 + facet_wrap(~Genotype, 3)
+
+# plot with plotOrd (or use plot_ordination)
+ggsave(paste(RHB,"Unifrac_NMDS.pdf",sep="_"),plotOrd(ordu$points,colData(dds),design="Block",xlabel="NMDS1",ylabel="NMDS2",pointSize=2),width=10,height=10)
+
+# permanova of unifrac distance
+sink(paste(RHB,"PERMANOVA_unifrac.txt",sep="_"))
+  print("weighted")
+  adonis(distance(myphylo,"unifrac",weighted=T)~Block + Treatment + Genotype + Treatment * Genotype,colData(dds),parallel=12,permutations=9999)
+  print("unweighted")
+  adonis(distance(myphylo,"unifrac",weighted=F)~Block + Treatment + Genotype + Treatment * Genotype,colData(dds),parallel=12,permutations=9999)
+
+sink()
+
+#===============================================================================
+#      Population structure CCA/RDA
+#===============================================================================
+
+###	CCA ###
+
+ord_cca <- ordinate(myphylo,method="CCA","samples",formula=~Treatment + Genotype + Treatment * Genotype + Condition(Block))
+
+plot_ordination(myphylo, ord_cca, "samples", color="Treatment",shape="Genotype")
+
+anova.cca(ord_cca)
+
+### RDA ###
+
+# transform data using vst
+otu_table(myphylo) <-  otu_table(assay(varianceStabilizingTransformation(dds),taxa_are_rows=T)
+
+# calculate rda1 (treatment + genotype)
+ord_rda1 <- ordinate(myphylo,method="RDA","samples",formula=~Treatment + Genotype)
+
+# calculate rda2 (treatment + genotype + interaction)
+ord_rda2 <- ordinate(myphylo,method="RDA","samples",formula=~Treatment + Genotype + Treatment * Genotype)
+
+# permutation anova of rda1 and rda 2
+aov_rda1 <- anova.cca(ord_rda1,permuations=9999)
+aov_rda2 <- anova.cca(ord_rda2,permuations=9999)
+
+## partial RDA
+
+# calculate rda3 removing block effect(treatment + genotype)
+ord_rda3 <- ordinate(myphylo,method="RDA","samples",formula= ~Condition(Block) + Treatment + Genotype)
+
+# calculate rda4 removing block effect(treatment + genotype + interaction)
+ord_rda4 <- ordinate(myphylo,method="RDA","samples",formula= ~Condition(Block) + Treatment + Genotype + Treatment * Genotype)
+
+# permutation anova of rda3 and rda 4
+aov_rda3 <- anova.cca(ord_rda3,permuations=9999)
+aov_rda4 <- anova.cca(ord_rda4,permuations=9999)
+
+# plots
+
+p1 <- plot_ordination(myphylo, ord_rda1, "samples", color="Treatment",shape="Genotype")
+p2 <- plot_ordination(myphylo, ord_rda2, "samples", color="Treatment",shape="Genotype")
+p3 <- plot_ordination(myphylo, ord_rda3, "samples", color="Treatment",shape="Genotype")
+p4 <- plot_ordination(myphylo, ord_rda4, "samples", color="Treatment",shape="Genotype")
+
+ggsave(paste(RHB,"RDA1.pdf",sep="_"),p1)
+ggsave(paste(RHB,"RDA2.pdf",sep="_"),p2)
+ggsave(paste(RHB,"RDA3.pdf",sep="_"),p3)
+ggsave(paste(RHB,"RDA4.pdf",sep="_"),p4)
+
+ggsave(paste(RHB,"RDA1_facet.pdf",sep="_"),p1+ facet_wrap(~Genotype, 2)+ geom_point(size=3.5,alpha=0.75))
+ggsave(paste(RHB,"RDA2_facet.pdf",sep="_"),p2+ facet_wrap(~Genotype, 2)+ geom_point(size=3.5,alpha=0.75))
+ggsave(paste(RHB,"RDA3_facet.pdf",sep="_"),p3+ facet_wrap(~Genotype, 2)+ geom_point(size=3.5,alpha=0.75))
+ggsave(paste(RHB,"RDA4_facet.pdf",sep="_"),p4+ facet_wrap(~Genotype, 2)+ geom_point(size=3.5,alpha=0.75))
+
+sink(paste(RHB,"RDA_permutation_anova",sep="_"))
+  print(aov_rda1)
+  print(aov_rda2)
+  print(aov_rda3)
+  print(aov_rda4)
+sink()
