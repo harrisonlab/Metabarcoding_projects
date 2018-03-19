@@ -77,7 +77,7 @@ ubiom_FUN$taxData <- taxData
 #===============================================================================
 
 ubiom_FUN$dds <- ubiom_to_des(ubiom_FUN)
-ubiom_BAC$dds <- ubiom_to_des(ubiom_BAC)
+ubiom_BAC$dds <- ubiom_to_des(ubiom_BAC,calcFactosr=geoMeans)
 
 #===============================================================================
 #       Attach objects
