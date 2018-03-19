@@ -31,8 +31,33 @@ A2 <- fread("ambiguous2.otu_table.txt") # bacteria r1 (not used at moment)
 A3 <- fread("ambiguous3.otu_table.txt") # bacteria merged
 A4 <- fread("ambiguous4.otu_table.txt") # fungi merged (not used)
 
-ubiom_BAC$countData <- as.data.table(rbind.fill(ubiom_BAC$countData,A3))[,lapply(.SD,sum,na.rm=T),by="#OTU ID"] 
-ubiom_FUN$countData <- as.data.table(rbind.fill(ubiom_BAC$countData,A1))[,lapply(.SD,sum,na.rm=T),by="#OTU ID"] 
+colnames(A1) <- sub("_.*","",sub("-","\\.",colnames(A1)))
+colnames(A2) <- sub("_.*","",sub("-","\\.",colnames(A2)))
+colnames(A3) <- sub("_.*","",sub("-","\\.",colnames(A3)))
+colnames(A4) <- sub("_.*","",sub("-","\\.",colnames(A4)))
+
+temp <- ubiom_BAC$countData
+temp$"#OTU ID" <- rownames(temp)
+temp <- as.data.frame(as.data.table(rbind.fill(temp,A3))[,lapply(.SD,sum,na.rm=T),by="#OTU ID"])
+rownames(temp) <- temp$"#OTU ID"
+temp <- temp[,-1]
+ubiom_BAC$countData <- temp
+
+temp <- ubiom_FUN$countData
+temp$"#OTU ID" <- rownames(temp)
+temp <- as.data.frame(as.data.table(rbind.fill(temp,A1))[,lapply(.SD,sum,na.rm=T),by="#OTU ID"])
+rownames(temp) <- temp$"#OTU ID"
+temp <- temp[,-1]
+ubiom_FUN$countData <- temp 
+
+rm(temp)
+
+# ergh some colnames don't match colData - uppercase rep
+# easiest just to convert everything to upper or lower
+colnames(ubiom_FUN$countData) <- toupper(colnames(ubiom_FUN$countData))
+colnames(ubiom_BAC$countData) <- toupper(colnames(ubiom_BAC$countData))
+rownames(ubiom_FUN$colData) <- toupper(rownames(ubiom_FUN$colData))
+rownames(ubiom_BAC$colData) <- toupper(rownames(ubiom_BAC$colData))
 
 #===============================================================================
 #       Combine species
@@ -51,8 +76,8 @@ ubiom_FUN$taxData <- taxData
 #       Create DEseq objects
 #===============================================================================
 
-ubiom_FUN$dds <- ubiom_to_des(ubiom_FUN,filter=expression(colSums(countData)>=1000&colData$Block!="R"))
-ubiom_BAC$dds <- ubiom_to_des(ubiom_BAC,filter=expression(colSums(countData)>=1000&colData$Block!="R"))
+ubiom_FUN$dds <- ubiom_to_des(ubiom_FUN)
+ubiom_BAC$dds <- ubiom_to_des(ubiom_BAC)
 
 #===============================================================================
 #       Attach objects
