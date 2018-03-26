@@ -77,7 +77,7 @@ ubiom_FUN$taxData <- taxData
 #===============================================================================
 
 ubiom_FUN$dds <- ubiom_to_des(ubiom_FUN)
-ubiom_BAC$dds <- ubiom_to_des(ubiom_BAC,calcFactosr=geoMeans)
+ubiom_BAC$dds <- ubiom_to_des(ubiom_BAC,calcFactors=geoMeans)
 
 #===============================================================================
 #       Attach objects
@@ -95,31 +95,53 @@ invisible(mapply(assign, names(ubiom_BAC), ubiom_BAC, MoreArgs=list(envir = glob
 dds <- dds[,gsub("(^[A-Z][0-9]*)([A-Z])(.*)","\\2",rownames(colData(dds)))!="C"]
 
 # There are only 3 (out of 900) missing samples - subsampling is a bit too extreme
-# As each sample point has three biological replicates will take the mean of other samples to represent missing samples
 
 # get number of samples per tree
-sample_numbers <- table(sub("[A-Z]$","",rownames(colData(dds))))
+# sample_numbers <- table(sub("[A-Z]$","",rownames(colData(dds))))
 
-# collapse (sum) samples
-dds <- collapseReplicates(dds,groupby=sub("[A-Z]$","",rownames(colData(dds))))
+# collapse samples to mean
+dds <- collapseReplicates2(dds,simple=T,groupby=sub("[A-Z]$","",rownames(colData(dds))))
 
 # set the dds sizefactor to the number of samples 
-dds$sizeFactors <- as.vector(3/sample_numbers)
+# dds$sizeFactors <- as.vector(3/sample_numbers)
 
 # recreate countData and colData
-countData<- round(counts(dds,normalize=T),0)
+countData<- counts(dds,normalize=F)
 colData <- as.data.frame(colData(dds))
 
 # new dds object with the corrected data set
-dds <- DESeqDataSetFromMatrix(countData,colData,~1)
+# dds <- DESeqDataSetFromMatrix(countData,colData,~1)
 
 # calculate size factors - using geoMeans function (works better with this data set)
 max(geoMeans(dds))/min(geoMeans(dds))
 max(sizeFactors(estimateSizeFactors(dds)))/min(sizeFactors(estimateSizeFactors(dds)))
 # sizeFactors(dds) <-sizeFactors(estimateSizeFactors(dds))
 sizeFactors(dds) <-geoMeans(dds) 
-# calcNormFactors(counts(dds),method="RLE",lib.size=(prop.table(colSums(counts(dds)))))
-sizeFactors(dds) <-geoMeans(dds) 
+
+#===============================================================================
+#       subset data
+#===============================================================================
+
+# subset into orchards
+dds_cider <- dds[,substr(rownames(colData(dds)),1,1)=="H"]
+dds_dessert <- dds[,substr(rownames(colData(dds)),1,1)=="G"]
+
+# subset cider orchard into trees and grass allyways
+dds_cider_tree   <- dds_cider[,dds_cider$condition=="Y"]
+dds_cider_grass  <- dds_cider[,dds_cider$condition=="N"]
+
+# subset dessert orchard into trees and grass allyways
+dds_dessert_tree   <- dds_dessert[,dds_dessert$condition=="Y"]
+dds_dessert_grass  <- dds_dessert[,dds_dessert$condition=="N"]
+
+# create a list of all dds objects to make it easier to apply methods
+dds_list <- list(dds=dds,
+		 dds_cider=dds_cider,
+		 dds_dessert=dds_dessert,
+		 dds_cider_tree=dds_cider_tree,
+		 dds_cider_grass=dds_cider_grass,
+		 dds_dessert_tree=dds_dessert_tree,
+		 dds_dessert_grass=dds_dessert_grass)
 
 #===============================================================================
 #       Alpha diversity analysis - RUN BEFORE FILTERING OUT ANY LOW COUNT OTUS
@@ -127,8 +149,8 @@ sizeFactors(dds) <-geoMeans(dds)
 
 # plot alpha diversity - plot_alpha will convert normalised abundances to integer values
 
-# plot alpha diversity - plot_alpha will convert normalised abundances to integer values
-ggsave(paste(RHB,"Alpha_choa_all.pdf",sep="_"),plot_alpha(counts(dds,normalize=T),colData(dds),design="site",colour="condition",measures=c("Chao1", "Shannon", "Simpson","Observed")))
+# plot alpha diversity - all data
+ggsave(paste(RHB,"Alpha_choa_all.pdf",sep="_"),plot_alpha(counts(dds,normalize=T),colData(dds),design="site",colour="condition",measures=c("Chao1", "Shannon", "Simpson","Observed"),limits=c(0,4000,"Chao1")))
 
 ### permutation based anova on diversity index ranks ###
 
@@ -159,7 +181,7 @@ sink()
 #       Filter data
 #===============================================================================
 
-dds <- dds[rowSums(counts(dds, normalize=T))>4,]
+dds_list <- lapply(dds_list,function(o) {o[rowSums(counts(o, normalize=T))>4,]})
 
 #===============================================================================
 #       Beta diversity analysis
@@ -167,16 +189,25 @@ dds <- dds[rowSums(counts(dds, normalize=T))>4,]
 
 ### PCA ###
 
-# perform PC decomposition of DES object
-mypca <- des_to_pca(dds)
+# perform PC decomposition of DES objects
+mypca_list <- lapply(dds_list,des_to_pca)		   
 
 # to get pca plot axis into the same scale create a dataframe of PC scores multiplied by their variance
-d <-t(data.frame(t(mypca$x)*mypca$percentVar))
+d_list <- lapply(mypca_list,function(o) {t(data.frame(t(o$x)*o$percentVar))})
 
-# plot the PCA
-g <- plotOrd(d,colData(dds),design="site",shape="time",pointSize=1.5,axes=c(1,2),alpha=0.75)
-ggsave(paste(RHB,"PCA.pdf",sep="_"),g)
-
+# plot the PCAs
+pdf("PCA_plots.pdf",width=7,height=7)
+# all data
+plotOrd(d_list[[1]],colData(dds_list[[1]]),design="site",shape="time",pointSize=1.5,axes=c(1,2),alpha=0.75)
+# orchard data
+plotOrd(d_list[[2]],colData(dds_list[[2]]),design="condition",shape="time",pointSize=1.5,axes=c(1,2),alpha=0.75)
+plotOrd(d_list[[3]],colData(dds_list[[3]]),design="condition",shape="time",pointSize=1.5,axes=c(1,2),alpha=0.75)
+# row data
+plotOrd(d_list[[4]],colData(dds_list[[4]]),design="genotype.name",shape="time",pointSize=1.5,axes=c(1,2),alpha=0.75)
+plotOrd(d_list[[5]],colData(dds_list[[5]]),design="genotype.name",shape="time",pointSize=1.5,axes=c(1,2),alpha=0.75)
+plotOrd(d_list[[6]],colData(dds_list[[6]]),design="genotype.name",shape="time",pointSize=1.5,axes=c(1,2),alpha=0.75)
+plotOrd(d_list[[7]],colData(dds_list[[7]]),design="genotype.name",shape="time",pointSize=1.5,axes=c(1,2),alpha=0.75)
+dev.off()
 # ANOVA
 sink(paste(RHB,"PCA_ANOVA.txt",sep="_"))
 	print("ANOVA")
