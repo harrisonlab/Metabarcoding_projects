@@ -212,12 +212,13 @@ dev.off()
 ggsave(paste(RHB,"PCA_loc.pdf",sep="_"),plotOrd(d,colData,shape="Condition",design="Location",continuous=T,xlabel="PC1",ylabel="PC2",alpha=0.75,pointSize=2))
                           
 g <- plotOrd(d,colData,design="Condition",continuous=F,axes=c(1,3),plot="Label",labelSize=2.5,cbPalette=T,label="Pair",legend="bottom")
+g$layers[[1]] <- NULL
 g  <- g + geom_point(size = 0, stroke = 0)  # OR  geom_point(shape = "") +
 g  <- g + geom_label(show.legend = FALSE,size=2.5)
 g  <- g + guides(colour = guide_legend(override.aes = list(size = 5, shape = c(utf8ToInt("H"), utf8ToInt("S")))))
 g  <- g + scale_colour_manual(name = "Condition", breaks = c("H","S"), labels = c("",""),values=c("#000000", "#E69F00"))
 ggsave(paste(RHB,"PCA_NEW_1vs3.pdf",sep="_"),g)
-                            
+
 ### remove spatial information (this uses the factor "Pair" not the numeric "Location") and plot
 pc.res <- resid(aov(mypca$x~colData$Pair,colData))
 d <- t(data.frame(t(pc.res*mypca$percentVar)))
