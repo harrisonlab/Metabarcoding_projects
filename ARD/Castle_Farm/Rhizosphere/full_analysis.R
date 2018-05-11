@@ -149,7 +149,7 @@ sizeFactors(dds) <-sizeFactors(estimateSizeFactors(dds))
 # Add spatial information as a numeric and plot
 colData$Location<-as.number(colData$Pair)
 
-ggsave(paste(RHB,"Alpha.pdf",sep="_"),plot_alpha(counts(dds,normalize=T),colData,design="Condition",colour="Location",measures=c("Chao1", "Shannon", "Simpson","Observed")))
+ggsave(paste(RHB,"Alpha.pdf",sep="_"),plot_alpha(counts(dds,normalize=T),colData,design="Condition",colour="Condition",cbPalette=T,legend="hidden",measures=c("Chao1", "Shannon", "Simpson","Observed")))
 
 ### permutation based anova on diversity index ranks ###
 
@@ -334,7 +334,7 @@ sizeFactors(dds) <- 1/colData$funq
 # Add spatial information as a numeric and plot
 colData$Location<-as.number(colData$Pair)
 
-ggsave(paste(RHB,"qPCR_Alpha.pdf",sep="_"),plot_alpha(counts(dds,normalize=T),colData,design="Condition",colour="Location",measures=c("Chao1", "Shannon", "Simpson","Observed")))
+ggsave(paste(RHB,"qPCR_Alpha.pdf",sep="_"),plot_alpha(counts(dds,normalize=T),colData,design="Condition",colour="Condition",cbPalette=T,legend="hidden",measures=c("Chao1", "Shannon", "Simpson","Observed")))
 
 ### permutation based anova on diversity index ranks ###
 
@@ -528,7 +528,7 @@ sizeFactors(dds) <-sizeFactors(estimateSizeFactors(dds))
 # Add spatial information as a numeric and plot
 colData$Location<-as.number(colData$Pair)
 
-ggsave(paste(RHB,"Alpha.pdf",sep="_"),plot_alpha(counts(dds,normalize=T),colData,design="Condition",colour="Location",measures=c("Chao1", "Shannon", "Simpson","Observed"),limits=c(0,5000,"Chao1")))
+ggsave(paste(RHB,"Alpha.pdf",sep="_"),plot_alpha(counts(dds,normalize=T),colData,design="Condition",colour="Condition",cbPalette=T,legend="hidden",measures=c("Chao1", "Shannon", "Simpson","Observed"),limits=c(0,2000,"Chao1")))
 
 ### permutation based anova on diversity index ranks ###
 
@@ -700,7 +700,7 @@ sizeFactors(dds) <- 1/colData$bacq
 # Add spatial information as a numeric and plot
 colData$Location<-as.number(colData$Pair)
 
-ggsave(paste(RHB,"qPCR_Alpha.pdf",sep="_"),plot_alpha(counts(dds,normalize=T),colData,design="Condition",colour="Location",measures=c("Chao1", "Shannon", "Simpson","Observed"),limits=c(0,5000,"Chao1")))
+ggsave(paste(RHB,"qPCR_Alpha.pdf",sep="_"),plot_alpha(counts(dds,normalize=T),colData,design="Condition",colour="Condition",cbPalette=T,legend="hidden",measures=c("Chao1", "Shannon", "Simpson","Observed"),limits=c(0,2000,"Chao1")))
 
 ### permutation based anova on diversity index ranks ###
 
@@ -895,7 +895,7 @@ dds <- dds[myfilter,]
 # Add spatial information as a numeric and plot
 colData$Location<-as.number(colData$Pair)
 
-ggsave(paste(RHB,"Alpha.pdf",sep="_"),plot_alpha(counts(dds,normalize=T),colData,design="Condition",colour="Location",measures=c("Chao1", "Shannon", "Simpson","Observed")))
+ggsave(paste(RHB,"Alpha.pdf",sep="_"),plot_alpha(counts(dds,normalize=T),colData,design="Condition",colour="Condition",cbPalette=T,legend="hidden",measures=c("Chao1", "Shannon", "Simpson","Observed")))
 
 ### permutation based anova on diversity index ranks ###
 
@@ -1092,7 +1092,7 @@ dds <- dds[rownames(dds)%in%myfilter,]
 # Add spatial information as a numeric and plot
 colData$Location<-as.number(colData$Pair)
 
-ggsave(paste(RHB,"Alpha.pdf",sep="_"),plot_alpha(counts(dds,normalize=T),colData,design="Condition",colour="Location",measures=c("Chao1", "Shannon", "Simpson","Observed")))
+ggsave(paste(RHB,"Alpha.pdf",sep="_"),plot_alpha(counts(dds,normalize=T),colData,design="Condition",colour="Condition",cbPalette=T,legend="hidden",measures=c("Chao1", "Shannon", "Simpson","Observed")))
 
 ### permutation based anova on diversity index ranks ###
 
