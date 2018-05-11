@@ -1,5 +1,6 @@
 ### Run after loading data from analysis_new.R ###
 
+## FIGURE S2 ###
 # number of taxa identified correctly at given confidence
 invisible(mapply(assign, names(ubiom_BAC), ubiom_BAC, MoreArgs=list(envir = globalenv())))
 dd <- sumTaxa(list(data.frame(cbind(taxData[,1,drop=F],1)[,2,drop=F]),taxData,data.frame(all=1)),conf=0.9,proportional=T,taxon="phylum")
