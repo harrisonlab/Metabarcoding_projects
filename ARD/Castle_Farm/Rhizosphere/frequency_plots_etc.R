@@ -1,6 +1,5 @@
 ### Run after loading data from analysis_new.R ###
 
-## FIGURE S2 ###
 # number of taxa identified correctly at given confidence
 invisible(mapply(assign, names(ubiom_BAC), ubiom_BAC, MoreArgs=list(envir = globalenv())))
 dd <- sumTaxa(list(data.frame(cbind(taxData[,1,drop=F],1)[,2,drop=F]),taxData,data.frame(all=1)),conf=0.9,proportional=T,taxon="phylum")
@@ -187,32 +186,42 @@ ggsave("Figure_2.pdf",grid.arrange(g1 + ggtitle("A")+ theme(legend.position="hid
 
 
 ### PCA/NMDS figures ###
+
+
 # bacteria - deseq normalised
-mypca <- des_to_pca(dds)
+invisible(mapply(assign, names(ubiom_BAC), ubiom_BAC, MoreArgs=list(envir = globalenv())))
+colData <- colData[names(countData),]
+myfilter <- (colSums(countData)>=1000) & colData$Condition!="C"
+exclude<-which(!myfilter)
+myfilter <- myfilter&sapply(colData$Pair,function(x) length(which(x==colData$Pair[-exclude]))>1)
+colData <- droplevels(colData[myfilter,])
+countData <- countData[,myfilter]
+design<-~1
+dds<-DESeqDataSetFromMatrix(countData,colData,design)
+sizeFactors(dds) <-sizeFactors(estimateSizeFactors(dds))
+dds <- dds[rowSums(counts(dds, normalize=T))>4,]
+myphylo <- ubiom_to_phylo(list(counts(dds,normalize=T),taxData,colData))
+phy_tree(myphylo) <- njtree
+set.seed(sum(utf8ToInt("Xiangming Xu")))
+ordu_bac_norm = ordinate(myphylo, "NMDS", "unifrac", weighted=TRUE)
+mypca_bac_norm <- des_to_pca(dds)
+
+
+
 d <-t(data.frame(t(mypca$x)*mypca$percentVar))
 
-g1 <- plotOrd(d,colData,design="Condition",axes=c(1,3),plot="label",label="Pair",labelSize=3.5,cbPalette=T,legend="hidden",ylims=c(-4,4))
-g1 <- g1 + ggtitle("A")+ theme_classic_thin(base_size=12)%+replace% theme(plot.title = element_text(hjust = -0.08,size=14),legend.position="none",)
+g <- plotOrd(ordu$points,colData,design="Condition",plot="label",label="Pair",labelSize=4,cbPalette=T,legend="bottom",xlabel="NMDS1",ylabel="NMDS2",xlims=c(-0.08,0.08))
+g1 <- g + ggtitle("A")+ theme_classic_thin(base_size=12)%+replace% theme(plot.title = element_text(hjust = -0.17,size=14),legend.position="none")
 
-
-myphylo <- ubiom_to_phylo(list(counts(dds,normalize=T),taxData,colData))
-
-# add tree to phyloseq object
-phy_tree(myphylo) <- njtree
-
-# calculate NMDS ordination using weighted unifrac scores
-set.seed(sum(utf8ToInt("Xiangming Xu")))
-ordu = ordinate(myphylo, "NMDS", "unifrac", weighted=TRUE)
-
-g <- plotOrd(ordu$points,colData,design="Condition",plot="label",label="Pair",labelSize=4,cbPalette=T,legend="bottom",xlabel="NMDS1",ylabel="NMDS2",xlims=c(-0.1,0.1))
+g <- plotOrd(d,colData,design="Condition",axes=c(1,3),plot="label",label="Pair",labelSize=3.5,cbPalette=T,legend="hidden",ylims=c(-4,4))
 g$layers[[1]] <- NULL
 g  <- g + geom_point(size = 0, stroke = 0)  # OR  geom_point(shape = "") +
 g  <- g + geom_label(show.legend = FALSE,size=3.5)
 g  <- g + guides(colour = guide_legend(override.aes = list(size = 5, shape = c(utf8ToInt("H"), utf8ToInt("S")))))
 g  <- g + scale_colour_manual(name = "Condition", breaks = c("H","S"), labels = c("",""),values=c("#000000", "#E69F00"))
-g2 <- g + ggtitle("B")+ theme_classic_thin(base_size=12)%+replace% theme(plot.title = element_text(hjust = -0.22,,size=14),legend.position="bottom")
+g2 <- g + ggtitle("B")+ theme_classic_thin(base_size=12)%+replace% theme(plot.title = element_text(hjust = -0.12,size=14),legend.position="bottom",)
 
-ggsave("Figure_5.pdf",grid.arrange(g1,g2,nrow=2),width=7,height=8)
+ggsave("Figure_5BA.pdf",grid.arrange(g1,g2,nrow=2),width=7,height=8)
 
 
 
@@ -295,3 +304,79 @@ design<-~1
 #create DES object
 # colnames(countData) <- row.names(colData)
 dds<-DESeqDataSetFromMatrix(countData,colData,design)
+
+### Figure S7 - SX ####
+
+#PCA/NMDS figures #
+
+qf <- function(colData,countData,sf="norm") {
+	colData <- colData[names(countData),]
+	myfilter <- (colSums(countData)>=1000) & colData$Condition!="C"
+	exclude<-which(!myfilter)
+	myfilter <- myfilter&sapply(colData$Pair,function(x) length(which(x==colData$Pair[-exclude]))>1)
+	colData <- droplevels(colData[myfilter,])
+	countData <- countData[,myfilter]
+	design<-~1
+	dds<-DESeqDataSetFromMatrix(countData,colData,design)
+	if(sf=="norm"){
+		sizeFactors(dds) <-sizeFactors(estimateSizeFactors(dds))
+	} else	{
+		sizeFactors(dds) <- 1/colData[[sf]]
+	}
+	dds <- dds[rowSums(counts(dds, normalize=T))>4,]
+	myphylo <- ubiom_to_phylo(list(counts(dds,normalize=T),taxData,colData))
+	phy_tree(myphylo) <- njtree
+	set.seed(sum(utf8ToInt("Xiangming Xu")))
+	ordu = ordinate(myphylo, "NMDS", "unifrac", weighted=TRUE)
+	mypca <- des_to_pca(dds)
+	return(list(mypca=mypca,ordu=ordu,colData=colData))
+}
+
+# bacteria - deseq normalised
+invisible(mapply(assign, names(ubiom_BAC), ubiom_BAC, MoreArgs=list(envir = globalenv())))
+bac_norm <- qf(colData,countData)
+bac_qpcr <- qf(colData,countData,"bacq")
+invisible(mapply(assign, names(ubiom_FUN), ubiom_FUN, MoreArgs=list(envir = globalenv())))
+fun_norm <- qf(colData,countData)
+fun_qpcr <- qf(colData,countData,"funq")
+invisible(mapply(assign, names(ubiom_OO), ubiom_OO, MoreArgs=list(envir = globalenv())))
+oo_norm <- qf(colData,countData)
+invisible(mapply(assign, names(ubiom_NEM), ubiom_NEM, MoreArgs=list(envir = globalenv())))
+nem_norm <- qf(colData,countData)
+
+# PCA plots
+g <- plotOrd(bac_norm$ordu$points,bac_norm$colData,design="Condition",plot="label",label="Pair",labelSize=4,cbPalette=T,legend="bottom",xlabel="NMDS1",ylabel="NMDS2")#,xlims=c(-0.08,0.08))
+g1 <- g + ggtitle("Bacteria_DESeq")+ theme_classic_thin(base_size=12)%+replace% theme(plot.title = element_text(size=14),legend.position="none")
+g <- plotOrd(bac_qpcr$ordu$points,bac_qpcr$colData,design="Condition",plot="label",label="Pair",labelSize=4,cbPalette=T,legend="bottom",xlabel="NMDS1",ylabel="NMDS2")#,xlims=c(-0.08,0.08))
+g2 <- g + ggtitle("Bacteria_qPCR")+ theme_classic_thin(base_size=12)%+replace% theme(plot.title = element_text(size=14),legend.position="none")
+g <- plotOrd(fun_norm$ordu$points,fun_norm$colData,design="Condition",plot="label",label="Pair",labelSize=4,cbPalette=T,legend="bottom",xlabel="NMDS1",ylabel="NMDS2")#,xlims=c(-0.08,0.08))
+g3 <- g + ggtitle("Fungi_DESeq")+ theme_classic_thin(base_size=12)%+replace% theme(plot.title = element_text(size=14),legend.position="none")
+g <- plotOrd(fun_qpcr$ordu$points,fun_qpcr$colData,design="Condition",plot="label",label="Pair",labelSize=4,cbPalette=T,legend="bottom",xlabel="NMDS1",ylabel="NMDS2",xlims=c(-0.3,0.3))
+g4 <- g + ggtitle("Fungi_qPCR")+ theme_classic_thin(base_size=12)%+replace% theme(plot.title = element_text(size=14),legend.position="none")
+g <- plotOrd(oo_norm$ordu$points,oo_norm$colData,design="Condition",plot="label",label="Pair",labelSize=4,cbPalette=T,legend="bottom",xlabel="NMDS1",ylabel="NMDS2")#,xlims=c(-0.2,0.2))
+g5 <- g + ggtitle("Oomycete_DESeq")+ theme_classic_thin(base_size=12)%+replace% theme(plot.title = element_text(size=14),legend.position="none")
+g <- plotOrd(nem_norm$ordu$points,nem_norm$colData,design="Condition",plot="label",label="Pair",labelSize=4,cbPalette=T,legend="bottom",xlabel="NMDS1",ylabel="NMDS2")#,xlims=c(-0.08,0.08))
+g6 <- g + ggtitle("Nematode_DESeq")+ theme_classic_thin(base_size=12)%+replace% theme(plot.title = element_text(size=14),legend.position="none")
+ggsave("Figure_S7.pdf",grid.arrange(g1,g2,g3,g4,g5,g6,nrow=3),width=9,height=10)
+
+
+d <-t(data.frame(t(bac_norm$mypca$x)*bac_norm$mypca$percentVar))
+g1 <- plotOrd(d,bac_norm$colData,design="Condition",axes=c(1,2),plot="label",label="Pair",labelSize=3.5,cbPalette=T,legend="hidden")#,ylims=c(-4,4))
+g1 <- g1 + ggtitle("Bacteria_DESeq")+ theme_classic_thin(base_size=12)%+replace% theme(plot.title = element_text(size=14),legend.position="none")
+d <-t(data.frame(t(bac_qpcr$mypca$x)*bac_qpcr$mypca$percentVar))
+g2 <- plotOrd(d,bac_qpcr$colData,design="Condition",axes=c(1,2),plot="label",label="Pair",labelSize=3.5,cbPalette=T,legend="hidden")#,ylims=c(-4,4))
+g2 <- g2 + ggtitle("Bacteria_qPCR")+ theme_classic_thin(base_size=12)%+replace% theme(plot.title = element_text(size=14),legend.position="none")
+d <-t(data.frame(t(fun_norm$mypca$x)*fun_norm$mypca$percentVar))
+g3 <- plotOrd(d,fun_norm$colData,design="Condition",axes=c(1,2),plot="label",label="Pair",labelSize=3.5,cbPalette=T,legend="hidden")#,ylims=c(-4,4))
+g3 <- g3 + ggtitle("Fungi_DESeq")+ theme_classic_thin(base_size=12)%+replace% theme(plot.title = element_text(size=14),legend.position="none")
+d <-t(data.frame(t(fun_qpcr$mypca$x)*fun_qpcr$mypca$percentVar))
+g4 <- plotOrd(d,fun_qpcr$colData,design="Condition",axes=c(1,2),plot="label",label="Pair",labelSize=3.5,cbPalette=T,legend="hidden",ylims=c(-2,4))
+g4 <- g4 + ggtitle("Fungi_qPCR")+ theme_classic_thin(base_size=12)%+replace% theme(plot.title = element_text(size=14),legend.position="none")
+d <-t(data.frame(t(oo_norm$mypca$x)*oo_norm$mypca$percentVar))
+g5 <- plotOrd(d,oo_norm$colData,design="Condition",axes=c(1,2),plot="label",label="Pair",labelSize=3.5,cbPalette=T,legend="hidden")#,ylims=c(-4,4))
+g5 <- g5 + ggtitle("Oomycete_DESeq")+ theme_classic_thin(base_size=12)%+replace% theme(plot.title = element_text(size=14),legend.position="none")
+d <-t(data.frame(t(nem_norm$mypca$x)*nem_norm$mypca$percentVar))
+g6 <- plotOrd(d,nem_norm$colData,design="Condition",axes=c(1,2),plot="label",label="Pair",labelSize=3.5,cbPalette=T,legend="hidden")#,ylims=c(-4,4))
+g6 <- g6 + ggtitle("Nematode_DESeq")+ theme_classic_thin(base_size=12)%+replace% theme(plot.title = element_text(size=14),legend.position="none")
+ggsave("Figure_S8.pdf",grid.arrange(g1,g2,g3,g4,g5,g6,nrow=3),width=9,height=10)
+
