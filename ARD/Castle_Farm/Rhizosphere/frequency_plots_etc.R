@@ -207,10 +207,10 @@ ordu_bac_norm = ordinate(myphylo, "NMDS", "unifrac", weighted=TRUE)
 mypca_bac_norm <- des_to_pca(dds)
 
 
-
+mypca <- des_to_pca(dds)
 d <-t(data.frame(t(mypca$x)*mypca$percentVar))
 
-g <- plotOrd(ordu$points,colData,design="Condition",plot="label",label="Pair",labelSize=4,cbPalette=T,legend="bottom",xlabel="NMDS1",ylabel="NMDS2",xlims=c(-0.08,0.08))
+g <- plotOrd(ordu_bac_norm$points,colData,design="Condition",plot="label",label="Pair",labelSize=4,cbPalette=T,legend="bottom",xlabel="NMDS1",ylabel="NMDS2",xlims=c(-0.08,0.08))
 g1 <- g + ggtitle("A")+ theme_classic_thin(base_size=12)%+replace% theme(plot.title = element_text(hjust = -0.17,size=14),legend.position="none")
 
 g <- plotOrd(d,colData,design="Condition",axes=c(1,3),plot="label",label="Pair",labelSize=3.5,cbPalette=T,legend="hidden",ylims=c(-4,4))
