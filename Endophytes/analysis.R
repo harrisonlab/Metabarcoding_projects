@@ -210,6 +210,9 @@ full_design <- ~Year + Country  + Treatment + Time.point + Treatment:Time.point
 # the reduced model (for calculating response to time)
 reduced_design <- ~Year + Country + Treatment  + Time.point
 
+# add full design to model
+design(dds) <- full_design
+
 # calculate model, including both full and reduced designs
 dds <-DESeq(dds, betaPrior=FALSE, test="LRT",full=full_design,reduced=reduced_design,parallel=T)
 
