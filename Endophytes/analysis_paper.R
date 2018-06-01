@@ -91,23 +91,6 @@ dds$time <- as.integer(sub(" week","",dds$Time.point))
 sizeFactors(dds) <-sizeFactors(estimateSizeFactors(dds))
 #sizeFactors(dds) <-geoMeans(dds) # vst only
 
-# Test size factors
-
-X1 <- colSums(counts(dds))
-X2 <- sizeFactors(estimateSizeFactors(dds))
-X3 <- geoMeans(dds)
-max(X1)/min(X1)
-max(X2)/min(X2)
-max(X3)/min(X3)
-
-# remove batch effect with limma removeBatchEffect method (maybe useful for plotting 2016/2017 data on same graph)
-#library(limma)
-#debatched <- removeBatchEffect(counts(dds,normalize=T),colData$Year)
-
-# remove batch effect vst/pca/resid(aov) 
-#debatched2 <- batchEffectDes(dds,"Year")
-
-
 #===============================================================================
 #       PCA plot
 #===============================================================================
@@ -151,6 +134,7 @@ ordu = ordinate(myphylo, "NMDS", "unifrac", weighted=TRUE)
 #plot 
 ggsave(paste(RHB,"Unifrac_NMDS_county_year.pdf",sep="_"),plotOrd(ordu$points,colData(dds),shape="Country",design="Year",xlabel="NMDS1",ylabel="NMDS2",alpha=0.75,pointSize=2))
 ggsave(paste(RHB,"Unifrac_NMDS_Treatment_time.pdf",sep="_"),plotOrd(ordu$points,colData(dds),shape="Treatment",design="Time.point",xlabel="NMDS1",ylabel="NMDS2",alpha=0.75,pointSize=2))
+ggsave(paste(RHB,"Unifrac_NMDS_Treatment:Year_time.pdf",sep="_"),plotOrd(ordu$points,colData(dds),shape=c("Treatment","Year"),design="Time.point",xlabel="NMDS1",ylabel="NMDS2",alpha=0.75,pointSize=2))
 
 #===============================================================================
 #       Differential analysis of saprophyte data
@@ -169,7 +153,7 @@ alpha <- 0.1
 ### Overall effects ####
 
 # the full model 
-full_design <- ~Year + Country  + Treatment #+ Time.point + Treatment:Time.point
+full_design <- ~Year  + Time.point + Treatment  #+ Country +  Treatment:Time.point
 
 # add full model to dds object
 design(dds) <- full_design
@@ -201,12 +185,12 @@ colData(dds_yeast)      <- droplevels(colData(dds_yeast))
 colData(dds_urea_yeast) <- droplevels(colData(dds_urea_yeast))
 
 # add full design to model
-design(dds_urea) <- full_design_1 <- ~Year + Country  + Treatment + Time.point + Treatment:Time.point
-design(dds_urea_yeast) <- design(dds_yeast) <-  full_design_2 <- ~Country  + Treatment + Time.point + Treatment:Time.point
+design(dds_urea) <- full_design_1 <- ~Year +  Treatment + Time.point + Treatment:Time.point
+design(dds_urea_yeast) <- design(dds_yeast) <-  full_design_2 <- ~Treatment + Time.point + Treatment:Time.point
 
 # the reduced model (for calculating response to time)
-reduced_design_1 <- ~Year + Country + Treatment + Time.point
-reduced_design_2 <- ~Country + Treatment + Time.point
+reduced_design_1 <- ~Year +  Treatment + Time.point
+reduced_design_2 <- ~Treatment + Time.point
 
 # calculate model, including both full and reduced designs
 dds_urea       <-DESeq(dds_urea, betaPrior=FALSE, test="LRT",full=full_design_1,reduced=reduced_design_1,parallel=T)
