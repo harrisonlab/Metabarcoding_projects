@@ -166,7 +166,7 @@ dds<-dds[rowSums(counts(dds,normalize=T))>0,]
 # p value for FDR cutoff
 alpha <- 0.1
 
-### Full model design ####
+### Overall effects ####
 
 # the full model 
 full_design <- ~Year + Country  + Treatment #+ Time.point + Treatment:Time.point
@@ -179,31 +179,50 @@ dds <- DESeq(dds,parallel=T)
 
 # urea
 res_urea <- results(dds,contrast=c("Treatment","Urea","Control"),alpha=alpha,parallel=T)
+fwrite(data.table(inner_join(data.table(OTU=rownames(res_urea),as.data.frame(res_urea)),data.table(OTU=rownames(taxData),taxData))),paste(RHB,"Urea_overall_effect.txt",sep="_"),sep="\t")
+
 # yeast
 res_yeast <- results(dds,contrast=c("Treatment","Yeast","Control"),alpha=alpha,parallel=T)
+fwrite(data.table(inner_join(data.table(OTU=rownames(res_yeast),as.data.frame(res_yeast)),data.table(OTU=rownames(taxData),taxData))),paste(RHB,"Yeast_overall_effect.txt",sep="_"),sep="\t")
+
 # urea_yeast
 res_urea_yest <- results(dds,contrast=c("Treatment","Urea","Yeast"),alpha=alpha,parallel=T)
+fwrite(data.table(inner_join(data.table(OTU=rownames(res_urea_yest),as.data.frame(res_urea_yest)),data.table(OTU=rownames(taxData),taxData))),paste(RHB,"Urea_vs_Yeast_effect.txt",sep="_"),sep="\t")
 
-
-write.table(qfun("FUN_Urea.*.txt$"),"FUN_UREA_ALL.txt",sep="\t",row.name=F,quote=F)
-write.table(qfun("FUN_Yeast.*.txt$"),"FUN_YEAST_ALL.txt",sep="\t",row.name=F,quote=F)
-write.table(qfun("BAC_Urea.*.txt$"),"BAC_UREA_ALL.txt",sep="\t",row.name=F,quote=F)
-write.table(qfun("BAC_Yeast.*.txt$"),"BAC_YEAST_ALL.txt",sep="\t",row.name=F,quote=F)
 
 ## difference over time ##
+
+dds_urea       <- dds[,colData(dds)$Treatment!="Yeast"]
+dds_yeast      <- dds[,colData(dds)$Treatment!="Urea"]
+dds_urea_yeast <- dds[,colData(dds)$Treatment!="Control"]
+
+colData(dds_urea)       <- droplevels(colData(dds_urea))
+colData(dds_yeast)      <- droplevels(colData(dds_yeast))
+colData(dds_urea_yeast) <- droplevels(colData(dds_urea_yeast))
+
 full_design <- ~Year + Country  + Treatment + Time.point + Treatment:Time.point
 
 # the reduced model (for calculating response to time)
-reduced_design <- ~Year + Country + Treatment  + Time.point
+reduced_design <- ~Year + Country + Treatment + Time.point
 
 # add full design to model
-design(dds) <- full_design
+design(dds_urea_yeast) <- design(dds_yeast) <- design(dds_urea) <- full_design
 
 # calculate model, including both full and reduced designs
-dds <-DESeq(dds, betaPrior=FALSE, test="LRT",full=full_design,reduced=reduced_design,parallel=T)
+dds_urea       <-DESeq(dds_urea, betaPrior=FALSE, test="LRT",full=full_design,reduced=reduced_design,parallel=T)
+dds_yeast      <-DESeq(dds_yeast, betaPrior=FALSE, test="LRT",full=full_design,reduced=reduced_design,parallel=T)
+dds_urea_yeast <-DESeq(dds_urea_yeast, betaPrior=FALSE, test="LRT",full=full_design,reduced=reduced_design,parallel=T)
 
 # calculate OTUs which respond differently over time (can ignore LFC in output as it's meaningless)	
-res <- results(dds,alpha=alpha,parallel=T)		    
+res_urea_time       <- results(dds_urea,alpha=alpha,parallel=T)	
+res_yeast_time      <- results(dds_yeast,alpha=alpha,parallel=T)
+res_urea_yeast_time <- results(dds_urea_yeast,alpha=alpha,parallel=T)
+
+fwrite(data.table(inner_join(data.table(OTU=rownames(res_urea_time),as.data.frame(res_urea_time)),data.table(OTU=rownames(taxData),taxData))),paste(RHB,"Urea_time_interaction.txt",sep="_"),sep="\t")
+fwrite(data.table(inner_join(data.table(OTU=rownames(res_yeast_time),as.data.frame(res_yeast_time)),data.table(OTU=rownames(taxData),taxData))),paste(RHB,"Yeast_time_interaction.txt",sep="_"),sep="\t")
+fwrite(data.table(inner_join(data.table(OTU=rownames(res_urea_yeast_time),as.data.frame(res_urea_yeast_time)),data.table(OTU=rownames(taxData),taxData))),paste(RHB,"Urea_vs_Yeast_time_interaction.txt",sep="_"),sep="\t")
+
+
 res.merge <- data.table(inner_join(data.table(OTU=rownames(res),as.data.frame(res)),data.table(OTU=rownames(taxData),taxData)))
 res.merge[,log2FoldChange:=NULL]
 write.table(res.merge, paste(RHB,"time_effect.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
