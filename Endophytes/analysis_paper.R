@@ -193,25 +193,25 @@ fwrite(data.table(inner_join(data.table(OTU=rownames(res_urea_yest),as.data.fram
 ## difference over time ##
 
 dds_urea       <- dds[,colData(dds)$Treatment!="Yeast"]
-dds_yeast      <- dds[,colData(dds)$Treatment!="Urea"]
-dds_urea_yeast <- dds[,colData(dds)$Treatment!="Control"]
+dds_yeast      <- dds[,(colData(dds)$Treatment!="Urea")&(colData(dds)$Year!="2016")]
+dds_urea_yeast <- dds[,colData(dds)$Treatment!="Control"&(colData(dds)$Year!="2016")]
 
 colData(dds_urea)       <- droplevels(colData(dds_urea))
 colData(dds_yeast)      <- droplevels(colData(dds_yeast))
 colData(dds_urea_yeast) <- droplevels(colData(dds_urea_yeast))
 
-full_design <- ~Year + Country  + Treatment + Time.point + Treatment:Time.point
+# add full design to model
+design(dds_urea) <- full_design_1 <- ~Year + Country  + Treatment + Time.point + Treatment:Time.point
+design(dds_urea_yeast) <- design(dds_yeast) <-  full_design_2 <- ~Country  + Treatment + Time.point + Treatment:Time.point
 
 # the reduced model (for calculating response to time)
-reduced_design <- ~Year + Country + Treatment + Time.point
-
-# add full design to model
-design(dds_urea_yeast) <- design(dds_yeast) <- design(dds_urea) <- full_design
+reduced_design_1 <- ~Year + Country + Treatment + Time.point
+reduced_design_2 <- ~Country + Treatment + Time.point
 
 # calculate model, including both full and reduced designs
-dds_urea       <-DESeq(dds_urea, betaPrior=FALSE, test="LRT",full=full_design,reduced=reduced_design,parallel=T)
-dds_yeast      <-DESeq(dds_yeast, betaPrior=FALSE, test="LRT",full=full_design,reduced=reduced_design,parallel=T)
-dds_urea_yeast <-DESeq(dds_urea_yeast, betaPrior=FALSE, test="LRT",full=full_design,reduced=reduced_design,parallel=T)
+dds_urea       <-DESeq(dds_urea, betaPrior=FALSE, test="LRT",full=full_design_1,reduced=reduced_design_1,parallel=T)
+dds_yeast      <-DESeq(dds_yeast, betaPrior=FALSE, test="LRT",full=full_design_2,reduced=reduced_design_2,parallel=T)
+dds_urea_yeast <-DESeq(dds_urea_yeast, betaPrior=FALSE, test="LRT",full=full_design_2,reduced=reduced_design_2,parallel=T)
 
 # calculate OTUs which respond differently over time (can ignore LFC in output as it's meaningless)	
 res_urea_time       <- results(dds_urea,alpha=alpha,parallel=T)	
@@ -222,45 +222,6 @@ fwrite(data.table(inner_join(data.table(OTU=rownames(res_urea_time),as.data.fram
 fwrite(data.table(inner_join(data.table(OTU=rownames(res_yeast_time),as.data.frame(res_yeast_time)),data.table(OTU=rownames(taxData),taxData))),paste(RHB,"Yeast_time_interaction.txt",sep="_"),sep="\t")
 fwrite(data.table(inner_join(data.table(OTU=rownames(res_urea_yeast_time),as.data.frame(res_urea_yeast_time)),data.table(OTU=rownames(taxData),taxData))),paste(RHB,"Urea_vs_Yeast_time_interaction.txt",sep="_"),sep="\t")
 
-
-res.merge <- data.table(inner_join(data.table(OTU=rownames(res),as.data.frame(res)),data.table(OTU=rownames(taxData),taxData)))
-res.merge[,log2FoldChange:=NULL]
-write.table(res.merge, paste(RHB,"time_effect.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
-		    
-# save significant OTUs to vector
-AS<- res.merge[padj<=0.1,OTU]	
-		    
-# no way to "contrast" the LRT, so to test for seperate Urea/Yeast effects over time data will need to be split
-# Yeast effect
-dds2 <- dds[,dds$Treatment!="Urea"]		    
-dds2$Treatment <- droplevels(dds2$Treatment)
-dds2 <-DESeq(dds2, betaPrior=FALSE, test="LRT",full=full_design,reduced=reduced_design,parallel=T)
-res <- results(dds2,alpha=alpha,parallel=T)		    
-res.merge <- data.table(inner_join(data.table(OTU=rownames(res),as.data.frame(res)),data.table(OTU=rownames(taxData),taxData)))
-res.merge[,log2FoldChange:=NULL]
-write.table(res.merge, paste(RHB,"time_effect_yeast.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
-
-# save significant OTUs to vector
-YS<- res.merge[padj<=0.1,OTU]	
-		    
-# Urea effect
-dds2 <- dds[,dds$Treatment!="Yeast"]		    
-dds2$Treatment <- droplevels(dds2$Treatment)
-dds2 <-DESeq(dds2, betaPrior=FALSE, test="LRT",full=full_design,reduced=reduced_design,parallel=T)
-res <- results(dds2,alpha=alpha,parallel=T)		    
-res.merge <- data.table(inner_join(data.table(OTU=rownames(res),as.data.frame(res)),data.table(OTU=rownames(taxData),taxData)))
-res.merge[,log2FoldChange:=NULL]
-write.table(res.merge, paste(RHB,"time_effect_urea.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
-		    
-# save significant OTUs to vector
-US<- res.merge[padj<=0.1,OTU]		    
-
-### simplfied models ###
-		    
-
-# 2017 data only
-dds2 <- dds[,dds$Year==2017]
-dds2$Treatment <- droplevels(dds2$Treatment)
 
 #===============================================================================
 #       Graph analysis
