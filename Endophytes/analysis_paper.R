@@ -13,35 +13,42 @@ library(locfit)
 library(ggplot2)
 library(viridis)
 library(devtools)
-load_all("~/pipelines/metabarcoding/scripts/myfunctions")
+library(ape)
+library(vegan)
+library(phyloseq)
 
+register(MulticoreParam(12))
+load_all("~/pipelines/metabarcoding/scripts/myfunctions")
+environment(plot_ordination) <- environment(ordinate) <- environment(plot_richness) <- environment(phyloseq::ordinate)
+#
 #===============================================================================
 #       Load data 
 #===============================================================================
 
 # load denoised otu count table
-countData <- read.table("BAC.zotus_table.txt",header=T,sep="\t",row.names=1, comment.char = "")
-
+countData <- read.table("BAC.otus_table.txt",header=T,sep="\t",row.names=1, comment.char = "")
 # load sample metadata
 colData <- read.table("colData",header=T,sep="\t",row.names=1)
-
 # load taxonomy data
-taxData <- read.table("zBAC.taxa",header=F,sep=",",row.names=1)
-
+taxData <- read.table("BAC.taxa",header=F,sep=",",row.names=1)
 # reorder columns
 taxData<-taxData[,c(1,3,5,7,9,11,13,2,4,6,8,10,12,14)]
-
 # add best "rank" at 0.65 confidence and tidy-up the table
 taxData<-phyloTaxaTidy(taxData,0.65)
-
+# get unifrac dist
+phylipData <- fread.phylip("BAC.phy")
+# create tree - set.seed to something
+sum(utf8ToInt("Greg Deakin"))
+njtree <- nj(as.dist(phylipData))
 # save data into a list, then ubiom_16S$countData to access countData and etc.
 ubiom_BAC <- list(
-	countData=countData,
-	colData=colData[colData$Loci!="18S",],
-	taxData=taxData,
-	RHB="BAC"
+  countData=countData,
+  colData=colData[colData$Loci!="18S",],
+  taxData=taxData,
+  phylipData=phylipData,
+  njtree=njtree,
+  RHB="BAC"
 )
-
 # remove 18S level from colData
 ubiom_BAC$colData$Loci <- droplevels(ubiom_BAC$colData$Loci)
 
@@ -50,9 +57,11 @@ ubiom_FUN <- list(
 	countData=read.table("FUN.zotus_table.txt",header=T,sep="\t",row.names=1,comment.char = ""),
 	colData=colData[colData$Loci!="16S",],
 	taxData=phyloTaxaTidy(read.table("zFUN.taxa",header=F,sep=",",row.names=1)[,c(1,3,5,7,9,11,13,2,4,6,8,10,12,14)],0.65),
+	phylipData=fread.phylip("FUN.phy"),
 	RHB="FUN"
 ) 
 ubiom_FUN$colData$Loci <- droplevels(ubiom_FUN$colData$Loci)
+ubiom_FUN$njtree <- nj(as.dist(ubiom_FUN$phylipData))
 
 #===============================================================================
 #       Create DESeq objects 
@@ -74,17 +83,13 @@ design<-~1
 #create DES object
 dds<-DESeqDataSetFromMatrix(countData,colData,design)
 
-# Low counts in samples X205_S37 and Y2_S56 - remove before calculating size factors
-dds <- dds[,(colnames(dds)!="X205_S37")&(colnames(dds)!="Y2_S56")]
-
-# also low for Bacteria only
-dds <- dds[,(colnames(dds)!="C16_S95")&(colnames(dds)!="U16_S40")]
+# filter data
+dds <- dds[,(colSums(counts(dds))>=1000)&(colData(dds)$Treatment!="Yeast X 2")]
 
 dds$time <- as.integer(sub(" week","",dds$Time.point))
-
 # calculate size factors - use geoMeans function if every gene contains at least one zero (check for size factor range as well)
-# sizeFactors(dds) <-sizeFactors(estimateSizeFactors(dds))
-sizeFactors(dds) <-geoMeans(dds)
+sizeFactors(dds) <-sizeFactors(estimateSizeFactors(dds))
+#sizeFactors(dds) <-geoMeans(dds) # vst only
 
 # Test size factors
 
@@ -129,15 +134,30 @@ dev.off()
 
 # Fungal saprophyte sample X205_S37 doesn't cluster as well as the other samples
 
+# NMDS
+
+# set seed
+sum(utf8ToInt("Greg Deakin"))
+
+# phyloseq has functions (using Vegan) for making NMDS plots
+myphylo <- ubiom_to_phylo(list(counts(dds,normalize=T),taxData,colData))
+
+# add tree to phyloseq object (uses random)
+phy_tree(myphylo) <- njtree
+
+# calculate NMDS ordination using weighted unifrac scores
+ordu = ordinate(myphylo, "NMDS", "unifrac", weighted=TRUE)
+
+#plot 
+ggsave(paste(RHB,"Unifrac_NMDS_county_year.pdf",sep="_"),plotOrd(ordu$points,colData(dds),shape="Country",design="Year",xlabel="NMDS1",ylabel="NMDS2",alpha=0.75,pointSize=2))
+ggsave(paste(RHB,"Unifrac_NMDS_Treatment_time.pdf",sep="_"),plotOrd(ordu$points,colData(dds),shape="Treatment",design="Time.point",xlabel="NMDS1",ylabel="NMDS2",alpha=0.75,pointSize=2))
+
 #===============================================================================
 #       Differential analysis of saprophyte data
 #===============================================================================
 
-# get rid of the yeast2 samples (not enough samples to do any statistics with them)
-dds <- dds[,(colnames(dds)!="X1_S88")&(colnames(dds)!="X4_S96")]
-
-# drop the Yeast2 level from the Treatment factor
-dds$Treatment <- droplevels(dds$Treatment)
+# drop the Yeast2 level from the Treatment factor (or all unused levels)
+colData(dds) <- droplevels(colData(dds))
 
 # filter for low counts - this can affect the FD probability and DESeq2 does apply its own filtering for genes/otus with no power 
 # but, no point keeping OTUs with 0 count
@@ -149,7 +169,7 @@ alpha <- 0.1
 ### Full model design ####
 
 # the full model 
-full_design <- ~Year + Country  + Treatment + Time.point + Treatment:Time.point
+full_design <- ~Year + Country  + Treatment #+ Time.point + Treatment:Time.point
 
 # add full model to dds object
 design(dds) <- full_design
@@ -157,47 +177,13 @@ design(dds) <- full_design
 # calculate fit
 dds <- DESeq(dds,parallel=T)
 
-# a quick function to save writing the same thing a dozen times
-rescalc <- function(contrast,output,obj=dds,td=taxData) {
-	res <-  results(obj,alpha=alpha,parallel=T,contrast=contrast)
-	res.merge <- data.table(inner_join(data.table(OTU=rownames(res),as.data.frame(res)),data.table(OTU=rownames(td),td)))
-	write.table(res.merge, paste(RHB,output,sep="_"),quote=F,sep="\t",na="",row.names=F)
-}
-
-# main effect urea vs control
-rescalc(c("Treatment","Urea","Control"),"Urea_effect.txt")
-
-# main effect yeast vs control
-rescalc(c("Treatment","Yeast","Control"),"Yeast_effect.txt")
-
-# treatment effect at each time point
-# yeast
-rescalc(list("TreatmentYeast.Time.point1.week","TreatmentControl.Time.point1.week"),"Yeast_W1.txt")
-rescalc(list("TreatmentYeast.Time.point2.week","TreatmentControl.Time.point2.week"),"Yeast_W2.txt")
-rescalc(list("TreatmentYeast.Time.point4.week","TreatmentControl.Time.point4.week"),"Yeast_W4.txt")
-rescalc(list("TreatmentYeast.Time.point8.week","TreatmentControl.Time.point8.week"),"Yeast_W8.txt")
-rescalc(list("TreatmentYeast.Time.point16.week","TreatmentControl.Time.point16.week"),"Yeast_W16.txt")
 # urea
-rescalc(list("TreatmentUrea.Time.point1.week","TreatmentControl.Time.point1.week"),"Urea_W1.txt")
-rescalc(list("TreatmentUrea.Time.point2.week","TreatmentControl.Time.point2.week"),"Urea_W2.txt")
-rescalc(list("TreatmentUrea.Time.point4.week","TreatmentControl.Time.point4.week"),"Urea_W4.txt")
-rescalc(list("TreatmentUrea.Time.point8.week","TreatmentControl.Time.point8.week"),"Urea_W8.txt")
-rescalc(list("TreatmentUrea.Time.point16.week","TreatmentControl.Time.point16.week"),"Urea_W16.txt")
+res_urea <- results(dds,contrast=c("Treatment","Urea","Control"),alpha=alpha,parallel=T)
+# yeast
+res_yeast <- results(dds,contrast=c("Treatment","Yeast","Control"),alpha=alpha,parallel=T)
+# urea_yeast
+res_urea_yest <- results(dds,contrast=c("Treatment","Urea","Yeast"),alpha=alpha,parallel=T)
 
-
-# a function for reading in and merging some/all the above files - base on a regex variable to specify which files
-qfun <- function(regex_path){
-	qq <- lapply(list.files(".",regex_path,full.names=T,recursive=F),function(x) {fread(x)}) # read in the files
-	names(qq) <- list.files(".",regex_path,full.names=F,recursive=F) # gets the name of each file
-	qq <- lapply(qq,function(l) {l[,c(-4,-5,-6)]}) # drops "lfcSE", "stat" and "pvalue" columns
-	qq <- Map(function(x, i) {
-		colnames(x)[3]<-paste(i, colnames(x)[3],sep="_");
-		colnames(x)[4]<-paste(i, colnames(x)[4],sep="_");
-		return(x)
-	},qq, sub("\\.txt","",names(qq)))
-	m <- Reduce(function(...) {merge(..., all = T)}, qq) # could use inner_join rather than merge - would save maybe a couple of milliseconds
-	return(m)
-}
 
 write.table(qfun("FUN_Urea.*.txt$"),"FUN_UREA_ALL.txt",sep="\t",row.name=F,quote=F)
 write.table(qfun("FUN_Yeast.*.txt$"),"FUN_YEAST_ALL.txt",sep="\t",row.name=F,quote=F)
