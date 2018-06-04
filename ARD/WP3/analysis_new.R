@@ -25,6 +25,9 @@ environment(plot_ordination) <- environment(ordinate) <- environment(plot_richne
 #       Load data
 #===============================================================================
 
+# takes a while to load all the data..
+# load("ubiom_BAC.bin");load("ubiom_FUN.bin")
+
 ubiom_BAC <- loadData("BAC.otu_table.txt","colData","BAC.taxa",RHB="BAC")
 ubiom_FUN <- loadData("FUN.otu_table.txt","colData","FUN.taxa",RHB="FUN")
 
@@ -119,17 +122,20 @@ colData <- as.data.frame(colData(dds))
 # new dds object with the corrected data set
 dds <- DESeqDataSetFromMatrix(countData,colData,~1)
 
-# calculate size factors - using geoMeans function (works better with this data set)
+# add back collapsed dds to ubiom objects
+# ubiom_BAC$cdds <- dds; ubiom_FUN$cdds <- dds;
+
+# calculate size factors - use Rlog rathern an vst for graphs due to disparity between 
 max(geoMeans(dds))/min(geoMeans(dds))
 max(sizeFactors(estimateSizeFactors(dds)))/min(sizeFactors(estimateSizeFactors(dds)))
-sizeFactors(dds) <-geoMeans(dds)
-# sizeFactors(dds) <-sizeFactors(estimateSizeFactors(dds))
+# sizeFactors(dds) <-geoMeans(dds)
+sizeFactors(dds) <-sizeFactors(estimateSizeFactors(dds))
 # calcNormFactors(counts(dds),method="RLE",lib.size=(prop.table(colSums(counts(dds)))))
 
-dds$site 			 <- substr(colnames(dds),1,1)
+dds$site       <- substr(colnames(dds),1,1)
 dds$loc_factor <- as.factor(dds$meters)
-dds$time  		 <- as.factor(dds$time)
-dds$block			 <- as.factor(dds$block)
+dds$time       <- as.factor(dds$time)
+dds$block      <- as.factor(dds$block)
 
 list_dds <-list(all     = dds,
 		cider   = dds[,dds$site=="H"],
