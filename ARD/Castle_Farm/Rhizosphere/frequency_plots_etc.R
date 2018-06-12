@@ -380,3 +380,73 @@ g6 <- plotOrd(d,nem_norm$colData,design="Condition",axes=c(1,2),plot="label",lab
 g6 <- g6 + ggtitle("Nematode")+ theme_classic_thin(base_size=12)%+replace% theme(plot.title = element_text(size=14),legend.position="none")
 ggsave("Figure_S8.pdf",grid.arrange(g1,g2,g3,g4,g5,g6,nrow=3),width=9,height=10)
 
+
+#===============================================================================
+#       Sample rarefaction plots
+#===============================================================================        
+
+gfunc <- function(countData,coldata,title) {        
+  colData <- colData[names(countData),]
+
+  # remove low count and control samples
+  myfilter <- colData$Condition!="C"
+
+  # remove Pair of any sample with a low count
+  exclude<-which(!myfilter)
+  myfilter <- myfilter&sapply(colData$Pair,function(x) length(which(x==colData$Pair[-exclude]))>1)
+
+  # apply filter
+  colData <- droplevels(colData[myfilter,])
+  countData <- countData[,myfilter]
+
+  # descending order each sample 
+  DT <- data.table(apply(countData,2,sort,decreasing=T))
+
+  # get cummulative sum of each sample
+  DT <- cumsum(DT)    
+
+  # log the count values                            
+  DT <- log10(DT)
+
+  # relabel columns
+  colnames(DT) <- sub("(X)([0-9]+[HS])(.*)","\\2",colnames(DT))
+
+  # add a count column to the data table
+  DT$x <- seq(1,nrow(DT))
+                           
+  # melt the data table for easy plotting
+  MDT <- melt(DT,id.vars="x")
+
+  # create an empty ggplot object from the data table
+  g <- ggplot(data=MDT,aes(x=x,y=value,colour=variable))
+
+  # remove plot background and etc.
+  g <- g + theme_classic_thin() %+replace% theme(legend.position="none",axis.title=element_blank())
+
+  # plot cumulative reads
+  g <- g + geom_line(size=1.5) + scale_colour_viridis(discrete=T)
+
+  # add axis lables
+  g <- g + ggtitle(title)
+  #g <- g + ylab(expression("Log"[10]*" aligned sequenecs"))+xlab("OTU count")
+
+  # print the plot
+  g
+}                        
+
+library(gridExtra)
+library(viridis)
+
+invisible(mapply(assign, names(ubiom_BAC), ubiom_BAC, MoreArgs=list(envir = globalenv())))
+g1 <- gfunc(countData,colData,"Bacteria")
+invisible(mapply(assign, names(ubiom_FUN), ubiom_FUN, MoreArgs=list(envir = globalenv())))
+g2 <- gfunc(countData,colData,"fungi")
+invisible(mapply(assign, names(ubiom_OO), ubiom_OO, MoreArgs=list(envir = globalenv())))
+g3 <- gfunc(countData,colData,"Oomycetes")
+invisible(mapply(assign, names(ubiom_NEM), ubiom_NEM, MoreArgs=list(envir = globalenv())))
+g4 <- gfunc(countData,colData,"Nematodes")
+
+glegend <- get_legend(g)
+ggsave("test.pdf",grid.arrange(g1,g2,g3,g4,left=textGrob(label=expression("Log"[10] * " aligned sequenecs"),rot=90),bottom="OTU count",nrow=2))                              
+				    
+				    
