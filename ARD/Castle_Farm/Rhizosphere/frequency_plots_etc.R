@@ -448,5 +448,35 @@ g4 <- gfunc(countData,colData,"Nematodes")
 
 glegend <- get_legend(g)
 ggsave("test.pdf",grid.arrange(g1,g2,g3,g4,left=textGrob(label=expression("Log"[10] * " aligned sequenecs"),rot=90),bottom="OTU count",nrow=2))                              
-				    
-				    
+
+#===============================================================================
+#       qPCR ratio plot
+#===============================================================================   
+# se method borrowed from http://www.cookbook-r.com/Graphs/Plotting_means_and_error_bars_(ggplot2)/#Helper%20functions
+test <- melt(colData[1:30,c(1,2,5)],idvars="Condition")
+test <- test[!test$Pair==3,]
+#colNames(test)[4] <- "Ratio"
+mydf <- ddply(test, "Condition", .drop=.drop,.fun = function(x, col) {
+  c(N    = length2(x[[col]], na.rm=na.rm),
+    Ratio = mean   (x[[col]], na.rm=na.rm),
+    sd   = sd     (x[[col]], na.rm=na.rm)
+   )
+}, measurevar)
+mydf$se <- datac$sd / sqrt(datac$N) 
+
+g <- ggplot(mydt,aes(x=Condition,y=Ratio,fill=Condition))
+g <- g + geom_bar(position=position_dodge(), stat="identity") +
+g <- g + geom_errorbar(aes(ymin=Ratio-se, ymax=Ratio+se), width=.2, position=position_dodge(.9))
+g <- g + theme_blank(base_size=12) %+replace%
+g <- g + theme(panel.border = element_rect(colour = "black", fill=NA, size=0.5,linetype=1),
+  axis.title.x=element_blank(),
+  legend.position="none",
+  axis.text.x = element_text(angle = 0, vjust = 1,hjust = 1),
+  axis.ticks=element_blank())
+# remove space at bottom of grapha and retain space at top
+g <- g + scale_y_continuous(expand = expand_scale(mult = c(0, .075)))
+ggsave("ratio.pdf",g)
+
+
+
+   
