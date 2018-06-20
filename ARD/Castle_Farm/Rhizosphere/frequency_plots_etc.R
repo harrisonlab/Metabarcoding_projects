@@ -262,8 +262,11 @@ colData <- droplevels(colData[myfilter,])
 countData <- countData[,myfilter]
 dds<-DESeqDataSetFromMatrix(countData,colData,~1)
 sizeFactors(dds) <-sizeFactors(estimateSizeFactors(dds))
+myfilter <- row.names(countData[row.names(countData) %in% row.names(taxData[(taxData$kingdom=="SAR"|as.numeric(taxData$k_conf)<=0.5),]),])
+dds <- dds[myfilter,]
 g4 <- plotCummulativeReads(counts(dds,normalize=T))
-
+sizeFactors(dds) <- sizeFactors(dds) / left_join(colData,ubiom_FUN$colData)$funq
+			    
 invisible(mapply(assign, names(ubiom_NEM), ubiom_NEM, MoreArgs=list(envir = globalenv())))
 colData <- colData[names(countData),]
 myfilter <- (colSums(countData)>=1000) & colData$Condition!="C"
@@ -273,12 +276,13 @@ colData <- droplevels(colData[myfilter,])
 countData <- countData[,myfilter]
 dds<-DESeqDataSetFromMatrix(countData,colData,~1)
 sizeFactors(dds) <-sizeFactors(estimateSizeFactors(dds))
-g5 <- plotCummulativeReads(counts(dds,normalize=T))
+g6 <- plotCummulativeReads(counts(dds,normalize=T))
 
 g1 <- g1 + ggtitle("Bacteria DESeq") + theme_classic_thin() %+replace% theme(axis.title=element_blank())#,plot.title = element_text(size=14))
 g2 <- g2 + ggtitle("Bacteria qPCR") + theme_classic_thin() %+replace% theme(axis.title=element_blank())#,plot.title = element_text(size=14))
 g3 <- g3 + ggtitle("Fungi qPCR") + theme_classic_thin() %+replace% theme(axis.title=element_blank())#,plot.title = element_text(size=14))
-g4 <- g4 + ggtitle("Oomycete") + theme_classic_thin() %+replace% theme(axis.title=element_blank())#,plot.title = element_text(size=14))
+g4 <- g4 + ggtitle("Oomycete DESeq") + theme_classic_thin() %+replace% theme(axis.title=element_blank())#,plot.title = element_text(size=14))
+g4 <- g4 + ggtitle("Oomycete qPCR") + theme_classic_thin() %+replace% theme(axis.title=element_blank())#,plot.title = element_text(size=14))
 g5 <- g5 + ggtitle("Nematode") + theme_classic_thin() %+replace% theme(axis.title=element_blank())#,plot.title = element_text(size=14))
 
 ggsave("Figure_S1.pdf",grid.arrange(g1,g2,g3,g4,g5,left=textGrob(label=expression("Log"[10] * " aligned sequenecs"),rot=90),bottom="OTU count",nrow=3,ncol=2),width=7,height=9)
