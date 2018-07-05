@@ -389,6 +389,10 @@ ggsave("Figure_S8.pdf",grid.arrange(g1,g2,g3,g4,g5,g6,nrow=3),width=9,height=10)
 #       Sample rarefaction plots
 #===============================================================================        
 
+library(grid)
+library(gridExtra)
+library(viridis)
+				    
 gfunc <- function(countData,coldata,title) {        
   colData <- colData[names(countData),]
 
@@ -415,12 +419,18 @@ gfunc <- function(countData,coldata,title) {
   # relabel columns
   colnames(DT) <- sub("(X)([0-9]+[HS])(.*)","\\2",colnames(DT))
 
+  # set values larger than maximum for each column to NA
+  DT <- data.table(apply(DT,2,function(x) {x[(which.max(x)+1):length(x)]<- NA;x}))
+  
+  # remove rows with all NA
+  DT <- DT[rowSums(is.na(DT)) != ncol(DT), ]
+  
   # add a count column to the data table
   DT$x <- seq(1,nrow(DT))
-                           
-  # melt the data table for easy plotting
+                             
+  # melt the data table for easy plotting 
   MDT <- melt(DT,id.vars="x")
-
+			      
   # create an empty ggplot object from the data table
   g <- ggplot(data=MDT,aes(x=x,y=value,colour=variable))
 
@@ -438,9 +448,6 @@ gfunc <- function(countData,coldata,title) {
   g
 }                        
 
-library(gridExtra)
-library(viridis)
-
 invisible(mapply(assign, names(ubiom_BAC), ubiom_BAC, MoreArgs=list(envir = globalenv())))
 g1 <- gfunc(countData,colData,"Bacteria")
 invisible(mapply(assign, names(ubiom_FUN), ubiom_FUN, MoreArgs=list(envir = globalenv())))
@@ -451,7 +458,7 @@ invisible(mapply(assign, names(ubiom_NEM), ubiom_NEM, MoreArgs=list(envir = glob
 g4 <- gfunc(countData,colData,"Nematodes")
 
 glegend <- get_legend(g)
-ggsave("test.pdf",grid.arrange(g1,g2,g3,g4,left=textGrob(label=expression("Log"[10] * " aligned sequenecs"),rot=90),bottom="OTU count",nrow=2))                              
+ggsave("rarefaction_all.pdf",grid.arrange(g1,g2,g3,g4,left=textGrob(label=expression("Log"[10] * " aligned sequenecs"),rot=90),bottom="OTU count",nrow=2))                              
 
 #===============================================================================
 #       qPCR ratio plot
