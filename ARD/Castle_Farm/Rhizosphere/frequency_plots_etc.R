@@ -311,6 +311,8 @@ dds<-DESeqDataSetFromMatrix(countData,colData,design)
 
 ### Figure S7 - SX ####
 
+### THIS NEEDS EDITING AS IT IS NOT CORRECT FOR OO OR NEM ###			    
+			    
 #PCA/NMDS figures #
 
 qf <- function(colData,countData,sf="norm") {
