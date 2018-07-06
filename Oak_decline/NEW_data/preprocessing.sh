@@ -47,41 +47,27 @@ mv $PROJECT_FOLDER/data/$RUN/fastq/*ambig* $PROJECT_FOLDER/data/$RUN/ambiguous/.
 $PROJECT_FOLDER/metabarcoding_pipeline/scripts/PIPELINE.sh -c 16Spre \
  "$PROJECT_FOLDER/data/$RUN/BAC/fastq/*R1*.fastq" \
  $PROJECT_FOLDER/data/$RUN/BAC \
- $PROJECT_FOLDER/metabarcoding_pipeline/primers/adapters.db \
+ $PROJECT_FOLDER/metabarcoding_pipeline/primers/all_primers_dapters.db \
  150 5 0.5 23 28
 
 # Pre-process FUN files (min length 150, max diffs 5, quality 0.5) 
 $PROJECT_FOLDER/metabarcoding_pipeline/scripts/PIPELINE.sh -c 16Spre \
  "$PROJECT_FOLDER/data/$RUN/FUN/fastq/*R1*.fastq" \
  $PROJECT_FOLDER/data/$RUN/FUN \
- $PROJECT_FOLDER/metabarcoding_pipeline/primers/primers.db \
- 150 5 0.5 23 28
+ $PROJECT_FOLDER/metabarcoding_pipeline/primers/all_primers_dapters.db \
+ 150 5 0.5 28 26
  
-# move FUN files to required location
-for F in $PROJECT_FOLDER/data/$RUN/FUN/fasta/*_R1.fa; do 
-  FO=$(awk -F"/" '{print $NF}' <<< $F|awk -F"_" '{print $1".r1.fa"}'); 
-  L=$(awk -F"/" '{print $NF}' <<< $F|awk -F"_" '{print $1}') ;
-  echo $L
-  awk -v L=$L '/>/{sub(".*",">"L"."(++i))}1' $F > $FO.tmp && mv $FO.tmp $PROJECT_FOLDER/data/$RUN/FUN/filtered/$FO;
-done
+# remove unfiltered reads - reads without barcode and primer have been supplied
+rm  $PROJECT_FOLDER/data/$RUN/BAC/unfiltered/*
+rm  $PROJECT_FOLDER/data/$RUN/FUN/unfiltered/*
 
-# Pre-process OO files (min length 150, max diffs 10 (actual: (min len * max diffs)/100), quality 0.5)
-$PROJECT_FOLDER/metabarcoding_pipeline/scripts/PIPELINE.sh -c OOpre \
- "$PROJECT_FOLDER/data/$RUN/OO/fastq/*R1*.fastq" \
- $PROJECT_FOLDER/data/$RUN/OO \
- $PROJECT_FOLDER/metabarcoding_pipeline/primers/adapters.db \
- 150 10 0.5 21 20
- 
-# Pre-process NEM files (min length 150, max diffs 10 (actual: (min len * max diffs)/100), quality 0.5)
-$PROJECT_FOLDER/metabarcoding_pipeline/scripts/PIPELINE.sh -c NEMpre \
- "$PROJECT_FOLDER/data/$RUN/NEM/fastq/*R1*.fastq" \
- $PROJECT_FOLDER/data/$RUN/NEM \
- $PROJECT_FOLDER/metabarcoding_pipeline/primers/nematode.db \
- 150 10 0.5 23 18
-# move NEM files to required location
-for F in $PROJECT_FOLDER/data/$RUN/NEM/fasta/*_R1.fa; do 
-  FO=$(awk -F"/" '{print $NF}' <<< $F|awk -F"_" '{print $1".r1.fa"}'); 
-  L=$(awk -F"/" '{print $NF}' <<< $F|awk -F"_" '{print $1}') ;
-  echo $L
-  awk -v L=$L '/>/{sub(".*",">"L"."(++i))}1' $F > $FO.tmp && mv $FO.tmp $PROJECT_FOLDER/data/$RUN/NEM/filtered/$FO;
+# merge pre-cut reads
+for s in "BAC FUN"; do   
+  for FORWARD in $PROJECT_FOLDER/data/$RUN/$s/unmerged/*_1.fq; do
+    REVERSE=$(sed 's/_1.fq/_2.fq/' <<< $FORWARD) 
+    OUTFILE=$(sed 's/_1.fq//' <<< $FORWARD|sed 's/.*\///')
+    qsub $PROJECT_FOLDER/metabarcoding_pipeline/scripts/submit_merge_only.sh \
+    $FORWARD $REVERSE $OUTFILE $PROJECT_FOLDER/data/$RUN/$s/merged 150 5 
+  done  
 done
+   
