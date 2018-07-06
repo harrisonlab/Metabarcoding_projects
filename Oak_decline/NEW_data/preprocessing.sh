@@ -19,6 +19,7 @@ for s in "BAC FUN"; do
   mkdir $PROJECT_FOLDER/data/$RUN/$s/filtered
   mkdir $PROJECT_FOLDER/data/$RUN/$s/unfiltered
   mkdir $PROJECT_FOLDER/data/$RUN/$s/fasta
+  mkdir $PROJECT_FOLDER/data/$RUN/$s/merged
 done
 
 # QC
@@ -26,49 +27,35 @@ for FILE in $PROJECT_FOLDER/data/$RUN/fastq/*; do
   $PROJECT_FOLDER/metabarcoding_pipeline/scripts/PIPELINE.sh -c qcheck $FILE $PROJECT_FOLDER/data/$RUN/quality
 done
 
-# BAC and FUN are multiplexed. Can seperate by the primer sequences (p1 for BAC, p2 for FUN)
-P1F=CCTACGGGNGGCWGCAG
-P1R=GACTACHVGGGTATCTAATCC
-P2F=CTTGGTCATTTAGAGGAAGTAA
-P2R=ATATGCTTAAGTTCAGCGGG
-
-# demultiplex with 0 difference in primer seqeunce
+# no multiplexing but demulti_v3.pl has some useful features for discovering barcodes per sample and filtering on barcode + primer errors
+# BAC discover sample barcode + filter with max 1 difference barcode + primer (forward or reverse)
 $PROJECT_FOLDER/metabarcoding_pipeline/scripts/PIPELINE.sh -c demultiplex \
- "$PROJECT_FOLDER/data/$RUN/fastq/*R1*.gz" 0 \
- $P1F $P1R $P2F $P2R
-
+ "$PROJECT_FOLDER/data/$RUN/fastq/*R1*.gz" 11 \
+ CCTAYGGGNGGCWGCAG GGACTACNNGGGTATCTAATCC 
 mv $PROJECT_FOLDER/data/$RUN/fastq/*ps1* $PROJECT_FOLDER/data/$RUN/BAC/fastq/.
-mv $PROJECT_FOLDER/data/$RUN/fastq/*ps2* $PROJECT_FOLDER/data/$RUN/FUN/fastq/.
 mv $PROJECT_FOLDER/data/$RUN/fastq/*ambig* $PROJECT_FOLDER/data/$RUN/ambiguous/.
 
-# Demultiplex nematode and oomycete amplicons
-P1F=CGCGAATRGCTCATTACAACAGC
-P1R=GGCGGTATCTGATCGCC
-P2F=GAAGGTGAAGTCGTAACAAGG
-P2R=AGCGTTCTTCATCGATGTGC
-
+# FUN discover sample barcode + filter with max 1 difference barcode + primer (forward or reverse)
 $PROJECT_FOLDER/metabarcoding_pipeline/scripts/PIPELINE.sh -c demultiplex \
- "$PROJECT_FOLDER/data/$RUN/fastq/*Nem*_R1_*" 0 \
- $P1F $P1R $P2F $P2R
-
-mv $PROJECT_FOLDER/data/$RUN/fastq/*ps1* $PROJECT_FOLDER/data/$RUN/NEM/fastq/.
-mv $PROJECT_FOLDER/data/$RUN/fastq/*ps2* $PROJECT_FOLDER/data/$RUN/OO/fastq/.
+ "$PROJECT_FOLDER/data/$RUN/fastq/*R1*.gz" 11 \
+ GGAAGTAAAAGTCGTAACAAGG GCTGCGTTCTTCATCGATGC 
+mv $PROJECT_FOLDER/data/$RUN/fastq/*ps1* $PROJECT_FOLDER/data/$RUN/BAC/fastq/.
 mv $PROJECT_FOLDER/data/$RUN/fastq/*ambig* $PROJECT_FOLDER/data/$RUN/ambiguous/.
 
 
-# pre-process BAC files (min length 300, max diffs 5, quality 0.5)
+# pre-process BAC files (min length 150, max diffs 5, quality 0.5)
 $PROJECT_FOLDER/metabarcoding_pipeline/scripts/PIPELINE.sh -c 16Spre \
  "$PROJECT_FOLDER/data/$RUN/BAC/fastq/*R1*.fastq" \
  $PROJECT_FOLDER/data/$RUN/BAC \
  $PROJECT_FOLDER/metabarcoding_pipeline/primers/adapters.db \
- 300 5 0.5 17 21
+ 150 5 0.5 23 28
 
-# Pre-process FUN files (min length 200, MAX length 300, quality 1)
-$PROJECT_FOLDER/metabarcoding_pipeline/scripts/PIPELINE.sh -c ITSpre \
+# Pre-process FUN files (min length 150, max diffs 5, quality 0.5) 
+$PROJECT_FOLDER/metabarcoding_pipeline/scripts/PIPELINE.sh -c 16Spre \
  "$PROJECT_FOLDER/data/$RUN/FUN/fastq/*R1*.fastq" \
  $PROJECT_FOLDER/data/$RUN/FUN \
  $PROJECT_FOLDER/metabarcoding_pipeline/primers/primers.db \
- 200 1 23 21
+ 150 5 0.5 23 28
  
 # move FUN files to required location
 for F in $PROJECT_FOLDER/data/$RUN/FUN/fasta/*_R1.fa; do 
