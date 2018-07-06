@@ -130,4 +130,38 @@ plotOrd(d,colData,design="Condition",xlabel="PC1",ylabel="PC2")
 plotOrd(d,colData,shape="Condition",design="Location",continuous=T,xlabel="PC1",ylabel="PC2")
 dev.off()
 
- 
+#===============================================================================
+#       differential analysis
+#===============================================================================
+
+# p value for FDR cutoff
+alpha <- 0.1
+
+# the model
+design <- ~condition
+
+# split dds object into per wood
+# first get rid of bigwood as it only has 2 samples - and remove it from the levels of site
+list_dds <-list(Attingham   = dds[,dds$site=="Attingham"],
+		            Chestnuts   = dds[,dds$site=="Chestnuts"],
+		            Gt_Monk     = dds[,dds$site=="Gt_Monk"],
+		            Langdale    = dds[,dds$site=="Langdale"],
+		            Speculation = dds[,dds$site=="Speculation"],
+		            Winding     = dds[,dds$site=="Winding"])
+
+
+# add full model to dds object
+list_dds <- lapply(list_dds,function(dds) design(dds) <- design)
+
+# calculate fit
+dds <- DESeq(dds,parallel=T)
+
+# calculate results for default contrast (S vs H)
+res <- results(dds,alpha=alpha,parallel=T)
+
+# merge results with taxonomy data
+res.merge <- data.table(inner_join(data.table(OTU=rownames(res),as.data.frame(res)),data.table(OTU=rownames(taxData),taxData)))
+write.table(res.merge, paste(RHB,"diff.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
+
+# output sig fasta
+writeXStringSet(readDNAStringSet(paste0(RHB,".otus.fa"))[ res.merge[padj<=0.05]$OTU],paste0(RHB,".sig.fa")) 
