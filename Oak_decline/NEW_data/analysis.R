@@ -146,18 +146,22 @@ list_dds <-list(Attingham   = dds[,dds$site=="Attingham"],
 		            Chestnuts   = dds[,dds$site=="Chestnuts"],
 		            Gt_Monk     = dds[,dds$site=="Gt_Monk"],
 		            Langdale    = dds[,dds$site=="Langdale"],
-		            Speculation = dds[,dds$site=="Speculation"],
+		            #Speculation = dds[,dds$site=="Speculation"],
 		            Winding     = dds[,dds$site=="Winding"])
 
 
 # add full model to dds object
-list_dds <- lapply(list_dds,function(dds) design(dds) <- design)
+list_dds <- lapply(list_dds,function(dds) {
+	design(dds) <- design;
+	colData(dds) <- droplevels(colData(dds))
+	dds}
+)
 
 # calculate fit
-dds <- DESeq(dds,parallel=T)
+list_dds <- lapply(list_dds,DESeq,parallel=T)
 
 # calculate results for default contrast (S vs H)
-res <- results(dds,alpha=alpha,parallel=T)
+res <- lapply(list_dds,results,alpha=alpha,parallel=T)
 
 # merge results with taxonomy data
 res.merge <- data.table(inner_join(data.table(OTU=rownames(res),as.data.frame(res)),data.table(OTU=rownames(taxData),taxData)))
