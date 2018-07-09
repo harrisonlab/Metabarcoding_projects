@@ -389,7 +389,11 @@ pdf(paste(RHB,"PCA_CENTROIDS_with_controls.pdf",sep="_"))
  plotOrd(centroids[[3]][,c(-1,-2,-3)],centroids[[3]][,1:3],design="condition",shape="time",pointSize=1.5,axes=c(3,4),alpha=0.75) + ggtitle("Dessert orchard")
 dev.off()
 
-
+# PCA percent variation
+sink(paste(RHB,"PCA_variation.txt",sep="_"))
+  lapply(list_dds,'[[',6)
+sink()	     
+	      
 # overall anova scores (% sum of squares)
 
 # get the model sum of squares for all pc scores
