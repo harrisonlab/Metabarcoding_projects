@@ -160,12 +160,38 @@ list_dds <- lapply(list_dds,function(dds) {
 # calculate fit
 list_dds <- lapply(list_dds,DESeq,parallel=T)
 
-# calculate results for default contrast (S vs H)
-res <- lapply(list_dds,results,alpha=alpha,parallel=T)
+# results COD vs AOD
+res <- lapply(list_dds[-2],results,alpha=alpha,parallel=T,contrast=c("condition","COD","Heathy"))
+res.merge <- lapply(res,function(res)data.table(inner_join(data.table(OTU=rownames(res),as.data.frame(res)),data.table(OTU=rownames(taxData),taxData))))
+sapply(names(res.merge),function(x) write.table(res.merge[[x]],paste(RHB,x,"COD_diff.txt",sep="_"),quote=F,sep="\t",na="",row.names=F))
+rm1 <- res.merge
+       
+# results COD vs AOD
+res <- lapply(list_dds[-2],results,alpha=alpha,parallel=T,contrast=c("condition","AOD","Healthy"))
+res.merge <- lapply(res,function(res)data.table(inner_join(data.table(OTU=rownames(res),as.data.frame(res)),data.table(OTU=rownames(taxData),taxData))))
+sapply(names(res.merge),function(x) write.table(res.merge[[x]],paste(RHB,x,"AOD_diff.txt",sep="_"),quote=F,sep="\t",na="",row.names=F))
+rm2 <- res.merge
 
-# merge results with taxonomy data
-res.merge <- data.table(inner_join(data.table(OTU=rownames(res),as.data.frame(res)),data.table(OTU=rownames(taxData),taxData)))
-write.table(res.merge, paste(RHB,"diff.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
+# results COD vs AOD
+res <- lapply(list_dds[-2],results,alpha=alpha,parallel=T,contrast=c("condition","Remission","Healthy"))
+res.merge <- lapply(res,function(res)data.table(inner_join(data.table(OTU=rownames(res),as.data.frame(res)),data.table(OTU=rownames(taxData),taxData))))
+sapply(names(res.merge),function(x) write.table(res.merge[[x]],paste(RHB,x,"Rem_diff.txt",sep="_"),quote=F,sep="\t",na="",row.names=F))
+rm3 <- res.merge
 
+# results COD vs AOD
+res <- lapply(list_dds[-2],results,alpha=alpha,parallel=T,contrast=c("condition","COD","AOD"))
+res.merge <- lapply(res,function(res)data.table(inner_join(data.table(OTU=rownames(res),as.data.frame(res)),data.table(OTU=rownames(taxData),taxData))))
+sapply(names(res.merge),function(x) write.table(res.merge[[x]],paste(RHB,x,"COD_AOD_diff.txt",sep="_"),quote=F,sep="\t",na="",row.names=F))
+rm4 <- res.merge
+
+all.tabs <- lapply(seq(1,4),function(i) data.table(list(
+	rm1[[i]] %>% select(-lfcSE,-stat,-pvalue) %>% rename(FC_COD = log2FoldChange)  %>% rename(padj_COD = padj),
+	rm2[[i]] %>% select(-lfcSE,-stat,-pvalue) %>% rename(FC_AOD = log2FoldChange)  %>% rename(padj_AOD = padj),
+	rm3[[i]] %>% select(-lfcSE,-stat,-pvalue) %>% rename(FC_REM = log2FoldChange)  %>% rename(padj_REM = padj),
+	rm4[[i]] %>% select(-lfcSE,-stat,-pvalue) %>% rename(FC_CA  = log2FoldChange)  %>% rename(padj_CA  = padj)
+        ) %>% Reduce(function(dtf1,dtf2) full_join(dtf1,dtf2), .))
+)	
+sapply(seq(1,4),function(x) write.table(all.tabs[[x]],paste(RHB,names(res.merge)[x],"diffs.txt",sep="_"),quote=F,sep="\t",na="",row.names=F))
+       
 # output sig fasta
 writeXStringSet(readDNAStringSet(paste0(RHB,".otus.fa"))[ res.merge[padj<=0.05]$OTU],paste0(RHB,".sig.fa")) 
