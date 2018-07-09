@@ -391,7 +391,7 @@ dev.off()
 
 # PCA percent variation
 sink(paste(RHB,"PCA_variation.txt",sep="_"))
-  lapply(list_dds,'[[',6)
+  lapply(list_pca,'[[',6)
 sink()	     
 	      
 # overall anova scores (% sum of squares)
