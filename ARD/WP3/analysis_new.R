@@ -32,14 +32,14 @@ ubiom_BAC <- loadData("BAC.otu_table.txt","colData","BAC.taxa",RHB="BAC")
 ubiom_FUN <- loadData("FUN.otu_table.txt","colData","FUN.taxa",RHB="FUN")
 
 A1 <- fread("ambiguous1.otu_table.txt") # fungi r1
-A2 <- fread("ambiguous2.otu_table.txt") # bacteria r1 (not used at moment)
+#A2 <- fread("ambiguous2.otu_table.txt") # bacteria r1 (not used at moment)
 A3 <- fread("ambiguous3.otu_table.txt") # bacteria merged
-A4 <- fread("ambiguous4.otu_table.txt") # fungi merged (not used)
+#A4 <- fread("ambiguous4.otu_table.txt") # fungi merged (not used)
 
 colnames(A1) <- sub("_.*","",sub("-","\\.",colnames(A1)))
-colnames(A2) <- sub("_.*","",sub("-","\\.",colnames(A2)))
+#colnames(A2) <- sub("_.*","",sub("-","\\.",colnames(A2)))
 colnames(A3) <- sub("_.*","",sub("-","\\.",colnames(A3)))
-colnames(A4) <- sub("_.*","",sub("-","\\.",colnames(A4)))
+#colnames(A4) <- sub("_.*","",sub("-","\\.",colnames(A4)))
 
 temp <- ubiom_BAC$countData
 temp$"#OTU ID" <- rownames(temp)
