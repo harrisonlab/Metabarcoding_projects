@@ -149,6 +149,8 @@ list_dds <-list(Attingham   = dds[,dds$site=="Attingham"],
 		            #Speculation = dds[,dds$site=="Speculation"],
 		            Winding     = dds[,dds$site=="Winding"])
 
+# Filter low count OTUs
+list_dds <- lapply(list_dds,function(dds)  dds[rowSums(counts(dds, normalize=T))>0,])
 
 # add full model to dds object
 list_dds <- lapply(list_dds,function(dds) {
@@ -184,12 +186,26 @@ res.merge <- lapply(res,function(res)data.table(inner_join(data.table(OTU=rownam
 sapply(names(res.merge),function(x) write.table(res.merge[[x]],paste(RHB,x,"COD_AOD_diff.txt",sep="_"),quote=F,sep="\t",na="",row.names=F))
 rm4 <- res.merge
 
+# results COD vs Remission
+res <- lapply(list_dds[-2],results,alpha=alpha,parallel=T,contrast=c("condition","COD","Remission"))
+res.merge <- lapply(res,function(res)data.table(inner_join(data.table(OTU=rownames(res),as.data.frame(res)),data.table(OTU=rownames(taxData),taxData))))
+sapply(names(res.merge),function(x) write.table(res.merge[[x]],paste(RHB,x,"COD_REM_diff.txt",sep="_"),quote=F,sep="\t",na="",row.names=F))
+rm5 <- res.merge
+
+# results AOD vs Remission
+res <- lapply(list_dds[-2],results,alpha=alpha,parallel=T,contrast=c("condition","AOD","Remission"))
+res.merge <- lapply(res,function(res)data.table(inner_join(data.table(OTU=rownames(res),as.data.frame(res)),data.table(OTU=rownames(taxData),taxData))))
+sapply(names(res.merge),function(x) write.table(res.merge[[x]],paste(RHB,x,"AOD_REM_diff.txt",sep="_"),quote=F,sep="\t",na="",row.names=F))
+rm6 <- res.merge
+       
 all.tabs <- lapply(seq(1,4),function(i) data.table(list(
 	rm1[[i]] %>% select(-lfcSE,-stat,-pvalue) %>% rename(FC_COD = log2FoldChange)  %>% rename(padj_COD = padj),
 	rm2[[i]] %>% select(-lfcSE,-stat,-pvalue) %>% rename(FC_AOD = log2FoldChange)  %>% rename(padj_AOD = padj),
 	rm3[[i]] %>% select(-lfcSE,-stat,-pvalue) %>% rename(FC_REM = log2FoldChange)  %>% rename(padj_REM = padj),
-	rm4[[i]] %>% select(-lfcSE,-stat,-pvalue) %>% rename(FC_CA  = log2FoldChange)  %>% rename(padj_CA  = padj)
-        ) %>% Reduce(function(dtf1,dtf2) full_join(dtf1,dtf2), .))
+	rm4[[i]] %>% select(-lfcSE,-stat,-pvalue) %>% rename(FC_CA  = log2FoldChange)  %>% rename(padj_CA  = padj),
+	rm5[[i]] %>% select(-lfcSE,-stat,-pvalue) %>% rename(FC_CR  = log2FoldChange)  %>% rename(padj_CR  = padj),
+	rm6[[i]] %>% select(-lfcSE,-stat,-pvalue) %>% rename(FC_AR  = log2FoldChange)  %>% rename(padj_AR  = padj)
+        ) %>% Reduce(function(dt1,dt2) full_join(dt1,dt2), .))
 )	
 sapply(seq(1,4),function(x) write.table(all.tabs[[x]],paste(RHB,names(res.merge)[x],"diffs.txt",sep="_"),quote=F,sep="\t",na="",row.names=F))
        
