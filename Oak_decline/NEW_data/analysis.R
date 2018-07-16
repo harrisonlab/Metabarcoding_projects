@@ -84,10 +84,13 @@ ubiom_FUN$countData <- countData
 ubiom_FUN$taxData <- taxData
 
 #===============================================================================
-#      ****FUNGI****
+#      ****FUNGI/BACTERIA****
 #===============================================================================
 
+# Fungi
 invisible(mapply(assign, names(ubiom_FUN), ubiom_FUN, MoreArgs=list(envir = globalenv())))
+# Bacteria
+invisible(mapply(assign, names(ubiom_BAC), ubiom_BAC, MoreArgs=list(envir = globalenv())))
 
 #===============================================================================
 #       Create DEseq objects
@@ -104,6 +107,9 @@ dds<-DESeqDataSetFromMatrix(countData,colData,design)
 
 sizeFactors(dds) <-sizeFactors(estimateSizeFactors(dds))
 
+# Bigwood site has only 2 samples - too few to be any use
+dds <- dds[,dds$site!="Bigwood"]
+colData(dds) <- droplevels(colData(dds))
 #===============================================================================
 #       Filter data
 #============================================================================
