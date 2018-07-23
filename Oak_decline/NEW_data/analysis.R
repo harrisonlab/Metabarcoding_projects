@@ -107,9 +107,6 @@ dds<-DESeqDataSetFromMatrix(countData,colData,design)
 
 sizeFactors(dds) <-sizeFactors(estimateSizeFactors(dds))
 
-# Bigwood site has only 2 samples - too few to be any use
-dds <- dds[,dds$site!="Bigwood"]
-colData(dds) <- droplevels(colData(dds))
 #===============================================================================
 #       Filter data
 #============================================================================
