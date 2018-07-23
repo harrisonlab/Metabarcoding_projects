@@ -112,7 +112,7 @@ sizeFactors(dds) <-sizeFactors(estimateSizeFactors(dds))
 #============================================================================
 
 # plot cummulative reads (will also produce a data table "dtt" in the global environment)
-ggsave(paste(RHB,"OTU_counts.pdf",sep="_"),plotCummulativeReads(counts(dds,normalize=T)))
+# ggsave(paste(RHB,"OTU_counts.pdf",sep="_"),plotCummulativeReads(counts(dds,normalize=T)))
 
 dds <- dds[rowSums(counts(dds, normalize=T))>4,]
 
@@ -146,12 +146,11 @@ design <- ~condition
 # split dds object into per wood
 # first get rid of bigwood as it only has 2 samples - and remove it from the levels of site
 list_dds <-list(Attingham   = dds[,dds$site=="Attingham"],
-		            Chestnuts   = dds[,dds$site=="Chestnuts"],
 		            Gt_Monk     = dds[,dds$site=="Gt_Monk"],
 		            Langdale    = dds[,dds$site=="Langdale"],
-		            #Speculation = dds[,dds$site=="Speculation"],
-		            Winding     = dds[,dds$site=="Winding"])
-
+		            Winding     = dds[,dds$site=="Winding"],
+		            Chestnuts   = dds[,dds$site=="Chestnuts"],
+		            Chestnuts   = dds[,dds$site=="Bigwood"])		
 # Filter low count OTUs
 list_dds <- lapply(list_dds,function(dds)  dds[rowSums(counts(dds, normalize=T))>0,])
 
@@ -166,37 +165,37 @@ list_dds <- lapply(list_dds,function(dds) {
 list_dds <- lapply(list_dds,DESeq,parallel=T)
 
 # results COD vs AOD
-res <- lapply(list_dds[-2],results,alpha=alpha,parallel=T,contrast=c("condition","COD","Heathy"))
+res <- lapply(list_dds[1:4],results,alpha=alpha,parallel=T,contrast=c("condition","COD","Healthy"))
 res.merge <- lapply(res,function(res)data.table(inner_join(data.table(OTU=rownames(res),as.data.frame(res)),data.table(OTU=rownames(taxData),taxData))))
 sapply(names(res.merge),function(x) write.table(res.merge[[x]],paste(RHB,x,"COD_diff.txt",sep="_"),quote=F,sep="\t",na="",row.names=F))
 rm1 <- res.merge
        
 # results COD vs AOD
-res <- lapply(list_dds[-2],results,alpha=alpha,parallel=T,contrast=c("condition","AOD","Healthy"))
+res <- lapply(list_dds[1:4],results,alpha=alpha,parallel=T,contrast=c("condition","AOD","Healthy"))
 res.merge <- lapply(res,function(res)data.table(inner_join(data.table(OTU=rownames(res),as.data.frame(res)),data.table(OTU=rownames(taxData),taxData))))
 sapply(names(res.merge),function(x) write.table(res.merge[[x]],paste(RHB,x,"AOD_diff.txt",sep="_"),quote=F,sep="\t",na="",row.names=F))
 rm2 <- res.merge
 
 # results COD vs AOD
-res <- lapply(list_dds[-2],results,alpha=alpha,parallel=T,contrast=c("condition","Remission","Healthy"))
+res <- lapply(list_dds[1:4],results,alpha=alpha,parallel=T,contrast=c("condition","Remission","Healthy"))
 res.merge <- lapply(res,function(res)data.table(inner_join(data.table(OTU=rownames(res),as.data.frame(res)),data.table(OTU=rownames(taxData),taxData))))
 sapply(names(res.merge),function(x) write.table(res.merge[[x]],paste(RHB,x,"Rem_diff.txt",sep="_"),quote=F,sep="\t",na="",row.names=F))
 rm3 <- res.merge
 
 # results COD vs AOD
-res <- lapply(list_dds[-2],results,alpha=alpha,parallel=T,contrast=c("condition","COD","AOD"))
+res <- lapply(list_dds[1:4],results,alpha=alpha,parallel=T,contrast=c("condition","COD","AOD"))
 res.merge <- lapply(res,function(res)data.table(inner_join(data.table(OTU=rownames(res),as.data.frame(res)),data.table(OTU=rownames(taxData),taxData))))
 sapply(names(res.merge),function(x) write.table(res.merge[[x]],paste(RHB,x,"COD_AOD_diff.txt",sep="_"),quote=F,sep="\t",na="",row.names=F))
 rm4 <- res.merge
 
 # results COD vs Remission
-res <- lapply(list_dds[-2],results,alpha=alpha,parallel=T,contrast=c("condition","COD","Remission"))
+res <- lapply(list_dds[1:4],results,alpha=alpha,parallel=T,contrast=c("condition","COD","Remission"))
 res.merge <- lapply(res,function(res)data.table(inner_join(data.table(OTU=rownames(res),as.data.frame(res)),data.table(OTU=rownames(taxData),taxData))))
 sapply(names(res.merge),function(x) write.table(res.merge[[x]],paste(RHB,x,"COD_REM_diff.txt",sep="_"),quote=F,sep="\t",na="",row.names=F))
 rm5 <- res.merge
 
 # results AOD vs Remission
-res <- lapply(list_dds[-2],results,alpha=alpha,parallel=T,contrast=c("condition","AOD","Remission"))
+res <- lapply(list_dds[1:4],results,alpha=alpha,parallel=T,contrast=c("condition","AOD","Remission"))
 res.merge <- lapply(res,function(res)data.table(inner_join(data.table(OTU=rownames(res),as.data.frame(res)),data.table(OTU=rownames(taxData),taxData))))
 sapply(names(res.merge),function(x) write.table(res.merge[[x]],paste(RHB,x,"AOD_REM_diff.txt",sep="_"),quote=F,sep="\t",na="",row.names=F))
 rm6 <- res.merge
@@ -211,6 +210,11 @@ all.tabs <- lapply(seq(1,4),function(i) data.table(list(
         ) %>% Reduce(function(dt1,dt2) full_join(dt1,dt2), .))
 )	
 sapply(seq(1,4),function(x) write.table(all.tabs[[x]],paste(RHB,names(res.merge)[x],"diffs.txt",sep="_"),quote=F,sep="\t",na="",row.names=F))
+       
+# chestnuts and bigwood
+res <- lapply(list_dds[5:6],results,alpha=alpha)
+res.merge <- lapply(res,function(res)data.table(inner_join(data.table(OTU=rownames(res),as.data.frame(res)),data.table(OTU=rownames(taxData),taxData))))
+sapply(names(res.merge),function(x) write.table(res.merge[[x]],paste(RHB,x,"COD_diff.txt",sep="_"),quote=F,sep="\t",na="",row.names=F))
        
 # output sig fasta
 writeXStringSet(readDNAStringSet(paste0(RHB,".otus.fa"))[ res.merge[padj<=0.05]$OTU],paste0(RHB,".sig.fa")) 
