@@ -110,7 +110,7 @@ dds <- dds[,gsub("(^[A-Z][0-9]*)([A-Z])(.*)","\\2",rownames(colData(dds)))!="C"&
 sample_numbers <- table(sub("[A-Z]$","",rownames(colData(dds))))
 
 # collapse (sum) samples
-dds <- collapseReplicates2(dds,groupby=sub("[A-Z]$","",rownames(colData(dds))),simple=T)
+dds <- collapseReplicates(dds,groupby=sub("[A-Z]$","",rownames(colData(dds))),simple=T)
 
 # set the dds sizefactor to the number of samples
 dds$sizeFactor <- as.vector(sample_numbers/3)
