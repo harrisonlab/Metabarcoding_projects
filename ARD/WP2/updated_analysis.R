@@ -65,7 +65,6 @@ taxData <- combTaxa(combinedTaxa,taxData)
 ubiom_NEM$countData <- countData
 ubiom_NEM$taxData <- taxData
 
-
 #===============================================================================
 #       Create DEseq objects
 #===============================================================================
@@ -74,7 +73,6 @@ ubiom_FUN$dds <- ubiom_to_des(ubiom_FUN,filter=expression(colSums(countData)>=10
 ubiom_BAC$dds <- ubiom_to_des(ubiom_BAC,filter=expression(colSums(countData)>=1000&colData$Block!="R"))
 ubiom_OO$dds <- ubiom_to_des(ubiom_OO,filter=expression(colSums(countData)>=1000&colData$Block!="R"),calcFactors=geoMeans)
 ubiom_NEM$dds <- ubiom_to_des(ubiom_NEM,filter=expression(colSums(countData)>=500&colData$Block!="R"))
-
 
 #===============================================================================
 #     Nematodes  Filter data
@@ -95,21 +93,19 @@ invisible(mapply(assign, names(ubiom_OO), ubiom_OO, MoreArgs=list(envir = global
 myfilter <- row.names(countData[row.names(countData) %in% row.names(taxData[(taxData$kingdom=="SAR"|as.numeric(taxData$k_conf)<=0.5),]),])
 ubiom_OO$dds <- dds[myfilter,]
 
-
 #===============================================================================
 #     Common pipeline
 #===============================================================================
 
 # attach objects (On of FUN, BAC,OO or NEM)
-# invisible(mapply(assign, names(ubiom_FUN), ubiom_FUN, MoreArgs=list(envir = globalenv())))
-# invisible(mapply(assign, names(ubiom_OO), ubiom_OO, MoreArgs=list(envir = globalenv())))
-# invisible(mapply(assign, names(ubiom_NEM), ubiom_NEM, MoreArgs=list(envir = globalenv())))
-# invisible(mapply(assign, names(ubiom_BAC), ubiom_BAC, MoreArgs=list(envir = globalenv())))
+invisible(mapply(assign, names(ubiom_FUN), ubiom_FUN, MoreArgs=list(envir = globalenv())))
+invisible(mapply(assign, names(ubiom_OO), ubiom_OO, MoreArgs=list(envir = globalenv())))
+invisible(mapply(assign, names(ubiom_NEM), ubiom_NEM, MoreArgs=list(envir = globalenv())))
+invisible(mapply(assign, names(ubiom_BAC), ubiom_BAC, MoreArgs=list(envir = globalenv())))
 
 # remove ungrafted samples (if not required in analysis)
 dds <- dds[,dds$Genotype!="M9_ungrafted"]
 dds$Genotype <- droplevels(dds$Genotype)
-
 
 #===============================================================================
 #       Alpha diversity analysis
@@ -118,33 +114,30 @@ dds$Genotype <- droplevels(dds$Genotype)
 # Recreate dds object and don't filter for low counts before running Alpha diversity
 
 # plot alpha diversity - plot_alpha will convert normalised abundances to integer values
-ggsave(paste(RHB,"Alpha.pdf",sep="_"),plot_alpha(counts(dds,normalize=T),colData(dds),design="Genotype",colour=NULL,measures=c("Chao1", "Shannon", "Simpson","Observed")))
-ggsave(paste(RHB,"Alpha_Chao1.pdf",sep="_"),plot_alpha(counts(dds,normalize=T),colData(dds),design="Genotype",colour="Block",measures=c("Chao1",),limits=c(0,1500,"Chao1")))
-ggsave(paste(RHB,"Alpha_Shannon.pdf",sep="_"),plot_alpha(counts(dds,normalize=T),colData(dds),design="Genotype",colour="Block",measures=c("Shannon")))
-ggsave(paste(RHB,"Alpha_Simpson.pdf",sep="_"),plot_alpha(counts(dds,normalize=T),colData(dds),design="Genotype",colour="Block",measures=c("Simpson")))
-ggsave(paste(RHB,"Alpha_Observed.pdf",sep="_"),plot_alpha(counts(dds,normalize=T),colData(dds),design="Genotype",colour="Block",measures=c("Observed")))
-
+ggsave(paste(RHB,"Alpha.pdf",sep="_"),plot_alpha(counts(dds,normalize=T),colData(dds),design="Treatment",colour=NULL,measures=c("Chao1", "Shannon", "Simpson","Observed")))
+ggsave(paste(RHB,"Alpha_Chao1.pdf",sep="_"),plot_alpha(counts(dds,normalize=T),colData(dds),design="Treatment",colour="Genotype",measures=c("Chao1")) # ,limits=c(0,xxx,"Chao1")
+ggsave(paste(RHB,"Alpha_Shannon.pdf",sep="_"),plot_alpha(counts(dds,normalize=T),colData(dds),design="Treatment",colour="Genotype",measures=c("Shannon")))
+ggsave(paste(RHB,"Alpha_Simpson.pdf",sep="_"),plot_alpha(counts(dds,normalize=T),colData(dds),design="Treatment",colour="Genotype",measures=c("Simpson")))
+ggsave(paste(RHB,"Alpha_Observed.pdf",sep="_"),plot_alpha(counts(dds,normalize=T),colData(dds),design="Treatment",colour="Genotype",measures=c("Observed")))
 
 ### permutation based anova on diversity index ranks ###
-
 # get the diversity index data
 all_alpha_ord <- plot_alpha(counts(dds,normalize=T),colData(dds),design="Treatment",returnData=T)
 
 # join diversity indices and metadata
 all_alpha_ord <- as.data.table(left_join(all_alpha_ord,colData,by=c("Samples"="Sample_FB"))) # or sample_on
 
-
 # perform anova for each index
 sink(paste(RHB,"ALPHA_stats.txt",sep="_"))
-setkey(all_alpha_ord,S.chao1)
-print("Chao1")
-summary(aovp(as.numeric(as.factor(all_alpha_ord$S.chao1))~Block + Treatment + Genotype + Treatment * Genotype,all_alpha_ord))
-setkey(all_alpha_ord,shannon)
-print("Shannon")
-summary(aovp(as.numeric(as.factor(all_alpha_ord$shannon))~Block + Treatment + Genotype + Treatment * Genotype,all_alpha_ord))
-setkey(all_alpha_ord,simpson)
-print("simpson")
-summary(aovp(as.numeric(as.factor(all_alpha_ord$simpson))~Block + Treatment + Genotype + Treatment * Genotype,all_alpha_ord))
+ setkey(all_alpha_ord,S.chao1)
+ print("Chao1")
+ summary(aovp(as.numeric(as.factor(all_alpha_ord$S.chao1))~Block + Treatment + Genotype + Treatment * Genotype,all_alpha_ord))
+ setkey(all_alpha_ord,shannon)
+ print("Shannon")
+ summary(aovp(as.numeric(as.factor(all_alpha_ord$shannon))~Block + Treatment + Genotype + Treatment * Genotype,all_alpha_ord))
+ setkey(all_alpha_ord,simpson)
+ print("simpson")
+ summary(aovp(as.numeric(as.factor(all_alpha_ord$simpson))~Block + Treatment + Genotype + Treatment * Genotype,all_alpha_ord))
 sink()
 
 #===============================================================================
@@ -166,16 +159,17 @@ mypca <- des_to_pca(dds)
 d <-t(data.frame(t(mypca$x)*mypca$percentVar))
 
 # plot the PCA
-g <- plotOrd(d,colData(dds),shape="Genotype",design="Treatment",pointSize=1.5,axes=c(2,3),alpha=0.75)
+axes=c(2,3)
+g <- plotOrd(d,colData(dds),shape="Genotype",design="Treatment",pointSize=1.5,axes=axes,alpha=0.75)
 ggsave(paste(RHB,"PCA.pdf",sep="_"),g)
-ggsave(paste(RHB,"PCA_factes.pdf",sep="_"),g + facet_wrap(~shapes,3)+theme_facet_blank(angle=0,hjust=0.5))
+ggsave(paste(RHB,"PCA_factes.pdf",sep="_"),g + facet_wrap(~shapes,3)+theme_facet_blank(angle=0,hjust=0.5) + guides(shape=F))
 
 # ANOVA
 sink(paste(RHB,"PCA_ANOVA.txt",sep="_"))
-print("ANOVA")
-lapply(seq(1:5),function(x) summary(aov(mypca$x[,x]~Block + Treatment + Genotype + Treatment * Genotype,colData(dds))))
-print("PERMANOVA")
-lapply(seq(1:5),function(x) summary(aovp(mypca$x[,x]~Block + Treatment + Genotype + Treatment * Genotype,colData(dds))))
+ print("ANOVA")
+ lapply(seq(1:5),function(x) summary(aov(mypca$x[,x]~Block + Treatment + Genotype + Treatment * Genotype,colData(dds))))
+ print("PERMANOVA")
+ lapply(seq(1:5),function(x) summary(aovp(mypca$x[,x]~Block + Treatment + Genotype + Treatment * Genotype,colData(dds))))
 sink()
 
 ### NMDS ###
@@ -198,18 +192,19 @@ ggsave(paste(RHB,"Unifrac_NMDS.pdf",sep="_"),plotOrd(ordu$points,colData(dds),de
 
 # permanova of unifrac distance
 sink(paste(RHB,"PERMANOVA_unifrac.txt",sep="_"))
-print("weighted")
-adonis(distance(myphylo,"unifrac",weighted=T)~Block + Treatment + Genotype + Treatment * Genotype,colData(dds),parallel=12,permutations=9999)
-print("unweighted")
-adonis(distance(myphylo,"unifrac",weighted=F)~Block + Treatment + Genotype + Treatment * Genotype,colData(dds),parallel=12,permutations=9999)
-
+ print("weighted")
+ adonis(distance(myphylo,"unifrac",weighted=T)~Block + Treatment + Genotype + Treatment * Genotype,colData(dds),parallel=12,permutations=9999)
+ print("unweighted")
+ adonis(distance(myphylo,"unifrac",weighted=F)~Block + Treatment + Genotype + Treatment * Genotype,colData(dds),parallel=12,permutations=9999)
 sink()
 
 #===============================================================================
 #      Population structure CCA/RDA
 #===============================================================================
 
-###	CCA ###
+myphylo <- ubiom_to_phylo(list(counts(dds,normalize=T),taxData,as.data.frame(colData(dds))))
+       
+### CCA ###
 
 ord_cca <- ordinate(myphylo,method="CCA","samples",formula=~Treatment + Genotype + Treatment * Genotype + Condition(Block))
 
@@ -220,7 +215,7 @@ anova.cca(ord_cca)
 ### RDA ###
 
 # transform data using vst
-otu_table(myphylo) <-  otu_table(assay(varianceStabilizingTransformation(dds),taxa_are_rows=T)
+otu_table(myphylo) <-  otu_table(assay(varianceStabilizingTransformation(dds)),taxa_are_rows=T)
 
 # calculate rda1 (treatment + genotype)
 ord_rda1 <- ordinate(myphylo,method="RDA","samples",formula=~Treatment + Genotype)
@@ -251,33 +246,29 @@ p2 <- plot_ordination(myphylo, ord_rda2, "samples", color="Treatment",shape="Gen
 p3 <- plot_ordination(myphylo, ord_rda3, "samples", color="Treatment",shape="Genotype")
 p4 <- plot_ordination(myphylo, ord_rda4, "samples", color="Treatment",shape="Genotype")
 
-ggsave(paste(RHB,"RDA1.pdf",sep="_"),p1)
-ggsave(paste(RHB,"RDA2.pdf",sep="_"),p2)
-ggsave(paste(RHB,"RDA3.pdf",sep="_"),p3)
-ggsave(paste(RHB,"RDA4.pdf",sep="_"),p4)
+ggsave(paste(RHB,"RDA1.pdf",sep="_"),p1+theme_classic_thin()+ geom_point(size=3.5,alpha=0.75))
+ggsave(paste(RHB,"RDA2.pdf",sep="_"),p2+theme_classic_thin()+ geom_point(size=3.5,alpha=0.75))
+ggsave(paste(RHB,"RDA3.pdf",sep="_"),p3+theme_classic_thin()+ geom_point(size=3.5,alpha=0.75))
+ggsave(paste(RHB,"RDA4.pdf",sep="_"),p4+theme_classic_thin()+ geom_point(size=3.5,alpha=0.75))
 
-ggsave(paste(RHB,"RDA1_facet.pdf",sep="_"),p1+ facet_wrap(~Genotype, 2)+ geom_point(size=3.5,alpha=0.75))
-ggsave(paste(RHB,"RDA2_facet.pdf",sep="_"),p2+ facet_wrap(~Genotype, 2)+ geom_point(size=3.5,alpha=0.75))
-ggsave(paste(RHB,"RDA3_facet.pdf",sep="_"),p3+ facet_wrap(~Genotype, 2)+ geom_point(size=3.5,alpha=0.75))
-ggsave(paste(RHB,"RDA4_facet.pdf",sep="_"),p4+ facet_wrap(~Genotype, 2)+ geom_point(size=3.5,alpha=0.75))
+ggsave(paste(RHB,"RDA1_facet.pdf",sep="_"),p1+ facet_wrap(~Genotype, 2)+ geom_point(size=3.5,alpha=0.75)+theme_facet_blank(angle=0,hjust=0.5)+ guides(shape=F))
+ggsave(paste(RHB,"RDA2_facet.pdf",sep="_"),p2+ facet_wrap(~Genotype, 2)+ geom_point(size=3.5,alpha=0.75)+theme_facet_blank(angle=0,hjust=0.5)+ guides(shape=F))
+ggsave(paste(RHB,"RDA3_facet.pdf",sep="_"),p3+ facet_wrap(~Genotype, 2)+ geom_point(size=3.5,alpha=0.75)+theme_facet_blank(angle=0,hjust=0.5)+ guides(shape=F))
+ggsave(paste(RHB,"RDA4_facet.pdf",sep="_"),p4+ facet_wrap(~Genotype, 2)+ geom_point(size=3.5,alpha=0.75)+theme_facet_blank(angle=0,hjust=0.5)+ guides(shape=F))
 
 sink(paste(RHB,"RDA_permutation_anova",sep="_"))
-print(aov_rda1)
-print(aov_rda2)
-print(aov_rda3)
-print(aov_rda4)
+ print(aov_rda1)
+ print(aov_rda2)
+ print(aov_rda3)
+ print(aov_rda4)
 sink()
 
 #===============================================================================
 #       differential analysis
 #===============================================================================
 
-# filter for low counts - this can affect the FD probability and DESeq2 does apply its own filtering for genes/otus with no power
-# but, no point keeping OTUs with 0 count
-dds<-dds[rowSums(counts(dds,normalize=T))>4,]
-
 # p value for FDR cutoff
-alpha <- 0.05
+alpha <- 0.1
 
 #### Treatment effect
 design(dds) <- ~Block + Treatment
@@ -293,55 +284,66 @@ summary(res2)
 summary(res3)
 summary(res4)
 
-ggsave(paste(RHB,"MA_N.pdf",sep="_"),plot_ma(res1[,c(2,1,6)],legend=T))
-ggsave(paste(RHB,"MA_N_F.pdf",sep="_"),plot_ma(res2[,c(2,1,6)],legend=T))
-ggsave(paste(RHB,"MA_N_O.pdf",sep="_"),plot_ma(res3[,c(2,1,6)],legend=T))
-ggsave(paste(RHB,"MA_N_O_F.pdf",sep="_"),plot_ma(res4[,c(2,1,6)],legend=T))
+#ggsave(paste(RHB,"MA_N.pdf",sep="_"),plot_ma(res1[,c(2,1,6)],legend=T))
+#ggsave(paste(RHB,"MA_N_F.pdf",sep="_"),plot_ma(res2[,c(2,1,6)],legend=T))
+#ggsave(paste(RHB,"MA_N_O.pdf",sep="_"),plot_ma(res3[,c(2,1,6)],legend=T))
+#ggsave(paste(RHB,"MA_N_O_F.pdf",sep="_"),plot_ma(res4[,c(2,1,6)],legend=T))
 
-write.table(data.table(inner_join(data.table(OTU=rownames(res1),as.data.frame(res1)),data.table(OTU=rownames(taxData),taxData))),
-					paste(RHB,"Nematicide_diff_.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
-write.table(data.table(inner_join(data.table(OTU=rownames(res2),as.data.frame(res2)),data.table(OTU=rownames(taxData),taxData))),
-					paste(RHB,"Nem_Fung_diff_.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
-write.table(data.table(inner_join(data.table(OTU=rownames(res3),as.data.frame(res3)),data.table(OTU=rownames(taxData),taxData))),
-					paste(RHB,"Nem_Oom_diff_.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
-write.table(data.table(inner_join(data.table(OTU=rownames(res4),as.data.frame(res4)),data.table(OTU=rownames(taxData),taxData))),
-					paste(RHB,"Nem_Oom_Fung_diff_.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
-
+test <- aggregate(t(counts(dds,normalize=T)),list(dds$Treatment),sum)	
 # problem with incorrect reporting of FC and sig values when all data for an OTU in contrast is zero
-#aggregate(t(counts(dds["OTU248"],normalize=T)),list(dds$Treatment),sum)
-#aggregate(t(counts(dds["OTU308"],normalize=T)),list(dds$Treatment),sum)
-#aggregate(t(counts(dds["OTU367"],normalize=T)),list(dds$Treatment),sum)
+# This issue is a known (mostly) none issue. Solution is to use LRT (See https://support.bioconductor.org/p/104803/)	
+# sum(apply(test[,-1],2,function(x) {x[1]==0&product(x[-1])==0}))
+# test[,c(T,apply(test[,-1],2,function(x) {x[1]==0&product(x[-1])==0}))]
+# test[,c("Group.1","OTU248","OTU308","OTU367")]
+# colnames(test[,test[1,]==0&test[2,]==0])
 
-# using LRT (as per Mike Love)
-#dds <- estimateDispersions(dds,parallel=T) # if not already calculated 
+res1$trustworthy=1;res2$trustworthy=1;res3$trustworthy=1;res4$trustworthy=1;
+res1[colnames(test[,test[1,]==0&test[2,]==0]),]$trustworthy=0
+res2[colnames(test[,test[1,]==0&test[3,]==0]),]$trustworthy=0
+res3[colnames(test[,test[1,]==0&test[4,]==0]),]$trustworthy=0
+res4[colnames(test[,test[1,]==0&test[5,]==0]),]$trustworthy=0	
+
+res1 <- as.data.table(as.data.frame(res1),keep.rownames="OTU")
+res2 <- as.data.table(as.data.frame(res2),keep.rownames="OTU")
+res3 <- as.data.table(as.data.frame(res3),keep.rownames="OTU")
+res4 <- as.data.table(as.data.frame(res4),keep.rownames="OTU")	
+	
+taxDT <- as.data.table(taxData,keep.rownames="OTU")	
+	
+## LRT TESTS ##
+# dds <- estimateDispersions(dds) # if not already calculated 
+	
 full <- model.matrix(design(dds), colData(dds))
-
-reduced <- subset(full,select=-Nematicide)
+reduced <- subset(full,select=-TreatmentNematicide)
 dds <- nbinomLRT(dds, full=full, reduced=reduced)
-res <- results(dds)
-write.table(data.table(inner_join(data.table(OTU=rownames(res),as.data.frame(res)),data.table(OTU=rownames(taxData),taxData))),
-					paste(RHB,"Nematicide_LRTdiff_.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
-
+res <- as.data.table(as.data.frame(results(dds)),keep.rownames="OTU")
+fwrite(res[taxDT,nomatch=0,on="OTU"],paste(RHB,"Nem_LRT.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
+res1[,LRT_padj:=res1[res[,c(1,7)],on="OTU",nomatch=0][,9]]
+	
 reduced <- subset(full,select=-TreatmentNem_Fung)
 dds <- nbinomLRT(dds, full=full, reduced=reduced)
-res <- results(dds)
-write.table(data.table(inner_join(data.table(OTU=rownames(res),as.data.frame(res)),data.table(OTU=rownames(taxData),taxData))),
-					paste(RHB,"Nem_Fung_LRTdiff_.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
+res <- as.data.table(as.data.frame(results(dds)),keep.rownames="OTU")
+fwrite(res[taxDT,nomatch=0,on="OTU"],paste(RHB,"Nem_Fung_LRT.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
+res2[,LRT_padj:=res2[res[,c(1,7)],on="OTU",nomatch=0][,9]]
 
 reduced <- subset(full,select=-TreatmentNem_Oom)
 dds <- nbinomLRT(dds, full=full, reduced=reduced)
-res <- results(dds)
-write.table(data.table(inner_join(data.table(OTU=rownames(res),as.data.frame(res)),data.table(OTU=rownames(taxData),taxData))),
-					paste(RHB,"Nem_Oom_LRTdiff_.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
+res <- as.data.table(as.data.frame(results(dds)),keep.rownames="OTU")
+fwrite(res[taxDT,nomatch=0,on="OTU"],paste(RHB,"Nem_Oom_LRT.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
+res3[,LRT_padj:=res3[res[,c(1,7)],on="OTU",nomatch=0][,9]]
 
 reduced <- subset(full,select=-TreatmentNem_Oom_Fung)
 dds <- nbinomLRT(dds, full=full, reduced=reduced)
-res <- results(dds)
-write.table(data.table(inner_join(data.table(OTU=rownames(res),as.data.frame(res)),data.table(OTU=rownames(taxData),taxData))),
-					paste(RHB,"Nem_Oom_Fung_LRTdiff_.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
+res <- as.data.table(as.data.frame(results(dds)),keep.rownames="OTU")
+fwrite(res[taxDT,nomatch=0,on="OTU"],paste(RHB,"Nem_Oom_Fung_LRT.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
+res4[,LRT_padj:=res4[res[,c(1,7)],on="OTU",nomatch=0][,9]]
 
+fwrite(res1[taxDT,nomatch=0,on="OTU"],paste(RHB,"Nematicide_diff.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
+fwrite(res2[taxDT,nomatch=0,on="OTU"],paste(RHB,"Nem_Fung_diff.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
+fwrite(res3[taxDT,nomatch=0,on="OTU"],paste(RHB,"Nem_Oom_diff.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
+fwrite(res4[taxDT,nomatch=0,on="OTU"],paste(RHB,"Nem_Oom_Fung_diff.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
 
-### treatment effect per genotype
+### treatment effect per genotype ###
 
 # the full model (looking for effect of treatment per genotype) - o.k. this is easier if I combine Treatment and Genotype
 #full_design <- ~Block + Genotype + Treatment + Genotype * Treatment
