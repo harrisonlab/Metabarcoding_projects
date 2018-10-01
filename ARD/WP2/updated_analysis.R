@@ -158,17 +158,6 @@ mypca <- des_to_pca(dds)
 # to get pca plot axis into the same scale create a dataframe of PC scores multiplied by their variance
 d <-t(data.frame(t(mypca$x)*mypca$percentVar))
 
-# plot the PCA
-axes=c(2,3)
-g <- plotOrd(d,colData(dds),design="Genotype",shapes="Treatment",pointSize=1.5,axes=axes,alpha=0.75)
-ggsave(paste(RHB,"PCA.pdf",sep="_"),g)
-ggsave(paste(RHB,"PCA_factes.pdf",sep="_"),g + facet_wrap(~colour,3)+theme_facet_blank(angle=0,t=2) + guides(colour=F))
- # B & W alternative plot 
-ggsave(paste(RHB,"PCA_facted_bw.pdf",sep="_"),
-  plotOrd(d,colData(dds),shape="Treatment",facet="Genotype",pointSize=1.5,axes=axes,alpha=0.75) + 
-  facet_wrap(~facet,3) + theme_facet_blank(angle=0,t=2))
-
-
 # ANOVA
 sink(paste(RHB,"PCA_ANOVA.txt",sep="_"))
  print("ANOVA")
@@ -176,6 +165,17 @@ sink(paste(RHB,"PCA_ANOVA.txt",sep="_"))
  print("PERMANOVA")
  lapply(seq(1:5),function(x) summary(aovp(mypca$x[,x]~Block + Treatment + Genotype + Treatment * Genotype,colData(dds))))
 sink()
+
+
+# plot  PCA
+qp <- function(obj,name,colData,axes=c(1,2)) {
+  ggsave(paste0(RHB,"_",name,".pdf"),plotOrd(obj,colData,design="Treatment",shape="Genotype",pointSize=1.5,alpha=0.75,axes=axes)+theme_classic_thin())
+  ggsave(paste0(RHB,"_",name,"_facet.pdf"),plotOrd(obj,colData,design="Treatment",facet="Genotype",pointSize=1.5,alpha=0.75,axes=axes)+facet_wrap(~facet,3)+theme_facet_blank(angle=0))
+  ggsave(paste0(RHB,"_",name,"_facet_bw.pdf"),plotOrd(obj,colData,shapes="Treatment",facet="Genotype",pointSize=1.5,alpha=0.75,axes=axes)+facet_wrap(~facet,3)+theme_facet_blank(angle=0))	
+}
+axes=c(1,2)
+qp(d,"PCA",colData(dds),axes)
+
 
 ### NMDS ###
 
@@ -244,52 +244,32 @@ ord_rda4 <- ordinate(myphylo,method="RDA","samples",formula= ~Condition(Block) +
 aov_rda3 <- anova.cca(ord_rda3,permuations=1000)
 aov_rda4 <- anova.cca(ord_rda4,permuations=1000)
 
-# plots
-axes=c(1,2)
-p1 <- plot_ordination(myphylo, ord_rda1, "samples", color="Treatment",shape="Genotype")
-p2 <- plot_ordination(myphylo, ord_rda2, "samples", color="Treatment",shape="Genotype")
-p3 <- plot_ordination(myphylo, ord_rda3, "samples", color="Treatment",shape="Genotype")
-p4 <- plot_ordination(myphylo, ord_rda4, "samples", color="Treatment",shape="Genotype")
-
-ggsave(paste(RHB,"RDA1.pdf",sep="_"),p1+theme_classic_thin()+ geom_point(size=3.5,alpha=0.75))
-ggsave(paste(RHB,"RDA2.pdf",sep="_"),p2+theme_classic_thin()+ geom_point(size=3.5,alpha=0.75))
-ggsave(paste(RHB,"RDA3.pdf",sep="_"),p3+theme_classic_thin()+ geom_point(size=3.5,alpha=0.75))
-ggsave(paste(RHB,"RDA4.pdf",sep="_"),p4+theme_classic_thin()+ geom_point(size=3.5,alpha=0.75))
-
-ggsave(paste(RHB,"RDA1_facet.pdf",sep="_"),p1+ facet_wrap(~Genotype, 2)+ geom_point(size=3.5,alpha=0.75)+theme_facet_blank(angle=0)+ guides(shape=F))
-ggsave(paste(RHB,"RDA2_facet.pdf",sep="_"),p2+ facet_wrap(~Genotype, 2)+ geom_point(size=3.5,alpha=0.75)+theme_facet_blank(angle=0)+ guides(shape=F))
-ggsave(paste(RHB,"RDA3_facet.pdf",sep="_"),p3+ facet_wrap(~Genotype, 2)+ geom_point(size=3.5,alpha=0.75)+theme_facet_blank(angle=0)+ guides(shape=F))
-ggsave(paste(RHB,"RDA4_facet.pdf",sep="_"),p4+ facet_wrap(~Genotype, 2)+ geom_point(size=3.5,alpha=0.75)+theme_facet_blank(angle=0)+ guides(shape=F))
-
-#scores scaled by variation in each axes
-sscores <- function(ord,axes=c(1,2)) {
-	d <- scores(ord)$sites 
-	eigvec = eigenvals(ord)
-	fracvar = eigvec[axes]/sum(eigvec)
-	d <- t(t(d)*fracvar)
-	d
-}
-	
-ggsave(paste(RHB,"RDA1_facted_bw.pdf",sep="_"),
-  plotOrd(sscores(ord_rda1)*100,colData(dds),shape="Treatment",facet="Genotype",pointSize=1.5,alpha=0.75) + 
-  facet_wrap(~facet,3) + theme_facet_blank(angle=0))
-ggsave(paste(RHB,"RDA2_facted_bw.pdf",sep="_"),
-  plotOrd(sscores(ord_rda2)*100,colData(dds),shape="Treatment",facet="Genotype",pointSize=1.5,alpha=0.75) + 
-  facet_wrap(~facet,3) + theme_facet_blank(angle=0))
-ggsave(paste(RHB,"RDA3_facted_bw.pdf",sep="_"),
-  plotOrd(sscores(ord_rda3)*100,colData(dds),shape="Treatment",facet="Genotype",pointSize=1.5,alpha=0.75) + 
-  facet_wrap(~facet,3) + theme_facet_blank(angle=0))
-ggsave(paste(RHB,"RDA4_facted_bw.pdf",sep="_"),
-  plotOrd(sscores(ord_rda4)*100,colData(dds),shape="Treatment",facet="Genotype",pointSize=1.5,alpha=0.75) + 
-  facet_wrap(~facet,3) + theme_facet_blank(angle=0))
-	
-	
+# sig
 sink(paste(RHB,"RDA_permutation_anova",sep="_"))
  print(aov_rda1)
  print(aov_rda2)
  print(aov_rda3)
  print(aov_rda4)
 sink()
+
+### plots ###
+	
+#scores scaled by variation in each axes
+sscores <- function(ord,axes=c(1,2)) {
+	d <- scores(ord)$sites 
+	eigvec = eigenvals(ord)
+	fracvar = eigvec[axes]/sum(eigvec)
+	percVar = fracvar * 100
+	d <- t(t(d)*percVar)
+	d
+}
+
+axes=c(1,2)
+qp(sscores(ord_rda1),"RDA1",colData(dds),axes)
+qp(sscores(ord_rda2),"RDA2",colData(dds),axes)
+qp(sscores(ord_rda3),"RDA3",colData(dds),axes)
+qp(sscores(ord_rda4),"RDA4",colData(dds),axes)
+
 
 #===============================================================================
 #       differential analysis
