@@ -229,8 +229,8 @@ ord_rda1 <- ordinate(myphylo,method="RDA","samples",formula=~Treatment + Genotyp
 ord_rda2 <- ordinate(myphylo,method="RDA","samples",formula=~Treatment + Genotype + Treatment * Genotype)
 
 # permutation anova of rda1 and rda 2
-aov_rda1 <- anova.cca(ord_rda1,permuations=1000)
-aov_rda2 <- anova.cca(ord_rda2,permuations=1000)
+aov_rda1 <- anova.cca(ord_rda1,permuations=1000,by="terms")
+aov_rda2 <- anova.cca(ord_rda2,permuations=1000,by="terms")
 
 ## partial RDA
 
@@ -241,8 +241,8 @@ ord_rda3 <- ordinate(myphylo,method="RDA","samples",formula= ~Condition(Block) +
 ord_rda4 <- ordinate(myphylo,method="RDA","samples",formula= ~Condition(Block) + Treatment + Genotype + Treatment * Genotype)
 
 # permutation anova of rda3 and rda 4
-aov_rda3 <- anova.cca(ord_rda3,permuations=1000)
-aov_rda4 <- anova.cca(ord_rda4,permuations=1000)
+aov_rda3 <- anova.cca(ord_rda3,permuations=1000,by="terms")
+aov_rda4 <- anova.cca(ord_rda4,permuations=1000,by="terms")
 
 # sig
 sink(paste(RHB,"RDA_permutation_anova",sep="_"))
