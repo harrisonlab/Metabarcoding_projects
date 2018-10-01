@@ -208,48 +208,18 @@ sink()
 #===============================================================================
 
 myphylo <- ubiom_to_phylo(list(counts(dds,normalize=T),taxData,as.data.frame(colData(dds))))
-       
-### CCA ###
-
-ord_cca <- ordinate(myphylo,method="CCA","samples",formula=~Treatment + Genotype + Treatment * Genotype + Condition(Block))
-
-plot_ordination(myphylo, ord_cca, "samples", color="Treatment",shape="Genotype")
-
-anova.cca(ord_cca)
 
 ### RDA ###
 
 # transform data using vst
 otu_table(myphylo) <-  otu_table(assay(varianceStabilizingTransformation(dds)),taxa_are_rows=T)
 
-# calculate rda1 (treatment + genotype)
-ord_rda1 <- ordinate(myphylo,method="RDA","samples",formula=~Treatment + Genotype)
-
-# calculate rda2 (treatment + genotype + interaction)
-ord_rda2 <- ordinate(myphylo,method="RDA","samples",formula=~Treatment + Genotype + Treatment * Genotype)
-
-# permutation anova of rda1 and rda 2
-aov_rda1 <- anova.cca(ord_rda1,permuations=1000,by="terms")
-aov_rda2 <- anova.cca(ord_rda2,permuations=1000,by="terms")
-
-## partial RDA
-
-# calculate rda3 removing block effect(treatment + genotype)
-ord_rda3 <- ordinate(myphylo,method="RDA","samples",formula= ~Condition(Block) + Treatment + Genotype)
-
-# calculate rda4 removing block effect(treatment + genotype + interaction)
-ord_rda4 <- ordinate(myphylo,method="RDA","samples",formula= ~Condition(Block) + Treatment + Genotype + Treatment * Genotype)
-
-# permutation anova of rda3 and rda 4
-aov_rda3 <- anova.cca(ord_rda3,permuations=1000,by="terms")
-aov_rda4 <- anova.cca(ord_rda4,permuations=1000,by="terms")
-
-# sig
+	
+# no faf (consistent with others) method
+ord_rda <- ordinate(myphylo,method="RDA","samples",formula= ~Block + Treatment + Genotype + Treatment * Genotype)	
+aov_rda <- anova.cca(ord_rda,permuations=1000,by="terms")
 sink(paste(RHB,"RDA_permutation_anova",sep="_"))
- print(aov_rda1)
- print(aov_rda2)
- print(aov_rda3)
- print(aov_rda4)
+ print(aov_rda)
 sink()
 
 ### plots ###
@@ -265,11 +235,7 @@ sscores <- function(ord,axes=c(1,2)) {
 }
 
 axes=c(1,2)
-qp(sscores(ord_rda1),"RDA1",colData(dds),axes)
-qp(sscores(ord_rda2),"RDA2",colData(dds),axes)
-qp(sscores(ord_rda3),"RDA3",colData(dds),axes)
-qp(sscores(ord_rda4),"RDA4",colData(dds),axes)
-
+qp(sscores(ord_rda),"RDA",colData(dds),axes)
 
 #===============================================================================
 #       differential analysis
