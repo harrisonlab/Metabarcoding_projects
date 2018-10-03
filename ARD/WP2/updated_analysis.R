@@ -22,9 +22,9 @@ environment(plot_ordination) <- environment(ordinate) <- environment(plot_richne
 #===============================================================================
 #       Load data (and clean it up)
 #===============================================================================
-
-ubiom_BAC <- loadData("BAC.otus_table.txt","colData","BAC.taxa","BAC.phy",RHB="BAC")
-ubiom_BAC$countData <- ubiom_BAC$countData[,colnames(ubiom_BAC$countData)%in%rownames(ubiom_BAC$colData)]
+# not interested in bacteria
+# ubiom_BAC <- loadData("BAC.otus_table.txt","colData","BAC.taxa","BAC.phy",RHB="BAC")
+# ubiom_BAC$countData <- ubiom_BAC$countData[,colnames(ubiom_BAC$countData)%in%rownames(ubiom_BAC$colData)]
 ubiom_FUN <- loadData("FUN.otus_table.txt","colData","FUN.taxa","FUN.phy",RHB="FUN")
 ubiom_FUN$countData <- ubiom_FUN$countData[,colnames(ubiom_FUN$countData)%in%rownames(ubiom_FUN$colData)]
 ubiom_OO <- loadData("OO.otus_table.txt","colData","OO.taxa","OO.phy",RHB="OO")
@@ -70,7 +70,7 @@ ubiom_NEM$taxData <- taxData
 #===============================================================================
 
 ubiom_FUN$dds <- ubiom_to_des(ubiom_FUN,filter=expression(colSums(countData)>=1000&colData$Block!="R"))
-ubiom_BAC$dds <- ubiom_to_des(ubiom_BAC,filter=expression(colSums(countData)>=1000&colData$Block!="R"))
+#ubiom_BAC$dds <- ubiom_to_des(ubiom_BAC,filter=expression(colSums(countData)>=1000&colData$Block!="R"))
 ubiom_OO$dds <- ubiom_to_des(ubiom_OO,filter=expression(colSums(countData)>=1000&colData$Block!="R"),calcFactors=geoMeans)
 ubiom_NEM$dds <- ubiom_to_des(ubiom_NEM,filter=expression(colSums(countData)>=500&colData$Block!="R"))
 
@@ -101,7 +101,7 @@ ubiom_OO$dds <- dds[myfilter,]
 invisible(mapply(assign, names(ubiom_FUN), ubiom_FUN, MoreArgs=list(envir = globalenv())))
 invisible(mapply(assign, names(ubiom_OO), ubiom_OO, MoreArgs=list(envir = globalenv())))
 invisible(mapply(assign, names(ubiom_NEM), ubiom_NEM, MoreArgs=list(envir = globalenv())))
-invisible(mapply(assign, names(ubiom_BAC), ubiom_BAC, MoreArgs=list(envir = globalenv())))
+#invisible(mapply(assign, names(ubiom_BAC), ubiom_BAC, MoreArgs=list(envir = globalenv())))
 
 # remove ungrafted samples (if not required in analysis)
 dds <- dds[,dds$Genotype!="M9_ungrafted"]
@@ -168,40 +168,13 @@ sink()
 
 
 # plot  PCA
-qp <- function(obj,name,colData,axes=c(1,2)) {
-  ggsave(paste0(RHB,"_",name,".pdf"),plotOrd(obj,colData,design="Treatment",shape="Genotype",pointSize=1.5,alpha=0.75,axes=axes)+theme_classic_thin())
-  ggsave(paste0(RHB,"_",name,"_facet.pdf"),plotOrd(obj,colData,design="Treatment",facet="Genotype",pointSize=1.5,alpha=0.75,axes=axes)+facet_wrap(~facet,3)+theme_facet_blank(angle=0))
-  ggsave(paste0(RHB,"_",name,"_facet_bw.pdf"),plotOrd(obj,colData,shapes="Treatment",facet="Genotype",pointSize=1.5,alpha=0.75,axes=axes)+facet_wrap(~facet,3)+theme_facet_blank(angle=0))	
+qp <- function(obj,name,colData) {
+  ggsave(paste0(RHB,"_",name,".pdf"),plotOrd(obj,colData,design="Treatment",shape="Genotype",pointSize=1.5,alpha=0.75)+theme_classic_thin())
+  ggsave(paste0(RHB,"_",name,"_facet.pdf"),plotOrd(obj,colData,design="Treatment",facet="Genotype",pointSize=1.5,alpha=0.75)+facet_wrap(~facet,3)+theme_facet_blank(angle=0))
+  ggsave(paste0(RHB,"_",name,"_facet_bw.pdf"),plotOrd(obj,colData,facet="Treatment",shapes="Genotype",pointSize=1.5,alpha=0.75)+facet_wrap(~facet,3)+theme_facet_blank(angle=0))	
 }
 axes=c(1,2)
-qp(d,"PCA",colData(dds),axes)
-
-
-### NMDS ###
-
-# phyloseq has functions (using Vegan) for making NMDS plots
-myphylo <- ubiom_to_phylo(list(counts(dds,normalize=T),taxData,as.data.frame(colData(dds))))
-
-# add tree to phyloseq object
-phy_tree(myphylo) <- nj(as.dist(phylipData))
-
-# calculate NMDS ordination using weighted unifrac scores
-ordu = ordinate(myphylo, "NMDS", "unifrac", weighted=TRUE)
-
-theme_set(theme_bw())
-p1 <- plot_ordination(myphylo, ordu, type="Samples", color="Treatment",shape="Genotype")
-p1 + facet_wrap(~Genotype, 3)
-
-# plot with plotOrd (or use plot_ordination)
-ggsave(paste(RHB,"Unifrac_NMDS.pdf",sep="_"),plotOrd(ordu$points,colData(dds),design="Block",xlabel="NMDS1",ylabel="NMDS2",pointSize=2),width=10,height=10)
-
-# permanova of unifrac distance
-sink(paste(RHB,"PERMANOVA_unifrac.txt",sep="_"))
- print("weighted")
- adonis(distance(myphylo,"unifrac",weighted=T)~Block + Treatment + Genotype + Treatment * Genotype,colData(dds),parallel=12,permutations=9999)
- print("unweighted")
- adonis(distance(myphylo,"unifrac",weighted=F)~Block + Treatment + Genotype + Treatment * Genotype,colData(dds),parallel=12,permutations=9999)
-sink()
+qp(d[,axes],"PCA",colData(dds))
 
 #===============================================================================
 #      Population structure CCA/RDA
@@ -213,20 +186,24 @@ myphylo <- ubiom_to_phylo(list(counts(dds,normalize=T),taxData,as.data.frame(col
 
 # transform data using vst
 otu_table(myphylo) <-  otu_table(assay(varianceStabilizingTransformation(dds)),taxa_are_rows=T)
-
 	
 # no faf (consistent with others) method
-ord_rda <- ordinate(myphylo,method="RDA","samples",formula= ~Block + Treatment + Genotype + Treatment * Genotype)	
-aov_rda <- anova.cca(ord_rda,permuations=1000,by="terms")
 sink(paste(RHB,"RDA_permutation_anova",sep="_"))
- print(aov_rda)
+ ord_rda <- ordinate(myphylo,method="RDA","samples",formula= ~Block + Treatment + Genotype + Treatment * Genotype)		
+ print(anova.cca(ord_rda,permuations=1000))
+ print(anova.cca(ord_rda,permuations=1000,by="terms"))
+sink()
+sink(paste(RHB,"Partial_RDA_permutation_anova",sep="_"))
+ ord_rda_partial <- ordinate(myphylo,method="RDA","samples",formula= ~Condition(Block) + Treatment + Genotype + Treatment * Genotype)
+ print(anova.cca(ord_rda_partial,permuations=1000))
+ print(anova.cca(ord_rda_partial,permuations=1000,by="terms"))
 sink()
 
 ### plots ###
 	
 #scores scaled by variation in each axes
 sscores <- function(ord,axes=c(1,2)) {
-	d <- scores(ord)$sites 
+	d <- scores(ord,axes)$sites 
 	eigvec = eigenvals(ord)
 	fracvar = eigvec[axes]/sum(eigvec)
 	percVar = fracvar * 100
@@ -234,8 +211,8 @@ sscores <- function(ord,axes=c(1,2)) {
 	d
 }
 
-axes=c(1,2)
-qp(sscores(ord_rda),"RDA",colData(dds),axes)
+qp(sscores(ord_rda,c(2,3)),"RDA",colData(dds))
+qp(sscores(ord_rda_partial),"Partial_RDA",colData(dds))
 
 #===============================================================================
 #       differential analysis
