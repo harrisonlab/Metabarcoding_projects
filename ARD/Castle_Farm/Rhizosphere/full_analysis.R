@@ -149,7 +149,7 @@ sizeFactors(dds) <-sizeFactors(estimateSizeFactors(dds))
 # Add spatial information as a numeric and plot
 colData$Location<-as.number(colData$Pair)
 
-ggsave(paste(RHB,"Alpha.pdf",sep="_"),plot_alpha(counts(dds,normalize=T),colData,design="Condition",colour="Condition",cbPalette=T,legend="hidden",measures=c("Chao1", "Shannon", "Simpson","Observed")))
+ggsave(paste(RHB,"Alpha.pdf",sep="_"),plot_alpha(counts(dds,normalize=T),colData,design="Condition",colour="Condition",cbPalette=T,legend="hidden",measures=c("Chao1", "Shannon", "Simpson","Observed"),limits=c(0,1000,"Chao1")))
 
 ### permutation based anova on diversity index ranks ###
 
@@ -210,6 +210,8 @@ pdf(paste(RHB,"PCA.pdf",sep="_"))
 dev.off()
 
 ggsave(paste(RHB,"PCA_loc.pdf",sep="_"),plotOrd(d,colData,shape="Condition",design="Location",continuous=T,xlabel="PC1",ylabel="PC2",alpha=0.75,pointSize=2))
+                            
+ggsave(paste(RHB,"PCA_Original.pdf",sep="_"),plotOrd(d,colData,design="Condition",continuous=F,xlabel="PC1",ylabel="PC2",alpha=0.75,pointSize=2))
                           
 g <- plotOrd(d,colData,design="Condition",continuous=F,axes=c(1,3),plot="Label",labelSize=2.5,cbPalette=T,label="Pair",legend="bottom")
 g$layers[[1]] <- NULL
@@ -222,7 +224,7 @@ ggsave(paste(RHB,"PCA_NEW_1vs3.pdf",sep="_"),g)
 ### remove spatial information (this uses the factor "Pair" not the numeric "Location") and plot
 pc.res <- resid(aov(mypca$x~colData$Pair,colData))
 d <- t(data.frame(t(pc.res*mypca$percentVar)))
-ggsave(paste(RHB,"PCA_deloc.pdf",sep="_"),plotOrd(d,colData,shape="Condition",design="Location",continuous=T,xlabel="PC1",ylabel="PC2"))
+ggsave(paste(RHB,"PCA_without_paired_var.pdf",sep="_"),plotOrd(d,colData,design="Condition",continuous=F,xlabel="PC1",ylabel="PC2"))
 
 # ANOVA
 sink(paste(RHB,"PCA_ANOVA.txt",sep="_"))
