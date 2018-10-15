@@ -1,5 +1,5 @@
 # folder containing project files
-PROJECT_FOLDER=~/projects/ARD
+PROJECT_FOLDER=~/projects/ARD/metabarcoding
 
 # sequencer run folder 
 RUN=170217
