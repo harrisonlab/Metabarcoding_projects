@@ -224,6 +224,8 @@ ggsave(paste(RHB,"PCA_NEW_1vs3.pdf",sep="_"),g)
 g_fun_fig4 <- plotOrd(d,colData,design="Condition",facet="Pair",axes=c(1,2),alpha=0.75,pointSize=2,cbPalette=T,legend="bottom") + 
 geom_line(aes(group=facet),alpha=0.1,linetype=3,colour="#000000")
 
+g2 <- g_fun_fig4 + ggtitle("B")+ theme_classic_thin(base_size=12)%+replace% theme(plot.title = element_text(hjust = -0.1,size=14),legend.position="bottom")
+
 
 ### remove spatial information (this uses the factor "Pair" not the numeric "Location") and plot
 pc.res <- resid(aov(mypca$x~colData$Pair,colData))
@@ -619,9 +621,13 @@ ggsave(paste(RHB,"PCA_loc.pdf",sep="_"),plotOrd(d,colData,shape="Condition",desi
 
 g_bac_fig4 <- plotOrd(d,colData,design="Condition",facet="Pair",axes=c(1,3),ylims=c(-2,4),alpha=0.75,pointSize=2,cbPalette=T,legend="none") + 
 geom_line(aes(group=facet),alpha=0.1,linetype=3,colour="#000000")
+
+g1 <- g_bac_fig4 + ggtitle("A")+ theme_classic_thin(base_size=12)%+replace% theme(plot.title = element_text(hjust = -0.07,size=14),legend.position="none")
                             
 g <- plotOrd(d,colData,shape="Condition",design="Pair",continuous=T,axes=c(1,3),ylims=c(-2,4),alpha=0.75,pointSize=2) + 
 + scale_colour_gradient(guide=F,low="red",high="yellow")
+
+ggsave("NEW_Figure_4.pdf",grid.arrange(g1,g2,nrow=2),width=7,height=8)
 
 ### remove spatial information (this uses the factor "Pair" not the numeric "Location") and plot
 pc.res <- resid(aov(mypca$x~colData$Pair,colData))
