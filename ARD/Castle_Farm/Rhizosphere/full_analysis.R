@@ -221,6 +221,10 @@ g  <- g + guides(colour = guide_legend(override.aes = list(size = 5, shape = c(u
 g  <- g + scale_colour_manual(name = "Condition", breaks = c("H","S"), labels = c("",""),values=c("#000000", "#E69F00"))
 ggsave(paste(RHB,"PCA_NEW_1vs3.pdf",sep="_"),g)
 
+g_fun_fig4 <- plotOrd(d,colData,design="Condition",facet="Pair",axes=c(1,2),alpha=0.75,pointSize=2,cbPalette=T,legend="bottom") + 
+geom_line(aes(group=facet),alpha=0.1,linetype=3,colour="#000000")
+
+
 ### remove spatial information (this uses the factor "Pair" not the numeric "Location") and plot
 pc.res <- resid(aov(mypca$x~colData$Pair,colData))
 d <- t(data.frame(t(pc.res*mypca$percentVar)))
@@ -234,6 +238,16 @@ sink(paste(RHB,"PCA_ANOVA.txt",sep="_"))
  lapply(seq(1:3),function(x) summary(aovp(mypca$x[,x]~Pair+Condition,colData(dds))))
 sink()
 
+# Sum of variances in PC scores
+sum_squares <- t(apply(mypca$x,2,function(x) 
+  t(summary(aov(x~Pair+Condition,colData(dds)))[[1]][2]))
+)
+colnames(sum_squares) <- c("Pair","Condition","residual")
+x<-t(apply(sum_squares,1,prop.table))
+perVar <- x * mypca$percentVar
+colSums(perVar)
+colSums(perVar)/sum(colSums(perVar))*100
+        
 ### NMDS ###
 
 # phyloseq has functions (using Vegan) for making NMDS plots
@@ -324,7 +338,7 @@ writeXStringSet(readDNAStringSet(paste0(RHB,".otus.fa"))[ res.merge[padj<=0.05]$
 dds<-DESeqDataSetFromMatrix(countData,colData,design)
 
 # Correction from aboslute quantification
-sizeFactors(dds) <- 1/colData$funq
+sizeFactors(dds) <- colData$funq
 
 # Correction from aboslute quantification v2
 # sizeFactors(dds) <- sizeFactors(dds)/colData$funq
@@ -410,6 +424,16 @@ sink(paste(RHB,"qPCR_PCA_ANOVA.txt",sep="_"))
  print("PERMANOVA")
  lapply(seq(1:3),function(x) summary(aovp(mypca$x[,x]~Pair+Condition,colData(dds))))
 sink()
+
+# Sum of variances in PC scores
+sum_squares <- t(apply(mypca$x,2,function(x) 
+  t(summary(aov(x~Pair+Condition,colData(dds)))[[1]][2]))
+)
+colnames(sum_squares) <- c("Pair","Condition","residual")
+x<-t(apply(sum_squares,1,prop.table))
+perVar <- x * mypca$percentVar
+colSums(perVar)
+colSums(perVar)/sum(colSums(perVar))*100
 
 ### NMDS ###
 
@@ -593,6 +617,12 @@ dev.off()
 
 ggsave(paste(RHB,"PCA_loc.pdf",sep="_"),plotOrd(d,colData,shape="Condition",design="Location",continuous=T,xlabel="PC1",ylabel="PC2",alpha=0.75,pointSize=2))
 
+g_bac_fig4 <- plotOrd(d,colData,design="Condition",facet="Pair",axes=c(1,3),ylims=c(-2,4),alpha=0.75,pointSize=2,cbPalette=T,legend="none") + 
+geom_line(aes(group=facet),alpha=0.1,linetype=3,colour="#000000")
+                            
+g <- plotOrd(d,colData,shape="Condition",design="Pair",continuous=T,axes=c(1,3),ylims=c(-2,4),alpha=0.75,pointSize=2) + 
++ scale_colour_gradient(guide=F,low="red",high="yellow")
+
 ### remove spatial information (this uses the factor "Pair" not the numeric "Location") and plot
 pc.res <- resid(aov(mypca$x~colData$Pair,colData))
 d <- t(data.frame(t(pc.res*mypca$percentVar)))
@@ -605,6 +635,16 @@ sink(paste(RHB,"PCA_ANOVA.txt",sep="_"))
  print("PERMANOVA")
  lapply(seq(1:3),function(x) summary(aovp(mypca$x[,x]~Pair+Condition,colData(dds))))
 sink()
+
+# Sum of variances in PC scores
+sum_squares <- t(apply(mypca$x,2,function(x) 
+  t(summary(aov(x~Pair+Condition,colData(dds)))[[1]][2]))
+)
+colnames(sum_squares) <- c("Pair","Condition","residual")
+x<-t(apply(sum_squares,1,prop.table))
+perVar <- x * mypca$percentVar
+colSums(perVar)
+colSums(perVar)/sum(colSums(perVar))*100
 
 ### NMDS ###
 
@@ -688,7 +728,7 @@ writeXStringSet(readDNAStringSet(paste0(RHB,".otus.fa"))[res.merge[padj<=0.05]$O
 dds<-DESeqDataSetFromMatrix(countData,colData,design)
 
 # Correction from aboslute quantification
-sizeFactors(dds) <- 1/colData$bacq
+sizeFactors(dds) <- colData$bacq
 
 # Correction from aboslute quantification v2
 # sizeFactors(dds) <- sizeFactors(dds)/colData$bacq
@@ -777,6 +817,16 @@ sink(paste(RHB,"qPCR_PCA_ANOVA.txt",sep="_"))
  lapply(seq(1:3),function(x) summary(aovp(mypca$x[,x]~Pair+Condition,colData(dds))))
 sink()
 
+# Sum of variances in PC scores
+sum_squares <- t(apply(mypca$x,2,function(x) 
+  t(summary(aov(x~Pair+Condition,colData(dds)))[[1]][2]))
+)
+colnames(sum_squares) <- c("Pair","Condition","residual")
+x<-t(apply(sum_squares,1,prop.table))
+perVar <- x * mypca$percentVar
+colSums(perVar)
+colSums(perVar)/sum(colSums(perVar))*100
+                 
 ### NMDS ###
 
 # phyloseq has functions (using Vegan) for making NMDS plots
@@ -972,6 +1022,16 @@ sink(paste(RHB,"PCA_ANOVA.txt",sep="_"))
  lapply(seq(1:3),function(x) summary(aovp(mypca$x[,x]~Pair+Condition,colData(dds))))
 sink()
 
+# Sum of variances in PC scores
+sum_squares <- t(apply(mypca$x,2,function(x) 
+  t(summary(aov(x~Pair+Condition,colData(dds)))[[1]][2]))
+)
+colnames(sum_squares) <- c("Pair","Condition","residual")
+x<-t(apply(sum_squares,1,prop.table))
+perVar <- x * mypca$percentVar
+colSums(perVar)
+colSums(perVar)/sum(colSums(perVar))*100
+                 
 ### NMDS ###
 
 # phyloseq has functions (using Vegan) for making NMDS plots
@@ -1055,7 +1115,9 @@ dds<-DESeqDataSetFromMatrix(countData,colData,design)
 
 # Correction from aboslute quantification of fungal ITS 
 sizeFactors(dds) <- sizeFactors(estimateSizeFactors(dds))/left_join(colData,ubiom_FUN$colData)$funq
+sizeFactors(dds) <- left_join(colData,ubiom_FUN$colData)$funq
 
+                 
 ### filter to remove OTUs which are unlikely part of the correct kingdom (best to do this before Alpha diversity analysis)
 myfilter <- row.names(countData[row.names(countData) %in% row.names(taxData[(taxData$kingdom=="SAR"|as.numeric(taxData$k_conf)<=0.5),]),])
 dds <- dds[myfilter,]
@@ -1143,6 +1205,16 @@ sink(paste(RHB,"PCA_ANOVA_qPCR.txt",sep="_"))
  print("PERMANOVA")
  lapply(seq(1:3),function(x) summary(aovp(mypca$x[,x]~Pair+Condition,colData(dds))))
 sink()
+
+# Sum of variances in PC scores
+sum_squares <- t(apply(mypca$x,2,function(x) 
+  t(summary(aov(x~Pair+Condition,colData(dds)))[[1]][2]))
+)
+colnames(sum_squares) <- c("Pair","Condition","residual")
+x<-t(apply(sum_squares,1,prop.table))
+perVar <- x * mypca$percentVar
+colSums(perVar)
+colSums(perVar)/sum(colSums(perVar))*100
 
 ### NMDS ###
 
@@ -1342,6 +1414,16 @@ sink(paste(RHB,"PCA_ANOVA.txt",sep="_"))
  print("PERMANOVA")
  lapply(seq(1:3),function(x) summary(aovp(mypca$x[,x]~Pair+Condition,colData(dds))))
 sink()
+
+# Sum of variances in PC scores
+sum_squares <- t(apply(mypca$x,2,function(x) 
+  t(summary(aov(x~Pair+Condition,colData(dds)))[[1]][2]))
+)
+colnames(sum_squares) <- c("Pair","Condition","residual")
+x<-t(apply(sum_squares,1,prop.table))
+perVar <- x * mypca$percentVar
+colSums(perVar)
+colSums(perVar)/sum(colSums(perVar))*100
 
 ### NMDS ###
 
