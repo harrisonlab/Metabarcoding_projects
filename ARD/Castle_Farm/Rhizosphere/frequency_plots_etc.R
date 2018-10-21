@@ -89,7 +89,7 @@ nrm <- sumTaxa(list(as.data.frame(counts(dds,normalize=T)),taxData,colData),conf
 nrm <- rbind(nrm[nrm$all>=1,],c("others",sum(nrm[nrm$all<1,2])))
 
 dds<-DESeqDataSetFromMatrix(countData,colData,design)
-sizeFactors(dds) <- 1/colData$bacq
+sizeFactors(dds) <- colData$bacq
 dds <- dds[rowSums(counts(dds, normalize=T))>4,]
 qPCR <- sumTaxa(list(as.data.frame(counts(dds,normalize=T)),taxData,colData),conf=0.9,proportional=T)
 qPCR <- rbind(qPCR[qPCR$all>=1,],c("others",sum(qPCR[qPCR$all<1,2])))
@@ -97,7 +97,7 @@ qPCR <- rbind(qPCR[qPCR$all>=1,],c("others",sum(qPCR[qPCR$all<1,2])))
 md1 <- melt(nrm,id=colnames(nrm)[1])
 md2 <- melt(qPCR,id=colnames(qPCR)[1])
 
-levels(md1$variable)[1] <- "DESeq2"
+levels(md1$variable)[1] <- "Raw"
 levels(md2$variable)[1] <- "qPCR"
 
 md <- rbind(md1,md2)
@@ -142,7 +142,7 @@ nrm <- sumTaxa(list(as.data.frame(counts(dds,normalize=T)),taxData,colData),conf
 nrm <- rbind(nrm[nrm$all>=1,],c("others",sum(nrm[nrm$all<1,2])))
 
 dds<-DESeqDataSetFromMatrix(countData,colData,design)
-sizeFactors(dds) <- 1/colData$bacq
+sizeFactors(dds) <- colData$funq
 dds <- dds[rowSums(counts(dds, normalize=T))>4,]
 qPCR <- sumTaxa(list(as.data.frame(counts(dds,normalize=T)),taxData,colData),conf=0.9,proportional=T)
 qPCR <- rbind(qPCR[qPCR$all>=1,],c("others",sum(qPCR[qPCR$all<1,2])))
@@ -150,7 +150,7 @@ qPCR <- rbind(qPCR[qPCR$all>=1,],c("others",sum(qPCR[qPCR$all<1,2])))
 md1 <- melt(nrm,id=colnames(nrm)[1])
 md2 <- melt(qPCR,id=colnames(qPCR)[1])
 
-levels(md1$variable)[1] <- "DESeq2"
+levels(md1$variable)[1] <- "Raw"
 levels(md2$variable)[1] <- "qPCR"
 
 md <- rbind(md1,md2)
@@ -237,7 +237,7 @@ countData <- countData[,myfilter]
 dds<-DESeqDataSetFromMatrix(countData,colData,~1)
 sizeFactors(dds) <-sizeFactors(estimateSizeFactors(dds))
 g1 <- plotCummulativeReads(counts(dds,normalize=T))
-sizeFactors(dds) <- 1/colData$bacq
+sizeFactors(dds) <- colData$bacq
 g2 <- plotCummulativeReads(counts(dds,normalize=T))
 
 invisible(mapply(assign, names(ubiom_FUN), ubiom_FUN, MoreArgs=list(envir = globalenv())))
@@ -248,7 +248,7 @@ myfilter <- myfilter&sapply(colData$Pair,function(x) length(which(x==colData$Pai
 colData <- droplevels(colData[myfilter,])
 countData <- countData[,myfilter]
 dds<-DESeqDataSetFromMatrix(countData,colData,~1)
-sizeFactors(dds) <- 1/colData$bacq
+sizeFactors(dds) <- colData$funq
 g3 <- plotCummulativeReads(counts(dds,normalize=T))
 
 invisible(mapply(assign, names(ubiom_OO), ubiom_OO, MoreArgs=list(envir = globalenv())))
@@ -263,7 +263,7 @@ sizeFactors(dds) <-sizeFactors(estimateSizeFactors(dds))
 myfilter <- row.names(countData[row.names(countData) %in% row.names(taxData[(taxData$kingdom=="SAR"|as.numeric(taxData$k_conf)<=0.5),]),])
 dds <- dds[myfilter,]
 g4 <- plotCummulativeReads(counts(dds,normalize=T))
-sizeFactors(dds) <- sizeFactors(dds) / left_join(colData,ubiom_FUN$colData)$funq
+sizeFactors(dds) <- left_join(colData,ubiom_FUN$colData)$funq
 			    
 invisible(mapply(assign, names(ubiom_NEM), ubiom_NEM, MoreArgs=list(envir = globalenv())))
 colData <- colData[names(countData),]
@@ -276,10 +276,10 @@ dds<-DESeqDataSetFromMatrix(countData,colData,~1)
 sizeFactors(dds) <-sizeFactors(estimateSizeFactors(dds))
 g6 <- plotCummulativeReads(counts(dds,normalize=T))
 
-g1 <- g1 + ggtitle("Bacteria DESeq") + theme_classic_thin() %+replace% theme(axis.title=element_blank())#,plot.title = element_text(size=14))
+g1 <- g1 + ggtitle("Bacteria Raw") + theme_classic_thin() %+replace% theme(axis.title=element_blank())#,plot.title = element_text(size=14))
 g2 <- g2 + ggtitle("Bacteria qPCR") + theme_classic_thin() %+replace% theme(axis.title=element_blank())#,plot.title = element_text(size=14))
 g3 <- g3 + ggtitle("Fungi qPCR") + theme_classic_thin() %+replace% theme(axis.title=element_blank())#,plot.title = element_text(size=14))
-g4 <- g4 + ggtitle("Oomycete DESeq") + theme_classic_thin() %+replace% theme(axis.title=element_blank())#,plot.title = element_text(size=14))
+g4 <- g4 + ggtitle("Oomycete Raw") + theme_classic_thin() %+replace% theme(axis.title=element_blank())#,plot.title = element_text(size=14))
 g4 <- g4 + ggtitle("Oomycete qPCR") + theme_classic_thin() %+replace% theme(axis.title=element_blank())#,plot.title = element_text(size=14))
 g5 <- g5 + ggtitle("Nematode") + theme_classic_thin() %+replace% theme(axis.title=element_blank())#,plot.title = element_text(size=14))
 
