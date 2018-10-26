@@ -357,7 +357,7 @@ myfilter <- row.names(counts(dds)[row.names(counts(dds)) %in% row.names(taxData[
 dds <- dds[myfilter,]
 myphylo <- ubiom_to_phylo(list(counts(dds,normalize=T),taxData,colData))
 phy_tree(myphylo) <- njtree
-set.seed(sum(utf8ToInt("Xiangming")))
+set.seed(sum(utf8ToInt("Xiangming Xu")))
 ordu = ordinate(myphylo, "NMDS", "unifrac", weighted=TRUE)
 mypca <- des_to_pca(dds)
 oo_norm <- list(mypca=mypca,ordu=ordu,colData=colData(dds))
@@ -372,7 +372,7 @@ phy_tree(myphylo) <- njtree
 set.seed(sum(utf8ToInt("Xiangming Xu")))
 ordu = ordinate(myphylo, "NMDS", "unifrac", weighted=TRUE)
 mypca <- des_to_pca(dds)
-oo_ooq <- list(mypca=mypca,ordu=ordu,colData=colData(dds))
+oo_qpcr <- list(mypca=mypca,ordu=ordu,colData=colData(dds))
 
 invisible(mapply(assign, names(ubiom_NEM), ubiom_NEM, MoreArgs=list(envir = globalenv())))
 dds<- qf(colData,countData,rd=T)
@@ -399,10 +399,10 @@ g3 <- g + ggtitle("Fungi_raw")+ theme_classic_thin(base_size=12)%+replace% theme
 g <- plotOrd(fun_qpcr$ordu$points,fun_qpcr$colData,design="Condition",facet="Pair",cbPalette=T,legend="bottom",xlabel="NMDS1",ylabel="NMDS2",xlims=c(-0.3,0.3),ylims=c(-0.15,0.15))+ geom_line(aes(group=facet),alpha=0.125,linetype=3,colour="#000000")
 g4 <- g + ggtitle("Fungi_qPCR")+ theme_classic_thin(base_size=12)%+replace% theme(plot.title = element_text(size=14),legend.position="none")
 
-g <- plotOrd(oo_norm$ordu$points,oo_norm$colData,design="Condition",facet="Pair",cbPalette=T,legend="bottom",xlabel="NMDS1",ylabel="NMDS2",ylims=c(-0.08,0.08 ))+ geom_line(aes(group=facet),alpha=0.125,linetype=3,colour="#000000")
+g <- plotOrd(oo_norm$ordu$points,oo_norm$colData,design="Condition",facet="Pair",cbPalette=T,legend="bottom",xlabel="NMDS1",ylabel="NMDS2",xlims=c(-0.0485,-0.04835),ylims=c(-0.00005,0.00005))+ geom_line(aes(group=facet),alpha=0.125,linetype=3,colour="#000000")
 g5 <- g + ggtitle("Oomycete_raw")+ theme_classic_thin(base_size=12)%+replace% theme(plot.title = element_text(size=14),legend.position="none")
 
-g <- plotOrd(oo_qpcr$ordu$points,oo_qpcr$colData,design="Condition",facet="Pair",cbPalette=T,legend="bottom",xlabel="NMDS1",ylabel="NMDS2",ylims=c(-0.08,0.08 ))+ geom_line(aes(group=facet),alpha=0.125,linetype=3,colour="#000000")
+g <- plotOrd(oo_qpcr$ordu$points,oo_qpcr$colData,design="Condition",facet="Pair",cbPalette=T,legend="bottom",xlabel="NMDS1",ylabel="NMDS2",xlims=c(-0.0485,-0.04835),ylims=c(-0.00005,0.00005))+ geom_line(aes(group=facet),alpha=0.125,linetype=3,colour="#000000")
 g6 <- g + ggtitle("Oomycete_qPCR")+ theme_classic_thin(base_size=12)%+replace% theme(plot.title = element_text(size=14),legend.position="none")
 
 g <- plotOrd(nem_norm$ordu$points,nem_norm$colData,design="Condition",facet="Pair",cbPalette=T,legend="bottom",xlabel="NMDS1",ylabel="NMDS2",ylims=c(-0.25,0.25))+ geom_line(aes(group=facet),alpha=0.125,linetype=3,colour="#000000")
