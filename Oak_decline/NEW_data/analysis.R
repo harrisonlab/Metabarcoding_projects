@@ -157,7 +157,8 @@ list_dds <- lapply(list_dds,function(dds)  dds[rowSums(counts(dds, normalize=T))
 # add full model to dds object
 list_dds <- lapply(list_dds,function(dds) {
 	design(dds) <- design;
-	colData(dds) <- droplevels(colData(dds))
+	dds <- dds[,dds$condition!="Sandra"];
+	colData(dds) <- droplevels(colData(dds));
 	dds}
 )
 
