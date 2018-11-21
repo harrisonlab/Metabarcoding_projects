@@ -142,6 +142,9 @@ alpha <- 0.1
 
 # the model
 design <- ~condition
+#or
+design <- ~block_pair + condition
+
 
 # split dds object into per wood
 # first get rid of bigwood as it only has 2 samples - and remove it from the levels of site
@@ -150,7 +153,8 @@ list_dds <-list(Attingham   = dds[,dds$site=="Attingham"],
 		            Langdale    = dds[,dds$site=="Langdale"],
 		            Winding     = dds[,dds$site=="Winding"],
 		            Chestnuts   = dds[,dds$site=="Chestnuts"],
-		            Chestnuts   = dds[,dds$site=="Bigwood"])		
+		            Bigwood   = dds[,dds$site=="Bigwood"]
+)		
 # Filter low count OTUs
 list_dds <- lapply(list_dds,function(dds)  dds[rowSums(counts(dds, normalize=T))>0,])
 
@@ -163,43 +167,45 @@ list_dds <- lapply(list_dds,function(dds) {
 )
 
 # calculate fit
-list_dds <- lapply(list_dds,DESeq,parallel=T)
-
-# results COD vs AOD
-res <- lapply(list_dds[1:4],results,alpha=alpha,parallel=T,contrast=c("condition","COD","Healthy"))
+list_dds2 <- lapply(list_dds,DESeq,parallel=T)
+list_dds >- list_dds2[1;4]
+		   
+# results COD vs Healthy
+res <- lapply(list_dds,results,alpha=alpha,parallel=T,contrast=c("condition","COD","Healthy"))
 res.merge <- lapply(res,function(res)data.table(inner_join(data.table(OTU=rownames(res),as.data.frame(res)),data.table(OTU=rownames(taxData),taxData))))
 sapply(names(res.merge),function(x) write.table(res.merge[[x]],paste(RHB,x,"COD_diff.txt",sep="_"),quote=F,sep="\t",na="",row.names=F))
 rm1 <- res.merge
        
-# results COD vs AOD
-res <- lapply(list_dds[1:4],results,alpha=alpha,parallel=T,contrast=c("condition","AOD","Healthy"))
+# results AOD vs Healthy
+res <- lapply(list_dds,results,alpha=alpha,parallel=T,contrast=c("condition","AOD","Healthy"))
 res.merge <- lapply(res,function(res)data.table(inner_join(data.table(OTU=rownames(res),as.data.frame(res)),data.table(OTU=rownames(taxData),taxData))))
 sapply(names(res.merge),function(x) write.table(res.merge[[x]],paste(RHB,x,"AOD_diff.txt",sep="_"),quote=F,sep="\t",na="",row.names=F))
 rm2 <- res.merge
 
-# results COD vs AOD
-res <- lapply(list_dds[1:4],results,alpha=alpha,parallel=T,contrast=c("condition","Remission","Healthy"))
+# results Remission vs Healthy
+res <- lapply(list_dds,results,alpha=alpha,parallel=T,contrast=c("condition","Remission","Healthy"))
 res.merge <- lapply(res,function(res)data.table(inner_join(data.table(OTU=rownames(res),as.data.frame(res)),data.table(OTU=rownames(taxData),taxData))))
 sapply(names(res.merge),function(x) write.table(res.merge[[x]],paste(RHB,x,"Rem_diff.txt",sep="_"),quote=F,sep="\t",na="",row.names=F))
 rm3 <- res.merge
 
 # results COD vs AOD
-res <- lapply(list_dds[1:4],results,alpha=alpha,parallel=T,contrast=c("condition","COD","AOD"))
+res <- lapply(list_dds,results,alpha=alpha,parallel=T,contrast=c("condition","COD","AOD"))
 res.merge <- lapply(res,function(res)data.table(inner_join(data.table(OTU=rownames(res),as.data.frame(res)),data.table(OTU=rownames(taxData),taxData))))
 sapply(names(res.merge),function(x) write.table(res.merge[[x]],paste(RHB,x,"COD_AOD_diff.txt",sep="_"),quote=F,sep="\t",na="",row.names=F))
 rm4 <- res.merge
 
 # results COD vs Remission
-res <- lapply(list_dds[1:4],results,alpha=alpha,parallel=T,contrast=c("condition","COD","Remission"))
+res <- lapply(list_dds,results,alpha=alpha,parallel=T,contrast=c("condition","COD","Remission"))
 res.merge <- lapply(res,function(res)data.table(inner_join(data.table(OTU=rownames(res),as.data.frame(res)),data.table(OTU=rownames(taxData),taxData))))
 sapply(names(res.merge),function(x) write.table(res.merge[[x]],paste(RHB,x,"COD_REM_diff.txt",sep="_"),quote=F,sep="\t",na="",row.names=F))
 rm5 <- res.merge
 
 # results AOD vs Remission
-res <- lapply(list_dds[1:4],results,alpha=alpha,parallel=T,contrast=c("condition","AOD","Remission"))
+res <- lapply(list_dds,results,alpha=alpha,parallel=T,contrast=c("condition","AOD","Remission"))
 res.merge <- lapply(res,function(res)data.table(inner_join(data.table(OTU=rownames(res),as.data.frame(res)),data.table(OTU=rownames(taxData),taxData))))
 sapply(names(res.merge),function(x) write.table(res.merge[[x]],paste(RHB,x,"AOD_REM_diff.txt",sep="_"),quote=F,sep="\t",na="",row.names=F))
 rm6 <- res.merge
+     
        
 all.tabs <- lapply(seq(1,4),function(i) data.table(list(
 	rm1[[i]] %>% select(-lfcSE,-stat,-pvalue) %>% rename(FC_COD = log2FoldChange)  %>% rename(padj_COD = padj),
@@ -210,7 +216,7 @@ all.tabs <- lapply(seq(1,4),function(i) data.table(list(
 	rm6[[i]] %>% select(-lfcSE,-stat,-pvalue) %>% rename(FC_AR  = log2FoldChange)  %>% rename(padj_AR  = padj)
         ) %>% Reduce(function(dt1,dt2) full_join(dt1,dt2), .))
 )	
-sapply(seq(1,4),function(x) write.table(all.tabs[[x]],paste(RHB,names(res.merge)[x],"diffs.txt",sep="_"),quote=F,sep="\t",na="",row.names=F))
+sapply(seq(1,4),function(i) write.table(all.tabs[[i]],paste(RHB,names(res.merge)[i],"diffs.txt",sep="_"),quote=F,sep="\t",na="",row.names=F))
        
 # chestnuts and bigwood
 res <- lapply(list_dds[5:6],results,alpha=alpha)
