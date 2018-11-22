@@ -225,3 +225,14 @@ sapply(names(res.merge),function(x) write.table(res.merge[[x]],paste(RHB,x,"COD_
        
 # output sig fasta
 writeXStringSet(readDNAStringSet(paste0(RHB,".otus.fa"))[ res.merge[padj<=0.05]$OTU],paste0(RHB,".sig.fa")) 
+
+# Merge
+
+rm <- lapply(rm2,function(rm) rm[,c(1,2,3,7),drop=F])      
+suffixes <- paste0("_",names(rm))
+test <- merge(merge(rm[[1]],rm[[2]],by="OTU",all=T,suffixes=suffixes[1:2]),
+	     merge(rm[[3]],rm[[4]],by="OTU",all=T,suffixes=suffixes[3:4]),
+	     all=T )
+res.merge <- data.table(inner_join(test,data.table(OTU=rownames(taxData),taxData)))
+fwrite(res.merge,"AOD.diff.txt",sep="\t",quote=F,na="")       
+       
