@@ -23,8 +23,8 @@ environment(plot_alpha) <-environment(plot_ordination) <- environment(ordinate) 
 #       Load data 
 #===============================================================================
 
-ubiom_BAC <- loadData("16S.otu_table.txt","colData","16S.taxa","16S.phy",RHB="BAC")
-ubiom_FUN <- loadData("ITS.otu_table.txt","colData","ITS.taxa","ITS.phy",RHB="FUN")
+ubiom_BAC <- loadData("BAC.otus_table.txt","colData","BAC.taxa","BAC.phy",RHB="BAC")
+ubiom_FUN <- loadData("FUN.otus_table.txt","colData","FUN.taxa","FUN.phy",RHB="FUN")
 
 #===============================================================================
 #       Combine species
