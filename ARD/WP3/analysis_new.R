@@ -256,10 +256,11 @@ ORCH<-"Dessert"
 
 #dds <- list_dds$cider
 #ORCH<-"Cider"
-
+	       
+		       
+### FUNGI ONLY ###		       
 md <- melt(sumTaxa(list(as.data.frame(counts(dds,normalize=T)),taxData,dds@colData),conf=0.8,design=c("genotype_name","condition","time"),proportional=T))
-
-### ALTERNATIVE FOR BACTERIA (REMOVING LOW ABUNDANCE PHYLA) ###
+### BACTERIA (REMOVING LOW ABUNDANCE PHYLA) ONLY###
 X  <- sumTaxa(list(as.data.frame(counts(dds,normalize=T)),taxData,dds@colData),conf=0.8,design=c("genotype_name","condition","time"),proportional=F)
 X$phylum <- sub("candidate_division_","*cd ",X$phylum)
 md <- melt(X[apply(X[-1],1,max)>1.1,])
@@ -290,9 +291,9 @@ g <- g +  theme_classic_thin() %+replace% theme(panel.border = element_rect(colo
 ggsave(paste(RHB,ORCH,"Proportional graphs.pdf",sep="_"),g,width=9)
 ggsave(paste(RHB,ORCH,"Proportional by genotype graphs.pdf",sep="_"),g + facet_wrap(Genotype~phylum,scales="free_y"),width=18,height=14)
 
+### FUNGI ONLY ###		       
 md <- melt(sumTaxa(list(as.data.frame(counts(dds,normalize=T)),taxData,dds@colData),conf=0.8,design=c("genotype_name","condition","time"),proportional=F,meanDiff=T))
-
-### ALTERNATIVE FOR BACTERIA (REMOVING LOW ABUNDANCE PHYLA) ###
+### BACTERIA (REMOVING LOW ABUNDANCE PHYLA) ###
 X  <- sumTaxa(list(as.data.frame(counts(dds,normalize=T)),taxData,dds@colData),conf=0.8,design=c("genotype_name","condition","time"),proportional=F,meanDiff=T)
 X$phylum <- sub("candidate_division_","*cd ",X$phylum)
 md <- melt(X[apply(X[-1],1,max)>0.55,])
