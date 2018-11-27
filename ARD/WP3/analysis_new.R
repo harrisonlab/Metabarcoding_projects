@@ -5,9 +5,7 @@
 library(DESeq2)
 library(BiocParallel)
 library(data.table)
-library(plyr)
-library(dplyr)
-library(ggplot2)
+library(tidyverse)
 library(devtools)
 library(Biostrings)
 library(vegan)
@@ -15,10 +13,10 @@ library(lmPerm)
 library(phyloseq)
 library(ape)
 library(outliers)
-library(tibble)
 
 register(MulticoreParam(12))
-load_all("~/pipelines/metabarcoding/scripts/myfunctions")
+library(metafuncs)
+#load_all("~/pipelines/metabarcoding/scripts/myfunctions")
 environment(plot_ordination) <- environment(ordinate) <- environment(plot_richness) <- environment(phyloseq::ordinate)
 
 #===============================================================================
@@ -26,7 +24,8 @@ environment(plot_ordination) <- environment(ordinate) <- environment(plot_richne
 #===============================================================================
 
 # takes a while to load all the data..
-# load("ubiom_BAC.bin");load("ubiom_FUN.bin")
+# therefore I've saved the data as r objects:
+# attach("ubiom_BAC.bin");attach("ubiom_FUN.bin")
 
 ubiom_BAC <- loadData("BAC.otu_table.txt","colData","BAC.taxa",RHB="BAC")
 ubiom_FUN <- loadData("FUN.otu_table.txt","colData","FUN.taxa",RHB="FUN")
@@ -110,7 +109,7 @@ dds <- dds[,gsub("(^[A-Z][0-9]*)([A-Z])(.*)","\\2",rownames(colData(dds)))!="C"&
 sample_numbers <- table(sub("[A-Z]$","",rownames(colData(dds))))
 
 # collapse (sum) samples
-dds <- collapseReplicates(dds,groupby=sub("[A-Z]$","",rownames(colData(dds))),simple=T)
+dds <- collapseReplicates(dds,groupby=sub("[A-Z]$","",rownames(colData(dds))))
 
 # set the dds sizefactor to the number of samples
 dds$sizeFactor <- as.vector(sample_numbers/3)
