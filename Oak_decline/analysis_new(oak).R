@@ -34,7 +34,7 @@ ubiom_FUN <- loadData("FUN.otus_table.txt","colData","FUN.taxa","FUN.phy",RHB="F
 
 # Fungi
 invisible(mapply(assign, names(ubiom_FUN), ubiom_FUN, MoreArgs=list(envir = globalenv())))
-combinedTaxa <- combineTaxa("ITS.taxa")
+combinedTaxa <- combineTaxa("FUN.taxa")
 countData <- combCounts(combinedTaxa,countData)
 taxData <- combTaxa(combinedTaxa,taxData)
 ubiom_FUN$countData <- countData
