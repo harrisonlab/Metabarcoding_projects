@@ -397,26 +397,61 @@ dev.off()
 sink(paste(RHB,"PCA_variation.txt",sep="_"))
   lapply(list_pca,'[[',6)
 sink()	     
-	      
+	
+# add time2 to compare betwenn T0 and T other
+list_dds <- lapply(list_dds,function(dds) {dds$time2 <- dds$time; levels(dds$time2)[levels(dds$time2)=="2"] <- "1";dds})
+	     
+# ANOVA PCA 1 - 4
+sink(paste(RHB,"PCA_ANOVA.txt",sep="_"))
+ cat("# Cider\n")
+lapply(seq(1:4),function(x) {
+	xx <- summary(aov(list_pca[[2]]$x[,x]~block+time2*time*condition*genotype_name,colData(list_dds[[2]])))[[1]][c(2,5)]
+	xx$"Sum Sq" <- xx$"Sum Sq"/sum(xx$"Sum Sq")*100
+	xy <- summary(aov(list_pca[[2]]$x[,x]~block+time*condition*genotype_name,colData(list_dds[[2]])))[[1]][c(2,5)]
+	xy$"Sum Sq" <- xy$"Sum Sq"/sum(xy$"Sum Sq")*100
+	list(xy,xx)
+})
+cat("# Dessert\n")
+lapply(seq(1:4),function(x) {
+	xx <- summary(aov(list_pca[[3]]$x[,x]~block+time2*time*condition*genotype_name,colData(list_dds[[3]])))[[1]][c(2,5)]
+	xx$"Sum Sq" <- xx$"Sum Sq"/sum(xx$"Sum Sq")*100
+	xy <- summary(aov(list_pca[[3]]$x[,x]~block+time*condition*genotype_name,colData(list_dds[[3]])))[[1]][c(2,5)]
+	xy$"Sum Sq" <- xy$"Sum Sq"/sum(xy$"Sum Sq")*100
+	list(xy,xx)
+})	     
+sink()
+	     
+
+	     
 # overall anova scores (% sum of squares)
-
 # get the model sum of squares for all pc scores
-sum_squares_cider <-
-	t(apply(list_pca[[2]]$x,2,function(x) t(summary(aov(x~block+time*condition*genotype_name,colData(list_dds[[2]])))[[1]][2])))#,
-colnames(sum_squares_cider) <- c("location","time","condition","genotype","time:condition","time:genotype","condition:genotype","time:condition:genotype","residual")
+	     
+qf <- function(pv,ss) {
+	perVar<-t(apply(ss,1,prop.table))* pv
+	s <- colSums(perVar)/sum(colSums(perVar))*100
+	t(data.frame(
+		"location"=			s[1],
+		"time"=				s[2]+s[3],
+		"time0:12"=			s[2],
+		"time1:2"=			s[3],
+		"condition"=			s[4],
+		"genotype"=			s[5],
+		"time:condition"=		s[6]+s[7],
+		"time:genotype"=		s[8]+s[9],
+		"condition:genotype"=		s[10],
+		"time:condition:genotype"=	s[11]+s[12],
+		"residual"=			s[13]
+	))
+}	
+	     
 
-sum_squares_dessert <-
-	t(apply(list_pca[[3]]$x,2,function(x) t(summary(aov(x~block+time*condition*genotype_name,colData(list_dds[[3]])))[[1]][2])))#,
-colnames(sum_squares_cider) <- c("location","time","condition","genotype","time:condition","time:genotype","condition:genotype","time:condition:genotype","residual")
 
 # output sum of squares %
 sink(paste(RHB,"PCA_scores_by_orchard(blocks).txt",sep="_"))
- perVar<-t(apply(sum_squares_cider,1,prop.table))* list_pca[[2]]$percentVar
  cat("# Cider\n")
- colSums(perVar)/sum(colSums(perVar))*100
- perVar<-t(apply(sum_squares_dessert,1,prop.table))* list_pca[[2]]$percentVar
+ qf(list_pca[[2]]$percentVar,t(apply(list_pca[[2]]$x,2,function(x) t(summary(aov(x~block+time2*time*condition*genotype_name,colData(list_dds[[2]])))[[1]][2]))))
  cat(" # Dessert\n")
- colSums(perVar)/sum(colSums(perVar))*100
+ qf(list_pca[[3]]$percentVar,t(apply(list_pca[[3]]$x,2,function(x) t(summary(aov(x~block+time2*time*condition*genotype_name,colData(list_dds[[3]])))[[1]][2]))))
 sink()
 
 # sum squares at each time point
