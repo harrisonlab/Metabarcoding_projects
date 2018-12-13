@@ -13,11 +13,13 @@ library(lmPerm)
 library(phyloseq)
 library(ape)
 library(outliers)
+library(metacoder)
 
 register(MulticoreParam(12))
 library(metafuncs)
 #load_all("~/pipelines/metabarcoding/scripts/myfunctions")
 environment(plot_ordination) <- environment(ordinate) <- environment(plot_richness) <- environment(phyloseq::ordinate)
+environment(calc_taxon_abund) <- environment(metacoder::calc_taxon_abund) #This is for a bug fix, though there is an updated version of metacoder which fixes this.
 
 #===============================================================================
 #       Load data
@@ -662,3 +664,30 @@ pdf(paste0(RHB,"_class_genotype_plots.pdf"))
 	geom_label(data=species[[i]],aes(label=phylum,x=(RDA1/2),y=(RDA2/2)),size=2,inherit.aes=F))
 dev.off()
 
+#===============================================================================
+#       Heat tree plots
+#===============================================================================
+obj <- ubiome_to_taxmap(list(counts(list_dds[[2]],normalize=T),colData(list_dds[[2]]),taxData))
+sd <- colData(list_dds[[2]])
+sd$c_t <- paste(sd$condition,sd$time,sep="_t")
+sd$c_t <- sub("N","grass",sd$c_t)
+sd$c_t <- sub("Y","tree",sd$c_t)
+sd <- sd[sd$condition!="C",]
+tax_abund <- calc_taxon_abund(obj,"otu_table",cols = rownames(sd),groups=sd$c_t)		  
+obj$data$tax_prop <- as.tibble(cbind(tax_abund[,1],apply(tax_abund[,-1],2,prop.table),stringsAsFactors=F))
+		  
+gg0 <-  obj %>% filter_taxa(grass_t0 > 0.001) %>%
+  heat_tree(node_label = taxon_names,node_size = grass_t0,node_color = grass_t0,layout = "da", initial_layout = "re")
+gg1 <-  obj %>% filter_taxa(grass_t1 > 0.001) %>%
+  heat_tree(node_label = taxon_names,node_size = grass_t1,node_color = grass_t1,layout = "da", initial_layout = "re")
+gg2 <-  obj %>% filter_taxa(grass_t2 > 0.001) %>%
+  heat_tree(node_label = taxon_names,node_size = grass_t2,node_color = grass_t2,layout = "da", initial_layout = "re")
+gt0 <-  obj %>% filter_taxa(tree_t0 > 0.001) %>%
+  heat_tree(node_label = taxon_names,node_size = tree_t0,node_color = tree_t0,layout = "da", initial_layout = "re")
+gt1 <-  obj %>% filter_taxa(tree_t1 > 0.001) %>%
+  heat_tree(node_label = taxon_names,node_size = tree_t1,node_color = tree_t1,layout = "da", initial_layout = "re")
+gt2 <-  obj %>% filter_taxa(tree_t2 > 0.001) %>%
+  heat_tree(node_label = taxon_names,node_size = tree_t2,node_color = tree_t2,layout = "da", initial_layout = "re")
+
+ggsave("cider_big_plot.pdf",grid.arrange(gg0,gg1,gg2,gt0,gt1,gt2,nrow=2),width=12,height=8)		  
+		  
