@@ -162,7 +162,7 @@ ggsave(paste(RHB,"Alpha_d_grass.pdf",sep="_"),plot_alpha(counts(list_dds$d_grass
 ### permutation based anova on diversity index ranks ###
 
 # get alpha diversity indices
-list_alpha_ord <- lapply(list_dds,function(dds) plot_alpha(counts(dds,normalize=T),colData(dds),design="site",colour="condition",returnData=T))
+list_alpha_ord <- lapply(list_dds,function(dds) {plot_alpha(counts(dds,normalize=T),colData(dds),design="site",colour="condition",returnData=T)})
 
 # join diversity indices and metadata
 list_alpha_ord <- lapply(seq_along(list_dds),function(i) {
@@ -216,10 +216,10 @@ sink()
 #===============================================================================
 
 # filter count data
-list_dds <- lapply(list_dds,function(dds) dds[rowSums(counts(dds, normalize=T))>4,])
+list_dds <- lapply(list_dds,function(dds) {dds[rowSums(counts(dds, normalize=T))>4,]})
 
 # filter taxonomy data
-list_taxData <- lapply(list_dds,function(dds) taxData[rownames(dds),])
+list_taxData <- lapply(list_dds,function(dds) {taxData[rownames(dds),]})
 
 #===============================================================================
 #       Microbial Populations
@@ -354,10 +354,10 @@ dev.off()
 list_pca <- lapply(list_dds,des_to_pca)
 
 # to get pca plot axis into the same scale create a dataframe of PC scores multiplied by their variance
-d <- lapply(list_pca,function(mypca) t(data.frame(t(mypca$x)*mypca$percentVar)))
+d <- lapply(list_pca,function(mypca) {t(data.frame(t(mypca$x)*mypca$percentVar))})
 
-pc.res <- lapply(seq_along(list_pca),function(i) resid(aov(list_pca[[i]]$x~list_dds[[i]]$loc_factor)))
-dd <- lapply(seq_along(list_pca),function(i) t(data.frame(t(pc.res[[i]])*list_pca[[i]]$percentVar)))
+pc.res <- lapply(seq_along(list_pca),function(i) {resid(aov(list_pca[[i]]$x~list_dds[[i]]$loc_factor))})
+dd <- lapply(seq_along(list_pca),function(i) {t(data.frame(t(pc.res[[i]])*list_pca[[i]]$percentVar))})
 
 # plot the PCA - need to think about model
 pdf(paste(RHB,"PCA.pdf",sep="_"))
@@ -402,7 +402,7 @@ sink()
 	
 # add time2 to compare betwenn T0 and T other
 list_dds <- lapply(list_dds,function(dds) {dds$time2 <- dds$time; levels(dds$time2)[levels(dds$time2)=="2"] <- "1";dds})
-	     
+     
 # ANOVA PCA 1 - 4
 sink(paste(RHB,"PCA_ANOVA.txt",sep="_"))
  cat("# Cider\n")
@@ -446,29 +446,27 @@ qf <- function(pv,ss) {
 	))
 }	
 	     
-
-
 # output sum of squares %
 sink(paste(RHB,"PCA_scores_by_orchard(blocks).txt",sep="_"))
  cat("# Cider\n")
- qf(list_pca[[2]]$percentVar,t(apply(list_pca[[2]]$x,2,function(x) t(summary(aov(x~block+time2*time*condition*genotype_name,colData(list_dds[[2]])))[[1]][2]))))
+ qf(list_pca[[2]]$percentVar,t(apply(list_pca[[2]]$x,2,function(x) {t(summary(aov(x~block+time2*time*condition*genotype_name,colData(list_dds[[2]])))[[1]][2])})))
  cat(" # Dessert\n")
- qf(list_pca[[3]]$percentVar,t(apply(list_pca[[3]]$x,2,function(x) t(summary(aov(x~block+time2*time*condition*genotype_name,colData(list_dds[[3]])))[[1]][2]))))
+ qf(list_pca[[3]]$percentVar,t(apply(list_pca[[3]]$x,2,function(x) {t(summary(aov(x~block+time2*time*condition*genotype_name,colData(list_dds[[3]])))[[1]][2])})))
 sink()
 
 # sum squares at each time point
 sum_squares_cider_0 <-
-	t(apply(list_pca[[2]]$x[colData(list_dds[[2]])$time==0,],2,function(x)t(summary(aov(x~block+condition*genotype_name,colData(list_dds[[2]])[colData(list_dds[[2]])$time==0,]))[[1]][2])))#,
+	t(apply(list_pca[[2]]$x[colData(list_dds[[2]])$time==0,],2,function(x){t(summary(aov(x~block+condition*genotype_name,colData(list_dds[[2]])[colData(list_dds[[2]])$time==0,]))[[1]][2])}))#,
 sum_squares_cider_1 <-
-	t(apply(list_pca[[2]]$x[colData(list_dds[[2]])$time==1,],2,function(x)t(summary(aov(x~block+condition*genotype_name,colData(list_dds[[2]])[colData(list_dds[[2]])$time==1,]))[[1]][2])))#,
+	t(apply(list_pca[[2]]$x[colData(list_dds[[2]])$time==1,],2,function(x){t(summary(aov(x~block+condition*genotype_name,colData(list_dds[[2]])[colData(list_dds[[2]])$time==1,]))[[1]][2])}))#,
 sum_squares_cider_2 <-
-	t(apply(list_pca[[2]]$x[colData(list_dds[[2]])$time==2,],2,function(x)t(summary(aov(x~block+condition*genotype_name,colData(list_dds[[2]])[colData(list_dds[[2]])$time==2,]))[[1]][2])))#,
+	t(apply(list_pca[[2]]$x[colData(list_dds[[2]])$time==2,],2,function(x){t(summary(aov(x~block+condition*genotype_name,colData(list_dds[[2]])[colData(list_dds[[2]])$time==2,]))[[1]][2])}))#,
 sum_squares_dessert_0 <-
-	t(apply(list_pca[[3]]$x[colData(list_dds[[3]])$time==0,],2,function(x)t(summary(aov(x~block+condition*genotype_name,colData(list_dds[[3]])[colData(list_dds[[3]])$time==0,]))[[1]][2])))#,
+	t(apply(list_pca[[3]]$x[colData(list_dds[[3]])$time==0,],2,function(x){t(summary(aov(x~block+condition*genotype_name,colData(list_dds[[3]])[colData(list_dds[[3]])$time==0,]))[[1]][2])}))#,
 sum_squares_dessert_1 <-
-	t(apply(list_pca[[3]]$x[colData(list_dds[[3]])$time==1,],2,function(x)t(summary(aov(x~block+condition*genotype_name,colData(list_dds[[3]])[colData(list_dds[[3]])$time==1,]))[[1]][2])))#,
+	t(apply(list_pca[[3]]$x[colData(list_dds[[3]])$time==1,],2,function(x){t(summary(aov(x~block+condition*genotype_name,colData(list_dds[[3]])[colData(list_dds[[3]])$time==1,]))[[1]][2])}))#,
 sum_squares_dessert_2 <-
-	t(apply(list_pca[[3]]$x[colData(list_dds[[3]])$time==2,],2,function(x)t(summary(aov(x~block+condition*genotype_name,colData(list_dds[[3]])[colData(list_dds[[3]])$time==2,]))[[1]][2])))#,
+	t(apply(list_pca[[3]]$x[colData(list_dds[[3]])$time==2,],2,function(x){t(summary(aov(x~block+condition*genotype_name,colData(list_dds[[3]])[colData(list_dds[[3]])$time==2,]))[[1]][2])}))#,
 
 # set column names
 colnames(sum_squares_cider_0)   <- colnames(sum_squares_cider_1)   <- colnames(sum_squares_cider_2)   <- c("block","condition","genotype","condition:genotype","residual")
@@ -513,15 +511,15 @@ sink()
 list_vst <- lapply(list_dds,varianceStabilizingTransformation)
 
 # phyloseq has functions (using Vegan) for RDA analysis - for some things it's preferable
-myphylo <- lapply(list_vst,function(dds) ubiom_to_phylo(list(assay(dds),taxData,as.data.frame(colData(dds)))))
+myphylo <- lapply(list_vst,function(dds) {ubiom_to_phylo(list(assay(dds),taxData,as.data.frame(colData(dds))))})
 
 # overall ordination for genotype
 
 prune_samples(sample_data(myphylo[[1]])$time=="0",myphylo[[1]])
 
-rda_t0 <- lapply(myphylo,function(myphylo) ordinate(prune_samples(sample_data(myphylo)$time=="0",myphylo),method="RDA","samples",formula=~Condition(block)+genotype_name))
-rda_t1 <- lapply(myphylo,function(myphylo) ordinate(prune_samples(sample_data(myphylo)$time=="1",myphylo),method="RDA","samples",formula=~Condition(block)+genotype_name))
-rda_t2 <- lapply(myphylo,function(myphylo) ordinate(prune_samples(sample_data(myphylo)$time=="2",myphylo),method="RDA","samples",formula=~Condition(block)+genotype_name))
+rda_t0 <- lapply(myphylo,function(myphylo) {ordinate(prune_samples(sample_data(myphylo)$time=="0",myphylo),method="RDA","samples",formula=~Condition(block)+genotype_name)})
+rda_t1 <- lapply(myphylo,function(myphylo) {ordinate(prune_samples(sample_data(myphylo)$time=="1",myphylo),method="RDA","samples",formula=~Condition(block)+genotype_name)})
+rda_t2 <- lapply(myphylo,function(myphylo) {ordinate(prune_samples(sample_data(myphylo)$time=="2",myphylo),method="RDA","samples",formula=~Condition(block)+genotype_name)})
 
 aov_rda0 <- lapply(rda_t0,anova.cca,permuations=999)
 aov_rda1 <- lapply(rda_t1,anova.cca,permuations=999)
@@ -600,10 +598,9 @@ species <- lapply(myscores,function(s) {
   return(species)})
 
 # filter out phyla which sit next to the axis
-species <- lapply(species,function(species)species[(abs(species[,1])>10|abs(species[,2])>10),])
+species <- lapply(species,function(species){species[(abs(species[,1])>10|abs(species[,2])>10),]})
 
 titles <- c("All","Cider","Dessert","Cider tree","Cider grass","Dessert tree","Dessert grass")
-
 
 pdf(paste0(RHB,"_phylum_genotype_plots.pdf"))
  lapply(seq_along(site_centroids),function(i)
@@ -654,7 +651,7 @@ species <- lapply(myscores,function(s) {
   return(species)})
 
 # filter out phyla which sit next to the axis
-species <- lapply(species,function(species)species[(abs(species[,1])>10|abs(species[,2])>10),])
+species <- lapply(species,function(species) {species[(abs(species[,1])>10|abs(species[,2])>10),]})
 
 pdf(paste0(RHB,"_class_genotype_plots.pdf"))
  lapply(seq_along(site_centroids),function(i)
@@ -664,6 +661,13 @@ pdf(paste0(RHB,"_class_genotype_plots.pdf"))
 	geom_label(data=species[[i]],aes(label=phylum,x=(RDA1/2),y=(RDA2/2)),size=2,inherit.aes=F))
 dev.off()
 
+#===============================================================================
+#       Differential analysis
+#===============================================================================		  
+
+		  
+~block + condition*genotype_name		  
+		  
 #===============================================================================
 #       Heat tree plots
 #===============================================================================
