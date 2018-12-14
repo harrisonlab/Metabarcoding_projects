@@ -665,6 +665,9 @@ dev.off()
 #       Differential analysis
 #===============================================================================		  
 
+# set fdr cut off
+alpha <- 0.05
+
 #### each time point seperately ####
 # not certain this is actually necessary as I can fit both the full model, then the reduced model as a seperate DESeq object
 # model
@@ -675,6 +678,11 @@ model <- ~block + condition*genotype_name
 # models
 full    <- ~block + time*condition*genotype_name # full model
 reduced <- ~block + condition*genotype_name # reduced model
+
+dds <- fit(dds,full)
+ddsFull <- DESeq(dds,parallel=T)
+ddsReduced <- DESeq(ddsFull,reduced=reduced)
+
 
 
 
