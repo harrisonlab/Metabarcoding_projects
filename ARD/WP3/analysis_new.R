@@ -665,9 +665,19 @@ dev.off()
 #       Differential analysis
 #===============================================================================		  
 
-		  
-~block + condition*genotype_name		  
-		  
+#### each time point seperately ####
+# not certain this is actually necessary as I can fit both the full model, then the reduced model as a seperate DESeq object
+# model
+model <- ~block + condition*genotype_name
+
+#### across time points ###
+
+# models
+full    <- ~block + time*condition*genotype_name # full model
+reduced <- ~block + condition*genotype_name # reduced model
+
+
+
 #===============================================================================
 #       Heat tree plots
 #===============================================================================
