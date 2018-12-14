@@ -679,10 +679,35 @@ model <- ~block + condition*genotype_name
 full    <- ~block + time*condition*genotype_name # full model
 reduced <- ~block + condition*genotype_name # reduced model
 
-dds <- fit(dds,full)
+design(dds) <- full
 ddsFull <- DESeq(dds,parallel=T)
 ddsReduced <- DESeq(ddsFull,reduced=reduced)
 
+# filter for low counts - this can affect the FD probability and DESeq2 does apply its own filtering for genes/otus with no power
+# but, no point keeping OTUs with 0 count
+dds<-dds[ rowSums(counts(dds,normalize=T))>0,]
+
+# p value for FDR cutoff
+alpha <- 0.1
+
+# the full model
+full_design <- ~Pair + Condition
+
+# add full model to dds object
+design(dds) <- full_design
+
+# calculate fit
+dds <- DESeq(dds,parallel=T)
+
+# calculate results for default contrast (S vs H)
+res <- results(dds,alpha=alpha,parallel=T)
+
+# merge results with taxonomy data
+res.merge <- data.table(inner_join(data.table(OTU=rownames(res),as.data.frame(res)),data.table(OTU=rownames(taxData),taxData)))
+write.table(res.merge, paste(RHB,"diff.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
+
+# output sig fasta
+writeXStringSet(readDNAStringSet(paste0(RHB,".otus.fa"))[ res.merge[padj<=0.05]$OTU],paste0(RHB,".sig.fa"))
 
 
 
