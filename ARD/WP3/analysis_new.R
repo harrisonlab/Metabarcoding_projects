@@ -100,9 +100,8 @@ invisible(mapply(assign, names(ubiom_BAC), ubiom_BAC, MoreArgs=list(envir = glob
 #       Pool Data/subsample
 #===============================================================================
 
-# Get rid of control samples
-# could be interesting to see if the control samples are less different over time than the treated samples
-dds <- dds[,gsub("(^[A-Z][0-9]*)([A-Z])(.*)","\\2",rownames(colData(dds)))!="C"&(colSums(counts(dds))>1000)]
+# remove samples with low counts
+dds <- dds[,colSums(counts(dds))>1000]
 
 # There are only 3 (out of 900) missing samples - subsampling is a bit too extreme
 # As each sample point has three biological replicates will take the mean of other samples to represent missing samples
@@ -145,6 +144,26 @@ list_dds <-list(all     = dds,
 		c_grass = dds[,dds$site=="H"&dds$condition=="N"],
 		d_tree  = dds[,dds$site=="G"&dds$condition=="Y"],
 		d_grass = dds[,dds$site=="G"&dds$condition=="N"])
+
+#===============================================================================
+#      Remove G16 from cider orchard (all trees dead) + control samples
+#===============================================================================
+
+		 
+list_dds <- lapply(list_dds, function(dds) {
+	dds[,(dds$site=="G")|(dds$site=="H"&dds$genotype_name!="G16")]
+	dds$genotype_name <- droplevels(dds$genotype_name)
+	dds
+})
+		 
+# remove control samples and rename levels
+list_dds <- lapply(list_dds,function(dds) {
+	dds <- dds[,dds$condition!="C"]
+	dds$condition <- droplevels(dds$condition)
+	dds$genotype_name <- droplevels(dds$genotype_name)
+	levels(dds$condition) <- c("Grass aisle","Tree station")
+	dds
+})
 
 #===============================================================================
 #       Alpha diversity analysis - RUN BEFORE FILTERING OUT ANY LOW COUNT OTUS
@@ -511,15 +530,25 @@ sink()
 list_vst <- lapply(list_dds,varianceStabilizingTransformation)
 
 # phyloseq has functions (using Vegan) for RDA analysis - for some things it's preferable
-myphylo <- lapply(list_vst,function(dds) {ubiom_to_phylo(list(assay(dds),taxData,as.data.frame(colData(dds))))})
+#myphylo <- lapply(list_vst,function(dds) {ubiom_to_phylo(list(assay(dds),taxData,as.data.frame(colData(dds))))})
+
+
+#prune_samples(sample_data(myphylo[[1]])$time=="0",myphylo[[1]])
+# rda_t0 <- lapply(myphylo,function(myphylo) {ordinate(prune_samples(sample_data(myphylo)$time=="0",myphylo),method="RDA","samples",formula=~Condition(block)+genotype_name)})
+# rda_t1 <- lapply(myphylo,function(myphylo) {ordinate(prune_samples(sample_data(myphylo)$time=="1",myphylo),method="RDA","samples",formula=~Condition(block)+genotype_name)})
+# rda_t2 <- lapply(myphylo,function(myphylo) {ordinate(prune_samples(sample_data(myphylo)$time=="2",myphylo),method="RDA","samples",formula=~Condition(block)+genotype_name)})
 
 # overall ordination for genotype
+quick_func <- function(dds,time) {
+	dds <- dds[,dds$time==time]
+	colData <- colData(dds)
+	countData <- assay(dds)
+	rda(t(countData) ~ Condition(block)+genotype_name,colData)
+}
 
-prune_samples(sample_data(myphylo[[1]])$time=="0",myphylo[[1]])
-
-rda_t0 <- lapply(myphylo,function(myphylo) {ordinate(prune_samples(sample_data(myphylo)$time=="0",myphylo),method="RDA","samples",formula=~Condition(block)+genotype_name)})
-rda_t1 <- lapply(myphylo,function(myphylo) {ordinate(prune_samples(sample_data(myphylo)$time=="1",myphylo),method="RDA","samples",formula=~Condition(block)+genotype_name)})
-rda_t2 <- lapply(myphylo,function(myphylo) {ordinate(prune_samples(sample_data(myphylo)$time=="2",myphylo),method="RDA","samples",formula=~Condition(block)+genotype_name)})
+rda_t0 <- lapply(list_vst,quick_func,0)
+rda_t1 <- lapply(list_vst,quick_func,1)
+rda_t2 <- lapply(list_vst,quick_func,2)
 
 aov_rda0 <- lapply(rda_t0,anova.cca,permuations=999)
 aov_rda1 <- lapply(rda_t1,anova.cca,permuations=999)
@@ -542,8 +571,6 @@ sink(paste0(RHB,"_ordination_overall.txt"))
  print("permanova")
  aov_rda2
 sink()
-
-
 
 # WORK OUT WHAT I WANT TO PLOT FIRST BEFORE WRITING THE CODE!!!!!
 
@@ -668,12 +695,43 @@ dev.off()
 # set fdr cut off
 alpha <- 0.05
 
-#### each time point seperately ####
-# not certain this is actually necessary as I can fit both the full model, then the reduced model as a seperate DESeq object
-# model
-model <- ~block + condition*genotype_name
+# Field assessment showed that M116 definitely has ARD problem in the cider apple orchard: 
+# DeSeq2 for the cider apple orchard for the following two comparisons: 
+# (a) M116 Tree_station against M116 aisle, and 
+# (b) (M116 Tree_station + [AR295_6 + M26 + G41 + M9] ailse) vs ((M116 Aisle + [AR295_6 + M26 + G41 + M9] tree_station).
 
-#### across time points ###
+#### (a) ####
+dds   <- list_dds[[2]][,list_dds[[2]]$genotype_name=="M116"]
+
+# all time points #
+full   <-  ~block + time*condition
+reduced <- ~block + condition #remove condition if not interested in the changes at time point 0
+design(dds) <- full
+dds <- DESeq(dds,parallel=T,reduced=reduced,test="LRT")
+# model.matrix(design(dds), colData(dds))
+# resultsNames(dds)
+
+# for each time point
+results(dds,contrast=c("condition","Tree station","Grass aisle"),test="Wald") # main effect (condition effect for time 0)
+res0 <- results(dds,contrast=list(c("condition_Tree.station_vs_Grass.aisle")),test="Wald") # as above, but makes below easier to understand 
+res1 <- results(dds,contrast=list(c("condition_Tree.station_vs_Grass.aisle", "time1.conditionTree.station")),test="Wald") # main effect + interaction term for time 1
+res2 <- results(dds,contrast=list(c("condition_Tree.station_vs_Grass.aisle", "time2.conditionTree.station")),test="Wald") # main effect + interaction term for time 2
+
+# across timepoints
+res <- results(dds)
+
+# merge results with taxonomy data
+res.merge <- inner_join(as_tibble(as.data.frame(res),rownames="OTU"),as_tibble(rownames="OTU",taxData))
+write.table(res.merge, paste(RHB,"M116_LRT_diff.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
+res.merge <- inner_join(as_tibble(as.data.frame(res0),rownames="OTU"),as_tibble(rownames="OTU",taxData))
+write.table(res.merge, paste(RHB,"M116_T0_diff.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
+res.merge <- inner_join(as_tibble(as.data.frame(res1),rownames="OTU"),as_tibble(rownames="OTU",taxData))
+write.table(res.merge, paste(RHB,"M116_T1_diff.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
+res.merge <- inner_join(as_tibble(as.data.frame(res2),rownames="OTU"),as_tibble(rownames="OTU",taxData))
+write.table(res.merge, paste(RHB,"M116_T2_diff.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
+
+### (b) ###
+dds   <- list_dds[[2]]
 
 # models
 full    <- ~block + time*condition*genotype_name # full model
