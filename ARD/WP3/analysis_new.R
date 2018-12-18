@@ -151,7 +151,7 @@ list_dds <-list(all     = dds,
 
 		 
 list_dds <- lapply(list_dds, function(dds) {
-	dds[,(dds$site=="G")|(dds$site=="H"&dds$genotype_name!="G16")]
+	dds <- dds[,(dds$site=="G")|(dds$site=="H"&dds$genotype_name!="G16")]
 	dds$genotype_name <- droplevels(dds$genotype_name)
 	dds
 })
@@ -698,7 +698,7 @@ alpha <- 0.05
 # Field assessment showed that M116 definitely has ARD problem in the cider apple orchard: 
 # DeSeq2 for the cider apple orchard for the following two comparisons: 
 # (a) M116 Tree_station against M116 aisle, and 
-# (b) (M116 Tree_station + [AR295_6 + M26 + G41 + M9] ailse) vs ((M116 Aisle + [AR295_6 + M26 + G41 + M9] tree_station).
+# (b) (M116 Tree_station + [AR295_6 + M26 + G41 + M9] ailse) vs ((M116 Aisle + [AR295_6 + M26 + G41 + M9] tree_station) (interaction effect for M116)
 
 #### (a) ####
 dds   <- list_dds[[2]][,list_dds[[2]]$genotype_name=="M116"]
@@ -731,43 +731,68 @@ res.merge <- inner_join(as_tibble(as.data.frame(res2),rownames="OTU"),as_tibble(
 write.table(res.merge, paste(RHB,"M116_T2_diff.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
 
 ### (b) ###
+# (b) (M116 Tree_station + [AR295_6 + M26 + G41 + M9] ailse) vs ((M116 Aisle + [AR295_6 + M26 + G41 + M9] tree_station)
 dds   <- list_dds[[2]]
 
-# models
-full    <- ~block + time*condition*genotype_name # full model
-reduced <- ~block + condition*genotype_name # reduced model
-
-design(dds) <- full
-ddsFull <- DESeq(dds,parallel=T)
-ddsReduced <- DESeq(ddsFull,reduced=reduced)
-
 # filter for low counts - this can affect the FD probability and DESeq2 does apply its own filtering for genes/otus with no power
-# but, no point keeping OTUs with 0 count
-dds<-dds[ rowSums(counts(dds,normalize=T))>0,]
+# but, no point keeping OTUs with 0 -  ah but this can be a problem when doing an LRT test, lots of 0s and a single count can cause the Betas not to converge
+dds<-dds[ rowSums(counts(dds,normalize=T))>4,]
+# possible filter step - two rows with counts larger than 4
+nc <- counts(dds, normalized=TRUE)
+filter <- rowSums(nc >= 1) >= 2
+dds <- dds[filter,]
 
-# p value for FDR cutoff
-alpha <- 0.1
+dds$condition2 <- as.factor(paste(dds$condition,dds$genotype_name,sep="_"))
+dds$condition2 <- relevel(dds$condition2,5)
 
-# the full model
-full_design <- ~Pair + Condition
+# dds$gen2 <- as.factor(paste(dds$time,dds$genotype_name,sep="_"))
 
-# add full model to dds object
-design(dds) <- full_design
+# models
+#quick   <- ~block + condition + gen2:condition
+#full    <- ~block + time + time:condition + time:genotype_name + condition:genotype_name + time:condition:genotype_name 
+#reduced <- ~block + condition + time
 
-# calculate fit
+full    <- ~block + time + time:condition2 
+reduced <- ~block + condition2
+
+# design(dds) <- quick
+design(dds) <- full
 dds <- DESeq(dds,parallel=T)
+dds<- DESeq(dds,reduced=reduced,test="LRT",parallel=T)
 
-# calculate results for default contrast (S vs H)
-res <- results(dds,alpha=alpha,parallel=T)
+# get the results
+#resultsNames(dds)
 
-# merge results with taxonomy data
-res.merge <- data.table(inner_join(data.table(OTU=rownames(res),as.data.frame(res)),data.table(OTU=rownames(taxData),taxData)))
-write.table(res.merge, paste(RHB,"diff.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
+# from full design ~ I think this is preferable
+res0 <- results(dds,parallel=T,test="Wald",contrast=list(
+	c("time0.condition2Tree.station_M116","time0.condition2Grass.aisle_G41","time0.condition2Grass.aisle_M26", "time0.condition2Grass.aisle_M9", "time0.condition2Grass.aisle_AR295_6"),
+	c("time0.condition2Grass.aisle_M116","time0.condition2Tree.station_G41","time0.condition2Tree.station_M26","time0.condition2Tree.station_M9","time0.condition2Tree.station_AR295_6")
+))
+res1 <- results(dds,parallel=T,test="Wald",contrast=list(
+	c("time1.condition2Tree.station_M116","time1.condition2Grass.aisle_G41", "time1.condition2Grass.aisle_M26", "time1.condition2Grass.aisle_M9", "time1.condition2Grass.aisle_AR295_6"),
+	c("time1.condition2Grass.aisle_M116", "time1.condition2Tree.station_G41","time1.condition2Tree.station_M26","time1.condition2Tree.station_M9","time1.condition2Tree.station_AR295_6")
+))
+res2 <- results(dds,parallel=T,test="Wald",contrast=list(
+	c("time2.condition2Tree.station_M116","time2.condition2Grass.aisle_G41", "time2.condition2Grass.aisle_M26", "time2.condition2Grass.aisle_M9", "time2.condition2Grass.aisle_AR295_6"),
+	c("time2.condition2Grass.aisle_M116", "time2.condition2Tree.station_G41","time2.condition2Tree.station_M26","time2.condition2Tree.station_M9","time2.condition2Tree.station_AR295_6")
+))	
+
+
+#res_0 <- results(dds,contrast=list("time0.condition2Tree.station_M116","time0.condition2Grass.aisle_M116"),parallel=T,test="Wald")
+#res_1 <- results(dds,contrast=list("time1.condition2Tree.station_M116","time1.condition2Grass.aisle_M116"),parallel=T,test="Wald")
+#res_2 <- results(dds,contrast=list("time2.condition2Tree.station_M116","time2.condition2Grass.aisle_M116"),parallel=T,test="Wald")
+res   <- results(dds,parallel=T)
+
+# merge results and write to disk
+res.merge <- inner_join(as_tibble(as.data.frame(res0),rownames="OTU"),as_tibble(rownames="OTU",taxData))
+write.table(res.merge, paste(RHB,"M116_Interaction_T0_diff.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
+res.merge <- inner_join(as_tibble(as.data.frame(res1),rownames="OTU"),as_tibble(rownames="OTU",taxData))
+write.table(res.merge, paste(RHB,"M116_Interaction_T1_diff.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
+res.merge <- inner_join(as_tibble(as.data.frame(res2),rownames="OTU"),as_tibble(rownames="OTU",taxData))
+write.table(res.merge, paste(RHB,"M116_Interaction_T2_diff.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
 
 # output sig fasta
 writeXStringSet(readDNAStringSet(paste0(RHB,".otus.fa"))[ res.merge[padj<=0.05]$OTU],paste0(RHB,".sig.fa"))
-
-
 
 #===============================================================================
 #       Heat tree plots
