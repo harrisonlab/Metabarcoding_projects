@@ -763,16 +763,16 @@ dds<- DESeq(dds,reduced=reduced,test="LRT",parallel=T)
 # get the results
 #resultsNames(dds)
 
-# from full design ~ I think this is preferable
-res0 <- results(dds,parallel=T,test="Wald",contrast=list(
+# from full design ~ I think this is preferable - technically listValues=c(1/5,-1/5) should be added or the fold changes are 5x too high
+res0 <- results(dds,parallel=T,test="Wald",listValues=c(1/5,-1/5),contrast=list(
 	c("time0.condition2Tree.station_M116","time0.condition2Grass.aisle_G41","time0.condition2Grass.aisle_M26", "time0.condition2Grass.aisle_M9", "time0.condition2Grass.aisle_AR295_6"),
 	c("time0.condition2Grass.aisle_M116","time0.condition2Tree.station_G41","time0.condition2Tree.station_M26","time0.condition2Tree.station_M9","time0.condition2Tree.station_AR295_6")
 ))
-res1 <- results(dds,parallel=T,test="Wald",contrast=list(
+res1 <- results(dds,parallel=T,test="Wald",listValues=c(1/5,-1/5),contrast=list(
 	c("time1.condition2Tree.station_M116","time1.condition2Grass.aisle_G41", "time1.condition2Grass.aisle_M26", "time1.condition2Grass.aisle_M9", "time1.condition2Grass.aisle_AR295_6"),
 	c("time1.condition2Grass.aisle_M116", "time1.condition2Tree.station_G41","time1.condition2Tree.station_M26","time1.condition2Tree.station_M9","time1.condition2Tree.station_AR295_6")
 ))
-res2 <- results(dds,parallel=T,test="Wald",contrast=list(
+res2 <- results(dds,parallel=T,test="Wald",listValues=c(1/5,-1/5),contrast=list(
 	c("time2.condition2Tree.station_M116","time2.condition2Grass.aisle_G41", "time2.condition2Grass.aisle_M26", "time2.condition2Grass.aisle_M9", "time2.condition2Grass.aisle_AR295_6"),
 	c("time2.condition2Grass.aisle_M116", "time2.condition2Tree.station_G41","time2.condition2Tree.station_M26","time2.condition2Tree.station_M9","time2.condition2Tree.station_AR295_6")
 ))	
