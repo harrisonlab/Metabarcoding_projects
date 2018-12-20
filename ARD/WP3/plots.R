@@ -307,163 +307,11 @@ pdf(paste(RHB,"PCA_CENTROIDS_with_controls.pdf",sep="_"))
  plotOrd(centroids[[3]][,c(-1,-2,-3)],centroids[[3]][,1:3],design="condition",shape="time",pointSize=1.5,axes=c(3,4),alpha=0.75) + ggtitle("Dessert orchard")
 dev.off()
 
-# PCA percent variation
-sink(paste(RHB,"PCA_variation.txt",sep="_"))
-  lapply(list_pca,'[[',6)
-sink()	     
-	
-# add time2 to compare betwenn T0 and T other
-list_dds <- lapply(list_dds,function(dds) {dds$time2 <- dds$time; levels(dds$time2)[levels(dds$time2)=="2"] <- "1";dds})
-     
-# ANOVA PCA 1 - 4
-sink(paste(RHB,"PCA_ANOVA.txt",sep="_"))
- cat("# Cider\n")
-lapply(seq(1:4),function(x) {
-	xx <- summary(aov(list_pca[[2]]$x[,x]~block+time2*time*condition*genotype_name,colData(list_dds[[2]])))[[1]][c(2,5)]
-	xx$"Sum Sq" <- xx$"Sum Sq"/sum(xx$"Sum Sq")*100
-	xy <- summary(aov(list_pca[[2]]$x[,x]~block+time*condition*genotype_name,colData(list_dds[[2]])))[[1]][c(2,5)]
-	xy$"Sum Sq" <- xy$"Sum Sq"/sum(xy$"Sum Sq")*100
-	list(xy,xx)
-})
-cat("# Dessert\n")
-lapply(seq(1:4),function(x) {
-	xx <- summary(aov(list_pca[[3]]$x[,x]~block+time2*time*condition*genotype_name,colData(list_dds[[3]])))[[1]][c(2,5)]
-	xx$"Sum Sq" <- xx$"Sum Sq"/sum(xx$"Sum Sq")*100
-	xy <- summary(aov(list_pca[[3]]$x[,x]~block+time*condition*genotype_name,colData(list_dds[[3]])))[[1]][c(2,5)]
-	xy$"Sum Sq" <- xy$"Sum Sq"/sum(xy$"Sum Sq")*100
-	list(xy,xx)
-})	     
-sink()
-	     
-
-	     
-# overall anova scores (% sum of squares)
-# get the model sum of squares for all pc scores
-	     
-qf <- function(pv,ss) {
-	perVar<-t(apply(ss,1,prop.table))* pv
-	s <- colSums(perVar)/sum(colSums(perVar))*100
-	t(data.frame(
-		"location"=			s[1],
-		"time"=				s[2]+s[3],
-		"time0:12"=			s[2],
-		"time1:2"=			s[3],
-		"condition"=			s[4],
-		"genotype"=			s[5],
-		"time:condition"=		s[6]+s[7],
-		"time:genotype"=		s[8]+s[9],
-		"condition:genotype"=		s[10],
-		"time:condition:genotype"=	s[11]+s[12],
-		"residual"=			s[13]
-	))
-}	
-	     
-# output sum of squares %
-sink(paste(RHB,"PCA_scores_by_orchard(blocks).txt",sep="_"))
- cat("# Cider\n")
- qf(list_pca[[2]]$percentVar,t(apply(list_pca[[2]]$x,2,function(x) {t(summary(aov(x~block+time2*time*condition*genotype_name,colData(list_dds[[2]])))[[1]][2])})))
- cat(" # Dessert\n")
- qf(list_pca[[3]]$percentVar,t(apply(list_pca[[3]]$x,2,function(x) {t(summary(aov(x~block+time2*time*condition*genotype_name,colData(list_dds[[3]])))[[1]][2])})))
-sink()
-
-# sum squares at each time point
-sum_squares_cider_0 <-
-	t(apply(list_pca[[2]]$x[colData(list_dds[[2]])$time==0,],2,function(x){t(summary(aov(x~block+condition*genotype_name,colData(list_dds[[2]])[colData(list_dds[[2]])$time==0,]))[[1]][2])}))#,
-sum_squares_cider_1 <-
-	t(apply(list_pca[[2]]$x[colData(list_dds[[2]])$time==1,],2,function(x){t(summary(aov(x~block+condition*genotype_name,colData(list_dds[[2]])[colData(list_dds[[2]])$time==1,]))[[1]][2])}))#,
-sum_squares_cider_2 <-
-	t(apply(list_pca[[2]]$x[colData(list_dds[[2]])$time==2,],2,function(x){t(summary(aov(x~block+condition*genotype_name,colData(list_dds[[2]])[colData(list_dds[[2]])$time==2,]))[[1]][2])}))#,
-sum_squares_dessert_0 <-
-	t(apply(list_pca[[3]]$x[colData(list_dds[[3]])$time==0,],2,function(x){t(summary(aov(x~block+condition*genotype_name,colData(list_dds[[3]])[colData(list_dds[[3]])$time==0,]))[[1]][2])}))#,
-sum_squares_dessert_1 <-
-	t(apply(list_pca[[3]]$x[colData(list_dds[[3]])$time==1,],2,function(x){t(summary(aov(x~block+condition*genotype_name,colData(list_dds[[3]])[colData(list_dds[[3]])$time==1,]))[[1]][2])}))#,
-sum_squares_dessert_2 <-
-	t(apply(list_pca[[3]]$x[colData(list_dds[[3]])$time==2,],2,function(x){t(summary(aov(x~block+condition*genotype_name,colData(list_dds[[3]])[colData(list_dds[[3]])$time==2,]))[[1]][2])}))#,
-
-# set column names
-colnames(sum_squares_cider_0)   <- colnames(sum_squares_cider_1)   <- colnames(sum_squares_cider_2)   <- c("block","condition","genotype","condition:genotype","residual")
-colnames(sum_squares_dessert_0) <- colnames(sum_squares_dessert_1) <- colnames(sum_squares_dessert_2) <- c("block","condition","genotype","condition:genotype","residual")
-
-# output sum of squares %
-sink(paste(RHB,"PCA_scores_by_time(blocks).txt",sep="_"))
- cat("# Cider\n")
- cat("# Time 0\n")
- perVar<-t(apply(sum_squares_cider_0,1,prop.table))* list_pca[[2]]$percentVar[colData(list_dds[[2]])$time==0]
- colSums(perVar)/sum(colSums(perVar))*100
- cat("# Time 1\n")
- perVar<-t(apply(sum_squares_cider_1,1,prop.table))* list_pca[[2]]$percentVar[colData(list_dds[[2]])$time==1]
- colSums(perVar)/sum(colSums(perVar))*100
- cat("# Time 2\n")
- perVar<-t(apply(sum_squares_cider_2,1,prop.table))* list_pca[[2]]$percentVar[colData(list_dds[[2]])$time==2]
- colSums(perVar)/sum(colSums(perVar))*100
- cat("\n# Dessert\n")
- cat("# Time 0\n")
- perVar<-t(apply(sum_squares_dessert_0,1,prop.table))* list_pca[[3]]$percentVar[colData(list_dds[[3]])$time==0]
- colSums(perVar)/sum(colSums(perVar))*100
- cat("# Time 1\n")
- perVar<-t(apply(sum_squares_dessert_1,1,prop.table))* list_pca[[3]]$percentVar[colData(list_dds[[3]])$time==1]
- colSums(perVar)/sum(colSums(perVar))*100
- cat("# Time 2\n")
- perVar<-t(apply(sum_squares_dessert_2,1,prop.table))* list_pca[[3]]$percentVar[colData(list_dds[[3]])$time==2]
- colSums(perVar)/sum(colSums(perVar))*100
-sink()
-
-sink(paste(RHB,"PCA_ANOVA_by_orchard_v2.txt",sep="_"))
-	lapply(seq(2,3),function(i) {
-	  print(names(list_dds)[i])
-	  lapply(seq(1,4),function(x) {
-		  print(summary(aov(list_pca[[i]]$x[,x]~block+time*condition*genotype_name,colData(list_dds[[i]]))))
-		})})
-sink()
-
 #===============================================================================
 #       RDA plots
 #===============================================================================
 
 list_vst <- lapply(list_dds,varianceStabilizingTransformation)
-
-# phyloseq has functions (using Vegan) for RDA analysis - for some things it's preferable
-#myphylo <- lapply(list_vst,function(dds) {ubiom_to_phylo(list(assay(dds),taxData,as.data.frame(colData(dds))))})
-
-
-#prune_samples(sample_data(myphylo[[1]])$time=="0",myphylo[[1]])
-# rda_t0 <- lapply(myphylo,function(myphylo) {ordinate(prune_samples(sample_data(myphylo)$time=="0",myphylo),method="RDA","samples",formula=~Condition(block)+genotype_name)})
-# rda_t1 <- lapply(myphylo,function(myphylo) {ordinate(prune_samples(sample_data(myphylo)$time=="1",myphylo),method="RDA","samples",formula=~Condition(block)+genotype_name)})
-# rda_t2 <- lapply(myphylo,function(myphylo) {ordinate(prune_samples(sample_data(myphylo)$time=="2",myphylo),method="RDA","samples",formula=~Condition(block)+genotype_name)})
-
-# overall ordination for genotype
-quick_func <- function(dds,time) {
-	dds <- dds[,dds$time==time]
-	colData <- colData(dds)
-	countData <- assay(dds)
-	rda(t(countData) ~ Condition(block)+genotype_name,colData)
-}
-
-rda_t0 <- lapply(list_vst,quick_func,0)
-rda_t1 <- lapply(list_vst,quick_func,1)
-rda_t2 <- lapply(list_vst,quick_func,2)
-
-aov_rda0 <- lapply(rda_t0,anova.cca,permuations=999)
-aov_rda1 <- lapply(rda_t1,anova.cca,permuations=999)
-aov_rda2 <- lapply(rda_t2,anova.cca,permuations=999)
-
-sink(paste0(RHB,"_ordination_overall.txt"))
- print("Time 0")
- print("rda")
- rda_t0
- print("permanova")
- aov_rda0
- print("Time 1")
- print("rda")
- rda_t1
- print("permanova")
- aov_rda1
- print("Time 2")
- print("rda")
- rda_t2
- print("permanova")
- aov_rda2
-sink()
 
 # WORK OUT WHAT I WANT TO PLOT FIRST BEFORE WRITING THE CODE!!!!!
 
@@ -481,20 +329,6 @@ qf <- function(dds,combinedTaxa=combinedTaxa,myTaxa=myTaxa,time,formula="~genoty
 	myData <- myData[,-1]
 	rda(formula(paste0("t(myData)",formula)),data=colData(dds))
 }
-
-# overall ordination at cover type level per orchard
-rda_t0 <- lapply(list_vst,qf,combinedTaxa,myTaxa,"0","~Condition(block)+genotype_name")
-rda_t1 <- lapply(list_vst,qf,combinedTaxa,myTaxa,"1","~Condition(block)+genotype_name")
-rda_t2 <- lapply(list_vst,qf,combinedTaxa,myTaxa,"2","~Condition(block)+genotype_name")
-
-sink(paste0(RHB,"_phylum_ordination_genotype.txt"))
- print("Time 0")
- rda_t0
- print("Time 1")
- rda_t1
- print("Time 2")
- rda_t2
-sink()
 
 ### Genotype plots ###
 
@@ -535,20 +369,6 @@ dev.off()
 combinedTaxa <- combineTaxa2(taxData[,-8],rank="class",confidence=0.75,returnFull=T)# no longer necessary - lapply(list_taxData,function(taxData) combineTaxa2(taxData[,-8],rank="phylum",confidence=0.8,returnFull=T))
 myTaxa <- combTaxa(combinedTaxa,taxData[,-8]) #lapply(seq_along(combinedTaxa),function(i) combTaxa(combinedTaxa[[i]],list_taxData[[i]][,-8]))
 
-# overall ordination at cover type level per orchard
-rda_t0 <- lapply(list_dds,qf,combinedTaxa,myTaxa,"0","~Condition(block)+genotype_name",0.75,3)
-rda_t1 <- lapply(list_dds,qf,combinedTaxa,myTaxa,"1","~Condition(block)+genotype_name",0.75,3)
-rda_t2 <- lapply(list_dds,qf,combinedTaxa,myTaxa,"2","~Condition(block)+genotype_name",0.75,3)
-
-sink(paste0(RHB,"_class_ordination_genotype.txt"))
- print("Time 0")
- rda_t0
- print("Time 1")
- rda_t1
- print("Time 2")
- rda_t2
-sink()
-
 ### Genotype plots ###
 
 # rda covering all time points
@@ -582,14 +402,10 @@ pdf(paste0(RHB,"_class_genotype_plots.pdf"))
 dev.off()
 
 #===============================================================================
-#       Differential analysis
+#       Differential analysis - for heat trees
 #===============================================================================		  
 
-# set fdr cut off
-alpha <- 0.05
 
-# Field assessment showed that M116 definitely has ARD problem in the cider apple orchard: 
-# DeSeq2 for the cider apple orchard for the following two comparisons: 
 # (a) M116 Tree_station against M116 aisle, and 
 # (b) (M116 Tree_station + [AR295_6 + M26 + G41 + M9] ailse) vs ((M116 Aisle + [AR295_6 + M26 + G41 + M9] tree_station) (interaction effect for M116)
 
@@ -613,16 +429,6 @@ res2 <- results(dds,contrast=list(c("condition_Tree.station_vs_Grass.aisle", "ti
 # across timepoints
 res <- results(dds)
 
-# merge results with taxonomy data
-res.merge <- inner_join(as_tibble(as.data.frame(res),rownames="OTU"),as_tibble(rownames="OTU",taxData))
-write.table(res.merge, paste(RHB,"M116_LRT_diff.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
-res.merge <- inner_join(as_tibble(as.data.frame(res0),rownames="OTU"),as_tibble(rownames="OTU",taxData))
-write.table(res.merge, paste(RHB,"M116_T0_diff.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
-res.merge <- inner_join(as_tibble(as.data.frame(res1),rownames="OTU"),as_tibble(rownames="OTU",taxData))
-write.table(res.merge, paste(RHB,"M116_T1_diff.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
-res.merge <- inner_join(as_tibble(as.data.frame(res2),rownames="OTU"),as_tibble(rownames="OTU",taxData))
-write.table(res.merge, paste(RHB,"M116_T2_diff.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
-
 ### (b) ###
 # (b) (M116 Tree_station + [AR295_6 + M26 + G41 + M9] ailse) vs ((M116 Aisle + [AR295_6 + M26 + G41 + M9] tree_station)
 dds   <- list_dds[[2]]
@@ -638,12 +444,7 @@ dds <- dds[filter,]
 dds$condition2 <- as.factor(paste(dds$condition,dds$genotype_name,sep="_"))
 dds$condition2 <- relevel(dds$condition2,5)
 
-# dds$gen2 <- as.factor(paste(dds$time,dds$genotype_name,sep="_"))
-
 # models
-#quick   <- ~block + condition + gen2:condition
-#full    <- ~block + time + time:condition + time:genotype_name + condition:genotype_name + time:condition:genotype_name 
-#reduced <- ~block + condition + time
 
 full    <- ~block + time + time:condition2 
 reduced <- ~block + condition2
@@ -657,35 +458,18 @@ dds<- DESeq(dds,reduced=reduced,test="LRT",parallel=T)
 #resultsNames(dds)
 
 # from full design ~ I think this is preferable - technically listValues=c(1/5,-1/5) should be added or the fold changes are 5x too high
-res0 <- results(dds,parallel=T,test="Wald",listValues=c(1/5,-1/5),contrast=list(
+res_0 <- results(dds,parallel=T,test="Wald",listValues=c(1/5,-1/5),contrast=list(
 	c("time0.condition2Tree.station_M116","time0.condition2Grass.aisle_G41","time0.condition2Grass.aisle_M26", "time0.condition2Grass.aisle_M9", "time0.condition2Grass.aisle_AR295_6"),
 	c("time0.condition2Grass.aisle_M116","time0.condition2Tree.station_G41","time0.condition2Tree.station_M26","time0.condition2Tree.station_M9","time0.condition2Tree.station_AR295_6")
 ))
-res1 <- results(dds,parallel=T,test="Wald",listValues=c(1/5,-1/5),contrast=list(
+res_1 <- results(dds,parallel=T,test="Wald",listValues=c(1/5,-1/5),contrast=list(
 	c("time1.condition2Tree.station_M116","time1.condition2Grass.aisle_G41", "time1.condition2Grass.aisle_M26", "time1.condition2Grass.aisle_M9", "time1.condition2Grass.aisle_AR295_6"),
 	c("time1.condition2Grass.aisle_M116", "time1.condition2Tree.station_G41","time1.condition2Tree.station_M26","time1.condition2Tree.station_M9","time1.condition2Tree.station_AR295_6")
 ))
-res2 <- results(dds,parallel=T,test="Wald",listValues=c(1/5,-1/5),contrast=list(
+res_2 <- results(dds,parallel=T,test="Wald",listValues=c(1/5,-1/5),contrast=list(
 	c("time2.condition2Tree.station_M116","time2.condition2Grass.aisle_G41", "time2.condition2Grass.aisle_M26", "time2.condition2Grass.aisle_M9", "time2.condition2Grass.aisle_AR295_6"),
 	c("time2.condition2Grass.aisle_M116", "time2.condition2Tree.station_G41","time2.condition2Tree.station_M26","time2.condition2Tree.station_M9","time2.condition2Tree.station_AR295_6")
 ))	
-
-
-#res_0 <- results(dds,contrast=list("time0.condition2Tree.station_M116","time0.condition2Grass.aisle_M116"),parallel=T,test="Wald")
-#res_1 <- results(dds,contrast=list("time1.condition2Tree.station_M116","time1.condition2Grass.aisle_M116"),parallel=T,test="Wald")
-#res_2 <- results(dds,contrast=list("time2.condition2Tree.station_M116","time2.condition2Grass.aisle_M116"),parallel=T,test="Wald")
-res   <- results(dds,parallel=T)
-
-# merge results and write to disk
-res.merge <- inner_join(as_tibble(as.data.frame(res0),rownames="OTU"),as_tibble(rownames="OTU",taxData))
-write.table(res.merge, paste(RHB,"M116_Interaction_T0_diff.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
-res.merge <- inner_join(as_tibble(as.data.frame(res1),rownames="OTU"),as_tibble(rownames="OTU",taxData))
-write.table(res.merge, paste(RHB,"M116_Interaction_T1_diff.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
-res.merge <- inner_join(as_tibble(as.data.frame(res2),rownames="OTU"),as_tibble(rownames="OTU",taxData))
-write.table(res.merge, paste(RHB,"M116_Interaction_T2_diff.txt",sep="_"),quote=F,sep="\t",na="",row.names=F)
-
-# output sig fasta
-writeXStringSet(readDNAStringSet(paste0(RHB,".otus.fa"))[ res.merge[padj<=0.05]$OTU],paste0(RHB,".sig.fa"))
 
 #===============================================================================
 #       Heat tree plots
