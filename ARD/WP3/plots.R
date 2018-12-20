@@ -16,6 +16,7 @@ library(outliers)
 library(metacoder)
 
 register(MulticoreParam(12))
+#install_github("eastmallingresearch/Metabarcoding_pipeline/scripts")
 library(metafuncs)
 #load_all("~/pipelines/metabarcoding/scripts/myfunctions")
 environment(plot_ordination) <- environment(ordinate) <- environment(plot_richness) <- environment(phyloseq::ordinate)
@@ -101,11 +102,13 @@ list_dds <- lapply(list_dds,function(dds) {
 	dds
 })
   
-# remove control samples (if required)
+# remove control and t0  samples (if required)
 list_dds <- lapply(list_dds,function(dds) {
-	dds <- dds[,dds$condition!="C"]
+	dds <- dds[,dds$condition!="Control"]
+	dds <- dds[,dds$time!="0"]
 	dds$condition <- droplevels(dds$condition)
 	dds$genotype_name <- droplevels(dds$genotype_name)
+	dds$time <- droplevels(dds$time)
 	dds
 })
 
@@ -268,8 +271,68 @@ list_pca <- lapply(list_dds,des_to_pca)
 # to get pca plot axis into the same scale create a dataframe of PC scores multiplied by their variance
 d <- lapply(list_pca,function(mypca) {t(data.frame(t(mypca$x)*mypca$percentVar))})
 
-pc.res <- lapply(seq_along(list_pca),function(i) {resid(aov(list_pca[[i]]$x~list_dds[[i]]$loc_factor))})
-dd <- lapply(seq_along(list_pca),function(i) {t(data.frame(t(pc.res[[i]])*list_pca[[i]]$percentVar))})
+#pc.res <- lapply(seq_along(list_pca),function(i) {resid(aov(list_pca[[i]]$x~list_dds[[i]]$loc_factor))})
+#dd <- lapply(seq_along(list_pca),function(i) {t(data.frame(t(pc.res[[i]])*list_pca[[i]]$percentVar))})
+
+# time by condition cetroid plots for both orchards and biomes
+
+# centroid plot
+centroids <- lapply(seq_along(d),function(i){
+	X<-merge(d[[i]],colData(list_dds[[i]])[,c(1,2,9)],by="row.names")
+  aggregate(X[,2:(ncol(d[[i]])+1)],b=as.list(X[,(ncol(d[[i]])+2):(ncol(d[[i]])+4)]),mean)})
+
+# all f
+g1 <- plotOrd(centroids[[2]][,c(-1,-2,-3)],centroids[[2]][,1:3],design="condition",shape="time",pointSize=1.5,axes=c(1,2),alpha=0.75,ylims=c(-7,7)) + ggtitle("A")
+g2 <- plotOrd(centroids[[3]][,c(-1,-2,-3)],centroids[[3]][,1:3],design="condition",shape="time",pointSize=1.5,axes=c(1,2),alpha=0.75,ylims=c(-7,7),xlims=c(-10,10)) + ggtitle("B")
+# RE-RUN FOR FUN OR BAC
+g3 <- plotOrd(centroids[[2]][,c(-1,-2,-3)],centroids[[2]][,1:3],design="condition",shape="time",pointSize=1.5,axes=c(1,2),alpha=0.75) + ggtitle("C")
+g4 <- plotOrd(centroids[[3]][,c(-1,-2,-3)],centroids[[3]][,1:3],design="condition",shape="time",pointSize=1.5,axes=c(1,2),alpha=0.75,ylims=c(-4,4)) + ggtitle("D")
+
+
+gleg <- get_legend(g4+theme(legend.position="bottom", legend.box = "vertical",legend.justification="left",legend.box.just="left", plot.margin=unit(c(-2,0,-1,0), "cm")))  
+g1u <- g1 +  theme_classic_thin() %+replace% theme(legend.position="none",plot.margin=unit(c(0.5,0.5,-1,0.5), "cm"))
+g2u <- g2 +  theme_classic_thin() %+replace% theme(legend.position="none",plot.margin=unit(c(0.5,0.5,-1,0.5), "cm"))
+g3u <- g3 +  theme_classic_thin() %+replace% theme(legend.position="none",plot.margin=unit(c(-1,0.5,-2,0.5), "cm")) 
+g4u <- g4 +  theme_classic_thin() %+replace% theme(legend.position="none", plot.margin=unit(c(-1,0.5,-2,0.5), "cm")) 
+
+layout_matrix <- cbind(c(1,1,1,3,3,3,5),c(2,2,2,4,4,4,5))
+
+ggsave("Centroid_PDA_plot.pdf",grid.arrange(g1u,g2u,g3u,g4u,gleg,layout_matrix=layout_matrix),height=5.5)
+
+# !c!t0 plot
+centroids <- lapply(centroids,function(X) {condition_time <- paste(X$condition,X$time,sep=" ");cbind(X[,1:3],condition_time,X[,4:ncol(X)])})
+ 
+g1 <- plotOrd(centroids[[2]][,c(-1,-2,-3,-4)],centroids[[2]][,1:4],design="genotype_name",shape="condition_time",pointSize=1.5,axes=c(1,2),alpha=0.75) + ggtitle("A")
+g2 <- plotOrd(centroids[[3]][,c(-1,-2,-3,-4)],centroids[[3]][,1:4],design="condition",shape="time",pointSize=1.5,axes=c(1,2),alpha=0.75,ylims=c(-7,7),xlims=c(-10,10)) + ggtitle("B")
+# RE-RUN FOR FUN OR BAC
+g3 <- plotOrd(centroids[[2]][,c(-1,-2,-3,-4)],centroids[[2]][,1:4],design="condition",shape="time",pointSize=1.5,axes=c(1,2),alpha=0.75) + ggtitle("C")
+g4 <- plotOrd(centroids[[3]][,c(-1,-2,-3,-4)],centroids[[3]][,1:4],design="condition",shape="time",pointSize=1.5,axes=c(1,2),alpha=0.75,ylims=c(-4,4)) + ggtitle("D")
+
+
+gleg <- get_legend(g4+theme(legend.position="bottom", legend.box = "vertical",legend.justification="left",legend.box.just="left", plot.margin=unit(c(-2,0,-1,0), "cm")))  
+g1u <- g1 +  theme_classic_thin() %+replace% theme(legend.position="none",plot.margin=unit(c(0.5,0.5,-1,0.5), "cm"))
+g2u <- g2 +  theme_classic_thin() %+replace% theme(legend.position="none",plot.margin=unit(c(0.5,0.5,-1,0.5), "cm"))
+g3u <- g3 +  theme_classic_thin() %+replace% theme(legend.position="none",plot.margin=unit(c(-1,0.5,-2,0.5), "cm")) 
+g4u <- g4 +  theme_classic_thin() %+replace% theme(legend.position="none", plot.margin=unit(c(-1,0.5,-2,0.5), "cm")) 
+
+layout_matrix <- cbind(c(1,1,1,3,3,3,5),c(2,2,2,4,4,4,5))
+
+ggsave("Centroid_PDA_plot.pdf",grid.arrange(g1u,g2u,g3u,g4u,gleg,layout_matrix=layout_matrix),height=5.5)
+
+
+
+
+
+pdf(paste(RHB,"PCA_CENTROIDS_with_controls.pdf",sep="_"))
+ #plotOrd(centroids[[1]][,c(-1,-2,-3)],centroids[[1]][,1:3],design="condition",shape="time",pointSize=1.5,axes=c(1,2),alpha=0.75) + ggtitle("Both orchards")
+ plotOrd(centroids[[2]][,c(-1,-2,-3)],centroids[[2]][,1:3],design="condition",shape="time",pointSize=1.5,axes=c(1,2),alpha=0.75) + ggtitle("Cider orchard")
+ plotOrd(centroids[[3]][,c(-1,-2,-3)],centroids[[3]][,1:3],design="condition",shape="time",pointSize=1.5,axes=c(1,2),alpha=0.75) + ggtitle("Dessert orchard")
+ plotOrd(centroids[[2]][,c(-1,-2,-3)],centroids[[2]][,1:3],design="condition",shape="time",pointSize=1.5,axes=c(2,3),alpha=0.75) + ggtitle("Cider orchard")
+ plotOrd(centroids[[3]][,c(-1,-2,-3)],centroids[[3]][,1:3],design="condition",shape="time",pointSize=1.5,axes=c(2,3),alpha=0.75) + ggtitle("Dessert orchard")
+ plotOrd(centroids[[2]][,c(-1,-2,-3)],centroids[[2]][,1:3],design="condition",shape="time",pointSize=1.5,axes=c(3,4),alpha=0.75) + ggtitle("Cider orchard")
+ plotOrd(centroids[[3]][,c(-1,-2,-3)],centroids[[3]][,1:3],design="condition",shape="time",pointSize=1.5,axes=c(3,4),alpha=0.75) + ggtitle("Dessert orchard")
+dev.off()
+
 
 # plot the PCA - need to think about model
 pdf(paste(RHB,"PCA.pdf",sep="_"))
@@ -292,20 +355,7 @@ pdf(paste(RHB,"PCA_LOCATION.pdf",sep="_"))
  plotOrd(dd[[7]],colData(list_dds[[7]]),design="genotype_name",shape="time",pointSize=1.5,axes=c(1,2),alpha=0.75) + ggtitle("Dessert grass alley")
 dev.off()
 
-# centroid plot
-centroids <- lapply(seq_along(d),function(i){
-	X<-merge(d[[i]],colData(list_dds[[i]])[,c(1,2,9)],by="row.names")
-  aggregate(X[,2:(ncol(d[[i]])+1)],b=as.list(X[,(ncol(d[[i]])+2):(ncol(d[[i]])+4)]),mean)})
 
-pdf(paste(RHB,"PCA_CENTROIDS_with_controls.pdf",sep="_"))
- #plotOrd(centroids[[1]][,c(-1,-2,-3)],centroids[[1]][,1:3],design="condition",shape="time",pointSize=1.5,axes=c(1,2),alpha=0.75) + ggtitle("Both orchards")
- plotOrd(centroids[[2]][,c(-1,-2,-3)],centroids[[2]][,1:3],design="condition",shape="time",pointSize=1.5,axes=c(1,2),alpha=0.75) + ggtitle("Cider orchard")
- plotOrd(centroids[[3]][,c(-1,-2,-3)],centroids[[3]][,1:3],design="condition",shape="time",pointSize=1.5,axes=c(1,2),alpha=0.75) + ggtitle("Dessert orchard")
- plotOrd(centroids[[2]][,c(-1,-2,-3)],centroids[[2]][,1:3],design="condition",shape="time",pointSize=1.5,axes=c(2,3),alpha=0.75) + ggtitle("Cider orchard")
- plotOrd(centroids[[3]][,c(-1,-2,-3)],centroids[[3]][,1:3],design="condition",shape="time",pointSize=1.5,axes=c(2,3),alpha=0.75) + ggtitle("Dessert orchard")
- plotOrd(centroids[[2]][,c(-1,-2,-3)],centroids[[2]][,1:3],design="condition",shape="time",pointSize=1.5,axes=c(3,4),alpha=0.75) + ggtitle("Cider orchard")
- plotOrd(centroids[[3]][,c(-1,-2,-3)],centroids[[3]][,1:3],design="condition",shape="time",pointSize=1.5,axes=c(3,4),alpha=0.75) + ggtitle("Dessert orchard")
-dev.off()
 
 #===============================================================================
 #       RDA plots
