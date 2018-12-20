@@ -70,7 +70,7 @@ ubiom_NEM$taxData <- taxData
 #===============================================================================
 
 ubiom_FUN$dds <- ubiom_to_des(ubiom_FUN,filter=expression(colSums(countData)>=1000&colData$Block!="R"))
-#ubiom_BAC$dds <- ubiom_to_des(ubiom_BAC,filter=expression(colSums(countData)>=1000&colData$Block!="R"))
+ubiom_BAC$dds <- ubiom_to_des(ubiom_BAC,filter=expression(colSums(countData)>=1000&colData$Block!="R"))
 ubiom_OO$dds <- ubiom_to_des(ubiom_OO,filter=expression(colSums(countData)>=1000&colData$Block!="R"),calcFactors=geoMeans)
 ubiom_NEM$dds <- ubiom_to_des(ubiom_NEM,filter=expression(colSums(countData)>=500&colData$Block!="R"))
 
@@ -106,6 +106,78 @@ invisible(mapply(assign, names(ubiom_NEM), ubiom_NEM, MoreArgs=list(envir = glob
 # remove ungrafted samples (if not required in analysis)
 dds <- dds[,dds$Genotype!="M9_ungrafted"]
 dds$Genotype <- droplevels(dds$Genotype)
+
+#===============================================================================
+#       Sample rarefaction plots
+#===============================================================================        
+
+library(grid)
+library(gridExtra)
+library(viridis)
+				    
+gfunc <- function(countData,coldata,title) {        
+  colData <- colData[names(countData),]
+
+  # remove low count and control samples
+  myfilter <- colData$Treatment!="Control"
+
+  # apply filter
+  colData <- droplevels(colData[myfilter,])
+  countData <- countData[,myfilter]
+
+  # descending order each sample 
+  DT <- data.table(apply(countData,2,sort,decreasing=T))
+
+  # get cummulative sum of each sample
+  DT <- cumsum(DT)    
+
+  # log the count values                            
+  DT <- log10(DT)
+
+  # relabel columns
+  colnames(DT) <- sub("(X)([0-9]+[HS])(.*)","\\2",colnames(DT))
+
+  # set values larger than maximum for each column to NA
+  DT <- data.table(apply(DT,2,function(x) {x[(which.max(x)+1):length(x)]<- NA;x}))
+  
+  # remove rows with all NA
+  DT <- DT[rowSums(is.na(DT)) != ncol(DT), ]
+  
+  # add a count column to the data table
+  DT$x <- seq(1,nrow(DT))
+                             
+  # melt the data table for easy plotting 
+  MDT <- melt(DT,id.vars="x")
+			      
+  # create an empty ggplot object from the data table
+  g <- ggplot(data=MDT,aes(x=x,y=value,colour=variable))
+
+  # remove plot background and etc.
+  g <- g + theme_classic_thin() %+replace% theme(legend.position="none",axis.title=element_blank())
+
+  # plot cumulative reads
+  g <- g + geom_line(size=1.5) + scale_colour_viridis(discrete=T)
+
+  # add axis lables
+  g <- g + ggtitle(title)
+  #g <- g + ylab(expression("Log"[10]*" aligned sequenecs"))+xlab("OTU count")
+
+  # print the plot
+  g
+}
+
+invisible(mapply(assign, names(ubiom_BAC), ubiom_BAC, MoreArgs=list(envir = globalenv())))
+g1 <- gfunc(as.data.frame(counts(dds)),as.data.frame(colData(dds)),"Bacteria")
+invisible(mapply(assign, names(ubiom_FUN), ubiom_FUN, MoreArgs=list(envir = globalenv())))
+g2 <- gfunc(as.data.frame(counts(dds)),as.data.frame(colData(dds)),"Fungi")
+invisible(mapply(assign, names(ubiom_OO), ubiom_OO, MoreArgs=list(envir = globalenv())))
+g3 <- gfunc(as.data.frame(counts(dds)),as.data.frame(colData(dds)),"Oomycetes")
+invisible(mapply(assign, names(ubiom_NEM), ubiom_NEM, MoreArgs=list(envir = globalenv())))
+g4 <- gfunc(as.data.frame(counts(dds)),as.data.frame(colData(dds)),"Nematodes")
+
+glegend <- get_legend(g)
+ggsave("rarefaction_all.pdf",grid.arrange(g1,g2,g3,g4,left=textGrob(label=expression("Log"[10] * " aligned sequenecs"),rot=90),bottom="OTU count",nrow=2))                              
+
 
 #===============================================================================
 #       Alpha diversity analysis
