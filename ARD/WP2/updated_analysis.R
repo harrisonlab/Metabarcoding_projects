@@ -177,6 +177,36 @@ g4 <- gfunc(as.data.frame(counts(dds)),as.data.frame(colData(dds)),"Nematodes")
 glegend <- get_legend(g)
 ggsave("rarefaction_all.pdf",grid.arrange(g1,g2,g3,g4,left=textGrob(label=expression("Log"[10] * " aligned sequenecs"),rot=90),bottom="OTU count",nrow=2))                              
 
+#===============================================================================
+#       Phylum (or other taxa) plots
+#===============================================================================
+
+dd <- sumTaxa(list(data.frame(cbind(taxData[,1,drop=F],1)[,2,drop=F]),taxData,data.frame(all=1)),conf=0.9,proportional=T,taxon="phylum")
+colnames(dd)[2] <- "all"
+dd <- rbind(dd[dd$all>=1,],c("others",sum(dd[dd$all<1,2])))
+md <- melt(dd,id=colnames(dd)[1])
+#levels(md$variable)[1] <- "OTUs"
+md$value <- as.numeric(md$value)
+#md$Normalisation <- md$variable
+md$phylum <- sub(".*_"," ",md$phylum)
+md$phylum  <- factor(md$phylum, levels=c(unique(md$phylum[md$phylum!="others"][order(md$value[md$phylum!="others"],decreasing=T)]),"others"),ordered=T)
+g <- ggplot(md,aes(x=phylum,y=value))
+g <- g + geom_bar(stat="identity",colour="black")
+g <- g  + xlab("")+ ylab("")
+scaleFUN<-function(x) sprintf("%.0f", x)
+g <- g + scale_y_continuous(expand = c(0, 0),labels = scaleFUN,limits=NULL)
+g <- g + guides(fill=guide_legend(ncol=1))
+g <- g + theme_blank()
+g <- g + theme(
+	axis.text.x = element_text(angle = 45, hjust = 1,size=14),
+	plot.margin=unit(c(0.2,0,0.2,1.5),"cm"),
+	axis.line.y = element_line(colour = "black",size=1),
+	axis.ticks.x=element_blank(),
+	text=element_text(size=14),
+	plot.title = element_text(hjust = -0.11),
+	axis.title.y=element_text(size=(14-2)))
+ggsave(paste0(RHB,"_OTU_frequency.pdf"),g,width=8,height=7)
+
 
 #===============================================================================
 #       Alpha diversity analysis
