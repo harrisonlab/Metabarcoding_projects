@@ -288,7 +288,6 @@ g2 <- plotOrd(centroids[[3]][,c(-1,-2,-3)],centroids[[3]][,1:3],design="conditio
 g3 <- plotOrd(centroids[[2]][,c(-1,-2,-3)],centroids[[2]][,1:3],design="condition",shape="time",pointSize=1.5,axes=c(1,2),alpha=0.75) + ggtitle("C")
 g4 <- plotOrd(centroids[[3]][,c(-1,-2,-3)],centroids[[3]][,1:3],design="condition",shape="time",pointSize=1.5,axes=c(1,2),alpha=0.75,ylims=c(-4,4)) + ggtitle("D")
 
-
 gleg <- get_legend(g4+theme(legend.position="bottom", legend.box = "vertical",legend.justification="left",legend.box.just="left", plot.margin=unit(c(-2,0,-1,0), "cm")))  
 g1u <- g1 +  theme_classic_thin() %+replace% theme(legend.position="none",plot.margin=unit(c(0.5,0.5,-1,0.5), "cm"))
 g2u <- g2 +  theme_classic_thin() %+replace% theme(legend.position="none",plot.margin=unit(c(0.5,0.5,-1,0.5), "cm"))
@@ -302,26 +301,36 @@ ggsave("Centroid_PDA_plot.pdf",grid.arrange(g1u,g2u,g3u,g4u,gleg,layout_matrix=l
 # !c!t0 plot
 centroids <- lapply(centroids,function(X) {condition_time <- paste(X$condition,X$time,sep=" ");cbind(X[,1:3],condition_time,X[,4:ncol(X)])})
  
-g1 <- plotOrd(centroids[[2]][,c(-1,-2,-3,-4)],centroids[[2]][,1:4],design="genotype_name",shape="condition_time",pointSize=1.5,axes=c(1,2),alpha=0.75) + ggtitle("A")
-g2 <- plotOrd(centroids[[3]][,c(-1,-2,-3,-4)],centroids[[3]][,1:4],design="condition",shape="time",pointSize=1.5,axes=c(1,2),alpha=0.75,ylims=c(-7,7),xlims=c(-10,10)) + ggtitle("B")
+g1 <- plotOrd(centroids[[2]][,c(-1,-2,-3,-4)],centroids[[2]][,1:4],design="genotype_name",shape="condition_time",pointSize=1.5,axes=c(1,2),alpha=0.75,ylims=c(-2.5,2.5)) + ggtitle("A")
+g2 <- plotOrd(centroids[[3]][,c(-1,-2,-3,-4)],centroids[[3]][,1:4],design="genotype_name",shape="condition_time",pointSize=1.5,axes=c(1,2),alpha=0.75) + ggtitle("B")
 # RE-RUN FOR FUN OR BAC
-g3 <- plotOrd(centroids[[2]][,c(-1,-2,-3,-4)],centroids[[2]][,1:4],design="condition",shape="time",pointSize=1.5,axes=c(1,2),alpha=0.75) + ggtitle("C")
-g4 <- plotOrd(centroids[[3]][,c(-1,-2,-3,-4)],centroids[[3]][,1:4],design="condition",shape="time",pointSize=1.5,axes=c(1,2),alpha=0.75,ylims=c(-4,4)) + ggtitle("D")
+g3 <- plotOrd(centroids[[2]][,c(-1,-2,-3,-4)],centroids[[2]][,1:4],design="genotype_name",shape="condition_time",pointSize=1.5,axes=c(1,2),alpha=0.75) + ggtitle("C")
+g4 <- plotOrd(centroids[[3]][,c(-1,-2,-3,-4)],centroids[[3]][,1:4],design="genotype_name",shape="condition_time",pointSize=1.5,axes=c(1,2),alpha=0.75) + ggtitle("D")
+
+
+# the below is not correct as the two orchards have different root stocks
+# try with facets????
+g1 <- plotOrd(centroids[[2]][,c(-1,-2,-3,-4)],centroids[[2]][,1:4],design="genotype_name",
+	pointSize=1.5,axes=c(1,2),alpha=0.75,facet="condition_time")
+g2 <- plotOrd(centroids[[3]][,c(-1,-2,-3,-4)],centroids[[3]][,1:4],design="genotype_name",
+	pointSize=1.5,axes=c(1,2),alpha=0.75,facet="condition_time")
+g3 <- plotOrd(centroids[[2]][,c(-1,-2,-3,-4)],centroids[[2]][,1:4],design="genotype_name",
+	pointSize=1.5,axes=c(1,2),alpha=0.75,facet="condition_time")
+g4 <- plotOrd(centroids[[3]][,c(-1,-2,-3,-4)],centroids[[3]][,1:4],design="genotype_name",
+	pointSize=1.5,axes=c(1,2),alpha=0.75,facet="condition_time")
 
 
 gleg <- get_legend(g4+theme(legend.position="bottom", legend.box = "vertical",legend.justification="left",legend.box.just="left", plot.margin=unit(c(-2,0,-1,0), "cm")))  
-g1u <- g1 +  theme_classic_thin() %+replace% theme(legend.position="none",plot.margin=unit(c(0.5,0.5,-1,0.5), "cm"))
-g2u <- g2 +  theme_classic_thin() %+replace% theme(legend.position="none",plot.margin=unit(c(0.5,0.5,-1,0.5), "cm"))
-g3u <- g3 +  theme_classic_thin() %+replace% theme(legend.position="none",plot.margin=unit(c(-1,0.5,-2,0.5), "cm")) 
-g4u <- g4 +  theme_classic_thin() %+replace% theme(legend.position="none", plot.margin=unit(c(-1,0.5,-2,0.5), "cm")) 
+gleg_1 <- get_legend(g3+theme(legend.position="bottom", legend.box = "vertical",legend.justification="left",legend.box.just="left", plot.margin=unit(c(-2,0,-1,0), "cm")))  
+
+g1u <- g1 + facet_wrap(facets="facet")+theme_facet_blank(angle=0) %+replace% theme(legend.position="none",plot.margin=unit(c(0.5,0.5,-1,0.5), "cm"))
+g2u <- g2 + facet_wrap(facets="facet")+theme_facet_blank(angle=0) %+replace% theme(legend.position="none",plot.margin=unit(c(0.5,0.5,-1,0.5), "cm"))
+g3u <- g3 + facet_wrap(facets="facet")+theme_facet_blank(angle=0) %+replace% theme(legend.position="none",plot.margin=unit(c(-1,0.5,-2,0.5), "cm")) 
+g4u <- g4 + facet_wrap(facets="facet")+theme_facet_blank(angle=0) %+replace% theme(legend.position="none", plot.margin=unit(c(-1,0.5,-2,0.5), "cm")) 
 
 layout_matrix <- cbind(c(1,1,1,3,3,3,5),c(2,2,2,4,4,4,5))
 
-ggsave("Centroid_PDA_plot.pdf",grid.arrange(g1u,g2u,g3u,g4u,gleg,layout_matrix=layout_matrix),height=5.5)
-
-
-
-
+ggsave("Centroid_genotype_plot.pdf",grid.arrange(g1u,g2u,g3u,g4u,gleg,layout_matrix=layout_matrix),height=5.5)
 
 pdf(paste(RHB,"PCA_CENTROIDS_with_controls.pdf",sep="_"))
  #plotOrd(centroids[[1]][,c(-1,-2,-3)],centroids[[1]][,1:3],design="condition",shape="time",pointSize=1.5,axes=c(1,2),alpha=0.75) + ggtitle("Both orchards")
