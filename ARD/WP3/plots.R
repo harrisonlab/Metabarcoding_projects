@@ -107,13 +107,18 @@ list_dds <- lapply(list_dds,function(dds) {
 # remove control and t0  samples (if required)
 list_dds <- lapply(list_dds,function(dds) {
 	dds <- dds[,dds$condition!="Control"]
+	dds$condition <- droplevels(dds$condition)
+	dds$genotype_name <- droplevels(dds$genotype_name)
+	dds$time <- droplevels(dds$time)
+	dds
+})
+list_dds <- lapply(list_dds,function(dds) {
 	dds <- dds[,dds$time!="0"]
 	dds$condition <- droplevels(dds$condition)
 	dds$genotype_name <- droplevels(dds$genotype_name)
 	dds$time <- droplevels(dds$time)
 	dds
 })
-
 #===============================================================================
 #       Alpha diversity analysis - RUN BEFORE FILTERING OUT ANY LOW COUNT OTUS
 #===============================================================================
@@ -140,6 +145,7 @@ list_taxData <- lapply(list_dds,function(dds) {taxData[rownames(dds),]})
 #===============================================================================
 #       Microbial Populations
 #===============================================================================
+
 
 ### phylum level population frequency ###
 sink(paste0(RHB,"_Phylum_Frequencies_v2.txt"))
@@ -171,7 +177,6 @@ sink(paste0(RHB,"_Phylum_Frequencies_v2.txt"))
  sumTaxa(list(as.data.frame(counts(list_dds$cider,normalize=T)),taxData,list_dds$cider@colData),conf=0.8,design=c("genotype_name","condition","time"),proportional=T)
 sink()
 
-
 ## Run seperatly for each orchard ##
 dds <- list_dds$dessert
 ORCH<-"Dessert"
@@ -199,20 +204,64 @@ md$Condition[md$Condition=="C"] <- "Control"
 
 md$Genotype  <- as.factor(md$Genotype)
 md$Condition <- as.factor(md$Condition)
-md$TimePoint <- as.integer(md$TimePoint)
 
 md$phylum <- factor(md$phylum,aggregate(md$value,by=list(md$phylum),mean)[order(aggregate(md$value,by=list(md$phylum),mean)[,2],decreasing=T),][,1])
 
+md2 <- melt(sumTaxaAdvanced(list(as.data.frame(counts(dds,normalize=T)),taxData,dds@colData),conf=0.9,design=c("condition","time"),proportional=T,others=T,cutoff=1))
+md2$Condition <-  unlist(strsplit(as.character(md2[,2])," : "))[c(T,F)]
+md2$TimePoint <-  unlist(strsplit(as.character(md2[,2])," : "))[c(F,T)]
+md2$TimePoint <- as.integer(md2$TimePoint)
+md2$TimePoint <- sub("^","t",md2$TimePoint)
+md2$Condition <- as.factor(md2$Condition)
+md2$phylum <- factor(md2$phylum,aggregate(md2$value,by=list(md2$phylum),mean)[order(aggregate(md2$value,by=list(md2$phylum),mean)[,2],decreasing=T),][,1])
+
+
 # plot
-g <- ggplot(md,aes(x=TimePoint,y=value,colour=Condition,phylum=phylum))
+g <- ggplot(md2,aes(x=TimePoint,y=value,colour=Condition,phylum=phylum))
 g <- g + geom_smooth() + scale_x_continuous(breaks=c(0,1,2))
-g <- g + scale_colour_manual(values = c("Grass Alley" = "black", "Tree Station" = "orange"))
+g <- g + scale_colour_manual(values = c("Grass aisle" = "black", "Tree station" = "orange"))
 g <- g + facet_wrap(~phylum,scales="free_y")
-g <- g + ylab("Abundance (%)")
-g <- g +  theme_classic_thin() %+replace% theme(panel.border = element_rect(colour = "black", fill=NA, size=0.5),legend.position="bottom")
+#g <- g + ylab("Abundance (%)")
+g <- g +theme_classic_thin() %+replace% theme(
+	panel.border = element_rect(colour = "black", fill=NA, size=0.5),
+	axis.title = element_blank(),
+	legend.position="none")
+g1 <- g
+g_1 <- grid.arrange(g1,left="Abundance(%)")
+g_2 <- plot_grid(g_1,g2,labels="AUTO")
+g_3 <- grid.arrange(g_2,bottom="TimePoint")
+g_4 <- grid.arrange(g_3,leg,layout_matrix=cbind(1,1,1,1,1,2))
+
+g1t <- g1 + ggtitle("A")
+g2t <- g2 + ggtitle("B")
+g3t <- grid.arrange(g1t,g2t,ncol=1,left="Abundance(%)",bottom="TimePoint")
+ggsave(paste(RHB,"freqy.pdf",sep="_"),grid.arrange(g3t,leg,layout_matrix=cbind(1,1,1,1,1,2)))
+
+g_1 <- plot_grid(g_1,g2,labels="AUTO",ncol=1)
+g_2 <- 
+
 ggsave(paste(RHB,ORCH,"Proportional graphs.pdf",sep="_"),g,width=9)
 ggsave(paste(RHB,ORCH,"Proportional by genotype graphs.pdf",sep="_"),g + facet_wrap(Genotype~phylum,scales="free_y"),width=18,height=14)
 
+# bar plot
+g <- ggplot(md2,aes(x=phylum,y=value,fill=Condition))
+g <- g + geom_bar(stat = "identity", position = "dodge") + scale_fill_manual(values = c("Grass aisle" = "black", "Tree station" = "orange"))
+g <- g + facet_wrap(~TimePoint,ncol=1)
+leg <- get_legend(g)
+
+g1u <- g + theme_facet_blank(angle=45,t=-25,hjust=1) %+replace% theme(
+	plot.margin = unit(c(0.2,0.2,1.5,1.5), "cm"), 
+	axis.title = element_blank(),
+	legend.position="none"
+)
+
+gt <- grid.arrange(plot_grid(g1u,g2u,labels="AUTO"),leg,layout_matrix=cbind(1,1,1,1,1,2),left="Abundance(%)")
+test <- grid.arrange(g1u,left="Abundance(%)")
+gt <- grid.arrange(plot_grid(test,g2u,labels="AUTO"),leg,layout_matrix=cbind(1,1,1,1,1,2))
+
+ggsave(paste(RHB,"phylum_freq.pdf",sep="_"),gt)
+
+#### Weigthed mean difference plots ####
 ### FUNGI ONLY ###		       
 md <- melt(sumTaxa(list(as.data.frame(counts(dds,normalize=T)),taxData,dds@colData),conf=0.8,design=c("genotype_name","condition","time"),proportional=F,meanDiff=T))
 ### BACTERIA (REMOVING LOW ABUNDANCE PHYLA) ###
