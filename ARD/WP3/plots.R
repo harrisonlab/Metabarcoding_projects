@@ -6,6 +6,8 @@ library(DESeq2)
 library(BiocParallel)
 library(data.table)
 library(tidyverse)
+library(gtable)
+library(gridExtra)
 library(devtools)
 library(Biostrings)
 library(vegan)
@@ -299,38 +301,56 @@ layout_matrix <- cbind(c(1,1,1,3,3,3,5),c(2,2,2,4,4,4,5))
 ggsave("Centroid_PDA_plot.pdf",grid.arrange(g1u,g2u,g3u,g4u,gleg,layout_matrix=layout_matrix),height=5.5)
 
 # !c!t0 plot
-centroids <- lapply(centroids,function(X) {condition_time <- paste(X$condition,X$time,sep=" ");cbind(X[,1:3],condition_time,X[,4:ncol(X)])})
- 
-g1 <- plotOrd(centroids[[2]][,c(-1,-2,-3,-4)],centroids[[2]][,1:4],design="genotype_name",shape="condition_time",pointSize=1.5,axes=c(1,2),alpha=0.75,ylims=c(-2.5,2.5)) + ggtitle("A")
-g2 <- plotOrd(centroids[[3]][,c(-1,-2,-3,-4)],centroids[[3]][,1:4],design="genotype_name",shape="condition_time",pointSize=1.5,axes=c(1,2),alpha=0.75) + ggtitle("B")
-# RE-RUN FOR FUN OR BAC
-g3 <- plotOrd(centroids[[2]][,c(-1,-2,-3,-4)],centroids[[2]][,1:4],design="genotype_name",shape="condition_time",pointSize=1.5,axes=c(1,2),alpha=0.75) + ggtitle("C")
-g4 <- plotOrd(centroids[[3]][,c(-1,-2,-3,-4)],centroids[[3]][,1:4],design="genotype_name",shape="condition_time",pointSize=1.5,axes=c(1,2),alpha=0.75) + ggtitle("D")
+attach("PCA.bin")
+invisible(mapply(assign, names(obj), obj, MoreArgs=list(envir = globalenv())))
 
+# add condition_time factor to centroid data.frames
+BAC_centroids <- lapply(BAC_centroids,function(X) {
+	condition_time <- paste(X$condition,X$time,sep=" t")
+	cbind(X[,1:3],condition_time,X[,4:ncol(X)])
+})
+FUN_centroids <- lapply(FUN_centroids,function(X) {
+	condition_time <- paste(X$condition,X$time,sep=" t")
+	cbind(X[,1:3],condition_time,X[,4:ncol(X)])
+})
 
-# the below is not correct as the two orchards have different root stocks
+#reorder genotype levels (G16 to end - then graph colours will match between orchards and can make single plot)
+BAC_centroids[[3]]$genotype_name <- factor(BAC_centroids[[3]]$genotype_name, levels=c(
+	levels(BAC_centroids[[3]]$genotype_name)[-2],
+	levels(BAC_centroids[[3]]$genotype_name)[2]
+))
+FUN_centroids[[3]]$genotype_name <- factor(FUN_centroids[[3]]$genotype_name, levels=c(
+	levels(BAC_centroids[[3]]$genotype_name)[-2],
+	levels(BAC_centroids[[3]]$genotype_name)[2]
+))
+
 # try with facets????
-g1 <- plotOrd(centroids[[2]][,c(-1,-2,-3,-4)],centroids[[2]][,1:4],design="genotype_name",
-	pointSize=1.5,axes=c(1,2),alpha=0.75,facet="condition_time")
-g2 <- plotOrd(centroids[[3]][,c(-1,-2,-3,-4)],centroids[[3]][,1:4],design="genotype_name",
-	pointSize=1.5,axes=c(1,2),alpha=0.75,facet="condition_time")
-g3 <- plotOrd(centroids[[2]][,c(-1,-2,-3,-4)],centroids[[2]][,1:4],design="genotype_name",
-	pointSize=1.5,axes=c(1,2),alpha=0.75,facet="condition_time")
-g4 <- plotOrd(centroids[[3]][,c(-1,-2,-3,-4)],centroids[[3]][,1:4],design="genotype_name",
-	pointSize=1.5,axes=c(1,2),alpha=0.75,facet="condition_time")
+g1 <- plotOrd(FUN_centroids[[2]][,c(-1,-2,-3,-4)],FUN_centroids[[2]][,1:4],design="genotype_name",
+	pointSize=1,axes=c(1,2),alpha=0.75,facet="condition_time",cbPalette=T,ylims=c(-4,4))
+g2 <- plotOrd(FUN_centroids[[3]][,c(-1,-2,-3,-4)],FUN_centroids[[3]][,1:4],design="genotype_name",
+	pointSize=1,axes=c(1,2),alpha=0.75,facet="condition_time",cbPalette=T,xlims=c(-6,8))
+g3 <- plotOrd(BAC_centroids[[2]][,c(-1,-2,-3,-4)],BAC_centroids[[2]][,1:4],design="genotype_name",
+	pointSize=1,axes=c(1,2),alpha=0.75,facet="condition_time",cbPalette=T,ylims=c(-6,6.5))
+g4 <- plotOrd(BAC_centroids[[3]][,c(-1,-2,-3,-4)],BAC_centroids[[3]][,1:4],design="genotype_name",
+	pointSize=1,axes=c(1,2),alpha=0.75,facet="condition_time",cbPalette=T,ylims=c(-5,4))
 
+gleg <- g4 +theme(legend.position="bottom", legend.box = "vertical",legend.justification="left",legend.box.just="left", plot.margin=unit(c(-2,0,-1,0), "cm"))
+gleg$guides$colour$title <- "Genotype"
+gleg <- get_legend(gleg)  
+#gleg_1 <- get_legend(g3+theme(legend.position="bottom", legend.box = "vertical",legend.justification="left",legend.box.just="left", plot.margin=unit(c(-2,0,-1,0), "cm")))  
 
-gleg <- get_legend(g4+theme(legend.position="bottom", legend.box = "vertical",legend.justification="left",legend.box.just="left", plot.margin=unit(c(-2,0,-1,0), "cm")))  
-gleg_1 <- get_legend(g3+theme(legend.position="bottom", legend.box = "vertical",legend.justification="left",legend.box.just="left", plot.margin=unit(c(-2,0,-1,0), "cm")))  
+g1u <- g1 + facet_wrap(facets="facet")+theme_facet_blank(10,angle=0) %+replace% theme(legend.position="none")
+g2u <- g2 + facet_wrap(facets="facet")+theme_facet_blank(10,angle=0) %+replace% theme(legend.position="none")
+g3u <- g3 + facet_wrap(facets="facet")+theme_facet_blank(10,angle=0) %+replace% theme(legend.position="none")
+g4u <- g4 + facet_wrap(facets="facet")+theme_facet_blank(10,angle=0) %+replace% theme(legend.position="none")
 
-g1u <- g1 + facet_wrap(facets="facet")+theme_facet_blank(angle=0) %+replace% theme(legend.position="none",plot.margin=unit(c(0.5,0.5,-1,0.5), "cm"))
-g2u <- g2 + facet_wrap(facets="facet")+theme_facet_blank(angle=0) %+replace% theme(legend.position="none",plot.margin=unit(c(0.5,0.5,-1,0.5), "cm"))
-g3u <- g3 + facet_wrap(facets="facet")+theme_facet_blank(angle=0) %+replace% theme(legend.position="none",plot.margin=unit(c(-1,0.5,-2,0.5), "cm")) 
-g4u <- g4 + facet_wrap(facets="facet")+theme_facet_blank(angle=0) %+replace% theme(legend.position="none", plot.margin=unit(c(-1,0.5,-2,0.5), "cm")) 
+# cowplot saves messing around with gtables and adding titles to the right place
+library(cowplot)
+g <- plot_grid(g1u,g2u,g3u,g4u,labels="AUTO")
 
-layout_matrix <- cbind(c(1,1,1,3,3,3,5),c(2,2,2,4,4,4,5))
-
-ggsave("Centroid_genotype_plot.pdf",grid.arrange(g1u,g2u,g3u,g4u,gleg,layout_matrix=layout_matrix),height=5.5)
+# but cowplot can't add single legends
+layout_matrix <- rbind(1,1,1,1,1,2)
+ggsave("Centroid_genotype_t1_t2.pdf",grid.arrange(g,gleg,layout_matrix=layout_matrix))
 
 pdf(paste(RHB,"PCA_CENTROIDS_with_controls.pdf",sep="_"))
  #plotOrd(centroids[[1]][,c(-1,-2,-3)],centroids[[1]][,1:3],design="condition",shape="time",pointSize=1.5,axes=c(1,2),alpha=0.75) + ggtitle("Both orchards")
