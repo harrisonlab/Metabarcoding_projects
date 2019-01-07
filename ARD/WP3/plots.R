@@ -350,7 +350,7 @@ layout_matrix <- cbind(c(1,1,1,3,3,3,5),c(2,2,2,4,4,4,5))
 ggsave("Centroid_PDA_plot.pdf",grid.arrange(g1u,g2u,g3u,g4u,gleg,layout_matrix=layout_matrix),height=5.5)
 
 # !c!t0 plot
-attach("PCA.bin")
+attach("PCA.bin") # time point 1 and 2 PCA for BAC and FUN
 invisible(mapply(assign, names(obj), obj, MoreArgs=list(envir = globalenv())))
 
 # add condition_time factor to centroid data.frames
@@ -400,6 +400,28 @@ g <- plot_grid(g1u,g2u,g3u,g4u,labels="AUTO")
 # but cowplot can't add single legends
 layout_matrix <- rbind(1,1,1,1,1,2)
 ggsave("Centroid_genotype_t1_t2.pdf",grid.arrange(g,gleg,layout_matrix=layout_matrix))
+
+# alternative method twith gtable
+library(gtable)
+g1u <- ggplotGrob(g1u)
+g2u <- ggplotGrob(g2u)
+g3u <- ggplotGrob(g3u)
+g4u <- ggplotGrob(g4u)
+gg1 <- rbind(g1u, g3u, size = "first")
+#gg1$widths <- unit.pmax(g1u$widths, g3u$widths)
+gg2 <- rbind(g2u, g4u, size = "first")
+#gg2$widths <- unit.pmax(g2u$widths, g3u$widths)
+gg3 = do.call(cbind, c(list(gg1,gg2), size="first"))
+grid.arrange(gg3,gleg_1,gleg,layout_matrix=cbind(c(1,1,1,1,1,1,2),c(1,1,1,1,1,1,3)))
+
+layout_matrix <- rbind(c(1,1,1,1,2),c(1,1,1,1,2))
+
+ggsave("Centroid_genotype_cider.pdf",grid.arrange(gg1,gleg_1,layout_matrix=layout_matrix))
+ggsave("Centroid_genotype_dessert.pdf",grid.arrange(gg2,gleg,layout_matrix=layout_matrix))
+
+
+
+
 
 pdf(paste(RHB,"PCA_CENTROIDS_with_controls.pdf",sep="_"))
  #plotOrd(centroids[[1]][,c(-1,-2,-3)],centroids[[1]][,1:3],design="condition",shape="time",pointSize=1.5,axes=c(1,2),alpha=0.75) + ggtitle("Both orchards")
