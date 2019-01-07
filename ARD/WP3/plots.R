@@ -333,13 +333,18 @@ g4 <- plotOrd(centroids[[3]][,c(-1,-2,-3)],centroids[[3]][,1:3],design="conditio
 
 
 gleg <- get_legend(g4+theme(legend.position="bottom", legend.box = "vertical",legend.justification="left",legend.box.just="left"))#, plot.margin=unit(c(-2,0,-1,0), "cm")))  
-g1u <- g1 + xlab("") + theme_classic_thin() %+replace% theme(legend.position="none")#,plot.margin=unit(c(0.5,0.5,-1,0.5), "cm"))
-g2u <- g2 + xlab("") + ylab("") +  theme_classic_thin() %+replace% theme(legend.position="none")#,plot.margin=unit(c(0.5,0.5,-1,0.5), "cm"))
+g1u <- g1 +  theme_classic_thin() %+replace% theme(legend.position="none",axis.title.x=element_blank())#,plot.margin=unit(c(0.5,0.5,-1,0.5), "cm"))
+g2u <- g2 + ylab("") +  theme_classic_thin() %+replace% theme(legend.position="none",axis.title.x=element_blank())#,plot.margin=unit(c(0.5,0.5,-1,0.5), "cm"))
 g3u <- g3 +  theme_classic_thin() %+replace% theme(legend.position="none")#,plot.margin=unit(c(-1,0.5,-2,0.5), "cm")) 
 g4u <- g4 + ylab("") + theme_classic_thin() %+replace% theme(legend.position="none")#, plot.margin=unit(c(-1,0.5,-2,0.5), "cm")) 
 
 plot_grid(g1u,g2u,g3u,g4u,nrow=2,labels="AUTO")
-		   
+ggsave("test.pdf",plot_grid(
+	plot_grid(g1u,g3u,nrow=2,labels=c("A","C"),rel_heights=c(1,0.5)),
+	plot_grid(g2u,g4u,nrow=2,labels=c("B","D"),rel_heights=c(1,0.5)),
+	gleg,nrow=2,rel_heights=c(1,0.2)),height=6)
+
+
 layout_matrix <- cbind(c(1,1,1,3,3,3,5),c(2,2,2,4,4,4,5))
 
 ggsave("Centroid_PDA_plot.pdf",grid.arrange(g1u,g2u,g3u,g4u,gleg,layout_matrix=layout_matrix),height=5.5)
