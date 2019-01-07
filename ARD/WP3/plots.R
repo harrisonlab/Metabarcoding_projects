@@ -333,18 +333,21 @@ centroids <- lapply(seq_along(d),function(i){
   aggregate(X[,2:(ncol(d[[i]])+1)],b=as.list(X[,(ncol(d[[i]])+2):(ncol(d[[i]])+4)]),mean)})
 
 # all f
-g1 <- plotOrd(centroids[[2]][,c(-1,-2,-3)],centroids[[2]][,1:3],design="condition",shape="time",pointSize=1.5,axes=c(1,2),alpha=0.75,ylims=c(-7,7)) + ggtitle("A")
-g2 <- plotOrd(centroids[[3]][,c(-1,-2,-3)],centroids[[3]][,1:3],design="condition",shape="time",pointSize=1.5,axes=c(1,2),alpha=0.75,ylims=c(-7,7),xlims=c(-10,10)) + ggtitle("B")
+g1 <- plotOrd(centroids[[2]][,c(-1,-2,-3)],centroids[[2]][,1:3],design="condition",shape="time",pointSize=1,alpha=0.75,ylims=c(-7,7))# + ggtitle("A")
+g2 <- plotOrd(centroids[[3]][,c(-1,-2,-3)],centroids[[3]][,1:3],design="condition",shape="time",pointSize=1,alpha=0.75,ylims=c(-7,7),xlims=c(-10,10))# + ggtitle("B")
 # RE-RUN FOR FUN OR BAC
-g3 <- plotOrd(centroids[[2]][,c(-1,-2,-3)],centroids[[2]][,1:3],design="condition",shape="time",pointSize=1.5,axes=c(1,2),alpha=0.75) + ggtitle("C")
-g4 <- plotOrd(centroids[[3]][,c(-1,-2,-3)],centroids[[3]][,1:3],design="condition",shape="time",pointSize=1.5,axes=c(1,2),alpha=0.75,ylims=c(-4,4)) + ggtitle("D")
+g3 <- plotOrd(centroids[[2]][,c(-1,-2,-3)],centroids[[2]][,1:3],design="condition",shape="time",pointSize=1,alpha=0.75)# + ggtitle("C")
+g4 <- plotOrd(centroids[[3]][,c(-1,-2,-3)],centroids[[3]][,1:3],design="condition",shape="time",pointSize=1,alpha=0.75,ylims=c(-4,4))# + ggtitle("D")
 
-gleg <- get_legend(g4+theme(legend.position="bottom", legend.box = "vertical",legend.justification="left",legend.box.just="left", plot.margin=unit(c(-2,0,-1,0), "cm")))  
-g1u <- g1 +  theme_classic_thin() %+replace% theme(legend.position="none",plot.margin=unit(c(0.5,0.5,-1,0.5), "cm"))
-g2u <- g2 +  theme_classic_thin() %+replace% theme(legend.position="none",plot.margin=unit(c(0.5,0.5,-1,0.5), "cm"))
-g3u <- g3 +  theme_classic_thin() %+replace% theme(legend.position="none",plot.margin=unit(c(-1,0.5,-2,0.5), "cm")) 
-g4u <- g4 +  theme_classic_thin() %+replace% theme(legend.position="none", plot.margin=unit(c(-1,0.5,-2,0.5), "cm")) 
 
+gleg <- get_legend(g4+theme(legend.position="bottom", legend.box = "vertical",legend.justification="left",legend.box.just="left"))#, plot.margin=unit(c(-2,0,-1,0), "cm")))  
+g1u <- g1 + xlab("") + theme_classic_thin() %+replace% theme(legend.position="none")#,plot.margin=unit(c(0.5,0.5,-1,0.5), "cm"))
+g2u <- g2 + xlab("") + ylab("") +  theme_classic_thin() %+replace% theme(legend.position="none")#,plot.margin=unit(c(0.5,0.5,-1,0.5), "cm"))
+g3u <- g3 +  theme_classic_thin() %+replace% theme(legend.position="none")#,plot.margin=unit(c(-1,0.5,-2,0.5), "cm")) 
+g4u <- g4 + ylab("") + theme_classic_thin() %+replace% theme(legend.position="none")#, plot.margin=unit(c(-1,0.5,-2,0.5), "cm")) 
+
+plot_grid(g1u,g2u,g3u,g4u,nrow=2,labels="AUTO")
+		   
 layout_matrix <- cbind(c(1,1,1,3,3,3,5),c(2,2,2,4,4,4,5))
 
 ggsave("Centroid_PDA_plot.pdf",grid.arrange(g1u,g2u,g3u,g4u,gleg,layout_matrix=layout_matrix),height=5.5)
