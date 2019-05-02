@@ -20,6 +20,7 @@ MINL=100
 MINOVER=5
 QUAL=0.5
 
+# note PIPELINE.sh is set to use a different R1/R2 naming convention to that used with these files
 $PROJECT_FOLDER/metabarcoding_pipeline/scripts/PIPELINE.sh -c 16Spre \
  "$PROJECT_FOLDER/data/$RUN/$SSU/fastq/*_1.fq" \
  $PROJECT_FOLDER/data/$RUN/$SSU \
