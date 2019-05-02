@@ -13,29 +13,30 @@ done
 
 #bacteria
 SSU=BAC
-FPL=17
-RPL=21
+FPL=0
+RPL=0
 
-MINL=300
+MINL=100
 MINOVER=5
 QUAL=0.5
 
 $PROJECT_FOLDER/metabarcoding_pipeline/scripts/PIPELINE.sh -c 16Spre \
- "$PROJECT_FOLDER/data/$RUN/$SSU/fastq/*R1*.fastq" \
+ "$PROJECT_FOLDER/data/$RUN/$SSU/fastq/*_1.fq" \
  $PROJECT_FOLDER/data/$RUN/$SSU \
  $PROJECT_FOLDER/metabarcoding_pipeline/primers/adapters.db \
  $MINL $MINOVER $QUAL $FPL $RPL 
 
 #Fungi
 SSU=FUN
-FPL=23 
-RPL=21
+FPL=0 
+RPL=0
 
-MINL=200
-QUAL=1
+MINL=100
+MINOVER=5
+QUAL=0.5
 
-$PROJECT_FOLDER/metabarcoding_pipeline/scripts/PIPELINE.sh -c ITSpre \
- "$PROJECT_FOLDER/data/$RUN/$SSU/fastq/*R1*.fastq" \
+$PROJECT_FOLDER/metabarcoding_pipeline/scripts/PIPELINE.sh -c 16Spre \
+ "$PROJECT_FOLDER/data/$RUN/$SSU/fastq/*_1.fq" \
  $PROJECT_FOLDER/data/$RUN/$SSU \
- $PROJECT_FOLDER/metabarcoding_pipeline/primers/primers.db \
- $MINL $QUAL $FPL $RPL
+ $PROJECT_FOLDER/metabarcoding_pipeline/primers/adapters.db \
+ $MINL $MINOVER $QUAL $FPL $RPL 
