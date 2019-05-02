@@ -41,3 +41,21 @@ $PROJECT_FOLDER/metabarcoding_pipeline/scripts/PIPELINE.sh -c 16Spre \
  $PROJECT_FOLDER/data/$RUN/$SSU \
  $PROJECT_FOLDER/metabarcoding_pipeline/primers/adapters.db \
  $MINL $MINOVER $QUAL $FPL $RPL 
+
+
+RUN=RHIZOSPHERE
+for s in BAC FUN; do
+  mkdir -p $PROJECT_FOLDER/data/$RUN/$s/filtered
+  mkdir $PROJECT_FOLDER/data/$RUN/$s/unfiltered
+  mv $PROJECT_FOLDER/data/$s/filtered/*R* $PROJECT_FOLDER/data/$RUN/$s/filtered/. 
+  mv $PROJECT_FOLDER/data/$s/unfiltered/*R* $PROJECT_FOLDER/data/$RUN/$s/unfiltered/. 
+done
+
+RUN=ENDOPHYTE
+for s in BAC FUN; do
+  mkdir -p $PROJECT_FOLDER/data/$RUN/$s/filtered
+  mkdir $PROJECT_FOLDER/data/$RUN/$s/unfiltered
+  mv $PROJECT_FOLDER/data/$s/filtered/*E* $PROJECT_FOLDER/data/$RUN/$s/filtered/. 
+  mv $PROJECT_FOLDER/data/$s/unfiltered/*E* $PROJECT_FOLDER/data/$RUN/$s/unfiltered/. 
+done
+
