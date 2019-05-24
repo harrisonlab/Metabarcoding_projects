@@ -104,7 +104,7 @@ list_dds <- lapply(list_dds,function(dds) {
 	dds
 })
   
-# remove control and t0  samples (if required)
+# remove control 
 list_dds <- lapply(list_dds,function(dds) {
 	dds <- dds[,dds$condition!="Control"]
 	dds$condition <- droplevels(dds$condition)
@@ -112,6 +112,8 @@ list_dds <- lapply(list_dds,function(dds) {
 	dds$time <- droplevels(dds$time)
 	dds
 })
+
+# and t0  samples (if required)
 list_dds <- lapply(list_dds,function(dds) {
 	dds <- dds[,dds$time!="0"]
 	dds$condition <- droplevels(dds$condition)
@@ -122,6 +124,49 @@ list_dds <- lapply(list_dds,function(dds) {
 #===============================================================================
 #       Alpha diversity analysis - RUN BEFORE FILTERING OUT ANY LOW COUNT OTUS
 #===============================================================================
+
+## BOX plots ##
+
+alpha_limit <- function(g1,limits=c(0,2500),p=2,l=17) {
+  g2 <- g1 + coord_cartesian(y=limits)
+  g1 <- ggplotGrob(g1)
+  g2 <- ggplotGrob(g2)
+  g1[["grobs"]][[p]] <- g2[["grobs"]][[p]]
+  g1[["grobs"]][[l]] <- g2[["grobs"]][[l]]
+  g1
+}
+
+legend <- cowplot::get_legend(plot_alpha(counts(list_dds$cider,normalize=T),colData(list_dds$cider),colour="condition",design="time",measures=c("Chao1", "Shannon", "Simpson","Observed"),returnData = F,cbPalette = T,type = "box",legend = "bottom")+
+  theme(legend.position ="bottom",legend.justification = "left",legend.title = element_blank(),legend.text=element_text(size=11)))
+
+FUN_cider_boxplot <- plot_alpha(counts(list_dds$cider,normalize=T),colData(list_dds$cider),colour="condition",design="time",measures=c("Chao1", "Shannon", "Simpson","Observed"),returnData = F,cbPalette = T,type = "box",legend="none")
+FUN_dessert_boxplot <- plot_alpha(counts(list_dds$dessert,normalize=T),colData(list_dds$dessert),colour="condition",design="time",measures=c("Chao1", "Shannon", "Simpson","Observed"),returnData = F,cbPalette = T,type = "box",legend="none")
+BAC_cider_boxplot <- plot_alpha(counts(list_dds$cider,normalize=T),colData(list_dds$cider),colour="condition",design="time",measures=c("Chao1", "Shannon", "Simpson","Observed"),returnData = F,cbPalette = T,type = "box",legend="none")
+BAC_dessert_boxplot <- plot_alpha(counts(list_dds$dessert,normalize=T),colData(list_dds$dessert),colour="condition",design="time",measures=c("Chao1", "Shannon", "Simpson","Observed"),returnData = F,cbPalette = T,type = "box",legend="none")
+
+#leg <- metafuncs::ggplot_legend(FUN_cider_boxplot)
+
+FUN_cider_boxplot <- FUN_cider_boxplot + xlab(" ") + theme_classic_thin() %+replace% 
+  theme(panel.border = element_rect(colour = "black", fill = NA, size = 0.5),legend.position = "none")
+
+FUN_dessert_boxplot <- FUN_dessert_boxplot +  ylab(" ") + xlab(" ") + theme_classic_thin() %+replace% 
+  theme(panel.border = element_rect(colour = "black", fill = NA, size = 0.5),legend.position = "none")
+
+BAC_cider_boxplot <- BAC_cider_boxplot + xlab("Time point") +  theme_classic_thin() %+replace% 
+  theme(panel.border = element_rect(colour = "black", fill = NA, size = 0.5),legend.position = "none")
+
+BAC_dessert_boxplot <- BAC_dessert_boxplot +  ylab(" ") + xlab("Time point") + theme_classic_thin() %+replace% 
+  theme(panel.border = element_rect(colour = "black", fill = NA, size = 0.5),legend.position = "none")
+
+prow <- plot_grid(alpha_limit(FUN_cider_boxplot,limits = c(500,2500)),
+          alpha_limit(FUN_dessert_boxplot,limits = c(500,4000)),
+          alpha_limit(BAC_cider_boxplot,limits = c(500,20000)),
+          alpha_limit(BAC_dessert_boxplot,limits = c(500,20000)),
+          labels = "AUTO"
+)
+ggsave("ALPHA_BOXPLOT.pdf",plot_grid( prow, legend, ncol = 1, rel_heights = c(1, .08)))
+
+
 
 # plot alpha diversity - plot_alpha will convert normalised abundances to integer values
 ggsave(paste(RHB,"Alpha_all.pdf",sep="_"),plot_alpha(counts(list_dds$all,normalize=T),colData(list_dds$all),colour="site",design="time",measures=c("Chao1", "Shannon", "Simpson","Observed"),limits=c(0,5000,"Chao1")))
