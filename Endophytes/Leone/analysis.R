@@ -85,6 +85,8 @@ invisible(mapply(assign, names(ubiom_BAC), ubiom_BAC, MoreArgs=list(envir = glob
 #       Create DEseq objects
 #===============================================================================
 
+colData$parent <- as.factor(colData$parent)
+
 # ensure colData rows and countData columns have the same order
 colData <- colData[names(countData),]
 
@@ -95,6 +97,114 @@ design<-~1
 dds<-DESeqDataSetFromMatrix(countData,colData,design)
 
 sizeFactors(dds) <-sizeFactors(estimateSizeFactors(dds))
+
+#===============================================================================
+#       Sample rarefaction plots
+#===============================================================================        
+
+library(grid)
+library(gridExtra)
+library(viridis)
+				    
+gfunc <- function(countData,coldata,title) {        
+  colData <- colData[names(countData),]
+
+  # remove low count and control samples
+  myfilter <- colData$Treatment!="Control"
+
+  # apply filter
+  colData <- droplevels(colData[myfilter,])
+  countData <- countData[,myfilter]
+
+  # descending order each sample 
+  DT <- data.table(apply(countData,2,sort,decreasing=T))
+
+  # get cummulative sum of each sample
+  DT <- cumsum(DT)    
+
+  # log the count values                            
+  DT <- log10(DT)
+
+  # relabel columns
+  colnames(DT) <- sub("(X)([0-9]+[HS])(.*)","\\2",colnames(DT))
+
+  # set values larger than maximum for each column to NA
+  DT <- data.table(apply(DT,2,function(x) {x[(which.max(x)+1):length(x)]<- NA;x}))
+  
+  # remove rows with all NA
+  DT <- DT[rowSums(is.na(DT)) != ncol(DT), ]
+  
+  # add a count column to the data table
+  DT$x <- seq(1,nrow(DT))
+                             
+  # melt the data table for easy plotting 
+  MDT <- melt(DT,id.vars="x")
+			      
+  # create an empty ggplot object from the data table
+  g <- ggplot(data=MDT,aes(x=x,y=value,colour=variable))
+
+  # remove plot background and etc.
+  g <- g + theme_classic_thin() %+replace% theme(legend.position="none",axis.title=element_blank())
+
+  # plot cumulative reads
+  g <- g + geom_line(size=1.5) + scale_colour_viridis(discrete=T)
+
+  # add axis lables
+  g <- g + ggtitle(title)
+  #g <- g + ylab(expression("Log"[10]*" aligned sequenecs"))+xlab("OTU count")
+
+  # print the plot
+  g
+}
+
+invisible(mapply(assign, names(ubiom_BAC), ubiom_BAC, MoreArgs=list(envir = globalenv())))
+g1 <- gfunc(as.data.frame(counts(dds)),as.data.frame(colData(dds)),"Bacteria")
+invisible(mapply(assign, names(ubiom_FUN), ubiom_FUN, MoreArgs=list(envir = globalenv())))
+g2 <- gfunc(as.data.frame(counts(dds)),as.data.frame(colData(dds)),"Fungi")
+invisible(mapply(assign, names(ubiom_OO), ubiom_OO, MoreArgs=list(envir = globalenv())))
+g3 <- gfunc(as.data.frame(counts(dds)),as.data.frame(colData(dds)),"Oomycetes")
+invisible(mapply(assign, names(ubiom_NEM), ubiom_NEM, MoreArgs=list(envir = globalenv())))
+g4 <- gfunc(as.data.frame(counts(dds)),as.data.frame(colData(dds)),"Nematodes")
+
+glegend <- get_legend(g)
+ggsave("rarefaction_all.pdf",grid.arrange(g1,g2,g3,g4,left=textGrob(label=expression("Log"[10] * " aligned sequenecs"),rot=90),bottom="OTU count",nrow=2))                              
+
+
+#===============================================================================
+#       Alpha diversity analysis
+#===============================================================================
+
+# Recreate dds object and don't filter for low counts before running Alpha diversity
+
+# plot alpha diversity - plot_alpha will convert normalised abundances to integer values
+ggsave(paste(RHB,"Alpha.pdf",sep="_"),plot_alpha(counts(dds,normalize=T),colData(dds),design="Treatment",colour=NULL,measures=c("Chao1", "Shannon", "Simpson","Observed")))
+ggsave(paste(RHB,"Alpha_Chao1.pdf",sep="_"),plot_alpha(counts(dds,normalize=T),colData(dds),design="Treatment",colour="Genotype",measures=c("Chao1"))) # ,limits=c(0,xxx,"Chao1")
+ggsave(paste(RHB,"Alpha_Shannon.pdf",sep="_"),plot_alpha(counts(dds,normalize=T),colData(dds),design="Treatment",colour="Genotype",measures=c("Shannon")))
+ggsave(paste(RHB,"Alpha_Simpson.pdf",sep="_"),plot_alpha(counts(dds,normalize=T),colData(dds),design="Treatment",colour="Genotype",measures=c("Simpson")))
+ggsave(paste(RHB,"Alpha_Observed.pdf",sep="_"),plot_alpha(counts(dds,normalize=T),colData(dds),design="Treatment",colour="Genotype",measures=c("Observed")))
+
+### permutation based anova on diversity index ranks ###
+# get the diversity index data
+all_alpha_ord <- plot_alpha(counts(dds,normalize=T),colData(dds),design="Treatment",returnData=T)
+
+# join diversity indices and metadata
+all_alpha_ord <- as.data.table(left_join(all_alpha_ord,colData,by=c("Samples"="Sample_FB"))) # or sample_on
+
+# perform anova for each index
+sink(paste(RHB,"ALPHA_stats.txt",sep="_"))
+ setkey(all_alpha_ord,S.chao1)
+ print("Chao1")
+ summary(aovp(as.numeric(as.factor(all_alpha_ord$S.chao1))~Block + Treatment + Genotype + Treatment * Genotype,all_alpha_ord))
+ setkey(all_alpha_ord,shannon)
+ print("Shannon")
+ summary(aovp(as.numeric(as.factor(all_alpha_ord$shannon))~Block + Treatment + Genotype + Treatment * Genotype,all_alpha_ord))
+ setkey(all_alpha_ord,simpson)
+ print("simpson")
+ summary(aovp(as.numeric(as.factor(all_alpha_ord$simpson))~Block + Treatment + Genotype + Treatment * Genotype,all_alpha_ord))
+sink()
+
+
+
 
 #===============================================================================
 #       Filter data
@@ -122,6 +232,18 @@ plotOrd(d,colData,design="parent",shape="sex",alpha=0.75,cbPalette=T)
 plotOrd(d,colData,design="parent",shape="sex",axes=c(2,3),alpha=0.75,cbPalette=T)
 
 
+
+
+
+
+
+
+
+
+
+
+
+
 #===============================================================================
 #       differential analysis
 #===============================================================================
@@ -130,35 +252,19 @@ plotOrd(d,colData,design="parent",shape="sex",axes=c(2,3),alpha=0.75,cbPalette=T
 alpha <- 0.1
 
 # the model
-design <- ~condition
-#or
-design <- ~block_pair + condition
+design <- ~sex*parent
 
+# add design to dds object
+design(dds) <- design
 
-# split dds object into per wood
-# first get rid of bigwood as it only has 2 samples - and remove it from the levels of site
-list_dds <-list(Attingham   = dds[,dds$site=="Attingham"],
-		            Gt_Monk     = dds[,dds$site=="Gt_Monk"],
-		            Langdale    = dds[,dds$site=="Langdale"],
-		            Winding     = dds[,dds$site=="Winding"],
-		            Chestnuts   = dds[,dds$site=="Chestnuts"],
-		            Bigwood   = dds[,dds$site=="Bigwood"]
-)		
-# Filter low count OTUs
-list_dds <- lapply(list_dds,function(dds)  dds[rowSums(counts(dds, normalize=T))>0,])
+# run model
+dds <- DESeq(dds,parallel=F)
 
-# add full model to dds object
-list_dds <- lapply(list_dds,function(dds) {
-	design(dds) <- design;
-	dds <- dds[,dds$condition!="Sandra"];
-	colData(dds) <- droplevels(colData(dds));
-	dds}
-)
-
-# calculate fit
-list_dds2 <- lapply(list_dds,DESeq,parallel=T)
-list_dds >- list_dds2[1;4]
+# difference between sexes
+res <- results(dds,alpha=alpha,parallel=F,contrast=c("sex","M","F"))
 		   
+# difference between 
+
 # results COD vs Healthy
 res <- lapply(list_dds,results,alpha=alpha,parallel=T,contrast=c("condition","COD","Healthy"))
 res.merge <- lapply(res,function(res)data.table(inner_join(data.table(OTU=rownames(res),as.data.frame(res)),data.table(OTU=rownames(taxData),taxData))))
