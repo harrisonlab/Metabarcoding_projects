@@ -2,7 +2,7 @@
 PROJECT_FOLDER=~/projects/Endophytes
 
 # sequencer run folder 
-RUN=leone_230919
+RUN=leone_combined
 
 # make the project folder
 mkdir -p $PROJECT_FOLDER
