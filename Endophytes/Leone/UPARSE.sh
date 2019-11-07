@@ -2,7 +2,7 @@
 PROJECT_FOLDER=~/projects/Endophytes
 
 # sequencer run folder 
-RUN=leone_230919
+RUN=leone_combined
 
 # FUN
 $PROJECT_FOLDER/metabarcoding_pipeline/scripts/PIPELINE.sh -c UPARSE $PROJECT_FOLDER $RUN FUN 0 0
