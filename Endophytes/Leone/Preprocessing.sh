@@ -49,12 +49,12 @@ $PROJECT_FOLDER/metabarcoding_pipeline/scripts/slurm/PIPELINE.sh -c 16Spre \
  $PROJECT_FOLDER/metabarcoding_pipeline/primers/adapters.db \
  300 5 0.5 17 21
 
-# Pre-process FUN files (min length 150, max diffs 5, quality 0.5) 
+# Pre-process FUN files (min length 150, quality 1, truncate final 50 bases) 
 $PROJECT_FOLDER/metabarcoding_pipeline/scripts/slurm/PIPELINE.sh -c ITSpre \
  "$PROJECT_FOLDER/data/$RUN/FUN/fastq/*R1*.fastq" \
  $PROJECT_FOLDER/data/$RUN/FUN \
  $PROJECT_FOLDER/metabarcoding_pipeline/primers/primers.db \
- 200 1 23 21
+ 150 1 22 21 50
  
 # move fasta files 
 for F in $PROJECT_FOLDER/data/$RUN/FUN/fasta/*_R1.fa; do 
