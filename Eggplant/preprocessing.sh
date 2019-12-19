@@ -40,7 +40,7 @@ $PROJECT_FOLDER/metabarcoding_pipeline/scripts/PIPELINE.sh -c 16Spre \
  "$PROJECT_FOLDER/data/$RUN/BAC/fastq/*R1*.fastq" \
  $PROJECT_FOLDER/data/$RUN/BAC \
  $PROJECT_FOLDER/metabarcoding_pipeline/primers/adapters.db \
- 300 5 0.5 17 21
+ 300 5 0.5 17 21 400
 
 # Pre-process FUN files (min length 150, quality 1, truncate final 5 bases) 
 $PROJECT_FOLDER/metabarcoding_pipeline/scripts/PIPELINE.sh -c ITSpre \
