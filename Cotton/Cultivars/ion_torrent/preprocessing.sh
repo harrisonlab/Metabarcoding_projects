@@ -27,6 +27,8 @@ cat $PROJECT_FOLDER/$RUN/FUN/fastq/* > fun.cat.fq
 
 ## ion torrent S5 looks like it uses extra phred 33 charcters (L and M - maybe more?) below to check
 awk 'NR % 4 ==0' LM28.D10.fastq|tr -d '\n'|grep -o . |sort -u|paste -s -d '\0'
+cat xaa|tr LM K > xaa1
+
 
 #### BELOW TO BE UPDATED ####
 
