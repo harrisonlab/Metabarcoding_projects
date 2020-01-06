@@ -2,7 +2,7 @@ PROJECT_FOLDER=~/projects/Cotton/
 mkdir -p $PROJECT_FOLDER
 ln -s $MBPL $PROJECT_FOLDER/metabarcoding_pipeline 
 
-RUN=.
+RUN=cultivar_ion
 
 for s in BAC FUN; do
   mkdir -p $PROJECT_FOLDER/data/$RUN/$s/fastq
