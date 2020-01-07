@@ -22,60 +22,31 @@ for FILE in $PROJECT_FOLDER/data/$RUN/FUN/fastq/*; do
 done
 
 # Length trimming
-cat $PROJECT_FOLDER/$RUN/BAC/fastq/* > bac.cat.fq
-cat $PROJECT_FOLDER/$RUN/FUN/fastq/* > fun.cat.fq
+#cat $PROJECT_FOLDER/$RUN/BAC/fastq/* > bac.cat.fq
+#cat $PROJECT_FOLDER/$RUN/FUN/fastq/* > fun.cat.fq
 
 ## ion torrent S5 looks like it uses extra phred 33 charcters (L and M - maybe more?) below to check
-awk 'NR % 4 ==0' LM28.D10.fastq|tr -d '\n'|grep -o . |sort -u|paste -s -d '\0'
-cat xaa|tr LM K > xaa1
+# awk 'NR % 4 ==0' LM28.D10.fastq|tr -d '\n'|grep -o . |sort -u|paste -s -d '\0'
+# cat xaa|tr LM K > xaa1
 
-
-#### BELOW TO BE UPDATED ####
 
 #bacteria
 SSU=BAC
-FPL=0
-RPL=0
+QUAL=0.005
+MAX_LEN=400
 
-MINL=100
-MINOVER=5
-QUAL=0.5
-
-# note PIPELINE.sh is set to use a different R1/R2 naming convention to that used with these files
-$PROJECT_FOLDER/metabarcoding_pipeline/scripts/PIPELINE.sh -c 16Spre \
- "$PROJECT_FOLDER/data/$RUN/$SSU/fastq/*_1.fq" \
+$PROJECT_FOLDER/metabarcoding_pipeline/scripts/PIPELINE.sh -c ion \
+ "$PROJECT_FOLDER/data/$RUN/$SSU/fastq/*.fastq" \
  $PROJECT_FOLDER/data/$RUN/$SSU \
- $PROJECT_FOLDER/metabarcoding_pipeline/primers/adapters.db \
- $MINL $MINOVER $QUAL $FPL $RPL 
+$QUAL $MAX_LEN
 
 #Fungi
 SSU=FUN
-FPL=0 
-RPL=0
+QUAL=0.01
+MAX_LEN=150
 
-MINL=100
-MINOVER=5
-QUAL=0.5
-
-$PROJECT_FOLDER/metabarcoding_pipeline/scripts/PIPELINE.sh -c 16Spre \
- "$PROJECT_FOLDER/data/$RUN/$SSU/fastq/*_1.fq" \
+$PROJECT_FOLDER/metabarcoding_pipeline/scripts/PIPELINE.sh -c ion \
+ "$PROJECT_FOLDER/data/$RUN/$SSU/fastq/*.fastq" \
  $PROJECT_FOLDER/data/$RUN/$SSU \
- $PROJECT_FOLDER/metabarcoding_pipeline/primers/adapters.db \
- $MINL $MINOVER $QUAL $FPL $RPL 
+$QUAL $MAX_LEN
 
-
-RUN=RHIZOSPHERE
-for s in BAC FUN; do
-  mkdir -p $PROJECT_FOLDER/data/$RUN/$s/filtered
-  mkdir $PROJECT_FOLDER/data/$RUN/$s/unfiltered
-  mv $PROJECT_FOLDER/data/$s/filtered/*R* $PROJECT_FOLDER/data/$RUN/$s/filtered/. 
-  mv $PROJECT_FOLDER/data/$s/unfiltered/*R* $PROJECT_FOLDER/data/$RUN/$s/unfiltered/. 
-done
-
-RUN=ENDOPHYTE
-for s in BAC FUN; do
-  mkdir -p $PROJECT_FOLDER/data/$RUN/$s/filtered
-  mkdir $PROJECT_FOLDER/data/$RUN/$s/unfiltered
-  mv $PROJECT_FOLDER/data/$s/filtered/*E* $PROJECT_FOLDER/data/$RUN/$s/filtered/. 
-  mv $PROJECT_FOLDER/data/$s/unfiltered/*E* $PROJECT_FOLDER/data/$RUN/$s/unfiltered/. 
-done
