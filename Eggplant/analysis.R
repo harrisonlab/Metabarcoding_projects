@@ -14,6 +14,11 @@ library(ape)
 library(metafuncs)
 library(BiocParallel)
 
+
+library(grid)
+library(gridExtra)
+library(viridis)
+library(cowplot)
 #environment(plot_ordination) <- environment(ordinate) <- environment(plot_richness) <- environment(phyloseq::ordinate)
 #assignInNamespace("plot_ordination",value=plot_ordination,ns="phyloseq")
 
@@ -245,7 +250,6 @@ rownames(ubiome_FUN$colData) <- names(ubiome_FUN$countData)
 ubiome_FUN$dds <- ubiom_to_des(ubiome_FUN,filter=expression(colSums(countData)>=500))
 ubiome_BAC$dds <- ubiom_to_des(ubiome_BAC,filter=expression(colSums(countData)>=1000))
 
-
 #===============================================================================
 #      ****FUNGI/BACTERIA****
 #===============================================================================
@@ -254,13 +258,14 @@ invisible(mapply(assign, names(ubiome_FUN), ubiome_FUN, MoreArgs=list(envir = gl
 # Bacteria
 invisible(mapply(assign, names(ubiome_BAC), ubiome_BAC, MoreArgs=list(envir = globalenv())))
 
+# add a new column (not strictly necessary)
+dds$field_pair <- as.factor(paste(dds$Field,dds$Pair,sep="_"))
+colData$field_pair <- as.factor(paste(colData$Field,colData$Pair,sep="_"))
+
 #===============================================================================
 #       Sample rarefaction plots
 #===============================================================================        
 
-library(grid)
-library(gridExtra)
-library(viridis)
 
 gfunc <- function(countData,coldata,title) {        
   colData <- colData[names(countData),]
@@ -319,8 +324,11 @@ ggsave("rarefaction_all.pdf",grid.arrange(g1,g2,left=textGrob(label=expression("
 # Recreate dds object and don't filter for low counts before running Alpha diversity
 
 # plot alpha diversity - plot_alpha will convert normalised abundances to integer values
-plot_alpha(counts(dds,normalize=T),colData(dds),design="Status",colour=NULL,measures=c("Chao1", "Shannon", "Simpson","Observed"),type="box")		   
+A <- plot_alpha(counts(dds,normalize=T)[,colData(dds)$Institution=="MARI"],colData(dds),design="Type:Status",colour=NULL,measures=c("Chao1", "Shannon", "Simpson","Observed"),type="box")
+B <- plot_alpha(counts(dds,normalize=T)[,colData(dds)$Institution!="MARI"],colData(dds),design="Type:Status",colour=NULL,measures=c("Chao1", "Shannon", "Simpson","Observed"),type="box")
 
+plot_grid(A,B,nrow=2,labels = c("M","W"))
+  
 ggsave(paste(RHB,"Alpha.pdf",sep="_"),plot_alpha(counts(dds,normalize=T),colData(dds),design="Treatment",colour=NULL,measures=c("Chao1", "Shannon", "Simpson","Observed")))
 ggsave(paste(RHB,"Alpha_Chao1.pdf",sep="_"),plot_alpha(counts(dds,normalize=T),colData(dds),design="Treatment",colour="Genotype",measures=c("Chao1"))) # ,limits=c(0,xxx,"Chao1")
 ggsave(paste(RHB,"Alpha_Shannon.pdf",sep="_"),plot_alpha(counts(dds,normalize=T),colData(dds),design="Treatment",colour="Genotype",measures=c("Shannon")))
@@ -332,22 +340,20 @@ ggsave(paste(RHB,"Alpha_Observed.pdf",sep="_"),plot_alpha(counts(dds,normalize=T
 all_alpha_ord <- plot_alpha(counts(dds,normalize=T),colData(dds),design="Treatment",returnData=T)
 
 # join diversity indices and metadata
-all_alpha_ord <- as.data.table(left_join(all_alpha_ord,colData,by=c("Samples"="Sample_FB"))) # or sample_on
+all_alpha_ord <- as.data.table(left_join(all_alpha_ord,colData%>%mutate(Samples=rownames(colData)),by="Samples")) # or sample_on
 
 # perform anova for each index
 sink(paste(RHB,"ALPHA_stats.txt",sep="_"))
 setkey(all_alpha_ord,S.chao1)
 print("Chao1")
-summary(aovp(as.numeric(as.factor(all_alpha_ord$S.chao1))~Block + Treatment + Genotype + Treatment * Genotype,all_alpha_ord))
+summary(aovp(as.numeric(as.factor(all_alpha_ord$S.chao1))~Institution+Field+ field_pair+Type*Status,all_alpha_ord))
 setkey(all_alpha_ord,shannon)
 print("Shannon")
-summary(aovp(as.numeric(as.factor(all_alpha_ord$shannon))~Block + Treatment + Genotype + Treatment * Genotype,all_alpha_ord))
+summary(aovp(as.numeric(as.factor(all_alpha_ord$shannon))~Institution+Field+ field_pair+Type*Status,all_alpha_ord))
 setkey(all_alpha_ord,simpson)
 print("simpson")
-summary(aovp(as.numeric(as.factor(all_alpha_ord$simpson))~Block + Treatment + Genotype + Treatment * Genotype,all_alpha_ord))
+summary(aovp(as.numeric(as.factor(all_alpha_ord$simpson))~Institution+Field+ field_pair+Type*Status,all_alpha_ord))
 sink()
-
-
 
 
 #===============================================================================
@@ -360,7 +366,7 @@ sink()
 # Filter chloroplast/mitochondria (bacteria only)
 #dds <- dds[c(-1,-12),]
 
-dds <- dds[rowSums(counts(dds, normalize=T))>4,]
+dds <- dds[rowSums(counts(dds, normalize=T))>100,]
 
 #===============================================================================
 #       Beta diversity PCA/NMDS
@@ -374,8 +380,18 @@ mypca <- des_to_pca(dds)
 # to get pca plot axis into the same scale create a dataframe of PC scores multiplied by their variance
 d <-t(data.frame(t(mypca$x)*mypca$percentVar))
 
-# add a new column (not strictly necessary)
-dds$field_pair <- as.factor(paste(dds$Field,dds$Pair,sep="_"))
+
+# anova
+sink(paste(RHB,"PCA_ANOVA.txt",sep="_"))
+ lapply(1:4,function(i){
+   summary(aov(mypca$x[,i]~Institution+Field+ field_pair+Type*Status,data=colData(dds)))
+ })
+sink()
+
+#summary(aov(mypca$x[,1]~Institution + Field + field_pair + Type*Status,data=colData(dds)))
+#summary(aov(mypca$x[,1]~Error(Institution/Field/field_pair) + Type*Status,data=colData(dds)))
+#summary(aov(mypca$x[,1]~Field+ field_pair+Type*Status,data=colData(dds)))
+
 
 # plot the PCA
 plotOrd(d,colData(dds),shape="Institution",design=c("Type","Status"),alpha=0.75,cbPalette=T,axes=c(1,2))
@@ -383,9 +399,7 @@ plotOrd(d,colData(dds),shape="Institution",design=c("Type","Status"),alpha=0.75,
 
 #colData(dds)$Pair <- as.factor(colData(dds)$Pair)
 
-lapply(1:4,function(i){
-  summary(aov(mypca$x[,i]~Institution+Field+ field_pair+Type*Status,data=colData(dds)))
-})
+
 
 # fm1 <- lm(mypca$x[,1]~Institution+Field+ field_pair+Type*Status,data=colData(dds))
 # (res <- emmeans(fm1,~Type*Status))
@@ -426,15 +440,17 @@ sink(paste(RHB,"PCA_sum_squares.txt",sep="_"))
   colSums(perVar)
   colSums(perVar)/sum(colSums(perVar))*100
 sink()
+
 ### ADONIS ###
 vg <- vegdist(t(counts(dds,normalize=T)),method="bray")
 sink(paste(RHB,"ADONIS.txt",sep="_"))
  set.seed(sum(utf8ToInt("Xiangming Xu")))
- fm1 <- adonis(vg~Institution+Field+ field_pair+Type*Status,colData(dds),permutations = 1000)
+ (fm1 <- adonis(vg~Institution+Field+ field_pair+Type*Status,colData(dds),permutations = 1000))
 sink()
 
 # nmds ordination
 myphylo <- ubiom_to_phylo(list(counts(dds,normalize=T),as.data.frame(colData(dds)),taxData))
+set.seed(sum(utf8ToInt("Xiangming Xu")))
 ord_rda <- phyloseq::ordinate(myphylo,method="NMDS",distance="bray",formula= ~Field+field_pair + Type*Status)		
 
 otus <- scores(ord_rda,"species")
@@ -454,7 +470,6 @@ g + geom_segment(inherit.aes = F,data=cls,aes(xend=NMDS1,yend=NMDS2,x=0,y=0),siz
   geom_text(inherit.aes = F,data=cls,aes(x=NMDS1,y=(NMDS2+sign(NMDS2)*0.05),label=cls))  
 
 
-
 #===============================================================================
 #       differential analysis
 #===============================================================================
@@ -462,21 +477,116 @@ dds$FTP <- as.factor(paste0(dds$Field,dds$Type,dds$Pair))
 # p value for FDR cutoff
 alpha <- 0.1
 
-# the model
-design <- ~Pair+Institution + Type*Status
+# # the model
+# design <- ~Institution + Field:Pair + Type *  Status 
+# 
+# # add design to dds object
+# design(dds) <- design
+# 
+# # run model
+# dds <- DESeq(dds,parallel=F)
+# 
+# 
+# # difference in status within each tissue and across sites
+# res_root <- results(dds,alpha=alpha,parallel=F,contrast = c("Status","Diseased","Healthy"))
+# res_soil <- results(dds,alpha=alpha,parallel=F,contrast=list(c("Status_Healthy_vs_Diseased","Typesoil.StatusHealthy")))
+# res_stem <- results(dds,alpha=alpha,parallel=F,contrast=list(c("Status_Healthy_vs_Diseased","Typestem.StatusHealthy")))
+# 
+# # difference in status within each tissue and within each site (need 3-way interaction??)
+# 
+# # difference between sites and across tissues
+# res3 <- results(dds,alpha=alpha,parallel=F,contrast = c("Institution","WorldVeg","MARI"))
+# 
+# 
+# #  model number 2
+# design <- ~Institution + Field:Pair + Institution:Type + Type *  Status 
+# 
+# # add design to dds object
+# design(dds) <- design
+# 
+# # run model
+# dds <- DESeq(dds,parallel=F)
+# 
+# # difference in status within each tissue and within each sites
+# res_M_root <- results(dds,alpha=alpha,parallel=F,contrast = c("Status","Diseased","Healthy"))
+# res_M_soil <- results(dds,alpha=alpha,parallel=F,contrast=list(c("Status_Healthy_vs_Diseased","Typesoil.StatusHealthy")))
+# res_M_stem <- results(dds,alpha=alpha,parallel=F,contrast=list(c("Status_Healthy_vs_Diseased","Typestem.StatusHealthy")))
+# 
+# res_W_root <- results(dds,alpha=alpha,parallel=F,contrast = list(c("Status_Healthy_vs_Diseased","Institution_WorldVeg_vs_MARI")))
+# res_W_soil <- results(dds,alpha=alpha,parallel=F,contrast=list(c("Status_Healthy_vs_Diseased","Typesoil.StatusHealthy","InstitutionWorldVeg.Typesoil")))
+# res_W_stem <- results(dds,alpha=alpha,parallel=F,contrast=list(c("Status_Healthy_vs_Diseased","Typestem.StatusHealthy","InstitutionWorldVeg.Typestem")))
+# 
+# # difference in status within each tissue and across sites
+# res_test3 <- results(dds,alpha=alpha,parallel=F,contrast =list( c("Status_Healthy_vs_Diseased","Institution_WorldVeg_vs_MARI")))
+# res_soil <- results(dds,alpha=alpha,parallel=F,contrast=list(c("Status_Healthy_vs_Diseased","Typesoil.StatusHealthy")))
+# res_stem <- results(dds,alpha=alpha,parallel=F,contrast=list(c("Status_Healthy_vs_Diseased","Typestem.StatusHealthy")))
+# 
 
-# add design to dds object
+# model 3 (this should work)
+dds$group <- factor(paste0(dds$Type,dds$Status))
+design <- ~ Field:Pair + Institution*group
 design(dds) <- design
-
-# run model
 dds <- DESeq(dds,parallel=F)
 
-# difference between sexes
-res <- results(dds,alpha=alpha,parallel=F,contrast = c("Status","Diseased","Healthy"))
-res2 <- results(dds,alpha=alpha,parallel=F,contrast = c("Type","stem","soil"))
-res3 <- results(dds,alpha=alpha,parallel=F,contrast = c("Institution","WorldVeg","MARI"))
+res_M_root <- results(dds,alpha=alpha,parallel=F,name="group_rootHealthy_vs_rootDiseased")
+res_W_root <- results(dds,alpha=alpha,parallel=F,contrast=list(c("group_rootHealthy_vs_rootDiseased","InstitutionWorldVeg.grouprootHealthy")))
+
+res_M_soil <- results(dds,alpha=alpha,parallel=F,contrast=c("group","soilHealthy","soilDiseased"))
+res_W_soil <- results(dds,alpha=alpha,parallel=F,contrast=list(c("group_soilHealthy_vs_rootDiseased","InstitutionWorldVeg.groupsoilHealthy"),c("group_soilDiseased_vs_rootDiseased","InstitutionWorldVeg.groupsoilDiseased")))
+
+res_M_stem <- results(dds,alpha=alpha,parallel=F,contrast=c("group","stemHealthy","stemDiseased"))
+res_W_stem <- results(dds,alpha=alpha,parallel=F,contrast=list(c("group_stemHealthy_vs_rootDiseased","InstitutionWorldVeg.groupstemHealthy"),c("group_stemDiseased_vs_rootDiseased","InstitutionWorldVeg.groupstemDiseased")))
+
+
+res_root <- results(dds,alpha=alpha,parallel=F,name="InstitutionWorldVeg.grouprootHealthy")
+res_soil <- results(dds,alpha=alpha,parallel=F,contrast=list("InstitutionWorldVeg.groupsoilHealthy","InstitutionWorldVeg.groupsoilDiseased"))
+res_stem <- results(dds,alpha=alpha,parallel=F,contrast=list("InstitutionWorldVeg.groupstemHealthy","InstitutionWorldVeg.groupstemDiseased"))
+
+res.merge <- data.table(inner_join(data.table(OTU=rownames(res_root),as.data.frame(res_root)),data.table(OTU=rownames(taxData),taxData)))
+res.merge[,subMean:=apply(counts(dds,normalize=T)[,colData(dds)$Type=="root"],1,mean)]
+fwrite(res.merge,"Fungi_res_root.txt",sep="\t",na="",quote=F)
+fwrite(res.merge[subMean>50&padj<=0.1,],"Fungi_res_root_I.txt",sep="\t",na="",quote=F)
+
+res.merge <- data.table(inner_join(data.table(OTU=rownames(res_M_root),as.data.frame(res_M_root)),data.table(OTU=rownames(taxData),taxData)))
+res.merge[,subMean:=apply(counts(dds,normalize=T)[,colData(dds)$Type=="root"&colData(dds)$Institution!="WorldVeg"],1,mean)]
+fwrite(res.merge,"Fungi_res_M_root.txt",sep="\t",na="",quote=F)
+fwrite(res.merge[subMean>50&padj<=0.1,],"Fungi_res_M_root_I.txt",sep="\t",na="",quote=F)
+
+res.merge <- data.table(inner_join(data.table(OTU=rownames(res_W_root),as.data.frame(res_W_root)),data.table(OTU=rownames(taxData),taxData)))
+res.merge[,subMean:=apply(counts(dds,normalize=T)[,colData(dds)$Type=="root"&colData(dds)$Institution=="WorldVeg"],1,mean)]
+fwrite(res.merge,"Fungi_res_W_root.txt",sep="\t",na="",quote=F)
+fwrite(res.merge[subMean>50&padj<=0.1,],"Fungi_res_W_root_I.txt",sep="\t",na="",quote=F)
+
+res.merge <- data.table(inner_join(data.table(OTU=rownames(res_soil),as.data.frame(res_soil)),data.table(OTU=rownames(taxData),taxData)))
+res.merge[,subMean:=apply(counts(dds,normalize=T)[,colData(dds)$Type=="soil"],1,mean)]
+fwrite(res.merge,"Fungi_res_soil.txt",sep="\t",na="",quote=F)
+fwrite(res.merge[subMean>50&padj<=0.1,],"Fungi_res_soil_I.txt",sep="\t",na="",quote=F)
+
+res.merge <- data.table(inner_join(data.table(OTU=rownames(res_M_soil),as.data.frame(res_M_soil)),data.table(OTU=rownames(taxData),taxData)))
+res.merge[,subMean:=apply(counts(dds,normalize=T)[,colData(dds)$Type=="soil"&colData(dds)$Institution!="WorldVeg"],1,mean)]
+fwrite(res.merge,"Fungi_res_M_soil.txt",sep="\t",na="",quote=F)
+fwrite(res.merge[subMean>50&padj<=0.1,],"Fungi_res_M_soil_I.txt",sep="\t",na="",quote=F)
+
+res.merge <- data.table(inner_join(data.table(OTU=rownames(res_W_soil),as.data.frame(res_W_soil)),data.table(OTU=rownames(taxData),taxData)))
+res.merge[,subMean:=apply(counts(dds,normalize=T)[,colData(dds)$Type=="soil"&colData(dds)$Institution=="WorldVeg"],1,mean)]
+fwrite(res.merge,"Fungi_res_W_soil.txt",sep="\t",na="",quote=F)
+fwrite(res.merge[subMean>50&padj<=0.1,],"Fungi_res_W_soil_I.txt",sep="\t",na="",quote=F)
+
+res.merge <- data.table(inner_join(data.table(OTU=rownames(res_stem),as.data.frame(res_stem)),data.table(OTU=rownames(taxData),taxData)))
+res.merge[,subMean:=apply(counts(dds,normalize=T)[,colData(dds)$Type=="stem"],1,mean)]
+fwrite(res.merge,"Fungi_res_stem.txt",sep="\t",na="",quote=F)
+fwrite(res.merge[subMean>50&padj<=0.1,],"Fungi_res_stem_I.txt",sep="\t",na="",quote=F)
+
+res.merge <- data.table(inner_join(data.table(OTU=rownames(res_M_stem),as.data.frame(res_M_stem)),data.table(OTU=rownames(taxData),taxData)))
+res.merge[,subMean:=apply(counts(dds,normalize=T)[,colData(dds)$Type=="stem"&colData(dds)$Institution!="WorldVeg"],1,mean)]
+fwrite(res.merge,"Fungi_res_M_stem.txt",sep="\t",na="",quote=F)
+fwrite(res.merge[subMean>50&padj<=0.1,],"Fungi_res_M_stem_I.txt",sep="\t",na="",quote=F)
+
+res.merge <- data.table(inner_join(data.table(OTU=rownames(res_W_stem),as.data.frame(res_W_stem)),data.table(OTU=rownames(taxData),taxData)))
+res.merge[,subMean:=apply(counts(dds,normalize=T)[,colData(dds)$Type=="stem"&colData(dds)$Institution=="WorldVeg"],1,mean)]
+fwrite(res.merge,"Fungi_res_W_stem.txt",sep="\t",na="",quote=F)
+fwrite(res.merge[subMean>50&padj<=0.1,],"Fungi_res_W_stem_I.txt",sep="\t",na="",quote=F)
 
 
 
-res.merge <- data.table(inner_join(data.table(OTU=rownames(res),as.data.frame(res)),data.table(OTU=rownames(taxData),taxData)))
-fwrite(res.merge,"Fungi_res.txt",sep="\t",na="",quote=F)
+
