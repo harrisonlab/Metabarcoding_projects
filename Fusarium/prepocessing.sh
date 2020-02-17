@@ -9,7 +9,7 @@ mkdir $PROJECT_FOLDER/data/$RUN/quality
 mkdir $PROJECT_FOLDER/data/$RUN/ambiguous
 mkdir $PROJECT_FOLDER/data/$RUN/cluster
 
-for s in BAC FUN; do
+for s in BAC FUN OG1 OG4; do
   mkdir -p $PROJECT_FOLDER/data/$RUN/$s/fastq
   mkdir $PROJECT_FOLDER/data/$RUN/$s/filtered
   mkdir $PROJECT_FOLDER/data/$RUN/$s/unfiltered
@@ -18,7 +18,7 @@ done
 
 # quality check
 for FILE in $PROJECT_FOLDER/data/$RUN/fastq/*; do 
-  $PROJECT_FOLDER/metabarcoding_pipeline/scripts/slurm/PIPELINE.sh -c qcheck $FILE $PROJECT_FOLDER/data/$RUN/quality
+  $PROJECT_FOLDER/metabarcoding_pipeline/scripts/PIPELINE.sh -c qcheck $FILE $PROJECT_FOLDER/data/$RUN/quality
 done
 
 # Demultiplex bacterial and fungal amplicons
