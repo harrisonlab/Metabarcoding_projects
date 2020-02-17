@@ -80,18 +80,10 @@ $PROJECT_FOLDER/metabarcoding_pipeline/scripts/PIPELINE.sh -c 16Spre \
  $PROJECT_FOLDER/metabarcoding_pipeline/primers/adapters.db \
  250 12 0.5 23 22 277
 
-# pre-process TEF files (min length 250, max diffs 12 (30), quality 0.5,min merged length 356)
+# pre-process TEF files (min length 250, max diffs 12 (30), quality 0.5,min merged length 320)
 $PROJECT_FOLDER/metabarcoding_pipeline/scripts/PIPELINE.sh -c 16Spre \
- "$PROJECT_FOLDER/data/$RUN/OG4/fastq/*R1*.fastq" \
- $PROJECT_FOLDER/data/$RUN/OG4 \
+ "$PROJECT_FOLDER/data/$RUN/TEF/fastq/*R1*.fastq" \
+ $PROJECT_FOLDER/data/$RUN/TEF \
  $PROJECT_FOLDER/metabarcoding_pipeline/primers/adapters.db \
- 250 12 0.5 23 22 320
+ 250 12 0.5 22 21 320
  
-
-# move fasta files 
-for F in $PROJECT_FOLDER/data/$RUN/FUN/fasta/*_R1.fa; do 
- FO=$(awk -F"/" '{print $NF}' <<< $F|awk -F"_" '{print $1".r1.fa"}'); 
- L=$(awk -F"/" '{print $NF}' <<< $F|awk -F"_" '{print $1}') ;
- echo $L
- awk -v L=$L '/>/{sub(".*",">"L"."(++i))}1' $F > $FO.tmp && mv $FO.tmp $PROJECT_FOLDER/data/$RUN/FUN/filtered/$FO;
-done   
