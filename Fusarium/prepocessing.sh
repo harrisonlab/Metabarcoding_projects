@@ -9,7 +9,7 @@ mkdir $PROJECT_FOLDER/data/$RUN/quality
 mkdir $PROJECT_FOLDER/data/$RUN/ambiguous
 mkdir $PROJECT_FOLDER/data/$RUN/cluster
 
-for s in TEF OG1 OG4 SIX; do
+for s in TEF OG1 OG4 SIX5; do
   mkdir -p $PROJECT_FOLDER/data/$RUN/$s/fastq
   mkdir $PROJECT_FOLDER/data/$RUN/$s/filtered
   mkdir $PROJECT_FOLDER/data/$RUN/$s/unfiltered
@@ -36,8 +36,8 @@ P2F=GGTCACTTGATCTACCAGTGCG
 P2R=CCCARGCGTACTTGAAGRAAC
 # SIX
 #P3=SIX
-P3F=AATCATCCTCACGATTATGTGTG
-P3R=CTGATGGCAAAGGTCATAGAATGTT
+P3F=CAATCATCCTCACGATTATGTGTG
+P3R=GCTGATGGCAAAGGTCATAGAATGTT
 # T4 orthogroup 13890
 #P5=OG13890
 P5F=GCTGTCTTATCACTTATCAGCCTTG
@@ -86,4 +86,11 @@ $PROJECT_FOLDER/metabarcoding_pipeline/scripts/PIPELINE.sh -c 16Spre \
  $PROJECT_FOLDER/data/$RUN/TEF \
  $PROJECT_FOLDER/metabarcoding_pipeline/primers/adapters.db \
  250 12 0.5 22 21 320
+ 
+ # pre-process SIX5 files (min length 250, max diffs 12 (30), quality 0.5,min merged length 259)
+$PROJECT_FOLDER/metabarcoding_pipeline/scripts/PIPELINE.sh -c 16Spre \
+ "$PROJECT_FOLDER/data/$RUN/SIX5/fastq/*R1*.fastq" \
+ $PROJECT_FOLDER/data/$RUN/SIX5 \
+ $PROJECT_FOLDER/metabarcoding_pipeline/primers/adapters.db \
+ 250 12 0.5 24 26 259
  
