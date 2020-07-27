@@ -3,7 +3,7 @@ PROJECT_FOLDER=~/projects/Eggplant
 mkdir -p $PROJECT_FOLDER
 ln -s $MBPL $PROJECT_FOLDER/metabarcoding_pipeline 
 
-RUN=.
+RUN=. #20200726
 mkdir -p $PROJECT_FOLDER/data/$RUN/fastq
 mkdir $PROJECT_FOLDER/data/$RUN/quality
 mkdir $PROJECT_FOLDER/data/$RUN/ambiguous
