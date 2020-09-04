@@ -17,6 +17,64 @@ $PROJECT_FOLDER/metabarcoding_pipeline/scripts/PIPELINE.sh -c OTUS $PROJECT_FOLD
 
 #### ADDITIONAL CODE ####
 
+
+ln -s ~/projects/Eggplant/data/uganda_root/BAC/unfiltered/* .
+rename 's/^/RT/' *
+mv * ../tanzania_uganda_all/BAC/unfiltered/.
+
+ln -s ~/projects/Eggplant/data/uganda_root/BAC/filtered/* .
+rename 's/^/RT/' *
+mv * ../tanzania_uganda_all/BAC/filtered/.
+
+ln -s ~/projects/Eggplant/data/uganda_root/FUN/unfiltered/* .
+rename 's/^/RT/' *
+  mv * ../tanzania_uganda_all/FUN/unfiltered/.
+
+ln -s ~/projects/Eggplant/data/uganda_root/FUN/filtered/* .
+rename 's/^/RT/' *
+  mv * ../tanzania_uganda_all/FUN/filtered/.
+
+
+ln -s ~/projects/Eggplant/data/uganda_soil_stem/BAC/unfiltered/* .
+mv * ../tanzania_uganda_all/BAC/unfiltered/.
+
+ln -s ~/projects/Eggplant/data/uganda_soil_stem/BAC/filtered/* .
+mv * ../tanzania_uganda_all/BAC/filtered/.
+
+ln -s ~/projects/Eggplant/data/uganda_soil_stem/FUN/unfiltered/* .
+mv * ../tanzania_uganda_all/FUN/unfiltered/.
+
+ln -s ~/projects/Eggplant/data/uganda_soil_stem/FUN/filtered/* .
+mv * ../tanzania_uganda_all/FUN/filtered/.
+
+
+ln -s ~/projects/Eggplant/data/tanzania/BAC/unfiltered/* .
+mv * ../tanzania_uganda_all/BAC/unfiltered/.
+
+ln -s ~/projects/Eggplant/data/tanzania/BAC/filtered/* .
+mv * ../tanzania_uganda_all/BAC/filtered/.
+
+ln -s ~/projects/Eggplant/data/tanzania/FUN/unfiltered/* .
+mv * ../tanzania_uganda_all/FUN/unfiltered/.
+
+ln -s ~/projects/Eggplant/data/tanzania/FUN/filtered/* .
+mv * ../tanzania_uganda_all/FUN/filtered/.
+
+ls ../tanzania_uganda_all/FUN/filtered/*
+ls ../tanzania_uganda_all/FUN/unfiltered/*
+ls ../tanzania_uganda_all/BAC/filtered/*
+ls ../tanzania_uganda_all/BAC/unfiltered/*
+mkdir -p  root_stem/BAC/filtered
+mkdir -p  root_stem/BAC/unfiltered
+mkdir -p  root_stem/FUN/filtered
+mkdir -p  root_stem/FUN/unfiltered
+
+ cp -av tanzania_uganda_all/FUN/filtered/* root_stem/FUN/filtered/.
+ cp -av tanzania_uganda_all/FUN/unfiltered/* root_stem/FUN/unfiltered/.
+ cp -av tanzania_uganda_all/BAC/filtered/* root_stem/BAC/filtered/.
+ cp -av tanzania_uganda_all/BAC/unfiltered/* root_stem/BAC/unfiltered/.
+
+
 # folder containing project files
 PROJECT_FOLDER=~/projects/Eggplant
 
