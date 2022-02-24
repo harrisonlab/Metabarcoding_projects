@@ -1,3 +1,5 @@
+### THIS IS THE ORIGINAL PROCESS 2016/2017/combined ###
+
 # folder containing project files
 PROJECT_FOLDER=~/projects/Endophytes
 
